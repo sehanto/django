@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import code_validator
 
-from .domain import AccountCategory, AccountType, NormalBalance, SystemRole, normal_balance_for
+from .domain import AccountCategory, AccountType, JournalSource, JournalStatus, NormalBalance, SystemRole, normal_balance_for
 
 
 class Account(TenantOwnedModel):
@@ -54,17 +54,8 @@ class Account(TenantOwnedModel):
 
 
 class JournalEntry(TenantOwnedModel):
-    class Status(models.TextChoices):
-        DRAFT = "draft", _("Draft")
-        POSTED = "posted", _("Posted")
-
-    class Source(models.TextChoices):
-        MANUAL = "manual", _("General journal")
-        SALES_INVOICE = "sales_invoice", _("Sales invoice")
-        PURCHASE_INVOICE = "purchase_invoice", _("Purchase bill")
-        PAYMENT = "payment", _("Payment")
-        TAX = "tax", _("Tax")
-        REVERSAL = "reversal", _("Reversal")
+    Status = JournalStatus
+    Source = JournalSource
 
     number = models.CharField(_("number"), max_length=30)
     date = models.DateField(_("date"))
@@ -87,6 +78,15 @@ class JournalEntry(TenantOwnedModel):
         verbose_name_plural = _("journal entries")
         constraints = [
             models.UniqueConstraint(fields=["organization", "number"], name="unique_journal_number"),
+            models.CheckConstraint(
+                condition=Q(status=JournalStatus.DRAFT, posted_at__isnull=True)
+                | Q(status=JournalStatus.POSTED, posted_at__isnull=False),
+                name="journal_posted_at_matches_status",
+            ),
+            models.CheckConstraint(
+                condition=Q(reversal_of__isnull=True) | Q(source=JournalSource.REVERSAL),
+                name="journal_reversal_link_only_on_reversals",
+            ),
         ]
         indexes = [models.Index(fields=["organization", "status", "date"])]
 

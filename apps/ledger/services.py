@@ -3,6 +3,12 @@
 Every automated module (invoicing, payments, taxes) records its accounting
 impact through ``create_journal_entry`` so that double-entry and period-lock
 invariants are enforced in exactly one place.
+
+The database enforces the same invariants independently (triggers in
+``ledger/migrations/0004_immutable_ledger.py``): entries are inserted as drafts,
+become posted only through a balanced ``draft -> posted`` update, and posted
+entries and their lines can never be updated or deleted. The only exception is
+``purge_organization_ledger`` (tenant offboarding).
 """
 
 from collections.abc import Sequence
@@ -10,7 +16,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -155,6 +161,7 @@ def create_journal_entry(
     reference: str = "",
     created_by=None,
     post: bool = True,
+    reversal_of: JournalEntry | None = None,
 ) -> JournalEntry:
     _validate(organization, date, lines, posting=post)
     entry = JournalEntry.objects.create(
@@ -164,12 +171,20 @@ def create_journal_entry(
         description=description,
         reference=reference,
         source=source,
-        status=JournalEntry.Status.POSTED if post else JournalEntry.Status.DRAFT,
-        posted_at=timezone.now() if post else None,
+        status=JournalEntry.Status.DRAFT,  # the database only accepts posting as a draft -> posted update
+        reversal_of=reversal_of,
         created_by=created_by,
     )
     _write_lines(entry, lines)
+    if post:
+        _mark_posted(entry)
     return entry
+
+
+def _mark_posted(entry: JournalEntry) -> None:
+    entry.status = JournalEntry.Status.POSTED
+    entry.posted_at = timezone.now()
+    entry.save(update_fields=["status", "posted_at", "updated_at"])
 
 
 def _ensure_editable_manual_draft(entry: JournalEntry) -> None:
@@ -199,9 +214,7 @@ def post_journal_entry(*, entry: JournalEntry) -> JournalEntry:
         raise InvalidStateTransition(_("The journal entry is already posted."))
     lines = [JournalLineInput(l.account, l.debit, l.credit, l.description) for l in entry.lines.select_related("account")]
     _validate(entry.organization, entry.date, lines, posting=True)
-    entry.status = JournalEntry.Status.POSTED
-    entry.posted_at = timezone.now()
-    entry.save(update_fields=["status", "posted_at", "updated_at"])
+    _mark_posted(entry)
     return entry
 
 
@@ -233,9 +246,8 @@ def reverse_journal_entry(*, entry: JournalEntry, date: date, created_by=None, d
         source=Source.REVERSAL,
         reference=entry.number,
         created_by=created_by,
+        reversal_of=entry,
     )
-    reversal.reversal_of = entry
-    reversal.save(update_fields=["reversal_of"])
     return reversal
 
 
@@ -243,3 +255,23 @@ def reverse_manual_journal_entry(*, entry: JournalEntry, date: date, created_by=
     if entry.source != Source.MANUAL:
         raise InvalidStateTransition(_("Automatic journal entries are cancelled through their source document (invoice or payment)."))
     return reverse_journal_entry(entry=entry, date=date, created_by=created_by)
+
+
+PURGE_SETTING = "ledger.purge"  # read by the database triggers
+
+
+@transaction.atomic
+def purge_organization_ledger(organization) -> None:
+    """Delete every journal entry of a tenant that is being offboarded.
+
+    The only sanctioned way to remove posted entries: it lifts the database
+    guard for this transaction, deletes, and restores it immediately.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT set_config(%s, 'on', true)", [PURGE_SETTING])
+        try:
+            entries = JournalEntry.objects.filter(organization=organization)
+            entries.filter(reversal_of__isnull=False).delete()  # reversals point at their originals
+            entries.delete()
+        finally:
+            cursor.execute("SELECT set_config(%s, 'off', true)", [PURGE_SETTING])

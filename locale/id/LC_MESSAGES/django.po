@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 05:49+0700\n"
+"POT-Creation-Date: 2026-10-13 06:06+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -111,8 +111,7 @@ msgid "interface language"
 msgstr "bahasa antarmuka"
 
 #: apps/accounts/models.py:48 apps/contacts/models.py:37
-#: apps/invoicing/models.py:48 apps/ledger/models.py:25
-#: apps/taxes/models.py:27
+#: apps/invoicing/models.py:48 apps/ledger/models.py:25 apps/taxes/models.py:27
 msgid "active"
 msgstr "aktif"
 
@@ -197,17 +196,17 @@ msgid ""
 "New two-factor backup codes were created for your account. The old codes no "
 "longer work."
 msgstr ""
-"Kode cadangan autentikasi dua faktor yang baru telah dibuat untuk akun Anda."
-" Kode lama tidak berlaku lagi."
+"Kode cadangan autentikasi dua faktor yang baru telah dibuat untuk akun Anda. "
+"Kode lama tidak berlaku lagi."
 
 #: apps/accounts/services.py:97
 #, python-format
 msgid ""
-"A device was remembered for two-factor sign-in and won't be asked for a code"
-" for %(days)s days: %(device)s."
+"A device was remembered for two-factor sign-in and won't be asked for a code "
+"for %(days)s days: %(device)s."
 msgstr ""
-"Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak"
-" akan diminta kode selama %(days)s hari: %(device)s."
+"Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak "
+"akan diminta kode selama %(days)s hari: %(device)s."
 
 #: apps/accounts/views.py:125
 msgid "Profile updated."
@@ -237,8 +236,8 @@ msgid ""
 "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has "
 "been set up."
 msgstr ""
-"Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah"
-" disiapkan."
+"Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah "
+"disiapkan."
 
 #: apps/accounts/views.py:281
 msgid "Email address confirmed. You can sign in now."
@@ -248,8 +247,7 @@ msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
-msgstr[0] ""
-"Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
+msgstr[0] "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
 #: apps/accounts/views.py:310
 msgid "Please sign in again."
@@ -259,8 +257,7 @@ msgstr "Silakan masuk kembali."
 #: apps/accounts/views.py:501
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr ""
-"Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba "
-"lagi."
+"Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba lagi."
 
 #: apps/accounts/views.py:323
 msgid "Too many wrong codes. Please sign in again."
@@ -279,16 +276,16 @@ msgid ""
 "%(count)s remembered device forgotten. It will be asked for a code at the "
 "next sign-in."
 msgid_plural ""
-"%(count)s remembered devices forgotten. They will be asked for a code at the"
-" next sign-in."
+"%(count)s remembered devices forgotten. They will be asked for a code at the "
+"next sign-in."
 msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi "
 "saat masuk berikutnya."
 
 #: apps/accounts/views.py:438
 msgid ""
-"That code is not valid. Check that the time on your phone is correct and try"
-" again."
+"That code is not valid. Check that the time on your phone is correct and try "
+"again."
 msgstr ""
 "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
@@ -311,11 +308,10 @@ msgstr ""
 
 #: apps/accounts/views.py:506
 msgid ""
-"Two-factor authentication is off. Your account is protected by your password"
-" only."
+"Two-factor authentication is off. Your account is protected by your password "
+"only."
 msgstr ""
-"Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata "
-"sandi."
+"Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata sandi."
 
 #: apps/billing/admin.py:24
 msgid "Mark as paid (bank transfer confirmed)"
@@ -402,7 +398,7 @@ msgid "Failed"
 msgstr "Gagal"
 
 #: apps/billing/models.py:27 apps/invoicing/models.py:65
-#: apps/invoicing/models.py:166 apps/ledger/models.py:69
+#: apps/invoicing/models.py:166 apps/ledger/models.py:60
 msgid "number"
 msgstr "nomor"
 
@@ -471,7 +467,7 @@ msgid "total"
 msgstr "total"
 
 #: apps/billing/models.py:54 apps/invoicing/models.py:74
-#: apps/invoicing/models.py:173 apps/ledger/models.py:73
+#: apps/invoicing/models.py:173 apps/ledger/models.py:64
 msgid "status"
 msgstr "status"
 
@@ -547,23 +543,28 @@ msgstr "Paket %(plan)s untuk %(organization)s berakhir pada %(date)s"
 msgid ""
 "Hello,\n"
 "\n"
-"The %(plan)s plan for %(organization)s is paid until %(date)s. Renew before then to keep your plan without interruption:\n"
+"The %(plan)s plan for %(organization)s is paid until %(date)s. Renew before "
+"then to keep your plan without interruption:\n"
 "%(url)s\n"
 "\n"
-"If it is not renewed, the organization moves to the free plan after a short grace period."
+"If it is not renewed, the organization moves to the free plan after a short "
+"grace period."
 msgstr ""
 "Halo,\n"
 "\n"
-"Paket %(plan)s untuk %(organization)s sudah dibayar sampai %(date)s. Perpanjang sebelum tanggal tersebut agar paket Anda tetap berjalan tanpa gangguan:\n"
+"Paket %(plan)s untuk %(organization)s sudah dibayar sampai %(date)s. "
+"Perpanjang sebelum tanggal tersebut agar paket Anda tetap berjalan tanpa "
+"gangguan:\n"
 "%(url)s\n"
 "\n"
-"Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa tenggang singkat."
+"Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa "
+"tenggang singkat."
 
 #: apps/billing/views.py:62
 #, python-format
 msgid ""
-"Switched to the %(plan)s plan, paid with your remaining credit. Active until"
-" %(date)s."
+"Switched to the %(plan)s plan, paid with your remaining credit. Active until "
+"%(date)s."
 msgstr ""
 "Beralih ke paket %(plan)s, dibayar dengan sisa kredit Anda. Aktif sampai "
 "%(date)s."
@@ -575,11 +576,10 @@ msgstr "Pembayaran diterima. Paket %(plan)s Anda aktif sampai %(date)s."
 
 #: apps/billing/views.py:108
 msgid ""
-"We have not received the payment yet. This page updates once it is "
-"confirmed."
+"We have not received the payment yet. This page updates once it is confirmed."
 msgstr ""
-"Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembayaran"
-" terkonfirmasi."
+"Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembayaran "
+"terkonfirmasi."
 
 #: apps/contacts/apps.py:7 templates/contacts/contact_list.html:2
 #: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:35
@@ -726,7 +726,7 @@ msgstr "Dasbor"
 msgid "Sales & Purchases"
 msgstr "Penjualan & Pembelian"
 
-#: apps/invoicing/domain.py:19 apps/ledger/models.py:58
+#: apps/invoicing/domain.py:19 apps/ledger/domain.py:99
 msgid "Draft"
 msgstr "Draf"
 
@@ -800,10 +800,8 @@ msgstr "Deskripsi"
 #: apps/invoicing/forms.py:53 apps/ledger/forms.py:26 apps/reports/forms.py:42
 #: apps/reports/statements.py:214 templates/invoicing/invoice_form.html:13
 #: templates/invoicing/payment_list.html:11
-#: templates/ledger/account_form.html:2
-#: templates/ledger/journal_detail.html:28
-#: templates/ledger/journal_form.html:13
-#: templates/reports/trial_balance.html:9
+#: templates/ledger/account_form.html:2 templates/ledger/journal_detail.html:28
+#: templates/ledger/journal_form.html:13 templates/reports/trial_balance.html:9
 msgid "Account"
 msgstr "Akun"
 
@@ -821,7 +819,7 @@ msgstr "Harga"
 msgid "Disc. %"
 msgstr "Disc %"
 
-#: apps/invoicing/forms.py:59 apps/ledger/models.py:66
+#: apps/invoicing/forms.py:59 apps/ledger/domain.py:108
 #: templates/invoicing/_invoice_body.html:17
 #: templates/invoicing/invoice_form.html:13
 #: templates/invoicing/item_list.html:10
@@ -893,7 +891,7 @@ msgid "items"
 msgstr "barang/jasa"
 
 #: apps/invoicing/models.py:67 apps/invoicing/models.py:168
-#: apps/ledger/models.py:70
+#: apps/ledger/models.py:61
 msgid "date"
 msgstr "tanggal"
 
@@ -1003,7 +1001,7 @@ msgstr "akun kas/bank"
 msgid "method"
 msgstr "metode"
 
-#: apps/invoicing/models.py:172 apps/ledger/models.py:72
+#: apps/invoicing/models.py:172 apps/ledger/models.py:63
 msgid "reference"
 msgstr "referensi"
 
@@ -1035,7 +1033,7 @@ msgstr "Tanggal jatuh tempo tidak boleh sebelum tanggal faktur."
 msgid "Invoice line data is not valid for this organization."
 msgstr "Data baris faktur tidak valid untuk organisasi ini."
 
-#: apps/invoicing/services.py:82 apps/ledger/services.py:127
+#: apps/invoicing/services.py:82 apps/ledger/services.py:133
 #, python-format
 msgid "Account %(account)s is inactive."
 msgstr "Akun %(account)s tidak aktif."
@@ -1045,8 +1043,8 @@ msgid ""
 "Only a VAT-registered business (PKP) can charge PPN. Change the PKP status "
 "in the settings."
 msgstr ""
-"Hanya Pengusaha Kena Pajak (PKP) yang dapat memungut PPN. Ubah status PKP di"
-" pengaturan."
+"Hanya Pengusaha Kena Pajak (PKP) yang dapat memungut PPN. Ubah status PKP di "
+"pengaturan."
 
 #: apps/invoicing/services.py:93
 #, python-format
@@ -1101,7 +1099,7 @@ msgstr "Pilih akun kas/bank yang valid."
 msgid "The payment is already voided."
 msgstr "Pembayaran sudah dibatalkan."
 
-#: apps/invoicing/views.py:23 apps/ledger/models.py:63
+#: apps/invoicing/views.py:23 apps/ledger/domain.py:105
 #: templates/dashboard/home.html:7
 msgid "Sales invoice"
 msgstr "Faktur Penjualan"
@@ -1130,7 +1128,7 @@ msgstr "Piutang belum dibayar"
 msgid "View receivables aging report"
 msgstr "Lihat laporan umur piutang"
 
-#: apps/invoicing/views.py:33 apps/ledger/models.py:64
+#: apps/invoicing/views.py:33 apps/ledger/domain.py:106
 msgid "Purchase bill"
 msgstr "Tagihan Pembelian"
 
@@ -1330,26 +1328,43 @@ msgstr "Beban PPh Final"
 msgid "Final income tax payable"
 msgstr "Utang PPh Final"
 
-#: apps/ledger/domain.py:120
+#: apps/ledger/domain.py:100
+msgid "Posted"
+msgstr "Diposting"
+
+#: apps/ledger/domain.py:104 templates/ledger/journal_form.html:2
+#: templates/partials/sidebar.html:33
+msgid "General journal"
+msgstr "Jurnal Umum"
+
+#: apps/ledger/domain.py:107
+msgid "Payment"
+msgstr "Pembayaran"
+
+#: apps/ledger/domain.py:109
+msgid "Reversal"
+msgstr "Pembalikan"
+
+#: apps/ledger/domain.py:134
 msgid "A journal entry needs at least two lines."
 msgstr "Jurnal minimal terdiri dari dua baris."
 
-#: apps/ledger/domain.py:125
+#: apps/ledger/domain.py:139
 msgid "Debit and credit amounts cannot be negative."
 msgstr "Nilai debit/kredit tidak boleh negatif."
 
-#: apps/ledger/domain.py:127
+#: apps/ledger/domain.py:141
 msgid "Each journal line must have either a debit or a credit, not both."
 msgstr "Setiap baris jurnal harus berisi debit atau kredit saja."
 
-#: apps/ledger/domain.py:132
+#: apps/ledger/domain.py:146
 #, python-format
 msgid ""
 "The entry is not balanced: total debit %(debit)s ≠ total credit %(credit)s."
 msgstr ""
 "Jurnal tidak seimbang: total debit %(debit)s ≠ total kredit %(credit)s."
 
-#: apps/ledger/domain.py:141
+#: apps/ledger/domain.py:155
 #, python-format
 msgid "The period up to %(date)s is locked. Use a later date."
 msgstr "Periode sampai %(date)s sudah dikunci. Gunakan tanggal setelahnya."
@@ -1388,7 +1403,7 @@ msgstr "Mis. Akumulasi Penyusutan, Prive, Retur Penjualan."
 msgid "system role"
 msgstr "peran sistem"
 
-#: apps/ledger/models.py:24 apps/ledger/models.py:71 apps/ledger/models.py:112
+#: apps/ledger/models.py:24 apps/ledger/models.py:62 apps/ledger/models.py:112
 msgid "description"
 msgstr "keterangan"
 
@@ -1396,40 +1411,23 @@ msgstr "keterangan"
 msgid "chart of accounts"
 msgstr "bagan akun"
 
-#: apps/ledger/models.py:59
-msgid "Posted"
-msgstr "Diposting"
-
-#: apps/ledger/models.py:62 templates/ledger/journal_form.html:2
-#: templates/partials/sidebar.html:33
-msgid "General journal"
-msgstr "Jurnal Umum"
-
 #: apps/ledger/models.py:65
-msgid "Payment"
-msgstr "Pembayaran"
-
-#: apps/ledger/models.py:67
-msgid "Reversal"
-msgstr "Pembalikan"
-
-#: apps/ledger/models.py:74
 msgid "source"
 msgstr "sumber"
 
-#: apps/ledger/models.py:77
+#: apps/ledger/models.py:68
 msgid "reverses entry"
 msgstr "membalik jurnal"
 
-#: apps/ledger/models.py:79
+#: apps/ledger/models.py:70
 msgid "posted at"
 msgstr "waktu posting"
 
-#: apps/ledger/models.py:86
+#: apps/ledger/models.py:77
 msgid "journal entry"
 msgstr "jurnal"
 
-#: apps/ledger/models.py:87
+#: apps/ledger/models.py:78
 msgid "journal entries"
 msgstr "jurnal"
 
@@ -1441,67 +1439,67 @@ msgstr "debit"
 msgid "credit"
 msgstr "kredit"
 
-#: apps/ledger/services.py:69
+#: apps/ledger/services.py:75
 #, python-format
 msgid "The system account '%(role)s' is not set in the chart of accounts."
 msgstr "Akun sistem '%(role)s' belum ditetapkan di bagan akun."
 
-#: apps/ledger/services.py:81
+#: apps/ledger/services.py:87
 #, python-format
 msgid "Account code %(code)s is already in use."
 msgstr "Kode akun %(code)s sudah digunakan."
 
-#: apps/ledger/services.py:92
+#: apps/ledger/services.py:98
 msgid "The category of an account with transactions cannot be changed."
 msgstr "Kategori akun yang sudah memiliki transaksi tidak dapat diubah."
 
-#: apps/ledger/services.py:94
+#: apps/ledger/services.py:100
 msgid "System accounts cannot be deactivated."
 msgstr "Akun sistem tidak dapat dinonaktifkan."
 
-#: apps/ledger/services.py:101
+#: apps/ledger/services.py:107
 msgid "This account code is already in use."
 msgstr "Kode akun sudah digunakan."
 
-#: apps/ledger/services.py:111
+#: apps/ledger/services.py:117
 msgid "System accounts cannot be deleted."
 msgstr "Akun sistem tidak dapat dihapus."
 
-#: apps/ledger/services.py:113
+#: apps/ledger/services.py:119
 msgid "Accounts with transactions cannot be deleted; deactivate them instead."
 msgstr ""
 "Akun yang sudah memiliki transaksi tidak dapat dihapus; nonaktifkan saja."
 
-#: apps/ledger/services.py:125
+#: apps/ledger/services.py:131
 msgid "Account not found in this organization."
 msgstr "Akun tidak ditemukan pada organisasi ini."
 
-#: apps/ledger/services.py:177
+#: apps/ledger/services.py:192
 msgid "Only draft journal entries can be changed."
 msgstr "Hanya jurnal berstatus draf yang dapat diubah."
 
-#: apps/ledger/services.py:179
+#: apps/ledger/services.py:194
 msgid ""
 "Automatic journal entries can only be changed through their source document."
 msgstr "Jurnal otomatis hanya dapat diubah melalui dokumen sumbernya."
 
-#: apps/ledger/services.py:199
+#: apps/ledger/services.py:214
 msgid "The journal entry is already posted."
 msgstr "Jurnal sudah diposting."
 
-#: apps/ledger/services.py:219
+#: apps/ledger/services.py:232
 msgid "Only posted journal entries can be reversed."
 msgstr "Hanya jurnal yang sudah diposting yang dapat dibalik."
 
-#: apps/ledger/services.py:221
+#: apps/ledger/services.py:234
 msgid "This journal entry has already been reversed."
 msgstr "Jurnal ini sudah pernah dibalik."
 
-#: apps/ledger/services.py:223
+#: apps/ledger/services.py:236
 msgid "A reversing entry cannot itself be reversed."
 msgstr "Jurnal pembalik tidak dapat dibalik lagi."
 
-#: apps/ledger/services.py:244
+#: apps/ledger/services.py:256
 msgid ""
 "Automatic journal entries are cancelled through their source document "
 "(invoice or payment)."
@@ -1739,8 +1737,8 @@ msgstr "penyebut DPP"
 
 #: apps/taxes/models.py:25
 msgid ""
-"Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since"
-" 2025."
+"Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since "
+"2025."
 msgstr "DPP nilai lain, mis. 11/12 untuk barang non-mewah sejak 2025."
 
 #: apps/taxes/models.py:31
@@ -1955,8 +1953,8 @@ msgstr "wajibkan autentikasi dua faktor"
 msgid ""
 "Every member must use two-factor authentication to open this organization."
 msgstr ""
-"Setiap anggota wajib memakai autentikasi dua faktor untuk membuka organisasi"
-" ini."
+"Setiap anggota wajib memakai autentikasi dua faktor untuk membuka organisasi "
+"ini."
 
 #: apps/tenants/models.py:75
 msgid "period lock date"
@@ -2008,8 +2006,7 @@ msgstr "Hanya Lihat"
 
 #: apps/tenants/services.py:65
 #, python-format
-msgid ""
-"The %(plan)s plan allows only %(limit)s user. Please upgrade your plan."
+msgid "The %(plan)s plan allows only %(limit)s user. Please upgrade your plan."
 msgid_plural ""
 "The %(plan)s plan allows only %(limit)s users. Please upgrade your plan."
 msgstr[0] ""
@@ -2056,8 +2053,8 @@ msgid ""
 "Two-factor authentication is now required. %(count)s member without it was "
 "notified by email."
 msgid_plural ""
-"Two-factor authentication is now required. %(count)s members without it were"
-" notified by email."
+"Two-factor authentication is now required. %(count)s members without it were "
+"notified by email."
 msgstr[0] ""
 "Autentikasi dua faktor kini wajib. %(count)s anggota yang belum memakainya "
 "telah diberi tahu lewat email."
@@ -2130,8 +2127,7 @@ msgid ""
 "If you did not ask for this, you can ignore this email: your password stays "
 "the same."
 msgstr ""
-"Jika Anda tidak memintanya, abaikan email ini: kata sandi Anda tidak "
-"berubah."
+"Jika Anda tidak memintanya, abaikan email ini: kata sandi Anda tidak berubah."
 
 #: templates/accounts/emails/password_reset_subject.txt:1
 #, python-format
@@ -2162,8 +2158,8 @@ msgid ""
 "Welcome to %(site_name)s! Please confirm that %(email)s is your email "
 "address by opening this link:"
 msgstr ""
-"Selamat datang di %(site_name)s! Konfirmasikan bahwa %(email)s adalah alamat"
-" email Anda dengan membuka tautan ini:"
+"Selamat datang di %(site_name)s! Konfirmasikan bahwa %(email)s adalah alamat "
+"email Anda dengan membuka tautan ini:"
 
 #: templates/accounts/emails/verify_email.txt:7
 #, python-format
@@ -2272,10 +2268,9 @@ msgstr "Batal dan masuk kembali"
 msgid "Change password"
 msgstr "Ubah kata sandi"
 
-#: templates/accounts/password_change.html:8
-#: templates/accounts/profile.html:10 templates/contacts/contact_form.html:9
-#: templates/invoicing/item_form.html:9 templates/ledger/account_form.html:9
-#: templates/taxes/taxrate_form.html:9
+#: templates/accounts/password_change.html:8 templates/accounts/profile.html:10
+#: templates/contacts/contact_form.html:9 templates/invoicing/item_form.html:9
+#: templates/ledger/account_form.html:9 templates/taxes/taxrate_form.html:9
 msgid "Save"
 msgstr "Simpan"
 
@@ -2286,11 +2281,11 @@ msgstr "Kata sandi diubah"
 
 #: templates/accounts/password_reset_complete.html:5
 msgid ""
-"Your password has been changed and you have been signed out everywhere else."
-" Sign in with your new password."
+"Your password has been changed and you have been signed out everywhere else. "
+"Sign in with your new password."
 msgstr ""
-"Kata sandi Anda telah diubah dan Anda telah dikeluarkan dari semua perangkat"
-" lain. Masuk dengan kata sandi baru Anda."
+"Kata sandi Anda telah diubah dan Anda telah dikeluarkan dari semua perangkat "
+"lain. Masuk dengan kata sandi baru Anda."
 
 #: templates/accounts/password_reset_confirm.html:2
 #: templates/accounts/password_reset_confirm.html:5
@@ -2330,9 +2325,8 @@ msgid ""
 "The link works once and expires in %(lifetime)s. If no email arrives within "
 "a few minutes, check your spam folder or request a new link."
 msgstr ""
-"Tautan hanya bisa dipakai sekali dan berlaku selama %(lifetime)s. Jika email"
-" tidak masuk dalam beberapa menit, periksa folder spam atau minta tautan "
-"baru."
+"Tautan hanya bisa dipakai sekali dan berlaku selama %(lifetime)s. Jika email "
+"tidak masuk dalam beberapa menit, periksa folder spam atau minta tautan baru."
 
 #: templates/accounts/password_reset_form.html:5
 msgid ""
@@ -2358,8 +2352,7 @@ msgstr "Keamanan"
 #: templates/accounts/security.html:7
 #, python-format
 msgid ""
-"%(organizations)s requires two-factor authentication. Turn it on to "
-"continue."
+"%(organizations)s requires two-factor authentication. Turn it on to continue."
 msgstr ""
 "%(organizations)s mewajibkan autentikasi dua faktor. Aktifkan untuk "
 "melanjutkan."
@@ -2401,8 +2394,8 @@ msgstr "Aktifkan autentikasi dua faktor"
 
 #: templates/accounts/security.html:26
 msgid ""
-"You are running out of backup codes. Create new ones and keep them somewhere"
-" safe."
+"You are running out of backup codes. Create new ones and keep them somewhere "
+"safe."
 msgstr ""
 "Kode cadangan Anda hampir habis. Buat kode baru dan simpan di tempat aman."
 
@@ -2467,8 +2460,8 @@ msgstr "Kode cadangan"
 
 #: templates/accounts/two_factor_backup_codes.html:7
 msgid ""
-"Save these codes now: they are shown only once. Each code works one time, if"
-" you can't use your phone."
+"Save these codes now: they are shown only once. Each code works one time, if "
+"you can't use your phone."
 msgstr ""
 "Simpan kode-kode ini sekarang: kode hanya ditampilkan sekali. Setiap kode "
 "dapat dipakai satu kali jika Anda tidak bisa menggunakan ponsel."
@@ -2516,8 +2509,8 @@ msgstr "Kembali"
 
 #: templates/accounts/two_factor_disable.html:10
 msgid ""
-"Your account will be protected by your password only. Your authenticator and"
-" backup codes will stop working."
+"Your account will be protected by your password only. Your authenticator and "
+"backup codes will stop working."
 msgstr ""
 "Akun Anda akan dilindungi kata sandi saja. Aplikasi autentikator dan kode "
 "cadangan Anda tidak akan berlaku lagi."
@@ -2652,8 +2645,8 @@ msgstr "Pembayaran uji coba"
 
 #: templates/billing/fake_checkout.html:5
 msgid ""
-"Test payment page: no real money is charged. In production, customers pay on"
-" Xendit's hosted page instead."
+"Test payment page: no real money is charged. In production, customers pay on "
+"Xendit's hosted page instead."
 msgstr ""
 "Halaman pembayaran uji coba: tidak ada uang sungguhan yang ditagih. Di "
 "produksi, pelanggan membayar di halaman Xendit."
@@ -2783,8 +2776,7 @@ msgstr "Referensi pembayaran"
 
 #: templates/billing/invoice_detail.html:68
 msgid ""
-"The official tax invoice (Faktur Pajak) is issued separately through "
-"Coretax."
+"The official tax invoice (Faktur Pajak) is issued separately through Coretax."
 msgstr "Faktur Pajak resmi diterbitkan terpisah melalui Coretax."
 
 #: templates/billing/overview.html:8 templates/billing/overview.html:27
@@ -2870,19 +2862,19 @@ msgstr "Jumlah sudah termasuk PPN."
 #: templates/billing/overview.html:61
 #, python-format
 msgid ""
-"Prices exclude PPN of 12%% on a tax base of 11/12 (effectively 11%%). Paying"
-" for your current plan extends it from its end date. A different plan starts"
-" on the payment date, and unused paid time on your current plan is credited "
+"Prices exclude PPN of 12%% on a tax base of 11/12 (effectively 11%%). Paying "
+"for your current plan extends it from its end date. A different plan starts "
+"on the payment date, and unused paid time on your current plan is credited "
 "against it; if the credit covers the whole price, you switch right away and "
 "the rest becomes extra days. Pay by QRIS, bank virtual account, e-wallet or "
 "card through our payment partner Xendit."
 msgstr ""
 "Harga belum termasuk PPN 12%% atas DPP 11/12 (efektif 11%%). Membayar paket "
-"yang sedang aktif akan memperpanjangnya dari tanggal berakhirnya. Paket lain"
-" dimulai pada tanggal pembayaran, dan sisa masa paket Anda yang sudah "
-"dibayar dikreditkan sebagai potongan; jika kreditnya menutupi seluruh harga,"
-" Anda langsung beralih dan sisanya menjadi hari tambahan. Bayar dengan QRIS,"
-" virtual account bank, e-wallet, atau kartu melalui mitra pembayaran kami, "
+"yang sedang aktif akan memperpanjangnya dari tanggal berakhirnya. Paket lain "
+"dimulai pada tanggal pembayaran, dan sisa masa paket Anda yang sudah dibayar "
+"dikreditkan sebagai potongan; jika kreditnya menutupi seluruh harga, Anda "
+"langsung beralih dan sisanya menjadi hari tambahan. Bayar dengan QRIS, "
+"virtual account bank, e-wallet, atau kartu melalui mitra pembayaran kami, "
 "Xendit."
 
 #: templates/billing/overview.html:68
@@ -2895,8 +2887,7 @@ msgstr "Riwayat tagihan"
 msgid "Number"
 msgstr "Nomor"
 
-#: templates/billing/overview.html:70
-#: templates/invoicing/_invoice_body.html:10
+#: templates/billing/overview.html:70 templates/invoicing/_invoice_body.html:10
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:15
@@ -2980,8 +2971,7 @@ msgstr "nonaktif"
 #: templates/contacts/contact_list.html:23
 #: templates/invoicing/invoice_detail.html:14
 #: templates/invoicing/item_list.html:14 templates/ledger/account_list.html:20
-#: templates/ledger/journal_detail.html:11
-#: templates/taxes/taxrate_list.html:16
+#: templates/ledger/journal_detail.html:11 templates/taxes/taxrate_list.html:16
 msgid "Edit"
 msgstr "Ubah"
 
@@ -3180,8 +3170,8 @@ msgid ""
 "The invoice's journal entry will be reversed on the void date. This cannot "
 "be undone."
 msgstr ""
-"Jurnal faktur akan dibalik pada tanggal pembatalan. Tindakan ini tidak dapat"
-" diurungkan."
+"Jurnal faktur akan dibalik pada tanggal pembatalan. Tindakan ini tidak dapat "
+"diurungkan."
 
 #: templates/invoicing/invoice_form.html:13
 #, python-format
@@ -3198,8 +3188,7 @@ msgid ""
 "PPN is calculated per rate on the total tax base and rounded down to whole "
 "rupiah."
 msgstr ""
-"PPN dihitung per tarif atas total DPP dan dibulatkan ke bawah (rupiah "
-"penuh)."
+"PPN dihitung per tarif atas total DPP dan dibulatkan ke bawah (rupiah penuh)."
 
 #: templates/invoicing/invoice_form.html:28
 #: templates/ledger/journal_form.html:43
@@ -3366,8 +3355,7 @@ msgstr "Ubah Draf %(number)s"
 msgid "New general journal entry"
 msgstr "Jurnal Umum Baru"
 
-#: templates/ledger/journal_form.html:5
-#: templates/reports/trial_balance.html:12
+#: templates/ledger/journal_form.html:5 templates/reports/trial_balance.html:12
 msgid "Balanced"
 msgstr "Seimbang"
 
@@ -3475,8 +3463,8 @@ msgstr "Anggota Tim"
 #: templates/partials/subscription_notice.html:5
 #, python-format
 msgid ""
-"Your %(plan)s plan expired on %(date)s. Renew now, or the organization moves"
-" to the Free plan on %(lapse)s."
+"Your %(plan)s plan expired on %(date)s. Renew now, or the organization moves "
+"to the Free plan on %(lapse)s."
 msgstr ""
 "Paket %(plan)s Anda berakhir pada %(date)s. Perpanjang sekarang, atau "
 "organisasi akan pindah ke paket Gratis pada %(lapse)s."
@@ -3879,14 +3867,13 @@ msgstr "Pengaturan Organisasi"
 #: templates/tenants/settings.html:9
 #, python-format
 msgid ""
-"MSMEs with annual turnover of up to Rp4.8 billion may choose not to register"
-" as a PKP and use the 0.5%% PPh Final scheme (PP 55/2022). Individual "
+"MSMEs with annual turnover of up to Rp4.8 billion may choose not to register "
+"as a PKP and use the 0.5%% PPh Final scheme (PP 55/2022). Individual "
 "taxpayers pay no PPh Final on turnover up to Rp500 million per year."
 msgstr ""
 "UMKM dengan omzet ≤ Rp4,8 miliar setahun dapat memilih tidak dikukuhkan "
 "sebagai PKP dan memakai skema PPh Final 0,5%% (PP 55/2022). Wajib Pajak "
-"orang pribadi tidak dikenai PPh Final atas omzet sampai Rp500 juta per "
-"tahun."
+"orang pribadi tidak dikenai PPh Final atas omzet sampai Rp500 juta per tahun."
 
 #: templates/tenants/settings.html:15
 msgid "Save settings"

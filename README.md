@@ -57,10 +57,20 @@ Key design decisions:
   `request.organization` and `OrganizationMixin` exposes it to views. Every
   query passes the organization in; there is no thread-local magic. Foreign objects
   return 404, which is covered by tests.
-- **Immutability.** Posted journals are never edited or deleted. Corrections are
-  reversing entries, and `PROTECT` foreign keys guard ledger history. Tenant
-  offboarding goes through `tenants.services.delete_organization`, which deletes in
-  dependency order.
+- **Immutability, enforced by the database.** Posted journals are never edited or
+  deleted. Corrections are reversing entries, and `PROTECT` foreign keys guard ledger
+  history. PostgreSQL triggers (migration `ledger/0004_immutable_ledger`) make this
+  hold for every writer, not just the services:
+  - entries are inserted as drafts;
+  - "posted" is reachable only by updating a draft whose lines balance (at least two
+    lines, debit = credit > 0, the organization's own accounts, after its lock date);
+  - posted entries and their lines reject any `UPDATE`/`DELETE` (only `created_by`
+    may be cleared when that user is deleted).
+
+  Tenant offboarding (`tenants.services.delete_organization`) is the single
+  exception: `ledger.services.purge_organization_ledger` lifts the guard for that
+  transaction only. A role that owns the tables can still disable triggers, so in
+  production run the app as a role that does not own the schema.
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 

@@ -95,6 +95,20 @@ class SystemRole(models.TextChoices):
     PPH_FINAL_PAYABLE = "pph_final_payable", _("Final income tax payable")
 
 
+class JournalStatus(models.TextChoices):
+    DRAFT = "draft", _("Draft")
+    POSTED = "posted", _("Posted")
+
+
+class JournalSource(models.TextChoices):
+    MANUAL = "manual", _("General journal")
+    SALES_INVOICE = "sales_invoice", _("Sales invoice")
+    PURCHASE_INVOICE = "purchase_invoice", _("Purchase bill")
+    PAYMENT = "payment", _("Payment")
+    TAX = "tax", _("Tax")
+    REVERSAL = "reversal", _("Reversal")
+
+
 def normal_balance_for(category: str, is_contra: bool) -> NormalBalance:
     normal = AccountCategory(category).account_type.normal_balance
     if not is_contra:
