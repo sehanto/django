@@ -1,5 +1,6 @@
 """Base settings shared by every environment."""
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -21,6 +22,7 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "axes",  # login rate limiting
 ]
 
 LOCAL_APPS = [
@@ -49,6 +51,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.tenants.middleware.CurrentOrganizationMiddleware",
+    # Must be last: turns a locked-out login into the lockout response.
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -80,6 +84,10 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",  # must come first: refuses locked-out attempts
+    "django.contrib.auth.backends.ModelBackend",
+]
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
@@ -130,3 +138,20 @@ BILLING_SELLER_NPWP = env("BILLING_SELLER_NPWP", default="")
 BILLING_SELLER_ADDRESS = env("BILLING_SELLER_ADDRESS", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="BukuUMKM <noreply@bukuumkm.id>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")  # absolute links in emails
+
+# Login rate limiting (django-axes). Lock a username+IP pair, not a whole IP: many
+# Indonesian mobile users share carrier-grade NAT addresses, and locking by IP alone
+# would lock out unrelated people; locking by username alone would let anyone lock
+# out a user from anywhere.
+AXES_FAILURE_LIMIT = env.int("AXES_FAILURE_LIMIT", default=5)
+AXES_COOLOFF_TIME = timedelta(minutes=env.int("AXES_COOLOFF_MINUTES", default=15))
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True  # a successful login clears earlier failures
+AXES_LOCKOUT_TEMPLATE = "accounts/locked_out.html"  # rendered with HTTP 429
+# Django's login form passes the email to authenticate() as ``username``; axes would
+# otherwise look for ``email`` (USERNAME_FIELD), see no username, and lock by IP only.
+AXES_USERNAME_FORM_FIELD = "username"
+AXES_USERNAME_CALLABLE = "apps.accounts.client_ip.login_username"
+AXES_CLIENT_IP_CALLABLE = "apps.accounts.client_ip.client_ip"
+# Number of reverse proxies in front of Django that append to X-Forwarded-For (0 = none).
+TRUSTED_PROXY_COUNT = env.int("TRUSTED_PROXY_COUNT", default=0)

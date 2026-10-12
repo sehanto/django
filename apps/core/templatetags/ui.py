@@ -1,4 +1,6 @@
 from django import template
+from django.utils import timezone
+from django.utils.timesince import timeuntil
 
 register = template.Library()
 
@@ -30,3 +32,10 @@ STATUS_BADGES = {
 @register.filter
 def status_badge(status):
     return STATUS_BADGES.get(status, "secondary")
+
+
+@register.filter
+def timeuntil_delta(delta):
+    """Render a timedelta as a localized duration, e.g. "15 minutes" / "15 menit"."""
+    reference = timezone.now()
+    return timeuntil(reference + delta, reference, depth=1)

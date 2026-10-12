@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 19:09+0700\n"
-"PO-Revision-Date: 2026-10-12 19:09\n"
+"POT-Creation-Date: 2026-10-12 19:17+0700\n"
+"PO-Revision-Date: 2026-10-12 19:17\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -34,28 +34,28 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:13 apps/accounts/forms.py:20 templates/accounts/profile.html:6
+#: apps/accounts/forms.py:13 apps/accounts/forms.py:23 templates/accounts/profile.html:6
 #: templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
 
-#: apps/accounts/forms.py:19
+#: apps/accounts/forms.py:22
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: apps/accounts/forms.py:22
+#: apps/accounts/forms.py:25
 msgid "Password"
 msgstr "Kata sandi"
 
-#: apps/accounts/forms.py:23 apps/tenants/forms.py:35
+#: apps/accounts/forms.py:26 apps/tenants/forms.py:35
 msgid "Business name"
 msgstr "Nama usaha"
 
-#: apps/accounts/forms.py:24 apps/tenants/forms.py:36
+#: apps/accounts/forms.py:27 apps/tenants/forms.py:36
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:29
+#: apps/accounts/forms.py:32
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
@@ -439,12 +439,10 @@ msgid "Use letters, digits, '.', '-', '_' or '/' only, starting with a letter or
 msgstr "Gunakan huruf, angka, '.', '-', '_' atau '/' saja, diawali huruf atau angka."
 
 #: apps/core/validators.py:22
-#| msgid "NPWP must have 15 or 16 digits."
 msgid "NIB must be exactly 13 digits."
 msgstr "NIB harus tepat 13 digit."
 
 #: apps/core/validators.py:23
-#| msgid "NPWP must have 15 or 16 digits."
 msgid "NTPN must be 16 letters or digits."
 msgstr "NTPN harus terdiri dari 16 huruf atau angka."
 
@@ -1389,7 +1387,6 @@ msgid "tax rates"
 msgstr "tarif pajak"
 
 #: apps/taxes/models.py:39
-#| msgid "The DPP denominator cannot be zero."
 msgid "The DPP numerator cannot be larger than the denominator."
 msgstr "Pembilang DPP tidak boleh lebih besar dari penyebutnya."
 
@@ -1471,7 +1468,6 @@ msgid "business ID (NIB)"
 msgstr "NIB"
 
 #: apps/tenants/forms.py:30
-#| msgid "The due date cannot be before the invoice date."
 msgid "The lock date cannot be in the future."
 msgstr "Tanggal kunci tidak boleh di masa depan."
 
@@ -1696,6 +1692,34 @@ msgstr "Halaman tidak ditemukan"
 #: templates/accounts/_auth_layout.html:9
 msgid "Simple accounting for Indonesian MSMEs, following SAK EMKM"
 msgstr "Akuntansi sederhana untuk UMKM Indonesia, sesuai SAK EMKM"
+
+#: templates/accounts/locked_out.html:2 templates/accounts/locked_out.html:4
+msgid "Too many sign-in attempts"
+msgstr "Terlalu banyak percobaan masuk"
+
+#: templates/accounts/locked_out.html:5
+#, python-format
+msgid "Sign-in for this account from your network is paused after %(limit)s failed attempt."
+msgid_plural "Sign-in for this account from your network is paused after %(limit)s failed attempts."
+msgstr[0] ""
+"Masuk ke akun ini dari jaringan Anda dihentikan sementara setelah %(limit)s kali percobaan gagal."
+
+#: templates/accounts/locked_out.html:11
+#, python-format
+msgid "Please try again in %(wait)s."
+msgstr "Silakan coba lagi dalam %(wait)s."
+
+#: templates/accounts/locked_out.html:13
+msgid ""
+"If you have forgotten your password, ask the owner of your organization or contact support. Every "
+"new failed attempt restarts the waiting time."
+msgstr ""
+"Jika Anda lupa kata sandi, hubungi pemilik organisasi Anda atau tim dukungan. Setiap percobaan "
+"gagal yang baru akan mengulang waktu tunggu."
+
+#: templates/accounts/locked_out.html:14
+msgid "Back to sign in"
+msgstr "Kembali ke halaman masuk"
 
 #: templates/accounts/login.html:2 templates/accounts/login.html:4 templates/accounts/login.html:7
 #: templates/accounts/signup.html:9

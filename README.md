@@ -113,6 +113,7 @@ The tests cover:
 - full HTTP flows (create → issue → pay)
 - statement integrity (trial balance and balance sheet always balance)
 - hostile and malformed input (control/bidi characters, NUL bytes, bad parameters, oversized submissions, CSV formulas)
+- login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -180,6 +181,44 @@ Every input is handled in layers, so no single mistake lets bad data through:
 
 `test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
 `BaseModelForm`.
+
+## Login rate limiting
+
+Sign-in is protected against password guessing with
+[django-axes](https://django-axes.readthedocs.io/). This covers the app's login and the Django admin.
+
+| Rule | Setting |
+|---|---|
+| After **5** failed attempts, sign-in is paused for **15 minutes** (HTTP 429, with a translated page). Every new failed attempt during the pause restarts it. | `AXES_FAILURE_LIMIT`, `AXES_COOLOFF_MINUTES` |
+| The lock applies to the **email + IP address pair**. Locking by IP alone would block unrelated people who share an address, which is common on Indonesian mobile networks (carrier-grade NAT). Locking by email alone would let anyone lock a user out from anywhere. | `AXES_LOCKOUT_PARAMETERS` |
+| Emails are compared case-insensitively, so `Rina@` and `rina@` share one counter (and both can sign in). A successful login clears earlier failures. | `AXES_USERNAME_CALLABLE`, `AXES_RESET_ON_SUCCESS` |
+
+**Behind a reverse proxy, set `TRUSTED_PROXY_COUNT`** to the number of proxies in front of
+Django that append to `X-Forwarded-For` (1 for nginx alone, 2 for a CDN plus nginx). The client
+IP is then taken as that many entries from the right of the header; anything further left
+comes from the client and is ignored, so it can't be spoofed. Leave it at `0` when Django is
+reached directly. If it's wrong, every visitor appears to share the proxy's address.
+
+Support tasks:
+
+```bash
+.venv/bin/python manage.py axes_list_attempts
+```
+
+```bash
+.venv/bin/python manage.py axes_reset_username someone@example.com
+```
+
+Attempts are also visible, and can be deleted, in the Django admin under **Axes**. Schedule
+a daily cleanup of old access logs:
+
+```bash
+.venv/bin/python manage.py axes_reset_logs --age 90
+```
+
+This limit stops guessing many passwords for one account. It doesn't stop slow
+"credential stuffing" spread across many accounts and addresses; for that, add a CAPTCHA or
+an IP-reputation service at the proxy.
 
 ## Subscription billing
 

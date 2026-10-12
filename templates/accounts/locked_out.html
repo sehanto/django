@@ -1,0 +1,15 @@
+{% extends "accounts/_auth_layout.html" %}{% load i18n ui %}
+{% block title %}{% translate "Too many sign-in attempts" %}{% endblock %}
+{% block auth_content %}
+<h2 class="h5 mb-3"><i class="bi bi-shield-lock me-2 text-danger"></i>{% translate "Too many sign-in attempts" %}</h2>
+<p>{% blocktranslate trimmed count limit=failure_limit %}
+  Sign-in for this account from your network is paused after {{ limit }} failed attempt.
+{% plural %}
+  Sign-in for this account from your network is paused after {{ limit }} failed attempts.
+{% endblocktranslate %}</p>
+{% if cooloff_timedelta %}
+  <p>{% blocktranslate trimmed with wait=cooloff_timedelta|timeuntil_delta %}Please try again in {{ wait }}.{% endblocktranslate %}</p>
+{% endif %}
+<p class="small text-secondary mb-3">{% translate "If you have forgotten your password, ask the owner of your organization or contact support. Every new failed attempt restarts the waiting time." %}</p>
+<a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary w-100">{% translate "Back to sign in" %}</a>
+{% endblock %}

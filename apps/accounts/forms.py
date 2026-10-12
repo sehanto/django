@@ -12,6 +12,9 @@ from .models import User
 class LoginForm(SanitizedFormMixin, AuthenticationForm):
     username = forms.EmailField(label=_("Email"), widget=forms.EmailInput(attrs={"autofocus": True}))
 
+    def clean_username(self):
+        return self.cleaned_data["username"].lower()  # accounts are stored with lowercase emails
+
 
 class SignUpForm(BaseForm):
     """Registers an owner together with their first organization."""
