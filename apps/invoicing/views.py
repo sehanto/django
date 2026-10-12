@@ -8,6 +8,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -61,7 +62,11 @@ class InvoiceListView(InvoiceKindMixin, OrganizationMixin, ListView):
 
     def get_queryset(self):
         params = self.request.GET
-        return invoices_for(self.organization, self.kind, query=params.get("q", ""), status=params.get("status", ""))
+        return invoices_for(
+            self.organization, self.kind,
+            query=text_param(params, "q"),
+            status=choice_param(params, "status", [*Invoice.Status.values, "overdue"]),
+        )
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
@@ -87,7 +92,7 @@ class InvoiceFormView(InvoiceKindMixin, WriteMixin, TemplateView):
             ]
         form = InvoiceForm(
             data, instance=invoice, kind=self.kind, organization=self.organization,
-            initial=None if invoice else {"date": timezone.localdate(), "contact": self.request.GET.get("contact")},
+            initial=None if invoice else {"date": timezone.localdate(), "contact": int_param(self.request.GET, "contact", minimum=1)},
         )
         formset = InvoiceLineFormSet(
             data, initial=initial_lines, form_kwargs={"organization": self.organization, "kind": self.kind}
@@ -238,7 +243,10 @@ class PaymentListView(OrganizationMixin, ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        return payments_for(self.organization, kind=self.request.GET.get("kind", ""), query=self.request.GET.get("q", ""))
+        params = self.request.GET
+        return payments_for(
+            self.organization, kind=choice_param(params, "kind", InvoiceKind.values), query=text_param(params, "q")
+        )
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(kinds=InvoiceKind.choices, **kwargs)
@@ -263,7 +271,7 @@ class ItemListView(OrganizationMixin, ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        return items_for(self.organization, query=self.request.GET.get("q", "")).select_related("tax_rate")
+        return items_for(self.organization, query=text_param(self.request.GET, "q")).select_related("tax_rate")
 
 
 class ItemFormMixin(WriteMixin):

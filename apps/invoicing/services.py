@@ -20,6 +20,7 @@ from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, Vali
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.sequences import next_document_number
+from apps.core.validators import ensure_business_date
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
@@ -61,6 +62,8 @@ def _belongs(obj, organization) -> bool:
 
 
 def _validate_header(organization, kind: str, contact, invoice_date: date, due_date: date) -> None:
+    ensure_business_date(invoice_date)
+    ensure_business_date(due_date)
     if not _belongs(contact, organization):
         raise ValidationFailed(_("Contact not found."))
     if kind == InvoiceKind.SALES and not contact.is_customer:

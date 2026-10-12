@@ -17,6 +17,7 @@ from django.utils.translation import gettext as _
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
+from apps.core.validators import ensure_business_date
 
 from .chart_template import DEFAULT_CHART
 from .domain import LineAmount, SystemRole, ensure_period_open, validate_lines
@@ -117,6 +118,7 @@ def delete_account(*, account: Account) -> None:
 
 
 def _validate(organization, entry_date: date, lines: Sequence[JournalLineInput], posting: bool) -> None:
+    ensure_business_date(entry_date)
     validate_lines(LineAmount(line.debit, line.credit) for line in lines)
     for line in lines:
         if line.account.organization_id != organization.pk:

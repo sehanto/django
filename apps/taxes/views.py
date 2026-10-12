@@ -7,6 +7,7 @@ from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import year_choices, year_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -47,10 +48,7 @@ class TaxRateUpdateView(TaxRateFormMixin, UpdateView):
 
 
 def _selected_year(request) -> int:
-    try:
-        return int(request.GET.get("year") or request.POST.get("year"))
-    except (TypeError, ValueError):
-        return timezone.localdate().year
+    return year_param(request.POST if request.method == "POST" else request.GET)
 
 
 class PphFinalView(OrganizationMixin, TemplateView):
@@ -63,7 +61,7 @@ class PphFinalView(OrganizationMixin, TemplateView):
         annual_turnover = sum(m.gross_turnover for m in schedule)
         return super().get_context_data(
             year=year,
-            years=range(timezone.localdate().year, timezone.localdate().year - 6, -1),
+            years=year_choices(),
             rows=[(m, payments.get(m.month)) for m in schedule],
             total_turnover=annual_turnover,
             total_tax=sum(m.tax for m in schedule),

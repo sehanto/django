@@ -2,10 +2,11 @@ import csv
 from datetime import timedelta
 
 from django.http import HttpResponse
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
+from apps.core.params import year_choices, year_param
+from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
@@ -20,7 +21,7 @@ def csv_response(filename: str, rows) -> HttpResponse:
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     response.write("﻿")  # BOM so Excel opens UTF-8 correctly
     writer = csv.writer(response, delimiter=";")
-    writer.writerows(rows)
+    writer.writerows([csv_safe(cell) for cell in row] for row in rows)  # account names etc. are user data
     return response
 
 
@@ -110,13 +111,7 @@ class VatReportView(OrganizationMixin, TemplateView):
     template_name = "reports/vat.html"
 
     def get_context_data(self, **kwargs):
-        try:
-            year = int(self.request.GET.get("year", ""))
-        except ValueError:
-            year = timezone.localdate().year
+        year = year_param(self.request.GET)
         rows = vat_summary(self.organization, year)
         totals = {key: sum(r[key] for r in rows) for key in ("output_base", "output", "input_base", "input", "net")}
-        current = timezone.localdate().year
-        return super().get_context_data(
-            year=year, years=range(current, current - 6, -1), rows=rows, totals=totals, **kwargs
-        )
+        return super().get_context_data(year=year, years=year_choices(), rows=rows, totals=totals, **kwargs)

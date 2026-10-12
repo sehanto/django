@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.validators import phone_validator
+
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -30,7 +32,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email"), unique=True)
     full_name = models.CharField(_("full name"), max_length=150)
-    phone = models.CharField(_("phone number"), max_length=30, blank=True)
+    phone = models.CharField(_("phone number"), max_length=30, blank=True, validators=[phone_validator])
     language = models.CharField(
         _("interface language"), max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )

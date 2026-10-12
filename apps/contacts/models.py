@@ -1,10 +1,13 @@
 from django.conf import settings
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
 
-from .validators import format_npwp
+from apps.core.validators import phone_validator
+
+from .validators import format_npwp, npwp_format_validator
 
 
 class Contact(TenantOwnedModel):
@@ -15,12 +18,14 @@ class Contact(TenantOwnedModel):
 
     kind = models.CharField(_("type"), max_length=10, choices=Kind.choices, default=Kind.CUSTOMER)
     name = models.CharField(_("name"), max_length=200)
-    npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True)
+    npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator])
     email = models.EmailField(_("email"), blank=True)
-    phone = models.CharField(_("phone"), max_length=30, blank=True)
-    address = models.TextField(_("address"), blank=True)
+    phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
+    address = models.TextField(_("address"), max_length=500, blank=True)
     city = models.CharField(_("city/regency"), max_length=100, blank=True)
-    payment_terms_days = models.PositiveSmallIntegerField(_("payment terms (days)"), default=30)
+    payment_terms_days = models.PositiveSmallIntegerField(
+        _("payment terms (days)"), default=30, validators=[MaxValueValidator(365)]
+    )
     document_language = models.CharField(
         _("document language"),
         max_length=10,
@@ -28,7 +33,7 @@ class Contact(TenantOwnedModel):
         default=settings.LANGUAGE_CODE,
         help_text=_("Language of the invoices and bills printed for this contact."),
     )
-    notes = models.TextField(_("notes"), blank=True)
+    notes = models.TextField(_("notes"), max_length=2000, blank=True)
     is_active = models.BooleanField(_("active"), default=True)
 
     class Meta:

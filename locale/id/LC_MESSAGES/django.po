@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 13:14+0700\n"
-"PO-Revision-Date: 2026-10-12 13:14\n"
+"POT-Creation-Date: 2026-10-12 19:09+0700\n"
+"PO-Revision-Date: 2026-10-12 19:09\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -34,65 +34,65 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:12 apps/accounts/forms.py:19 templates/accounts/profile.html:6
+#: apps/accounts/forms.py:13 apps/accounts/forms.py:20 templates/accounts/profile.html:6
 #: templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
 
-#: apps/accounts/forms.py:18
+#: apps/accounts/forms.py:19
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: apps/accounts/forms.py:20
+#: apps/accounts/forms.py:22
 msgid "Password"
 msgstr "Kata sandi"
 
-#: apps/accounts/forms.py:21 apps/tenants/forms.py:26
+#: apps/accounts/forms.py:23 apps/tenants/forms.py:35
 msgid "Business name"
 msgstr "Nama usaha"
 
-#: apps/accounts/forms.py:22 apps/tenants/forms.py:27
+#: apps/accounts/forms.py:24 apps/tenants/forms.py:36
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:27
+#: apps/accounts/forms.py:29
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
-#: apps/accounts/models.py:31 apps/contacts/models.py:19 apps/tenants/models.py:47
+#: apps/accounts/models.py:33 apps/contacts/models.py:22 apps/tenants/models.py:56
 msgid "email"
 msgstr "email"
 
-#: apps/accounts/models.py:32
+#: apps/accounts/models.py:34
 msgid "full name"
 msgstr "nama lengkap"
 
-#: apps/accounts/models.py:33
+#: apps/accounts/models.py:35
 msgid "phone number"
 msgstr "no. telepon"
 
-#: apps/accounts/models.py:35
+#: apps/accounts/models.py:37
 msgid "interface language"
 msgstr "bahasa antarmuka"
 
-#: apps/accounts/models.py:37 apps/contacts/models.py:32 apps/invoicing/models.py:39
-#: apps/ledger/models.py:24 apps/taxes/models.py:25
+#: apps/accounts/models.py:39 apps/contacts/models.py:37 apps/invoicing/models.py:43
+#: apps/ledger/models.py:25 apps/taxes/models.py:27
 msgid "active"
 msgstr "aktif"
 
-#: apps/accounts/models.py:38
+#: apps/accounts/models.py:40
 msgid "staff status"
 msgstr "staf admin"
 
-#: apps/accounts/models.py:39
+#: apps/accounts/models.py:41
 msgid "date joined"
 msgstr "bergabung"
 
-#: apps/accounts/models.py:48
+#: apps/accounts/models.py:50
 msgid "user"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:49
+#: apps/accounts/models.py:51
 msgid "users"
 msgstr "pengguna"
 
@@ -117,22 +117,18 @@ msgid "Check status with the payment gateway"
 msgstr "Cek status ke payment gateway"
 
 #: apps/billing/apps.py:7
-#| msgid "Bill"
 msgid "Billing"
 msgstr "Tagihan Langganan"
 
 #: apps/billing/domain.py:25
-#| msgid "Month"
 msgid "Monthly"
 msgstr "Bulanan"
 
 #: apps/billing/domain.py:26
-#| msgid "Year"
 msgid "Yearly"
 msgstr "Tahunan"
 
 #: apps/billing/domain.py:34
-#| msgid "Current plan"
 msgid "Free plan"
 msgstr "Paket gratis"
 
@@ -160,7 +156,7 @@ msgstr "Penyedia pembayaran sedang tidak dapat dihubungi. Silakan coba lagi."
 msgid "The payment provider rejected the request. Please try again later."
 msgstr "Penyedia pembayaran menolak permintaan. Silakan coba lagi nanti."
 
-#: apps/billing/gateways/xendit.py:68
+#: apps/billing/gateways/xendit.py:68 apps/billing/services.py:112
 msgid "The payment provider did not return a payment link."
 msgstr "Penyedia pembayaran tidak mengembalikan tautan pembayaran."
 
@@ -169,11 +165,10 @@ msgid "Unknown payment status from the payment provider."
 msgstr "Status pembayaran dari penyedia pembayaran tidak dikenal."
 
 #: apps/billing/models.py:20
-#| msgid "Tax payment"
 msgid "Awaiting payment"
 msgstr "Menunggu pembayaran"
 
-#: apps/billing/models.py:21 apps/invoicing/models.py:55
+#: apps/billing/models.py:21 apps/invoicing/models.py:59
 msgid "Paid"
 msgstr "Lunas"
 
@@ -182,7 +177,6 @@ msgid "Expired"
 msgstr "Kedaluwarsa"
 
 #: apps/billing/models.py:23
-#| msgid "Cancel"
 msgid "Canceled"
 msgstr "Dibatalkan"
 
@@ -190,16 +184,16 @@ msgstr "Dibatalkan"
 msgid "Failed"
 msgstr "Gagal"
 
-#: apps/billing/models.py:26 apps/invoicing/models.py:61 apps/invoicing/models.py:155
-#: apps/ledger/models.py:68
+#: apps/billing/models.py:26 apps/invoicing/models.py:65 apps/invoicing/models.py:159
+#: apps/ledger/models.py:69
 msgid "number"
 msgstr "nomor"
 
-#: apps/billing/models.py:29 apps/core/models.py:29 apps/tenants/models.py:76
+#: apps/billing/models.py:29 apps/core/models.py:29 apps/tenants/models.py:85
 msgid "organization"
 msgstr "organisasi"
 
-#: apps/billing/models.py:31 apps/tenants/models.py:67
+#: apps/billing/models.py:31 apps/tenants/models.py:76
 msgid "plan"
 msgstr "paket"
 
@@ -208,7 +202,6 @@ msgid "billing period"
 msgstr "periode tagihan"
 
 #: apps/billing/models.py:34
-#| msgid "business name"
 msgid "buyer name"
 msgstr "nama pembeli"
 
@@ -217,21 +210,18 @@ msgid "buyer NPWP"
 msgstr "NPWP pembeli"
 
 #: apps/billing/models.py:36
-#| msgid "address"
 msgid "buyer address"
 msgstr "alamat pembeli"
 
 #: apps/billing/models.py:37
-#| msgid "User email"
 msgid "buyer email"
 msgstr "email pembeli"
 
-#: apps/billing/models.py:39 apps/invoicing/models.py:72
+#: apps/billing/models.py:39 apps/invoicing/models.py:76
 msgid "subtotal"
 msgstr "subtotal"
 
 #: apps/billing/models.py:40
-#| msgid "tax ID (NPWP)"
 msgid "tax base (DPP)"
 msgstr "dasar pengenaan pajak (DPP)"
 
@@ -239,32 +229,28 @@ msgstr "dasar pengenaan pajak (DPP)"
 msgid "PPN"
 msgstr "PPN"
 
-#: apps/billing/models.py:42 apps/invoicing/models.py:74
+#: apps/billing/models.py:42 apps/invoicing/models.py:78
 msgid "total"
 msgstr "total"
 
-#: apps/billing/models.py:44 apps/invoicing/models.py:70 apps/invoicing/models.py:162
-#: apps/ledger/models.py:72
+#: apps/billing/models.py:44 apps/invoicing/models.py:74 apps/invoicing/models.py:166
+#: apps/ledger/models.py:73
 msgid "status"
 msgstr "status"
 
 #: apps/billing/models.py:45
-#| msgid "payment date"
 msgid "payment gateway"
 msgstr "payment gateway"
 
 #: apps/billing/models.py:46
-#| msgid "reference"
 msgid "gateway reference"
 msgstr "referensi gateway"
 
 #: apps/billing/models.py:47
-#| msgid "Tax payment"
 msgid "gateway payment ID"
 msgstr "ID pembayaran gateway"
 
 #: apps/billing/models.py:48
-#| msgid "payment"
 msgid "payment link"
 msgstr "tautan pembayaran"
 
@@ -273,7 +259,6 @@ msgid "payment link expires"
 msgstr "tautan pembayaran berlaku sampai"
 
 #: apps/billing/models.py:50
-#| msgid "Not paid yet"
 msgid "paid at"
 msgstr "dibayar pada"
 
@@ -286,39 +271,36 @@ msgid "covered until"
 msgstr "berlaku sampai"
 
 #: apps/billing/models.py:57
-#| msgid "subscription plan"
 msgid "subscription invoice"
 msgstr "tagihan langganan"
 
 #: apps/billing/models.py:58
-#| msgid "subscription plans"
 msgid "subscription invoices"
 msgstr "tagihan langganan"
 
-#: apps/billing/services.py:69
+#: apps/billing/services.py:71
 msgid "This plan is free and needs no payment."
 msgstr "Paket ini gratis dan tidak perlu dibayar."
 
-#: apps/billing/services.py:94
+#: apps/billing/services.py:96
 #, python-format
 msgid "%(seller)s %(plan)s plan (%(period)s), incl. PPN"
 msgstr "%(seller)s paket %(plan)s (%(period)s), termasuk PPN"
 
-#: apps/billing/services.py:123
+#: apps/billing/services.py:138
 msgid "The paid amount does not match the invoice. Our team will review it."
 msgstr "Jumlah yang dibayar tidak sesuai dengan tagihan. Tim kami akan memeriksanya."
 
-#: apps/billing/services.py:182
-#| msgid "This email is already registered."
+#: apps/billing/services.py:203
 msgid "This invoice is already paid."
 msgstr "Tagihan ini sudah lunas."
 
-#: apps/billing/services.py:243
+#: apps/billing/services.py:264
 #, python-format
 msgid "Your %(plan)s plan for %(organization)s ends on %(date)s"
 msgstr "Paket %(plan)s untuk %(organization)s berakhir pada %(date)s"
 
-#: apps/billing/services.py:245
+#: apps/billing/services.py:266
 #, python-format
 msgid ""
 "Hello,\n"
@@ -335,12 +317,12 @@ msgstr ""
 "\n"
 "Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa tenggang singkat."
 
-#: apps/billing/views.py:91
+#: apps/billing/views.py:97
 #, python-format
 msgid "Payment received. Your %(plan)s plan is active until %(date)s."
 msgstr "Pembayaran diterima. Paket %(plan)s Anda aktif sampai %(date)s."
 
-#: apps/billing/views.py:95
+#: apps/billing/views.py:101
 msgid "We have not received the payment yet. This page updates once it is confirmed."
 msgstr "Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembayaran terkonfirmasi."
 
@@ -349,64 +331,69 @@ msgstr "Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembay
 msgid "Contacts"
 msgstr "Kontak"
 
-#: apps/contacts/models.py:12 apps/invoicing/forms.py:42 apps/invoicing/views.py:24
-msgid "Customer"
-msgstr "Pelanggan"
-
-#: apps/contacts/models.py:13 apps/invoicing/forms.py:45 apps/invoicing/views.py:34
-msgid "Supplier"
-msgstr "Pemasok"
-
-#: apps/contacts/models.py:14
-msgid "Customer & supplier"
-msgstr "Pelanggan & Pemasok"
-
-#: apps/contacts/models.py:16 apps/invoicing/models.py:26 apps/invoicing/models.py:60
-msgid "type"
-msgstr "jenis"
-
-#: apps/contacts/models.py:17 apps/invoicing/models.py:25 apps/taxes/models.py:16
-#: apps/tenants/models.py:14
-msgid "name"
-msgstr "nama"
-
-#: apps/contacts/models.py:18 apps/tenants/models.py:42
+#: apps/contacts/forms.py:12 apps/contacts/models.py:21 apps/tenants/forms.py:15
+#: apps/tenants/models.py:46
 msgid "tax ID (NPWP)"
 msgstr "NPWP"
 
-#: apps/contacts/models.py:20 apps/tenants/models.py:46
+#: apps/contacts/forms.py:13 apps/tenants/forms.py:16
+msgid "15 or 16 digits; dots and dashes are removed."
+msgstr "15 atau 16 digit; titik dan tanda hubung akan dihapus."
+
+#: apps/contacts/models.py:15 apps/invoicing/forms.py:42 apps/invoicing/views.py:25
+msgid "Customer"
+msgstr "Pelanggan"
+
+#: apps/contacts/models.py:16 apps/invoicing/forms.py:45 apps/invoicing/views.py:35
+msgid "Supplier"
+msgstr "Pemasok"
+
+#: apps/contacts/models.py:17
+msgid "Customer & supplier"
+msgstr "Pelanggan & Pemasok"
+
+#: apps/contacts/models.py:19 apps/invoicing/models.py:30 apps/invoicing/models.py:64
+msgid "type"
+msgstr "jenis"
+
+#: apps/contacts/models.py:20 apps/invoicing/models.py:29 apps/taxes/models.py:18
+#: apps/tenants/models.py:17
+msgid "name"
+msgstr "nama"
+
+#: apps/contacts/models.py:23 apps/tenants/models.py:55
 msgid "phone"
 msgstr "telepon"
 
-#: apps/contacts/models.py:21 apps/tenants/models.py:44
+#: apps/contacts/models.py:24 apps/tenants/models.py:53
 msgid "address"
 msgstr "alamat"
 
-#: apps/contacts/models.py:22 apps/tenants/models.py:45
+#: apps/contacts/models.py:25 apps/tenants/models.py:54
 msgid "city/regency"
 msgstr "kota/kabupaten"
 
-#: apps/contacts/models.py:23
+#: apps/contacts/models.py:27
 msgid "payment terms (days)"
 msgstr "termin pembayaran (hari)"
 
-#: apps/contacts/models.py:25
+#: apps/contacts/models.py:30
 msgid "document language"
 msgstr "bahasa dokumen"
 
-#: apps/contacts/models.py:29
+#: apps/contacts/models.py:34
 msgid "Language of the invoices and bills printed for this contact."
 msgstr "Bahasa faktur dan tagihan yang dicetak untuk kontak ini."
 
-#: apps/contacts/models.py:31 apps/invoicing/models.py:69
+#: apps/contacts/models.py:36 apps/invoicing/models.py:73
 msgid "notes"
 msgstr "catatan"
 
-#: apps/contacts/models.py:36 apps/invoicing/models.py:62
+#: apps/contacts/models.py:41 apps/invoicing/models.py:66
 msgid "contact"
 msgstr "kontak"
 
-#: apps/contacts/models.py:37
+#: apps/contacts/models.py:42
 msgid "contacts"
 msgstr "kontak"
 
@@ -414,21 +401,26 @@ msgstr "kontak"
 msgid "This contact is used in transactions; deactivate it instead."
 msgstr "Kontak sudah dipakai pada transaksi; nonaktifkan saja."
 
-#: apps/contacts/validators.py:23
+#: apps/contacts/validators.py:22 apps/contacts/validators.py:28
 msgid "NPWP must have 15 or 16 digits."
 msgstr "NPWP harus terdiri dari 15 atau 16 digit."
 
-#: apps/contacts/views.py:39
+#: apps/contacts/views.py:43
 msgid "Contact saved."
 msgstr "Kontak disimpan."
 
-#: apps/contacts/views.py:61
+#: apps/contacts/views.py:65
 msgid "Contact deleted."
 msgstr "Kontak dihapus."
 
 #: apps/core/apps.py:7
 msgid "Core"
 msgstr "Inti"
+
+#: apps/core/forms.py:84
+#, python-format
+msgid "Enter a date between %(start)s and %(end)s."
+msgstr "Masukkan tanggal antara %(start)s dan %(end)s."
 
 #: apps/core/models.py:6
 msgid "created"
@@ -437,6 +429,33 @@ msgstr "dibuat"
 #: apps/core/models.py:7
 msgid "updated"
 msgstr "diperbarui"
+
+#: apps/core/validators.py:16
+msgid "Enter a valid phone number (digits, spaces, +, -, parentheses)."
+msgstr "Masukkan nomor telepon yang valid (angka, spasi, +, -, tanda kurung)."
+
+#: apps/core/validators.py:20
+msgid "Use letters, digits, '.', '-', '_' or '/' only, starting with a letter or digit."
+msgstr "Gunakan huruf, angka, '.', '-', '_' atau '/' saja, diawali huruf atau angka."
+
+#: apps/core/validators.py:22
+#| msgid "NPWP must have 15 or 16 digits."
+msgid "NIB must be exactly 13 digits."
+msgstr "NIB harus tepat 13 digit."
+
+#: apps/core/validators.py:23
+#| msgid "NPWP must have 15 or 16 digits."
+msgid "NTPN must be 16 letters or digits."
+msgstr "NTPN harus terdiri dari 16 huruf atau angka."
+
+#: apps/core/validators.py:25
+msgid "A tax invoice number contains only digits, '.' and '-'."
+msgstr "Nomor faktur pajak hanya berisi angka, '.' dan '-'."
+
+#: apps/core/validators.py:41
+#, python-format
+msgid "The date %(date)s is outside the allowed range (%(start)s to %(end)s)."
+msgstr "Tanggal %(date)s di luar rentang yang diizinkan (%(start)s s.d. %(end)s)."
 
 #: apps/dashboard/apps.py:7 templates/dashboard/home.html:2 templates/dashboard/home.html:5
 #: templates/partials/sidebar.html:28
@@ -488,7 +507,7 @@ msgstr "> 90 hari"
 msgid "Due date"
 msgstr "Jatuh tempo"
 
-#: apps/invoicing/forms.py:29
+#: apps/invoicing/forms.py:28
 msgid "Leave empty to use the contact's payment terms."
 msgstr "Kosongkan untuk memakai termin pembayaran kontak."
 
@@ -523,230 +542,230 @@ msgstr "Harga"
 msgid "Disc. %"
 msgstr "Disc %"
 
-#: apps/invoicing/forms.py:59 apps/ledger/models.py:65 templates/invoicing/_invoice_body.html:17
+#: apps/invoicing/forms.py:59 apps/ledger/models.py:66 templates/invoicing/_invoice_body.html:17
 #: templates/invoicing/invoice_form.html:13 templates/invoicing/item_list.html:10
 msgid "Tax"
 msgstr "Pajak"
 
-#: apps/invoicing/forms.py:102
+#: apps/invoicing/forms.py:106
 msgid "Void date"
 msgstr "Tanggal pembatalan"
 
-#: apps/invoicing/models.py:13 templates/partials/sidebar.html:30
+#: apps/invoicing/models.py:17 templates/partials/sidebar.html:30
 msgid "Sales"
 msgstr "Penjualan"
 
-#: apps/invoicing/models.py:14
+#: apps/invoicing/models.py:18
 msgid "Purchase"
 msgstr "Pembelian"
 
-#: apps/invoicing/models.py:21
+#: apps/invoicing/models.py:25
 msgid "Goods"
 msgstr "Barang"
 
-#: apps/invoicing/models.py:22
+#: apps/invoicing/models.py:26
 msgid "Service"
 msgstr "Jasa"
 
-#: apps/invoicing/models.py:24
+#: apps/invoicing/models.py:28
 msgid "code/SKU"
 msgstr "kode/SKU"
 
-#: apps/invoicing/models.py:27
+#: apps/invoicing/models.py:31
 msgid "unit"
 msgstr "satuan"
 
-#: apps/invoicing/models.py:28
+#: apps/invoicing/models.py:32
 msgid "sale price"
 msgstr "harga jual"
 
-#: apps/invoicing/models.py:29
+#: apps/invoicing/models.py:33
 msgid "purchase price"
 msgstr "harga beli"
 
-#: apps/invoicing/models.py:31
+#: apps/invoicing/models.py:35
 msgid "revenue account"
 msgstr "akun pendapatan"
 
-#: apps/invoicing/models.py:34
+#: apps/invoicing/models.py:38
 msgid "purchase/expense account"
 msgstr "akun pembelian/beban"
 
-#: apps/invoicing/models.py:37
+#: apps/invoicing/models.py:41
 msgid "default tax"
 msgstr "pajak default"
 
-#: apps/invoicing/models.py:43 apps/invoicing/models.py:124
+#: apps/invoicing/models.py:47 apps/invoicing/models.py:128
 msgid "item"
 msgstr "barang/jasa"
 
-#: apps/invoicing/models.py:44
+#: apps/invoicing/models.py:48
 msgid "items"
 msgstr "barang/jasa"
 
-#: apps/invoicing/models.py:52 apps/ledger/models.py:57
+#: apps/invoicing/models.py:56 apps/ledger/models.py:58
 msgid "Draft"
 msgstr "Draf"
 
-#: apps/invoicing/models.py:53
+#: apps/invoicing/models.py:57
 msgid "Unpaid"
 msgstr "Belum Dibayar"
 
-#: apps/invoicing/models.py:54
+#: apps/invoicing/models.py:58
 msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
-#: apps/invoicing/models.py:56 apps/invoicing/models.py:153
+#: apps/invoicing/models.py:60 apps/invoicing/models.py:157
 msgid "Void"
 msgstr "Dibatalkan"
 
-#: apps/invoicing/models.py:63 apps/invoicing/models.py:157 apps/ledger/models.py:69
+#: apps/invoicing/models.py:67 apps/invoicing/models.py:161 apps/ledger/models.py:70
 msgid "date"
 msgstr "tanggal"
 
-#: apps/invoicing/models.py:64
+#: apps/invoicing/models.py:68
 msgid "due date"
 msgstr "jatuh tempo"
 
-#: apps/invoicing/models.py:65
+#: apps/invoicing/models.py:69
 msgid "reference no."
 msgstr "no. referensi"
 
-#: apps/invoicing/models.py:65
+#: apps/invoicing/models.py:69
 msgid "PO number or supplier invoice number."
 msgstr "No. PO / no. faktur pemasok."
 
-#: apps/invoicing/models.py:67
+#: apps/invoicing/models.py:71
 msgid "tax invoice no."
 msgstr "no. faktur pajak"
 
-#: apps/invoicing/models.py:67
+#: apps/invoicing/models.py:71
 msgid "Faktur Pajak serial number (e-Faktur/Coretax)."
 msgstr "Nomor seri Faktur Pajak (e-Faktur/Coretax)."
 
-#: apps/invoicing/models.py:73
+#: apps/invoicing/models.py:77
 msgid "PPN (VAT)"
 msgstr "PPN"
 
-#: apps/invoicing/models.py:75
+#: apps/invoicing/models.py:79
 msgid "amount paid"
 msgstr "telah dibayar"
 
-#: apps/invoicing/models.py:85 apps/invoicing/models.py:156
+#: apps/invoicing/models.py:89 apps/invoicing/models.py:160
 msgid "invoice"
 msgstr "faktur"
 
-#: apps/invoicing/models.py:86
+#: apps/invoicing/models.py:90
 msgid "invoices"
 msgstr "faktur"
 
-#: apps/invoicing/models.py:99
+#: apps/invoicing/models.py:103
 #, python-format
 msgid "DRAFT-%(id)s"
 msgstr "DRAF-%(id)s"
 
-#: apps/invoicing/models.py:125
+#: apps/invoicing/models.py:129
 msgid "item description"
 msgstr "deskripsi"
 
-#: apps/invoicing/models.py:126 apps/ledger/models.py:28 apps/ledger/models.py:110
+#: apps/invoicing/models.py:130 apps/ledger/models.py:29 apps/ledger/models.py:111
 msgid "account"
 msgstr "akun"
 
-#: apps/invoicing/models.py:127
+#: apps/invoicing/models.py:131
 msgid "quantity"
 msgstr "kuantitas"
 
-#: apps/invoicing/models.py:128
+#: apps/invoicing/models.py:132
 msgid "unit price"
 msgstr "harga satuan"
 
-#: apps/invoicing/models.py:129
+#: apps/invoicing/models.py:133
 msgid "discount (%)"
 msgstr "diskon (%)"
 
-#: apps/invoicing/models.py:130
+#: apps/invoicing/models.py:134
 msgid "tax"
 msgstr "pajak"
 
-#: apps/invoicing/models.py:131 apps/invoicing/models.py:158
+#: apps/invoicing/models.py:135 apps/invoicing/models.py:162
 msgid "amount"
 msgstr "jumlah"
 
-#: apps/invoicing/models.py:145
+#: apps/invoicing/models.py:149
 msgid "Cash"
 msgstr "Tunai"
 
-#: apps/invoicing/models.py:146
+#: apps/invoicing/models.py:150
 msgid "Bank transfer"
 msgstr "Transfer Bank"
 
-#: apps/invoicing/models.py:147
+#: apps/invoicing/models.py:151
 msgid "QRIS"
 msgstr "QRIS"
 
-#: apps/invoicing/models.py:148
+#: apps/invoicing/models.py:152
 msgid "E-wallet"
 msgstr "E-Wallet"
 
-#: apps/invoicing/models.py:149
+#: apps/invoicing/models.py:153
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:152
+#: apps/invoicing/models.py:156
 msgid "Recorded"
 msgstr "Tercatat"
 
-#: apps/invoicing/models.py:159
+#: apps/invoicing/models.py:163
 msgid "cash/bank account"
 msgstr "akun kas/bank"
 
-#: apps/invoicing/models.py:160
+#: apps/invoicing/models.py:164
 msgid "method"
 msgstr "metode"
 
-#: apps/invoicing/models.py:161 apps/ledger/models.py:71
+#: apps/invoicing/models.py:165 apps/ledger/models.py:72
 msgid "reference"
 msgstr "referensi"
 
-#: apps/invoicing/models.py:168
+#: apps/invoicing/models.py:172
 msgid "payment"
 msgstr "pembayaran"
 
-#: apps/invoicing/models.py:169
+#: apps/invoicing/models.py:173
 msgid "payments"
 msgstr "pembayaran"
 
-#: apps/invoicing/services.py:65
+#: apps/invoicing/services.py:68
 msgid "Contact not found."
 msgstr "Kontak tidak ditemukan."
 
-#: apps/invoicing/services.py:67
+#: apps/invoicing/services.py:70
 msgid "This contact is not a customer."
 msgstr "Kontak bukan pelanggan."
 
-#: apps/invoicing/services.py:69
+#: apps/invoicing/services.py:72
 msgid "This contact is not a supplier."
 msgstr "Kontak bukan pemasok."
 
-#: apps/invoicing/services.py:71
+#: apps/invoicing/services.py:74
 msgid "The due date cannot be before the invoice date."
 msgstr "Tanggal jatuh tempo tidak boleh sebelum tanggal faktur."
 
-#: apps/invoicing/services.py:77
+#: apps/invoicing/services.py:80
 msgid "Invoice line data is not valid for this organization."
 msgstr "Data baris faktur tidak valid untuk organisasi ini."
 
-#: apps/invoicing/services.py:79 apps/ledger/services.py:125
+#: apps/invoicing/services.py:82 apps/ledger/services.py:127
 #, python-format
 msgid "Account %(account)s is inactive."
 msgstr "Akun %(account)s tidak aktif."
 
-#: apps/invoicing/services.py:81
+#: apps/invoicing/services.py:84
 msgid "Only a VAT-registered business (PKP) can charge PPN. Change the PKP status in the settings."
 msgstr "Hanya Pengusaha Kena Pajak (PKP) yang dapat memungut PPN. Ubah status PKP di pengaturan."
 
-#: apps/invoicing/services.py:90
+#: apps/invoicing/services.py:93
 #, python-format
 msgid ""
 "The %(plan)s plan's limit of %(limit)s invoice per month has been reached. Please upgrade your "
@@ -757,142 +776,142 @@ msgid_plural ""
 msgstr[0] ""
 "Batas %(limit)s faktur per bulan untuk paket %(plan)s telah tercapai. Tingkatkan paket Anda."
 
-#: apps/invoicing/services.py:163
+#: apps/invoicing/services.py:166
 msgid "Only draft invoices can be changed or deleted."
 msgstr "Hanya faktur berstatus draf yang dapat diubah atau dihapus."
 
-#: apps/invoicing/services.py:251
+#: apps/invoicing/services.py:254
 msgid "The invoice total must be greater than zero."
 msgstr "Total faktur harus lebih dari nol."
 
-#: apps/invoicing/services.py:276
+#: apps/invoicing/services.py:279
 msgid "Void all payments on this invoice first."
 msgstr "Batalkan seluruh pembayaran faktur ini terlebih dahulu."
 
-#: apps/invoicing/services.py:278
+#: apps/invoicing/services.py:281
 msgid "Only issued invoices can be voided."
 msgstr "Hanya faktur yang sudah diterbitkan yang dapat dibatalkan."
 
-#: apps/invoicing/services.py:304
+#: apps/invoicing/services.py:307
 msgid "This invoice is not awaiting payment."
 msgstr "Faktur tidak dalam status menunggu pembayaran."
 
-#: apps/invoicing/services.py:306
+#: apps/invoicing/services.py:309
 msgid "The payment amount must be greater than zero."
 msgstr "Jumlah pembayaran harus lebih dari nol."
 
-#: apps/invoicing/services.py:309
+#: apps/invoicing/services.py:312
 #, python-format
 msgid "The payment amount exceeds the balance due (%(balance)s)."
 msgstr "Jumlah pembayaran melebihi sisa tagihan (%(balance)s)."
 
-#: apps/invoicing/services.py:312
+#: apps/invoicing/services.py:315
 msgid "The payment date cannot be before the invoice date."
 msgstr "Tanggal pembayaran tidak boleh sebelum tanggal faktur."
 
-#: apps/invoicing/services.py:314 apps/taxes/services.py:37
+#: apps/invoicing/services.py:317 apps/taxes/services.py:37
 msgid "Choose a valid cash or bank account."
 msgstr "Pilih akun kas/bank yang valid."
 
-#: apps/invoicing/services.py:346
+#: apps/invoicing/services.py:349
 msgid "The payment is already voided."
 msgstr "Pembayaran sudah dibatalkan."
 
-#: apps/invoicing/views.py:22 apps/ledger/models.py:62 templates/dashboard/home.html:7
+#: apps/invoicing/views.py:23 apps/ledger/models.py:63 templates/dashboard/home.html:7
 msgid "Sales invoice"
 msgstr "Faktur Penjualan"
 
-#: apps/invoicing/views.py:23 templates/contacts/contact_list.html:21
+#: apps/invoicing/views.py:24 templates/contacts/contact_list.html:21
 msgid "Sales invoices"
 msgstr "Faktur Penjualan"
 
-#: apps/invoicing/views.py:25
+#: apps/invoicing/views.py:26
 msgid "New sales invoice"
 msgstr "Faktur Penjualan Baru"
 
-#: apps/invoicing/views.py:26
+#: apps/invoicing/views.py:27
 msgid "Edit draft sales invoice"
 msgstr "Ubah Draf Faktur Penjualan"
 
-#: apps/invoicing/views.py:27
+#: apps/invoicing/views.py:28
 msgid "New sale"
 msgstr "Buat Penjualan"
 
-#: apps/invoicing/views.py:28
+#: apps/invoicing/views.py:29
 msgid "Unpaid receivables"
 msgstr "Piutang belum dibayar"
 
-#: apps/invoicing/views.py:29
+#: apps/invoicing/views.py:30
 msgid "View receivables aging report"
 msgstr "Lihat laporan umur piutang"
 
-#: apps/invoicing/views.py:32 apps/ledger/models.py:63
+#: apps/invoicing/views.py:33 apps/ledger/models.py:64
 msgid "Purchase bill"
 msgstr "Tagihan Pembelian"
 
-#: apps/invoicing/views.py:33 templates/contacts/contact_list.html:22
+#: apps/invoicing/views.py:34 templates/contacts/contact_list.html:22
 msgid "Purchase bills"
 msgstr "Tagihan Pembelian"
 
-#: apps/invoicing/views.py:35
+#: apps/invoicing/views.py:36
 msgid "New purchase bill"
 msgstr "Tagihan Pembelian Baru"
 
-#: apps/invoicing/views.py:36
+#: apps/invoicing/views.py:37
 msgid "Edit draft purchase bill"
 msgstr "Ubah Draf Tagihan Pembelian"
 
-#: apps/invoicing/views.py:37
+#: apps/invoicing/views.py:38
 msgid "New purchase"
 msgstr "Buat Pembelian"
 
-#: apps/invoicing/views.py:38
+#: apps/invoicing/views.py:39
 msgid "Unpaid payables"
 msgstr "Utang belum dibayar"
 
-#: apps/invoicing/views.py:39
+#: apps/invoicing/views.py:40
 msgid "View payables aging report"
 msgstr "Lihat laporan umur utang"
 
-#: apps/invoicing/views.py:128
+#: apps/invoicing/views.py:133
 #, python-format
 msgid "%(document)s %(number)s issued."
 msgstr "%(document)s %(number)s diterbitkan."
 
-#: apps/invoicing/views.py:131
+#: apps/invoicing/views.py:136
 msgid "Draft saved."
 msgstr "Draf disimpan."
 
-#: apps/invoicing/views.py:202
+#: apps/invoicing/views.py:207
 #, python-format
 msgid "Invoice %(number)s issued and posted to the ledger."
 msgstr "Faktur %(number)s diterbitkan dan dijurnal."
 
-#: apps/invoicing/views.py:211
+#: apps/invoicing/views.py:216
 #, python-format
 msgid "Invoice %(number)s voided; its journal entry was reversed."
 msgstr "Faktur %(number)s dibatalkan; jurnal telah dibalik."
 
-#: apps/invoicing/views.py:218
+#: apps/invoicing/views.py:223
 msgid "Draft deleted."
 msgstr "Draf dihapus."
 
-#: apps/invoicing/views.py:227
+#: apps/invoicing/views.py:232
 #, python-format
 msgid "Invalid payment data: %(errors)s"
 msgstr "Data pembayaran tidak valid: %(errors)s"
 
-#: apps/invoicing/views.py:229
+#: apps/invoicing/views.py:234
 #, python-format
 msgid "Payment %(number)s recorded."
 msgstr "Pembayaran %(number)s dicatat."
 
-#: apps/invoicing/views.py:252
+#: apps/invoicing/views.py:260
 #, python-format
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:279
+#: apps/invoicing/views.py:287
 msgid "Item saved."
 msgstr "Barang/jasa disimpan."
 
@@ -1048,175 +1067,175 @@ msgstr "Periode sampai %(date)s sudah dikunci. Gunakan tanggal setelahnya."
 msgid "Description"
 msgstr "Keterangan"
 
-#: apps/ledger/forms.py:53
+#: apps/ledger/forms.py:57
 msgid "Reversal date"
 msgstr "Tanggal pembalikan"
 
-#: apps/ledger/models.py:14 apps/tenants/models.py:13
+#: apps/ledger/models.py:15 apps/tenants/models.py:16
 msgid "code"
 msgstr "kode"
 
-#: apps/ledger/models.py:15
+#: apps/ledger/models.py:16
 msgid "account name"
 msgstr "nama akun"
 
-#: apps/ledger/models.py:16
+#: apps/ledger/models.py:17
 msgid "category"
 msgstr "kategori"
 
-#: apps/ledger/models.py:18
+#: apps/ledger/models.py:19
 msgid "contra account"
 msgstr "akun kontra"
 
-#: apps/ledger/models.py:18
+#: apps/ledger/models.py:19
 msgid "E.g. accumulated depreciation, owner's drawings, sales returns."
 msgstr "Mis. Akumulasi Penyusutan, Prive, Retur Penjualan."
 
-#: apps/ledger/models.py:21
+#: apps/ledger/models.py:22
 msgid "system role"
 msgstr "peran sistem"
 
-#: apps/ledger/models.py:23 apps/ledger/models.py:70 apps/ledger/models.py:111
+#: apps/ledger/models.py:24 apps/ledger/models.py:71 apps/ledger/models.py:112
 msgid "description"
 msgstr "keterangan"
 
-#: apps/ledger/models.py:29
+#: apps/ledger/models.py:30
 msgid "chart of accounts"
 msgstr "bagan akun"
 
-#: apps/ledger/models.py:58
+#: apps/ledger/models.py:59
 msgid "Posted"
 msgstr "Diposting"
 
-#: apps/ledger/models.py:61 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:33
+#: apps/ledger/models.py:62 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:33
 msgid "General journal"
 msgstr "Jurnal Umum"
 
-#: apps/ledger/models.py:64
+#: apps/ledger/models.py:65
 msgid "Payment"
 msgstr "Pembayaran"
 
-#: apps/ledger/models.py:66
+#: apps/ledger/models.py:67
 msgid "Reversal"
 msgstr "Pembalikan"
 
-#: apps/ledger/models.py:73
+#: apps/ledger/models.py:74
 msgid "source"
 msgstr "sumber"
 
-#: apps/ledger/models.py:76
+#: apps/ledger/models.py:77
 msgid "reverses entry"
 msgstr "membalik jurnal"
 
-#: apps/ledger/models.py:78
+#: apps/ledger/models.py:79
 msgid "posted at"
 msgstr "waktu posting"
 
-#: apps/ledger/models.py:85
+#: apps/ledger/models.py:86
 msgid "journal entry"
 msgstr "jurnal"
 
-#: apps/ledger/models.py:86
+#: apps/ledger/models.py:87
 msgid "journal entries"
 msgstr "jurnal"
 
-#: apps/ledger/models.py:112
+#: apps/ledger/models.py:113
 msgid "debit"
 msgstr "debit"
 
-#: apps/ledger/models.py:113
+#: apps/ledger/models.py:114
 msgid "credit"
 msgstr "kredit"
 
-#: apps/ledger/services.py:68
+#: apps/ledger/services.py:69
 #, python-format
 msgid "The system account '%(role)s' is not set in the chart of accounts."
 msgstr "Akun sistem '%(role)s' belum ditetapkan di bagan akun."
 
-#: apps/ledger/services.py:80
+#: apps/ledger/services.py:81
 #, python-format
 msgid "Account code %(code)s is already in use."
 msgstr "Kode akun %(code)s sudah digunakan."
 
-#: apps/ledger/services.py:91
+#: apps/ledger/services.py:92
 msgid "The category of an account with transactions cannot be changed."
 msgstr "Kategori akun yang sudah memiliki transaksi tidak dapat diubah."
 
-#: apps/ledger/services.py:93
+#: apps/ledger/services.py:94
 msgid "System accounts cannot be deactivated."
 msgstr "Akun sistem tidak dapat dinonaktifkan."
 
-#: apps/ledger/services.py:100
+#: apps/ledger/services.py:101
 msgid "This account code is already in use."
 msgstr "Kode akun sudah digunakan."
 
-#: apps/ledger/services.py:110
+#: apps/ledger/services.py:111
 msgid "System accounts cannot be deleted."
 msgstr "Akun sistem tidak dapat dihapus."
 
-#: apps/ledger/services.py:112
+#: apps/ledger/services.py:113
 msgid "Accounts with transactions cannot be deleted; deactivate them instead."
 msgstr "Akun yang sudah memiliki transaksi tidak dapat dihapus; nonaktifkan saja."
 
-#: apps/ledger/services.py:123
+#: apps/ledger/services.py:125
 msgid "Account not found in this organization."
 msgstr "Akun tidak ditemukan pada organisasi ini."
 
-#: apps/ledger/services.py:175
+#: apps/ledger/services.py:177
 msgid "Only draft journal entries can be changed."
 msgstr "Hanya jurnal berstatus draf yang dapat diubah."
 
-#: apps/ledger/services.py:177
+#: apps/ledger/services.py:179
 msgid "Automatic journal entries can only be changed through their source document."
 msgstr "Jurnal otomatis hanya dapat diubah melalui dokumen sumbernya."
 
-#: apps/ledger/services.py:197
+#: apps/ledger/services.py:199
 msgid "The journal entry is already posted."
 msgstr "Jurnal sudah diposting."
 
-#: apps/ledger/services.py:217
+#: apps/ledger/services.py:219
 msgid "Only posted journal entries can be reversed."
 msgstr "Hanya jurnal yang sudah diposting yang dapat dibalik."
 
-#: apps/ledger/services.py:219
+#: apps/ledger/services.py:221
 msgid "This journal entry has already been reversed."
 msgstr "Jurnal ini sudah pernah dibalik."
 
-#: apps/ledger/services.py:221
+#: apps/ledger/services.py:223
 msgid "A reversing entry cannot itself be reversed."
 msgstr "Jurnal pembalik tidak dapat dibalik lagi."
 
-#: apps/ledger/services.py:242
+#: apps/ledger/services.py:244
 msgid "Automatic journal entries are cancelled through their source document (invoice or payment)."
 msgstr "Jurnal otomatis dibatalkan melalui dokumen sumbernya (faktur/pembayaran)."
 
-#: apps/ledger/views.py:51
+#: apps/ledger/views.py:52
 msgid "Account saved."
 msgstr "Akun disimpan."
 
-#: apps/ledger/views.py:76
+#: apps/ledger/views.py:77
 msgid "Account deleted."
 msgstr "Akun dihapus."
 
-#: apps/ledger/views.py:148
+#: apps/ledger/views.py:149
 #, python-format
 msgid "Journal entry %(number)s saved."
 msgstr "Jurnal %(number)s disimpan."
 
-#: apps/ledger/views.py:192
+#: apps/ledger/views.py:193
 #, python-format
 msgid "Journal entry %(number)s posted."
 msgstr "Jurnal %(number)s diposting."
 
-#: apps/ledger/views.py:199
+#: apps/ledger/views.py:200
 msgid "Draft journal entry deleted."
 msgstr "Draf jurnal dihapus."
 
-#: apps/ledger/views.py:207
+#: apps/ledger/views.py:208
 msgid "Invalid reversal date."
 msgstr "Tanggal pembalikan tidak valid."
 
-#: apps/ledger/views.py:211
+#: apps/ledger/views.py:212
 #, python-format
 msgid "Journal entry reversed by %(number)s."
 msgstr "Jurnal dibalik dengan %(number)s."
@@ -1321,11 +1340,11 @@ msgstr "TOTAL"
 msgid "Total %(section)s"
 msgstr "Total %(section)s"
 
-#: apps/reports/views.py:104
+#: apps/reports/views.py:105
 msgid "Receivables aging"
 msgstr "Umur Piutang"
 
-#: apps/reports/views.py:104
+#: apps/reports/views.py:105
 msgid "Payables aging"
 msgstr "Umur Utang"
 
@@ -1333,83 +1352,84 @@ msgstr "Umur Utang"
 msgid "Taxes"
 msgstr "Perpajakan"
 
-#: apps/taxes/forms.py:19
-msgid "The DPP denominator cannot be zero."
-msgstr "Penyebut DPP tidak boleh nol."
-
-#: apps/taxes/forms.py:25
+#: apps/taxes/forms.py:20
 msgid "Payment date"
 msgstr "Tanggal setor"
 
-#: apps/taxes/forms.py:26
+#: apps/taxes/forms.py:21
 msgid "Paid from"
 msgstr "Dibayar dari"
 
-#: apps/taxes/forms.py:27 apps/taxes/models.py:52
+#: apps/taxes/forms.py:22 apps/taxes/models.py:58
 msgid "NTPN"
 msgstr "NTPN"
 
-#: apps/taxes/models.py:18
+#: apps/taxes/models.py:20
 msgid "rate (%)"
 msgstr "tarif (%)"
 
-#: apps/taxes/models.py:21
+#: apps/taxes/models.py:23
 msgid "DPP numerator"
 msgstr "pembilang DPP"
 
-#: apps/taxes/models.py:23
+#: apps/taxes/models.py:25
 msgid "DPP denominator"
 msgstr "penyebut DPP"
 
-#: apps/taxes/models.py:23
+#: apps/taxes/models.py:25
 msgid "Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since 2025."
 msgstr "DPP nilai lain, mis. 11/12 untuk barang non-mewah sejak 2025."
 
-#: apps/taxes/models.py:29
+#: apps/taxes/models.py:31
 msgid "tax rate"
 msgstr "tarif pajak"
 
-#: apps/taxes/models.py:30
+#: apps/taxes/models.py:32
 msgid "tax rates"
 msgstr "tarif pajak"
 
-#: apps/taxes/models.py:46
+#: apps/taxes/models.py:39
+#| msgid "The DPP denominator cannot be zero."
+msgid "The DPP numerator cannot be larger than the denominator."
+msgstr "Pembilang DPP tidak boleh lebih besar dari penyebutnya."
+
+#: apps/taxes/models.py:52
 msgid "year"
 msgstr "tahun"
 
-#: apps/taxes/models.py:47
+#: apps/taxes/models.py:53
 msgid "month"
 msgstr "bulan"
 
-#: apps/taxes/models.py:48
+#: apps/taxes/models.py:54
 msgid "gross turnover"
 msgstr "peredaran bruto"
 
-#: apps/taxes/models.py:49
+#: apps/taxes/models.py:55
 msgid "taxable gross turnover"
 msgstr "peredaran bruto kena pajak"
 
-#: apps/taxes/models.py:50
+#: apps/taxes/models.py:56
 msgid "tax due"
 msgstr "PPh terutang"
 
-#: apps/taxes/models.py:51
+#: apps/taxes/models.py:57
 msgid "payment date"
 msgstr "tanggal setor"
 
-#: apps/taxes/models.py:52
+#: apps/taxes/models.py:58
 msgid "State revenue transaction number (Nomor Transaksi Penerimaan Negara)."
 msgstr "Nomor Transaksi Penerimaan Negara."
 
-#: apps/taxes/models.py:53
+#: apps/taxes/models.py:59
 msgid "paid from"
 msgstr "dibayar dari"
 
-#: apps/taxes/models.py:59
+#: apps/taxes/models.py:65
 msgid "PPh Final payment"
 msgstr "setoran PPh Final"
 
-#: apps/taxes/models.py:60
+#: apps/taxes/models.py:66
 msgid "PPh Final payments"
 msgstr "setoran PPh Final"
 
@@ -1426,19 +1446,19 @@ msgstr "PPh Final masa %(period)s sudah dicatat."
 msgid "No PPh Final is due for this period."
 msgstr "Tidak ada PPh Final terutang untuk masa ini."
 
-#: apps/taxes/views.py:37
+#: apps/taxes/views.py:38
 msgid "Tax rate saved."
 msgstr "Tarif pajak disimpan."
 
-#: apps/taxes/views.py:83
+#: apps/taxes/views.py:81
 msgid "The payment details are incomplete."
 msgstr "Data setoran tidak lengkap."
 
-#: apps/taxes/views.py:89
+#: apps/taxes/views.py:87
 msgid "PPh Final payment recorded and posted to the ledger."
 msgstr "Setoran PPh Final dicatat dan dijurnal."
 
-#: apps/taxes/views.py:101
+#: apps/taxes/views.py:99
 msgid "PPh Final payment cancelled (journal entry reversed)."
 msgstr "Setoran PPh Final dibatalkan (jurnal dibalik)."
 
@@ -1446,11 +1466,20 @@ msgstr "Setoran PPh Final dibatalkan (jurnal dibalik)."
 msgid "Organizations"
 msgstr "Organisasi"
 
-#: apps/tenants/forms.py:31
+#: apps/tenants/forms.py:17 apps/tenants/models.py:50
+msgid "business ID (NIB)"
+msgstr "NIB"
+
+#: apps/tenants/forms.py:30
+#| msgid "The due date cannot be before the invoice date."
+msgid "The lock date cannot be in the future."
+msgstr "Tanggal kunci tidak boleh di masa depan."
+
+#: apps/tenants/forms.py:40
 msgid "User email"
 msgstr "Email pengguna"
 
-#: apps/tenants/forms.py:33 templates/tenants/members.html:8
+#: apps/tenants/forms.py:42 templates/tenants/members.html:8
 msgid "Role"
 msgstr "Peran"
 
@@ -1458,129 +1487,124 @@ msgstr "Peran"
 msgid "Your role does not have access to this page."
 msgstr "Peran Anda tidak memiliki akses ke halaman ini."
 
-#: apps/tenants/models.py:15
+#: apps/tenants/models.py:18
 msgid "monthly price"
 msgstr "harga per bulan"
 
-#: apps/tenants/models.py:15 apps/tenants/models.py:16
+#: apps/tenants/models.py:18 apps/tenants/models.py:19
 msgid "Excluding PPN."
 msgstr "Belum termasuk PPN."
 
-#: apps/tenants/models.py:16
-#| msgid "sale price"
+#: apps/tenants/models.py:19
 msgid "yearly price"
 msgstr "harga per tahun"
 
-#: apps/tenants/models.py:17
+#: apps/tenants/models.py:20
 msgid "max. users"
 msgstr "maks. pengguna"
 
-#: apps/tenants/models.py:18
+#: apps/tenants/models.py:21
 msgid "max. invoices per month"
 msgstr "maks. faktur/bulan"
 
-#: apps/tenants/models.py:19
+#: apps/tenants/models.py:22
 msgid "default plan"
 msgstr "paket default"
 
-#: apps/tenants/models.py:24
+#: apps/tenants/models.py:27
 msgid "subscription plan"
 msgstr "paket langganan"
 
-#: apps/tenants/models.py:25
+#: apps/tenants/models.py:28
 msgid "subscription plans"
 msgstr "paket langganan"
 
-#: apps/tenants/models.py:33
+#: apps/tenants/models.py:36
 msgid "Sole proprietorship / UD"
 msgstr "Usaha Perorangan / UD"
 
-#: apps/tenants/models.py:34
+#: apps/tenants/models.py:37
 msgid "Individual limited company (PT Perorangan)"
 msgstr "PT Perorangan"
 
-#: apps/tenants/models.py:35
+#: apps/tenants/models.py:38
 msgid "CV (limited partnership)"
 msgstr "CV (Persekutuan Komanditer)"
 
-#: apps/tenants/models.py:36
+#: apps/tenants/models.py:39
 msgid "General partnership (Firma)"
 msgstr "Firma"
 
-#: apps/tenants/models.py:37
+#: apps/tenants/models.py:40
 msgid "Cooperative (Koperasi)"
 msgstr "Koperasi"
 
-#: apps/tenants/models.py:38
+#: apps/tenants/models.py:41
 msgid "PT (limited liability company)"
 msgstr "PT (Perseroan Terbatas)"
 
-#: apps/tenants/models.py:40
+#: apps/tenants/models.py:43
 msgid "business name"
 msgstr "nama usaha"
 
-#: apps/tenants/models.py:41
+#: apps/tenants/models.py:44
 msgid "legal form"
 msgstr "bentuk usaha"
 
-#: apps/tenants/models.py:42
+#: apps/tenants/models.py:47
 msgid "15 or 16 digits without punctuation."
 msgstr "15 atau 16 digit tanpa tanda baca."
 
-#: apps/tenants/models.py:43
-msgid "business ID (NIB)"
-msgstr "NIB"
-
-#: apps/tenants/models.py:43
+#: apps/tenants/models.py:51
 msgid "Nomor Induk Berusaha, issued through OSS."
 msgstr "Nomor Induk Berusaha (OSS)."
 
-#: apps/tenants/models.py:50
+#: apps/tenants/models.py:59
 msgid "VAT-registered business (PKP)"
 msgstr "Pengusaha Kena Pajak (PKP)"
 
-#: apps/tenants/models.py:52
+#: apps/tenants/models.py:61
 msgid "Enable if the business is registered as a PKP and must charge PPN (VAT)."
 msgstr "Aktifkan jika usaha telah dikukuhkan sebagai PKP dan wajib memungut PPN."
 
-#: apps/tenants/models.py:55
+#: apps/tenants/models.py:64
 msgid "uses MSME final income tax (PPh Final)"
 msgstr "menggunakan PPh Final UMKM"
 
-#: apps/tenants/models.py:58
+#: apps/tenants/models.py:67
 #, no-python-format
 msgid "PP 55/2022: 0.5% final income tax on gross turnover."
 msgstr "PP 55/2022: PPh final 0,5% dari peredaran bruto."
 
-#: apps/tenants/models.py:61
+#: apps/tenants/models.py:70
 msgid "period lock date"
 msgstr "tanggal kunci periode"
 
-#: apps/tenants/models.py:64
+#: apps/tenants/models.py:73
 msgid "Transactions on or before this date cannot be changed."
 msgstr "Transaksi pada atau sebelum tanggal ini tidak dapat diubah."
 
-#: apps/tenants/models.py:69
+#: apps/tenants/models.py:78
 msgid "plan paid until"
 msgstr "paket dibayar sampai"
 
-#: apps/tenants/models.py:69
+#: apps/tenants/models.py:78
 msgid "Last day covered by payment; empty for the free plan."
 msgstr "Hari terakhir yang tercakup pembayaran; kosong untuk paket gratis."
 
-#: apps/tenants/models.py:77
+#: apps/tenants/models.py:86
 msgid "organizations"
 msgstr "organisasi"
 
-#: apps/tenants/models.py:91
+#: apps/tenants/models.py:100
 msgid "role"
 msgstr "peran"
 
-#: apps/tenants/models.py:97
+#: apps/tenants/models.py:106
 msgid "member"
 msgstr "anggota"
 
-#: apps/tenants/models.py:98
+#: apps/tenants/models.py:107
 msgid "members"
 msgstr "anggota"
 
@@ -1718,7 +1742,6 @@ msgid "MSME accounting"
 msgstr "Akuntansi UMKM"
 
 #: templates/billing/fake_checkout.html:2
-#| msgid "Tax payment"
 msgid "Test payment"
 msgstr "Pembayaran uji coba"
 
@@ -1753,7 +1776,6 @@ msgid "Waiting for payment. The payment link is valid until %(date)s."
 msgstr "Menunggu pembayaran. Tautan pembayaran berlaku sampai %(date)s."
 
 #: templates/billing/invoice_detail.html:17
-#| msgid "payment date"
 msgid "Check payment status"
 msgstr "Cek status pembayaran"
 
@@ -1762,7 +1784,6 @@ msgid "Pay now"
 msgstr "Bayar sekarang"
 
 #: templates/billing/invoice_detail.html:22
-#| msgid "The payment is already voided."
 msgid "This payment link is no longer valid."
 msgstr "Tautan pembayaran ini sudah tidak berlaku."
 
@@ -1771,7 +1792,6 @@ msgid "Choose a plan"
 msgstr "Pilih paket"
 
 #: templates/billing/invoice_detail.html:25
-#| msgid "This invoice is not awaiting payment."
 msgid "This invoice was not paid."
 msgstr "Tagihan ini tidak dibayar."
 
@@ -1782,7 +1802,6 @@ msgid "NPWP"
 msgstr "NPWP"
 
 #: templates/billing/invoice_detail.html:36
-#| msgid "Receive payment"
 msgid "Receipt"
 msgstr "Kuitansi"
 
@@ -1803,7 +1822,6 @@ msgstr "Jumlah"
 
 #: templates/billing/invoice_detail.html:50
 #, python-format
-#| msgid "%(role)s · %(plan)s plan"
 msgid "%(seller)s %(plan)s plan, %(period)s"
 msgstr "%(seller)s paket %(plan)s, %(period)s"
 
@@ -1830,12 +1848,10 @@ msgstr "Total"
 
 #: templates/billing/invoice_detail.html:62
 #, python-format
-#| msgid "Paid %(date)s"
 msgid "Paid on %(date)s."
 msgstr "Dibayar pada %(date)s."
 
 #: templates/billing/invoice_detail.html:62
-#| msgid "reference"
 msgid "Payment reference"
 msgstr "Referensi pembayaran"
 
@@ -1849,12 +1865,10 @@ msgstr "Paket saat ini"
 
 #: templates/billing/overview.html:15
 #, python-format
-#| msgid "Paid %(date)s"
 msgid "Paid until %(date)s"
 msgstr "Dibayar sampai %(date)s"
 
 #: templates/billing/overview.html:16
-#| msgid "No payments yet."
 msgid "No payment needed"
 msgstr "Tidak perlu pembayaran"
 
@@ -1942,7 +1956,6 @@ msgstr ""
 "melalui mitra pembayaran kami, Xendit."
 
 #: templates/billing/overview.html:64
-#| msgid "Bill to"
 msgid "Billing history"
 msgstr "Riwayat tagihan"
 
@@ -1972,7 +1985,6 @@ msgid "Status"
 msgstr "Status"
 
 #: templates/billing/overview.html:71
-#| msgid "subscription plans"
 msgid "No subscription payments yet."
 msgstr "Belum ada pembayaran langganan."
 
@@ -2538,7 +2550,6 @@ msgid "Your %(plan)s plan ends on %(date)s. Renew now to avoid interruption."
 msgstr "Paket %(plan)s Anda berakhir pada %(date)s. Perpanjang sekarang agar tidak terganggu."
 
 #: templates/partials/subscription_notice.html:11
-#| msgid "Current plan"
 msgid "Renew plan"
 msgstr "Perpanjang paket"
 

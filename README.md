@@ -112,6 +112,7 @@ The tests cover:
 - tenant isolation and role permissions
 - full HTTP flows (create → issue → pay)
 - statement integrity (trial balance and balance sheet always balance)
+- hostile and malformed input (control/bidi characters, NUL bytes, bad parameters, oversized submissions, CSV formulas)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -163,6 +164,22 @@ Fill in the new `msgstr` entries in `django.po` (and remove any `#, fuzzy` flags
 Commit both `django.po` and `django.mo`, so servers don't need gettext to run the app.
 These two commands do need GNU gettext on your machine (`sudo apt install gettext`). The test
 suite fails if a message is untranslated, fuzzy, or missing from the compiled `.mo`.
+
+## Input validation and sanitization
+
+Every input is handled in layers, so no single mistake lets bad data through:
+
+| Layer | What it does | Where |
+|---|---|---|
+| **Sanitize** | All text form inputs are normalized before validation: Unicode NFC, control characters (including NUL, which PostgreSQL rejects) and invisible or bidirectional-override characters removed (so a name can't display differently from what is stored, the "Trojan Source" trick), whitespace tidied. Line breaks are kept only in text areas. Passwords are never altered. | `apps/core/sanitizers.py`, `SanitizedFormMixin` |
+| **Validate formats** | Model-field validators, enforced by forms and the Django admin alike: NPWP (15/16 digits), NIB (13 digits), NTPN (16 characters), Faktur Pajak number, phone numbers, account/item codes, non-negative prices, positive payment amounts, payment terms ≤ 365 days, DPP numerator ≤ denominator, length limits on free text. Identifiers typed with dots or spaces (`01.234.567.8-901.000`) are accepted and stored as digits. | `apps/core/validators.py`, model fields |
+| **Enforce business rules** | Services re-check what matters to the books, whatever the entry point (forms, admin, commands, a future API): dates must fall between 1 January 2000 and one year ahead, journals must balance, periods must be open, tenant ownership is checked. | `services.py` (`ensure_business_date`, …) |
+| **Bound request parameters** | Filters, searches, years and IDs from the URL go through typed helpers: whitelisted choices, sanitized search text capped at 100 characters, bounded integers and years. Malformed values fall back to defaults instead of reaching the database. Invoice and journal forms accept at most 100 lines. | `apps/core/params.py` |
+| **Protect outputs** | Django templates auto-escape everything (no `|safe` / `mark_safe` anywhere), and all queries go through the ORM. CSV exports escape cells that a spreadsheet would run as formulas (`=`, `+`, `-`, `@`). Payment links from the gateway must be HTTPS before a customer is redirected to them. | templates, `csv_safe`, billing services |
+| **External callbacks** | Webhooks must carry the gateway's token and a JSON object. Only well-formed references are looked up, and the payment status is always re-fetched from the gateway. | `apps/billing` |
+
+`test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
+`BaseModelForm`.
 
 ## Subscription billing
 

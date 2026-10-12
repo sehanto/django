@@ -121,3 +121,14 @@ def test_money_follows_reader_locale():
         assert localized_rupiah("1234567.5") == "Rp 1.234.567,50"
     with translation.override("en"):
         assert localized_rupiah("1234567.5") == "Rp 1,234,567.50"
+
+
+def test_password_with_surrounding_spaces_works_for_sign_up_and_login(client, db):
+    password = " Kuat-Sekali-99 "
+    client.post(reverse("accounts:signup"), {
+        "full_name": "Ayu", "email": "ayu@example.com", "password": password,
+        "organization_name": "Warung Ayu", "legal_form": "perorangan",
+    })
+    client.logout()
+    response = client.post(reverse("accounts:login"), {"username": "ayu@example.com", "password": password})
+    assert response.status_code == 302

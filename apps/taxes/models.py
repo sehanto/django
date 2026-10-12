@@ -1,11 +1,13 @@
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, money_field
+from apps.core.validators import ntpn_validator
 
 from .domain import VatResult, compute_vat
 
@@ -18,9 +20,9 @@ class TaxRate(TenantOwnedModel):
         _("rate (%)"), max_digits=5, decimal_places=2,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
-    dpp_numerator = models.PositiveSmallIntegerField(_("DPP numerator"), default=1)
+    dpp_numerator = models.PositiveSmallIntegerField(_("DPP numerator"), default=1, validators=[MinValueValidator(1)])
     dpp_denominator = models.PositiveSmallIntegerField(
-        _("DPP denominator"), default=1, help_text=_("Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since 2025.")
+        _("DPP denominator"), default=1, validators=[MinValueValidator(1)], help_text=_("Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since 2025.")
     )
     is_active = models.BooleanField(_("active"), default=True)
 
@@ -31,6 +33,10 @@ class TaxRate(TenantOwnedModel):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.dpp_numerator and self.dpp_denominator and self.dpp_numerator > self.dpp_denominator:
+            raise ValidationError({"dpp_numerator": _("The DPP numerator cannot be larger than the denominator.")})
 
     @property
     def effective_rate(self) -> Decimal:
@@ -49,10 +55,10 @@ class PphFinalPayment(TenantOwnedModel):
     taxable_turnover = money_field(_("taxable gross turnover"))
     tax_amount = money_field(_("tax due"))
     paid_on = models.DateField(_("payment date"))
-    ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, help_text=_("State revenue transaction number (Nomor Transaksi Penerimaan Negara)."))
+    ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator], help_text=_("State revenue transaction number (Nomor Transaksi Penerimaan Negara)."))
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
         ordering = ["-year", "-month"]

@@ -1,10 +1,14 @@
+from decimal import Decimal
+
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.core.validators import code_validator, tax_invoice_number_validator
 
 from .domain import LineSpec, TaxSpec
 
@@ -21,12 +25,12 @@ class Item(TenantOwnedModel):
         GOODS = "goods", _("Goods")
         SERVICE = "service", _("Service")
 
-    code = models.CharField(_("code/SKU"), max_length=50, blank=True)
+    code = models.CharField(_("code/SKU"), max_length=50, blank=True, validators=[code_validator])
     name = models.CharField(_("name"), max_length=200)
     type = models.CharField(_("type"), max_length=10, choices=Type.choices, default=Type.GOODS)
     unit = models.CharField(_("unit"), max_length=20, default="pcs")
-    sale_price = money_field(_("sale price"))
-    purchase_price = money_field(_("purchase price"))
+    sale_price = money_field(_("sale price"), validators=[MinValueValidator(0)])
+    purchase_price = money_field(_("purchase price"), validators=[MinValueValidator(0)])
     income_account = models.ForeignKey(
         "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("revenue account")
     )
@@ -64,9 +68,9 @@ class Invoice(TenantOwnedModel):
     due_date = models.DateField(_("due date"))
     reference = models.CharField(_("reference no."), max_length=100, blank=True, help_text=_("PO number or supplier invoice number."))
     tax_invoice_number = models.CharField(
-        _("tax invoice no."), max_length=30, blank=True, help_text=_("Faktur Pajak serial number (e-Faktur/Coretax).")
+        _("tax invoice no."), max_length=30, blank=True, validators=[tax_invoice_number_validator], help_text=_("Faktur Pajak serial number (e-Faktur/Coretax).")
     )
-    notes = models.TextField(_("notes"), blank=True)
+    notes = models.TextField(_("notes"), max_length=2000, blank=True)
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.DRAFT)
 
     subtotal = money_field(_("subtotal"))
@@ -78,7 +82,7 @@ class Invoice(TenantOwnedModel):
         "ledger.JournalEntry", null=True, blank=True, on_delete=models.PROTECT, related_name="invoice"
     )
     issued_at = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
         ordering = ["-date", "-id"]
@@ -155,13 +159,13 @@ class Payment(TenantOwnedModel):
     number = models.CharField(_("number"), max_length=30)
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="payments", verbose_name=_("invoice"))
     date = models.DateField(_("date"))
-    amount = money_field(_("amount"))
+    amount = money_field(_("amount"), validators=[MinValueValidator(Decimal("0.01"))])
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("cash/bank account"))
     method = models.CharField(_("method"), max_length=10, choices=Method.choices, default=Method.TRANSFER)
     reference = models.CharField(_("reference"), max_length=100, blank=True)
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="payment")
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
         ordering = ["-date", "-id"]

@@ -7,6 +7,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import choice_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -90,9 +91,9 @@ class JournalListView(OrganizationMixin, ListView):
         params = self.request.GET
         return search_journal_entries(
             self.organization,
-            query=params.get("q", ""),
-            status=params.get("status", ""),
-            source=params.get("source", ""),
+            query=text_param(params, "q"),
+            status=choice_param(params, "status", JournalEntry.Status.values),
+            source=choice_param(params, "source", JournalEntry.Source.values),
         )
 
     def get_context_data(self, **kwargs):

@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import DateInput, OrganizationFormMixin
+from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
 from apps.core.money import ZERO
 
 from .models import Account, JournalEntry
@@ -9,20 +9,20 @@ from .selectors import accounts_for
 from .services import JournalLineInput
 
 
-class AccountForm(OrganizationFormMixin, forms.ModelForm):
+class AccountForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Account
         fields = ["code", "name", "category", "is_contra", "description", "is_active"]
 
 
-class JournalEntryForm(OrganizationFormMixin, forms.ModelForm):
+class JournalEntryForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = JournalEntry
         fields = ["date", "description", "reference"]
-        widgets = {"date": DateInput()}
+        field_classes = {"date": BusinessDateField}
 
 
-class JournalLineForm(OrganizationFormMixin, forms.Form):
+class JournalLineForm(OrganizationFormMixin, BaseForm):
     account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())
     description = forms.CharField(label=_("Description"), max_length=255, required=False)
     debit = forms.DecimalField(label=_("Debit"), max_digits=18, decimal_places=2, min_value=0, required=False)
@@ -42,12 +42,16 @@ class JournalLineForm(OrganizationFormMixin, forms.Form):
         )
 
 
-JournalLineFormSet = forms.formset_factory(JournalLineForm, extra=0, min_num=2, validate_min=True)
+MAX_JOURNAL_LINES = 100
+JournalLineFormSet = forms.formset_factory(
+    JournalLineForm, extra=0, min_num=2, validate_min=True,
+    max_num=MAX_JOURNAL_LINES, absolute_max=MAX_JOURNAL_LINES, validate_max=True,
+)
 
 
 def line_inputs(formset) -> list[JournalLineInput]:
     return [f.to_input() for f in formset.forms if f.has_changed() and not f.cleaned_data.get("DELETE")]
 
 
-class ReverseForm(forms.Form):
-    date = forms.DateField(label=_("Reversal date"), widget=DateInput())
+class ReverseForm(BaseForm):
+    date = BusinessDateField(label=_("Reversal date"))

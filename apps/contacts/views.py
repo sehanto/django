@@ -6,6 +6,7 @@ from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import choice_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -20,7 +21,10 @@ class ContactListView(OrganizationMixin, ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        return contacts_for(self.organization, query=self.request.GET.get("q", ""), kind=self.request.GET.get("kind", ""))
+        params = self.request.GET
+        return contacts_for(
+            self.organization, query=text_param(params, "q"), kind=choice_param(params, "kind", Contact.Kind.values)
+        )
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(kinds=Contact.Kind.choices, **kwargs)
@@ -42,7 +46,7 @@ class ContactFormMixin(WriteMixin):
 
 class ContactCreateView(ContactFormMixin, CreateView):
     def get_initial(self):
-        return {"kind": self.request.GET.get("kind", Contact.Kind.CUSTOMER)}
+        return {"kind": choice_param(self.request.GET, "kind", Contact.Kind.values, default=Contact.Kind.CUSTOMER)}
 
     def save(self, data):
         services.create_contact(organization=self.organization, **data)

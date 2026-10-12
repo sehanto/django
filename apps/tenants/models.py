@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.contacts.validators import npwp_format_validator
 from apps.core.models import TimeStampedModel, money_field
+from apps.core.validators import nib_validator, phone_validator
 
 from .roles import Role
 
@@ -12,8 +15,8 @@ class Plan(TimeStampedModel):
 
     code = models.SlugField(_("code"), unique=True)
     name = models.CharField(_("name"), max_length=50)
-    monthly_price = money_field(_("monthly price"), help_text=_("Excluding PPN."))
-    yearly_price = money_field(_("yearly price"), help_text=_("Excluding PPN."))
+    monthly_price = money_field(_("monthly price"), help_text=_("Excluding PPN."), validators=[MinValueValidator(0)])
+    yearly_price = money_field(_("yearly price"), help_text=_("Excluding PPN."), validators=[MinValueValidator(0)])
     max_users = models.PositiveIntegerField(_("max. users"), null=True, blank=True)
     max_invoices_per_month = models.PositiveIntegerField(_("max. invoices per month"), null=True, blank=True)
     is_default = models.BooleanField(_("default plan"), default=False)
@@ -39,11 +42,17 @@ class Organization(TimeStampedModel):
 
     name = models.CharField(_("business name"), max_length=200)
     legal_form = models.CharField(_("legal form"), max_length=20, choices=LegalForm.choices)
-    npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True, help_text=_("15 or 16 digits without punctuation."))
-    nib = models.CharField(_("business ID (NIB)"), max_length=13, blank=True, help_text=_("Nomor Induk Berusaha, issued through OSS."))
-    address = models.TextField(_("address"), blank=True)
+    npwp = models.CharField(
+        _("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator],
+        help_text=_("15 or 16 digits without punctuation."),
+    )
+    nib = models.CharField(
+        _("business ID (NIB)"), max_length=13, blank=True, validators=[nib_validator],
+        help_text=_("Nomor Induk Berusaha, issued through OSS."),
+    )
+    address = models.TextField(_("address"), max_length=500, blank=True)
     city = models.CharField(_("city/regency"), max_length=100, blank=True)
-    phone = models.CharField(_("phone"), max_length=30, blank=True)
+    phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
     email = models.EmailField(_("email"), blank=True)
 
     is_pkp = models.BooleanField(

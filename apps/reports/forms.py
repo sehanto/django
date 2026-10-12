@@ -4,7 +4,7 @@ from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import DateInput, OrganizationFormMixin
+from apps.core.forms import BaseForm, BusinessDateField, OrganizationFormMixin
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for
 
@@ -13,9 +13,9 @@ def start_of_year(on: date) -> date:
     return on.replace(month=1, day=1)
 
 
-class PeriodForm(forms.Form):
-    date_from = forms.DateField(label=_("From"), widget=DateInput())
-    date_to = forms.DateField(label=_("To"), widget=DateInput())
+class PeriodForm(BaseForm):
+    date_from = BusinessDateField(label=_("From"))
+    date_to = BusinessDateField(label=_("To"))
 
     def __init__(self, data=None, **kwargs):
         today = timezone.localdate()
@@ -30,8 +30,8 @@ class PeriodForm(forms.Form):
         return cleaned
 
 
-class AsOfForm(forms.Form):
-    as_of = forms.DateField(label=_("As of"), widget=DateInput())
+class AsOfForm(BaseForm):
+    as_of = BusinessDateField(label=_("As of"))
 
     def __init__(self, data=None, **kwargs):
         merged = {"as_of": timezone.localdate().isoformat(), **{k: v for k, v in (data or {}).items() if v}}

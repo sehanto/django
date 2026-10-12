@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
-from apps.core.forms import DateInput, OrganizationFormMixin
+from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts, purchase_accounts, revenue_accounts
@@ -23,16 +23,16 @@ def default_line_account(organization, kind):
     return accounts_for(organization).filter(system_role=role).first()
 
 
-class InvoiceForm(OrganizationFormMixin, forms.ModelForm):
-    due_date = forms.DateField(
-        label=_("Due date"), required=False, widget=DateInput(),
-        help_text=_("Leave empty to use the contact's payment terms."),
+class InvoiceForm(OrganizationFormMixin, BaseModelForm):
+    due_date = BusinessDateField(
+        label=_("Due date"), required=False, help_text=_("Leave empty to use the contact's payment terms."),
     )
 
     class Meta:
         model = Invoice
         fields = ["contact", "date", "due_date", "reference", "tax_invoice_number", "notes"]
-        widgets = {"date": DateInput(), "notes": forms.Textarea(attrs={"rows": 2})}
+        field_classes = {"date": BusinessDateField}
+        widgets = {"notes": forms.Textarea(attrs={"rows": 2})}
 
     def __init__(self, *args, kind, **kwargs):
         super().__init__(*args, **kwargs)
@@ -47,7 +47,7 @@ class InvoiceForm(OrganizationFormMixin, forms.ModelForm):
             del self.fields["tax_invoice_number"]
 
 
-class InvoiceLineForm(OrganizationFormMixin, forms.Form):
+class InvoiceLineForm(OrganizationFormMixin, BaseForm):
     item = forms.ModelChoiceField(label=_("Item"), queryset=Item.objects.none(), required=False)
     description = forms.CharField(label=_("Item description"), max_length=255)
     account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())
@@ -80,29 +80,33 @@ class InvoiceLineForm(OrganizationFormMixin, forms.Form):
         )
 
 
-InvoiceLineFormSet = forms.formset_factory(InvoiceLineForm, extra=0, min_num=1, validate_min=True, can_delete=True)
+MAX_INVOICE_LINES = 100
+InvoiceLineFormSet = forms.formset_factory(
+    InvoiceLineForm, extra=0, min_num=1, validate_min=True, can_delete=True,
+    max_num=MAX_INVOICE_LINES, absolute_max=MAX_INVOICE_LINES, validate_max=True,
+)
 
 
 def line_inputs(formset) -> list[InvoiceLineInput]:
     return [f.to_input() for f in formset.forms if f.cleaned_data and not f.cleaned_data.get("DELETE")]
 
 
-class PaymentForm(OrganizationFormMixin, forms.ModelForm):
+class PaymentForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Payment
         fields = ["date", "amount", "cash_account", "method", "reference"]
-        widgets = {"date": DateInput()}
+        field_classes = {"date": BusinessDateField}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
 
 
-class VoidForm(forms.Form):
-    date = forms.DateField(label=_("Void date"), widget=DateInput())
+class VoidForm(BaseForm):
+    date = BusinessDateField(label=_("Void date"))
 
 
-class ItemForm(OrganizationFormMixin, forms.ModelForm):
+class ItemForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Item
         fields = [

@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, TemplateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import choice_param, int_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import ManageMixin
 from apps.tenants.models import Plan
@@ -43,9 +44,9 @@ class OverviewView(ManageMixin, TemplateView):
 
 class CheckoutView(ManageMixin, View):
     def post(self, request):
-        plan = get_object_or_404(Plan, pk=request.POST.get("plan"))
-        period = request.POST.get("period")
-        if period not in BillingPeriod.values:
+        plan = get_object_or_404(Plan, pk=int_param(request.POST, "plan", default=0))
+        period = choice_param(request.POST, "period", BillingPeriod.values)
+        if not period:
             return HttpResponseBadRequest()
         try:
             invoice = services.start_checkout(
@@ -119,6 +120,8 @@ class WebhookView(View):
             payload = json.loads(request.body or b"{}")
         except ValueError:
             return HttpResponseBadRequest("invalid JSON")
+        if not isinstance(payload, dict):
+            return HttpResponseBadRequest("JSON object expected")
         try:
             services.handle_webhook(headers=request.headers, payload=payload)
         except services.WebhookRejected:

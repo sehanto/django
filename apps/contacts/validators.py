@@ -8,6 +8,8 @@ accepted for historical data.
 import re
 
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext as _
 
 _NON_DIGITS = re.compile(r"\D")
@@ -15,6 +17,9 @@ _NON_DIGITS = re.compile(r"\D")
 
 def normalize_npwp(value: str) -> str:
     return _NON_DIGITS.sub("", value or "")
+
+
+npwp_format_validator = RegexValidator(r"^\d{15}(\d)?$", _("NPWP must have 15 or 16 digits."))
 
 
 def validate_npwp(value: str) -> str:

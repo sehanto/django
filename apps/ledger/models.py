@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.core.validators import code_validator
 
 from .domain import AccountCategory, AccountType, NormalBalance, SystemRole, normal_balance_for
 
@@ -11,7 +12,7 @@ from .domain import AccountCategory, AccountType, NormalBalance, SystemRole, nor
 class Account(TenantOwnedModel):
     """An entry in the organization's chart of accounts (Bagan Akun)."""
 
-    code = models.CharField(_("code"), max_length=20)
+    code = models.CharField(_("code"), max_length=20, validators=[code_validator])
     name = models.CharField(_("account name"), max_length=150)
     category = models.CharField(_("category"), max_length=30, choices=AccountCategory.choices)
     is_contra = models.BooleanField(

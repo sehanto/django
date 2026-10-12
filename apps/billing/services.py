@@ -8,10 +8,12 @@ idempotent and only happens when the paid amount matches the invoice.
 """
 
 import logging
+import re
 import uuid
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -103,11 +105,24 @@ def start_checkout(
         invoice.status = Status.FAILED
         invoice.save(update_fields=["status", "updated_at"])
         raise
+    if not _is_safe_payment_url(checkout.payment_url) or not REFERENCE_PATTERN.match(checkout.gateway_reference):
+        logger.error("Gateway returned an unexpected checkout for %s: %r", invoice.number, checkout)
+        invoice.status = Status.FAILED
+        invoice.save(update_fields=["status", "updated_at"])
+        raise GatewayError(_("The payment provider did not return a payment link."))
     invoice.gateway_reference = checkout.gateway_reference
     invoice.payment_url = checkout.payment_url
     invoice.expires_at = checkout.expires_at or expires_at
     invoice.save(update_fields=["gateway_reference", "payment_url", "expires_at", "updated_at"])
     return invoice
+
+
+def _is_safe_payment_url(url: str) -> bool:
+    """Customers are redirected here, so only HTTPS URLs (or a same-site path, for the fake gateway)."""
+    parts = urlsplit(url or "")
+    if parts.scheme == "https" and parts.netloc:
+        return True
+    return not parts.scheme and not parts.netloc and parts.path.startswith("/") and not url.startswith("//")
 
 
 # --- Payment confirmation ---------------------------------------------------------------
@@ -158,12 +173,18 @@ def sync_payment(invoice: SubscriptionInvoice) -> SubscriptionInvoice:
     return invoice
 
 
+# Gateway and invoice references we accept from outside (e.g. "ps-661f…", "SUB-202610-000001").
+REFERENCE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}$")
+
+
 def handle_webhook(*, headers, payload: dict) -> SubscriptionInvoice | None:
     """Authenticate a gateway notification, then re-check the payment with the gateway."""
     gateway = get_gateway()
     if not gateway.verify_webhook(headers):
         raise WebhookRejected("Invalid webhook token.")
-    references = gateway.webhook_references(payload)
+    if not isinstance(payload, dict):
+        raise ValidationFailed("Webhook payload must be a JSON object.")
+    references = [ref for ref in gateway.webhook_references(payload) if isinstance(ref, str) and REFERENCE_PATTERN.match(ref)]
     invoice = (
         SubscriptionInvoice.objects.filter(gateway=gateway.name)
         .filter(Q(gateway_reference__in=references) | Q(number__in=references))

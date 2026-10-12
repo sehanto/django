@@ -9,7 +9,9 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
+from django.core.validators import validate_email
 from django.db import transaction
 from django.utils import timezone
 
@@ -34,6 +36,10 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, email, password, **options):
+        try:
+            validate_email(email)
+        except ValidationError as exc:
+            raise CommandError(f"Invalid email address: {email}") from exc
         User = get_user_model()
         if User.objects.filter(email=email).exists():
             raise CommandError(f"User {email} already exists.")
