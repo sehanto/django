@@ -57,3 +57,20 @@ class ResetPasswordForm(SanitizedFormMixin, PasswordResetForm):
 
 class NewPasswordForm(SanitizedFormMixin, SetPasswordForm):
     """Choose a new password (passwords are never sanitized; Django uses ``strip=False``)."""
+
+
+class ChangeEmailForm(BaseForm):
+    """Correct a mistyped address before it is confirmed (requires the current password)."""
+
+    email = forms.EmailField(label=_("Correct email address"), max_length=254)
+    password = forms.CharField(label=_("Current password"), widget=forms.PasswordInput, strip=False)
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(_("Your password is incorrect."))
+        return password

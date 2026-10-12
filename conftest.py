@@ -4,6 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.contacts.models import Contact
@@ -16,7 +17,9 @@ from apps.tenants.services import create_organization
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(email="owner@example.com", password="Rahasia-123", full_name="Budi Santoso")
+    return User.objects.create_user(
+        email="owner@example.com", password="Rahasia-123", full_name="Budi Santoso", email_verified_at=timezone.now()
+    )
 
 
 @pytest.fixture
@@ -38,7 +41,7 @@ def pkp_organization(organization):
 
 @pytest.fixture
 def other_organization(db):
-    other = User.objects.create_user(email="other@example.com", password="Rahasia-123", full_name="Siti")
+    other = User.objects.create_user(email="other@example.com", password="Rahasia-123", full_name="Siti", email_verified_at=timezone.now())
     return create_organization(owner=other, name="CV Lain", legal_form="cv")
 
 
@@ -77,7 +80,7 @@ def auth_client(client, user, organization):
 @pytest.fixture
 def make_member(organization):
     def make(role: Role, email="member@example.com"):
-        member = User.objects.create_user(email=email, password="Rahasia-123", full_name="Anggota")
+        member = User.objects.create_user(email=email, password="Rahasia-123", full_name="Anggota", email_verified_at=timezone.now())
         organization.memberships.create(user=member, role=role)
         return member
 

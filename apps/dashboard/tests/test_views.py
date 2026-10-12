@@ -2,8 +2,10 @@
 
 from datetime import date
 from decimal import Decimal
+from urllib.parse import urlsplit
 
 import pytest
+from django.core import mail
 from django.urls import reverse
 
 from apps.contacts.models import Contact
@@ -63,12 +65,16 @@ def test_anonymous_redirected_to_login(client, db):
     assert reverse("accounts:login") in response["Location"]
 
 
-def test_signup_creates_organization_and_logs_in(client, db):
+def test_signup_creates_organization_and_requires_email_confirmation(client, db):
     response = client.post(reverse("accounts:signup"), {
         "full_name": "Dewi Lestari", "email": "dewi@example.com", "password": "Kuat-Sekali-99",
         "organization_name": "Batik Dewi", "legal_form": "perorangan",
     })
-    assert response.status_code == 302
+    assert response["Location"] == reverse("accounts:verify_email_pending")
+    assert client.get(reverse("dashboard:home"))["Location"] == reverse("accounts:verify_email_pending")
+
+    link = next(line for line in mail.outbox[0].body.splitlines() if "/account/verify-email/" in line)
+    client.get(urlsplit(link).path)
     assert client.get(reverse("dashboard:home")).context["current_organization"].name == "Batik Dewi"
 
 

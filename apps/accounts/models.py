@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
+        extra.setdefault("email_verified_at", timezone.now())  # created by a trusted operator
         return self._create_user(email, password, **extra)
 
 
@@ -39,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(_("active"), default=True)
     is_staff = models.BooleanField(_("staff status"), default=False)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+    email_verified_at = models.DateTimeField(_("email verified at"), null=True, blank=True)
 
     objects = UserManager()
 
@@ -52,6 +54,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.full_name or self.email
+
+    @property
+    def is_email_verified(self) -> bool:
+        return self.email_verified_at is not None
 
     def get_full_name(self):
         return self.full_name

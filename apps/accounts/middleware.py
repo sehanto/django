@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.shortcuts import redirect
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 
@@ -34,3 +35,30 @@ class UserLanguageMiddleware:
         patch_vary_headers(response, ("Accept-Language", "Cookie"))
         response.headers.setdefault("Content-Language", request.LANGUAGE_CODE)
         return response
+
+
+class EmailVerificationMiddleware:
+    """Signed-in users with an unconfirmed email only reach the verification pages.
+
+    Allowed: the verification flow, sign-out, the language switch and the Django admin
+    (staff-only, and superusers are verified on creation).
+    """
+
+    EXEMPT_ACCOUNT_VIEWS = {
+        "verify_email", "verify_email_pending", "verify_email_resend", "verify_email_change", "logout", "set_language",
+    }
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        user = getattr(request, "user", None)
+        if user is None or not user.is_authenticated or user.is_email_verified:
+            return None
+        match = request.resolver_match
+        if match and (match.namespace == "admin" or (match.namespace == "accounts" and match.url_name in self.EXEMPT_ACCOUNT_VIEWS)):
+            return None
+        return redirect("accounts:verify_email_pending")

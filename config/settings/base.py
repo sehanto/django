@@ -51,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.tenants.middleware.CurrentOrganizationMiddleware",
+    "apps.accounts.middleware.EmailVerificationMiddleware",
     # Must be last: turns a locked-out login into the lockout response.
     "axes.middleware.AxesMiddleware",
 ]
@@ -166,3 +167,7 @@ SITE_NAME = env("SITE_NAME", default="BukuUMKM")  # shown in emails
 # Shared cache (throttling, fake gateway). Use a cache shared by all workers in
 # production: "dbcache://django_cache" (run createcachetable) or a Redis URL.
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+
+# Email verification after sign-up: links are valid for 3 days; resends are throttled.
+EMAIL_VERIFICATION_TIMEOUT = env.int("EMAIL_VERIFICATION_TIMEOUT", default=60 * 60 * 24 * 3)
+EMAIL_VERIFICATION_EMAILS_PER_HOUR = 3

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 19:22+0700\n"
-"PO-Revision-Date: 2026-10-12 19:22\n"
+"POT-Creation-Date: 2026-10-12 19:29+0700\n"
+"PO-Revision-Date: 2026-10-12 19:29\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: apps/accounts/admin.py:15 templates/accounts/profile.html:2
+#: apps/accounts/admin.py:16 templates/accounts/profile.html:2
 msgid "Profile"
 msgstr "Profil"
 
-#: apps/accounts/admin.py:16
+#: apps/accounts/admin.py:17
 msgid "Permissions"
 msgstr "Hak akses"
 
-#: apps/accounts/admin.py:17
+#: apps/accounts/admin.py:18
 msgid "Important dates"
 msgstr "Tanggal"
 
@@ -55,58 +55,107 @@ msgstr "Nama usaha"
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:33
+#: apps/accounts/forms.py:33 apps/accounts/services.py:84
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
-#: apps/accounts/models.py:33 apps/contacts/models.py:22 apps/tenants/models.py:56
+#: apps/accounts/forms.py:65
+msgid "Correct email address"
+msgstr "Alamat email yang benar"
+
+#: apps/accounts/forms.py:66
+#| msgid "Reset password"
+msgid "Current password"
+msgstr "Kata sandi saat ini"
+
+#: apps/accounts/forms.py:75
+msgid "Your password is incorrect."
+msgstr "Kata sandi Anda salah."
+
+#: apps/accounts/models.py:34 apps/contacts/models.py:22 apps/tenants/models.py:56
 msgid "email"
 msgstr "email"
 
-#: apps/accounts/models.py:34
+#: apps/accounts/models.py:35
 msgid "full name"
 msgstr "nama lengkap"
 
-#: apps/accounts/models.py:35
+#: apps/accounts/models.py:36
 msgid "phone number"
 msgstr "no. telepon"
 
-#: apps/accounts/models.py:37
+#: apps/accounts/models.py:38
 msgid "interface language"
 msgstr "bahasa antarmuka"
 
-#: apps/accounts/models.py:39 apps/contacts/models.py:37 apps/invoicing/models.py:43
+#: apps/accounts/models.py:40 apps/contacts/models.py:37 apps/invoicing/models.py:43
 #: apps/ledger/models.py:25 apps/taxes/models.py:27
 msgid "active"
 msgstr "aktif"
 
-#: apps/accounts/models.py:40
+#: apps/accounts/models.py:41
 msgid "staff status"
 msgstr "staf admin"
 
-#: apps/accounts/models.py:41
+#: apps/accounts/models.py:42
 msgid "date joined"
 msgstr "bergabung"
 
-#: apps/accounts/models.py:50
+#: apps/accounts/models.py:43
+msgid "email verified at"
+msgstr "email dikonfirmasi pada"
+
+#: apps/accounts/models.py:52
 msgid "user"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:51
+#: apps/accounts/models.py:53
 msgid "users"
 msgstr "pengguna"
 
-#: apps/accounts/views.py:79
-msgid "Welcome! A standard SAK EMKM chart of accounts has been set up."
-msgstr "Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
+#: apps/accounts/services.py:58
+msgid "This confirmation link has expired. Request a new one."
+msgstr "Tautan konfirmasi ini sudah kedaluwarsa. Minta tautan baru."
 
-#: apps/accounts/views.py:96
+#: apps/accounts/services.py:60 apps/accounts/services.py:63
+#| msgid "This payment link is no longer valid."
+msgid "This confirmation link is not valid."
+msgstr "Tautan konfirmasi ini tidak valid."
+
+#: apps/accounts/services.py:82
+msgid "A confirmed email address can't be changed here."
+msgstr "Alamat email yang sudah dikonfirmasi tidak dapat diubah di sini."
+
+#: apps/accounts/views.py:97
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:105
+#: apps/accounts/views.py:106
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
+
+#: apps/accounts/views.py:222
+#, python-format
+msgid "We sent a new confirmation link to %(email)s."
+msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
+
+#: apps/accounts/views.py:224
+msgid "Too many emails were requested. Please wait an hour and try again."
+msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
+
+#: apps/accounts/views.py:234
+#, python-format
+msgid "Email address updated. We sent a confirmation link to %(email)s."
+msgstr "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
+
+#: apps/accounts/views.py:251
+#| msgid "Welcome! A standard SAK EMKM chart of accounts has been set up."
+msgid "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has been set up."
+msgstr "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
+
+#: apps/accounts/views.py:253
+msgid "Email address confirmed. You can sign in now."
+msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
 #: apps/billing/admin.py:24
 msgid "Mark as paid (bank transfer confirmed)"
@@ -1693,9 +1742,8 @@ msgstr "Halaman tidak ditemukan"
 msgid "Simple accounting for Indonesian MSMEs, following SAK EMKM"
 msgstr "Akuntansi sederhana untuk UMKM Indonesia, sesuai SAK EMKM"
 
-#: templates/accounts/emails/password_reset.txt:1
+#: templates/accounts/emails/password_reset.txt:1 templates/accounts/emails/verify_email.txt:1
 #, python-format
-#| msgid "Edit %(name)s"
 msgid "Hello %(name)s,"
 msgstr "Halo %(name)s,"
 
@@ -1722,6 +1770,32 @@ msgstr "Jika Anda tidak memintanya, abaikan email ini: kata sandi Anda tidak ber
 msgid "Reset your %(site_name)s password"
 msgstr "Atur ulang kata sandi %(site_name)s Anda"
 
+#: templates/accounts/emails/verify_email.txt:3
+#, python-format
+msgid ""
+"Welcome to %(site_name)s! Please confirm that %(email)s is your email address by opening this "
+"link:"
+msgstr ""
+"Selamat datang di %(site_name)s! Konfirmasikan bahwa %(email)s adalah alamat email Anda dengan "
+"membuka tautan ini:"
+
+#: templates/accounts/emails/verify_email.txt:7
+#, python-format
+#| msgid "The link works once and expires in %(lifetime)s."
+msgid "The link is valid for %(lifetime)s."
+msgstr "Tautan berlaku selama %(lifetime)s."
+
+#: templates/accounts/emails/verify_email.txt:9
+#| msgid ""
+#| "If you did not ask for this, you can ignore this email: your password stays the same."
+msgid "If you did not create this account, you can ignore this email."
+msgstr "Jika Anda tidak membuat akun ini, abaikan email ini."
+
+#: templates/accounts/emails/verify_email_subject.txt:1
+#, python-format
+msgid "Confirm your email for %(site_name)s"
+msgstr "Konfirmasi email Anda untuk %(site_name)s"
+
 #: templates/accounts/locked_out.html:2 templates/accounts/locked_out.html:4
 msgid "Too many sign-in attempts"
 msgstr "Terlalu banyak percobaan masuk"
@@ -1739,9 +1813,6 @@ msgid "Please try again in %(wait)s."
 msgstr "Silakan coba lagi dalam %(wait)s."
 
 #: templates/accounts/locked_out.html:13
-#| msgid ""
-#| "If you have forgotten your password, ask the owner of your organization or contact support. Every "
-#| "new failed attempt restarts the waiting time."
 msgid ""
 "Forgotten your password? Reset it by email: the pause is lifted as soon as you choose a new "
 "password. Every new failed attempt restarts the waiting time."
@@ -1751,7 +1822,6 @@ msgstr ""
 
 #: templates/accounts/locked_out.html:15 templates/accounts/password_reset_form.html:2
 #: templates/accounts/password_reset_form.html:4
-#| msgid "Change password"
 msgid "Reset password"
 msgstr "Atur ulang kata sandi"
 
@@ -1766,7 +1836,6 @@ msgid "Sign in"
 msgstr "Masuk"
 
 #: templates/accounts/login.html:7
-#| msgid "Change password"
 msgid "Forgot password?"
 msgstr "Lupa kata sandi?"
 
@@ -1791,7 +1860,6 @@ msgstr "Simpan"
 
 #: templates/accounts/password_reset_complete.html:2
 #: templates/accounts/password_reset_complete.html:4
-#| msgid "Password changed successfully."
 msgid "Password changed"
 msgstr "Kata sandi diubah"
 
@@ -1804,7 +1872,6 @@ msgstr ""
 "kata sandi baru Anda."
 
 #: templates/accounts/password_reset_confirm.html:2 templates/accounts/password_reset_confirm.html:5
-#| msgid "Change password"
 msgid "Choose a new password"
 msgstr "Buat kata sandi baru"
 
@@ -1821,7 +1888,6 @@ msgid "Request a new link"
 msgstr "Minta tautan baru"
 
 #: templates/accounts/password_reset_done.html:2 templates/accounts/password_reset_done.html:4
-#| msgid "User email"
 msgid "Check your email"
 msgstr "Periksa email Anda"
 
@@ -1866,6 +1932,48 @@ msgstr "Daftar & buat usaha Anda"
 #: templates/accounts/signup.html:9
 msgid "Already have an account?"
 msgstr "Sudah punya akun?"
+
+#: templates/accounts/verify_email_pending.html:2 templates/accounts/verify_email_pending.html:4
+msgid "Confirm your email address"
+msgstr "Konfirmasi alamat email Anda"
+
+#: templates/accounts/verify_email_pending.html:5
+#, python-format
+msgid ""
+"We sent a confirmation link to <strong>%(email)s</strong>. Open it to start using your account."
+msgstr ""
+"Kami telah mengirim tautan konfirmasi ke <strong>%(email)s</strong>. Buka tautan tersebut untuk "
+"mulai menggunakan akun Anda."
+
+#: templates/accounts/verify_email_pending.html:6
+#, python-format
+#| msgid ""
+#| "The link works once and expires in %(lifetime)s. If no email arrives within a few minutes, check "
+#| "your spam folder or request a new link."
+msgid ""
+"The link is valid for %(lifetime)s. If it doesn't arrive within a few minutes, check your spam "
+"folder."
+msgstr ""
+"Tautan berlaku selama %(lifetime)s. Jika email tidak masuk dalam beberapa menit, periksa folder "
+"spam."
+
+#: templates/accounts/verify_email_pending.html:9
+#| msgid "Send reset link"
+msgid "Send the link again"
+msgstr "Kirim ulang tautan"
+
+#: templates/accounts/verify_email_pending.html:13
+msgid "Wrong email address?"
+msgstr "Salah alamat email?"
+
+#: templates/accounts/verify_email_pending.html:16
+#| msgid "Send reset link"
+msgid "Update and send link"
+msgstr "Perbarui dan kirim tautan"
+
+#: templates/accounts/verify_email_pending.html:21 templates/partials/sidebar.html:52
+msgid "Sign out"
+msgstr "Keluar"
 
 #: templates/base.html:6
 msgid "MSME accounting"
@@ -2660,10 +2768,6 @@ msgstr "Organisasi"
 #: templates/tenants/members.html:4
 msgid "Team members"
 msgstr "Anggota Tim"
-
-#: templates/partials/sidebar.html:52
-msgid "Sign out"
-msgstr "Keluar"
 
 #: templates/partials/subscription_notice.html:5
 #, python-format

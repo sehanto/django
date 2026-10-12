@@ -115,6 +115,7 @@ The tests cover:
 - hostile and malformed input (control/bidi characters, NUL bytes, bad parameters, oversized submissions, CSV formulas)
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
+- email verification (gate, link validity and tampering, resend throttle, address correction)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -182,6 +183,22 @@ Every input is handled in layers, so no single mistake lets bad data through:
 
 `test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
 `BaseModelForm`.
+
+## Email verification
+
+New accounts must confirm their email address before using the app. After sign-up the user
+is signed in, but every page except the verification flow, sign-out, the language switch and
+the Django admin redirects to **"Confirm your email address"** until they open the emailed link.
+
+| Behaviour | Detail |
+|---|---|
+| Link | Signed and timestamped (`django.core.signing`), valid for **3 days** (`EMAIL_VERIFICATION_TIMEOUT`). It names the user *and* the address, so it stops working if the address changes. Built from `SITE_URL`, emailed in the user's language. Works whether or not the person is signed in. |
+| Resend | "Send the link again", at most 3 emails per hour per account. |
+| Typos | "Wrong email address?" lets the user correct the address after entering their current password. The old link stops working and a new one is sent. |
+| Password reset | Completing a reset also confirms the address, since it proves control of the mailbox. |
+| Existing accounts | Accounts created before this feature were marked as verified by a migration. Superusers made with `createsuperuser` are verified automatically. |
+
+Support can see and set `email verified at` on a user in the Django admin.
 
 ## Password reset
 

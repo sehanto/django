@@ -8,20 +8,21 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import translation
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import FormView, UpdateView
+from django.views.generic import FormView, TemplateView, UpdateView
 
+from apps.core.exceptions import DomainError
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
-from . import throttle
+from . import services, throttle
 from .client_ip import client_ip
-from .forms import LoginForm, NewPasswordForm, ProfileForm, ResetPasswordForm, SignUpForm
+from .forms import ChangeEmailForm, LoginForm, NewPasswordForm, ProfileForm, ResetPasswordForm, SignUpForm
 from .middleware import SUPPORTED_LANGUAGES
 
 logger = logging.getLogger(__name__)
@@ -76,8 +77,8 @@ class SignUpView(FormView):
         )
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
         set_current_organization(self.request, organization)
-        messages.success(self.request, _("Welcome! A standard SAK EMKM chart of accounts has been set up."))
-        return redirect("tenants:settings")
+        services.send_verification_email(user)
+        return redirect("accounts:verify_email_pending")
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -180,10 +181,75 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        # Proving control of the mailbox lifts any login lockout for this account.
+        # Proving control of the mailbox lifts any login lockout and confirms the address.
         axes_reset(username=self.user.email.lower())
+        services.mark_email_verified(self.user)
         return response
 
 
 class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
     template_name = "accounts/password_reset_complete.html"
+
+
+# --- Email verification ----------------------------------------------------------------
+
+
+def _pending_context(request, change_form=None) -> dict:
+    return {
+        "change_form": change_form or ChangeEmailForm(user=request.user),
+        "lifetime": timedelta(seconds=settings.EMAIL_VERIFICATION_TIMEOUT),
+    }
+
+
+class VerifyEmailPendingView(LoginRequiredMixin, TemplateView):
+    """Where unverified users land: resend the link or fix a mistyped address."""
+
+    template_name = "accounts/verify_email_pending.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_email_verified:
+            return redirect("dashboard:home")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**_pending_context(self.request), **kwargs)
+
+
+class ResendVerificationView(LoginRequiredMixin, View):
+    def post(self, request):
+        if not request.user.is_email_verified:
+            if services.send_verification_email(request.user):
+                messages.success(request, _("We sent a new confirmation link to %(email)s.") % {"email": request.user.email})
+            else:
+                messages.error(request, _("Too many emails were requested. Please wait an hour and try again."))
+        return redirect("accounts:verify_email_pending")
+
+
+class ChangeEmailView(LoginRequiredMixin, View):
+    def post(self, request):
+        form = ChangeEmailForm(request.POST, user=request.user)
+        if form.is_valid():
+            try:
+                services.change_unverified_email(user=request.user, new_email=form.cleaned_data["email"])
+                messages.success(request, _("Email address updated. We sent a confirmation link to %(email)s.") % {"email": request.user.email})
+                return redirect("accounts:verify_email_pending")
+            except DomainError as exc:
+                form.add_error("email", exc.message)
+        return render(request, VerifyEmailPendingView.template_name, _pending_context(request, form))
+
+
+class VerifyEmailView(View):
+    """Target of the emailed link. Works whether or not the person is signed in."""
+
+    def get(self, request, token):
+        try:
+            user = services.verify_email(token)
+        except DomainError as exc:
+            messages.error(request, exc.message)
+            return redirect("accounts:verify_email_pending" if request.user.is_authenticated else "accounts:login")
+        if request.user.is_authenticated and request.user.pk == user.pk:
+            messages.success(request, _("Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has been set up."))
+            return redirect("tenants:settings")
+        messages.success(request, _("Email address confirmed. You can sign in now."))
+        # Someone else may be signed in on this browser; don't switch accounts.
+        return redirect("dashboard:home" if request.user.is_authenticated else "accounts:login")

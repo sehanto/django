@@ -1,0 +1,12 @@
+{% load i18n ui %}{% autoescape off %}{% blocktranslate trimmed with name=user.get_short_name %}Hello {{ name }},{% endblocktranslate %}
+
+{% blocktranslate trimmed with email=user.email %}Welcome to {{ site_name }}! Please confirm that {{ email }} is your email address by opening this link:{% endblocktranslate %}
+
+{{ link }}
+
+{% blocktranslate trimmed with lifetime=lifetime|timeuntil_delta %}The link is valid for {{ lifetime }}.{% endblocktranslate %}
+
+{% blocktranslate trimmed %}If you did not create this account, you can ignore this email.{% endblocktranslate %}
+
+{{ site_name }}
+{% endautoescape %}

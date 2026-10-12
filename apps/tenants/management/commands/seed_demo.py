@@ -43,7 +43,9 @@ class Command(BaseCommand):
         User = get_user_model()
         if User.objects.filter(email=email).exists():
             raise CommandError(f"User {email} already exists.")
-        user = User.objects.create_user(email=email, password=password, full_name="Rina Wulandari")
+        user = User.objects.create_user(
+            email=email, password=password, full_name="Rina Wulandari", email_verified_at=timezone.now()
+        )
         org = create_organization(
             owner=user, name="Kopi Nusantara Rina", legal_form="perorangan", is_pkp=True,
             npwp="0123456789012345", address="Jl. Malioboro No. 12", city="Yogyakarta", phone="0812-3456-7890",
