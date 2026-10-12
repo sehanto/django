@@ -11,10 +11,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.oath import TOTP
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.accounts import two_factor
-from apps.accounts.models import TrustedDevice
+from apps.accounts.models import AuthenticatorDevice, TrustedDevice
 from apps.accounts.trusted_devices import COOKIE_NAME
 
 LOGIN = reverse("accounts:login")
@@ -33,7 +32,7 @@ def code_for(device, steps_ahead=1) -> str:
 def device(user):
     totp = two_factor.start_setup(user)
     two_factor.confirm_setup(user, totp, code_for(totp, steps_ahead=0))
-    return TOTPDevice.objects.get(pk=totp.pk)
+    return AuthenticatorDevice.objects.get(pk=totp.pk)
 
 
 def sign_in(client, user, password=PASSWORD):

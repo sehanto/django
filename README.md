@@ -116,7 +116,7 @@ The tests cover:
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
 - email verification (gate, link validity and tampering, resend throttle, address correction)
-- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin, organization requirement, remembered devices)
+- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin, organization requirement, remembered devices, encryption at rest and key rotation)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -197,6 +197,45 @@ Users can protect their account with a second factor from **Profile → Security
 | Turning off | Needs the password and a current code. |
 | Notifications | Turning 2FA on or off and regenerating backup codes email the account holder (in their language). |
 | Django admin | Requires a verified second factor (`OTPAdminSite`). **Staff must turn on 2FA in the app before they can use the admin.** |
+
+### How 2FA secrets are stored
+
+The database never holds a usable 2FA secret:
+
+| Secret | Stored as |
+|---|---|
+| Authenticator key | Encrypted with Fernet (AES-128-CBC + HMAC-SHA256, authenticated); the server decrypts it only to check a code. |
+| Backup codes | HMAC-SHA256 with a secret key ("pepper"), one-way. Each code has only 40 random bits, so a plain hash could be brute-forced; without the key it can't. |
+
+The key is `FIELD_ENCRYPTION_KEYS`, a list of Fernet keys with the newest first. It is deliberately
+separate from `SECRET_KEY` and **required in production**. Generate one with:
+
+```bash
+.venv/bin/python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+> **Keep this key safe and backed up separately from database backups**, in a secrets manager or
+> your host's secret settings. If it is lost, every user's 2FA stops working and they must be
+> reset by support. If it leaks together with a database copy, the protection is gone.
+
+To rotate it:
+
+1. Put the new key **first** and keep the old one after it, then deploy.
+2. Re-encrypt the authenticator keys:
+
+   ```bash
+   .venv/bin/python manage.py rotate_encryption_keys
+   ```
+
+3. Keep the old key while backup codes made under it are still in use, since one-way hashes can't be
+   re-hashed. Remove it once users have regenerated their codes, or accept that their old codes stop working.
+
+Outside production, a development key is derived from `SECRET_KEY` automatically.
+
+Devices are built on django-otp's device API (`AuthenticatorDevice`, `BackupCodeDevice`), so
+throttling, replay protection and session verification are django-otp's own. Devices created
+before encryption was added were migrated automatically, and the plaintext rows were deleted.
+django-otp's admin pages for its plaintext models are switched off.
 
 ### Remember this device
 
@@ -354,7 +393,8 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 ## Production
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
-`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL`, `SITE_URL` (the public
+`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL`, `FIELD_ENCRYPTION_KEYS` (see
+[How 2FA secrets are stored](#how-2fa-secrets-are-stored)), `SITE_URL` (the public
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
 and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above.
 

@@ -1,5 +1,7 @@
 """Base settings shared by every environment."""
 
+import base64
+import hashlib
 from datetime import timedelta
 from pathlib import Path
 
@@ -183,3 +185,11 @@ TWO_FACTOR_PENDING_SECONDS = 5 * 60  # time to enter the code after the password
 TWO_FACTOR_MAX_ATTEMPTS = 5  # wrong codes before the password must be entered again
 TWO_FACTOR_BACKUP_CODES = 10
 TWO_FACTOR_REMEMBER_DAYS = 30  # "don't ask again on this device"
+
+# Encryption keys for secrets stored in the database (2FA secrets, backup-code hashes);
+# Fernet keys, newest first. Separate from SECRET_KEY. Production must set them
+# (generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())").
+# Outside production a stable development key is derived from SECRET_KEY.
+FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[]) or [
+    base64.urlsafe_b64encode(hashlib.sha256(f"dev-field-key:{SECRET_KEY}".encode()).digest()).decode()
+]

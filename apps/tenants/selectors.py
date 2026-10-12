@@ -1,5 +1,4 @@
 from django.db.models import Exists, OuterRef, QuerySet
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from .models import Membership, Organization, Plan
 
@@ -19,7 +18,9 @@ def organizations_for_user(user) -> QuerySet[Organization]:
 
 def members_of(organization) -> QuerySet[Membership]:
     """Members with ``has_two_factor`` (a confirmed authenticator) for the team page."""
-    authenticator = TOTPDevice.objects.filter(user=OuterRef("user"), confirmed=True)
+    from apps.accounts.models import AuthenticatorDevice  # accounts depends on tenants; import at use
+
+    authenticator = AuthenticatorDevice.objects.filter(user=OuterRef("user"), confirmed=True)
     return (
         Membership.objects.filter(organization=organization)
         .select_related("user")

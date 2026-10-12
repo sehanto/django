@@ -7,3 +7,4 @@ requests>=2.32
 django-axes>=8.3,<9
 django-otp>=1.7,<2
 segno>=1.6
+cryptography>=43

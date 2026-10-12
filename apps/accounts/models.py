@@ -1,9 +1,17 @@
+import secrets
+import time
+from base64 import b32encode
+from urllib.parse import quote, urlencode
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_otp.models import Device, ThrottlingMixin, TimestampMixin
+from django_otp.oath import TOTP
 
+from apps.core import crypto
 from apps.core.validators import phone_validator
 
 
@@ -88,3 +96,102 @@ class TrustedDevice(models.Model):
 
     def __str__(self):
         return f"{self.user} · {self.label}"
+
+
+# --- Two-factor devices with secrets protected at rest -------------------------------------
+# Same behaviour as django-otp's TOTPDevice / StaticDevice (which store secrets in plain
+# text), built on django-otp's Device API so match_token, throttling, session
+# verification and OTPAdminSite work unchanged.
+
+
+class AuthenticatorDevice(TimestampMixin, ThrottlingMixin, Device):
+    """Authenticator app (TOTP, RFC 6238). The shared secret is stored Fernet-encrypted."""
+
+    encrypted_key = models.TextField()
+    step = models.PositiveSmallIntegerField(default=30)
+    t0 = models.BigIntegerField(default=0)
+    digits = models.PositiveSmallIntegerField(default=6)
+    tolerance = models.PositiveSmallIntegerField(default=1)
+    drift = models.SmallIntegerField(default=0)
+    last_t = models.BigIntegerField(default=-1)  # replay protection: next code must be newer
+
+    class Meta(Device.Meta):
+        verbose_name = _("authenticator app")
+        verbose_name_plural = _("authenticator apps")
+
+    @classmethod
+    def new(cls, user, **fields) -> "AuthenticatorDevice":
+        device = cls(user=user, **fields)
+        device.set_key(secrets.token_bytes(20))  # 160-bit secret, as recommended by RFC 4226
+        return device
+
+    def set_key(self, key: bytes) -> None:
+        self.encrypted_key = crypto.encrypt(key)
+
+    @property
+    def bin_key(self) -> bytes:
+        return crypto.decrypt(self.encrypted_key)
+
+    def verify_token(self, token) -> bool:
+        verify_allowed, _ = self.verify_is_allowed()
+        if not verify_allowed:
+            return False
+        try:
+            token = int(token)
+        except (TypeError, ValueError):
+            verified = False
+        else:
+            totp = TOTP(self.bin_key, self.step, self.t0, self.digits, self.drift)
+            totp.time = time.time()
+            verified = totp.verify(token, self.tolerance, self.last_t + 1)
+            if verified:
+                self.last_t = totp.t()
+                if getattr(settings, "OTP_TOTP_SYNC", True):
+                    self.drift = totp.drift
+                self.throttle_reset(commit=False)
+                self.set_last_used_timestamp(commit=False)
+                self.save()
+        if not verified:
+            self.throttle_increment(commit=True)
+        return verified
+
+    def get_throttle_factor(self):
+        return getattr(settings, "OTP_TOTP_THROTTLE_FACTOR", 1)
+
+    @property
+    def config_url(self) -> str:
+        """otpauth:// URL for the QR code (Key Uri Format)."""
+        issuer = settings.OTP_TOTP_ISSUER.replace(":", "")
+        label = f"{issuer}:{self.user.get_username()}"
+        params = urlencode({"secret": b32encode(self.bin_key), "algorithm": "SHA1", "digits": self.digits, "period": self.step})
+        return f"otpauth://totp/{quote(label)}?{params}&issuer={quote(issuer)}"
+
+
+class BackupCodeDevice(TimestampMixin, ThrottlingMixin, Device):
+    """Single-use backup codes, stored only as keyed hashes (HMAC-SHA256 with a secret key)."""
+
+    class Meta(Device.Meta):
+        verbose_name = _("backup codes")
+        verbose_name_plural = _("backup codes")
+
+    def verify_token(self, token) -> bool:
+        verify_allowed, _ = self.verify_is_allowed()
+        if not verify_allowed:
+            return False
+        match = self.codes.filter(code_hash__in=crypto.keyed_hash_candidates(str(token))).first()
+        if match is None:
+            self.throttle_increment()
+            return False
+        match.delete()  # single use
+        self.throttle_reset(commit=False)
+        self.set_last_used_timestamp(commit=False)
+        self.save()
+        return True
+
+    def get_throttle_factor(self):
+        return getattr(settings, "OTP_STATIC_THROTTLE_FACTOR", 1)
+
+
+class BackupCode(models.Model):
+    device = models.ForeignKey(BackupCodeDevice, on_delete=models.CASCADE, related_name="codes")
+    code_hash = models.CharField(max_length=64, db_index=True)

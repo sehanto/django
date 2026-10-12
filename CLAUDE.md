@@ -22,4 +22,5 @@ Conventions:
 - 2FA uses django-otp (`apps/accounts/two_factor.py`); the login view stops after the password when 2FA is on (`two_factor.begin_login` → `accounts:login_otp`). The admin is an `OTPAdminSite`. In tests, compute codes with `django_otp.oath.TOTP` and let back-off pass by patching `django_otp.models.timezone.now`.
 - `Organization.require_two_factor` is enforced by `apps.tenants.middleware.TwoFactorRequirementMiddleware` (checks `request.user.is_verified()`); views a member must reach before completing 2FA go in its `EXEMPT` set.
 - Remembered devices (`apps/accounts/trusted_devices.py`) skip only the code step and are bound to `user.get_session_auth_hash()`. In tests sign out via the logout view, not `client.logout()` (which also wipes the remember cookie).
+- 2FA devices are `accounts.AuthenticatorDevice` (Fernet-encrypted key) and `BackupCodeDevice`/`BackupCode` (keyed hashes); never use django-otp's `TOTPDevice`/`StaticDevice` (plaintext). Encryption/hashing goes through `apps.core.crypto` with `FIELD_ENCRYPTION_KEYS`.
 - Tests must not rely on data migrations (transactional tests flush the DB); create needed rows in fixtures.

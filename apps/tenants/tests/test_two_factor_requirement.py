@@ -8,9 +8,9 @@ from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
 from django_otp.oath import TOTP
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.accounts import two_factor
+from apps.accounts.models import AuthenticatorDevice
 from apps.tenants.roles import Role
 from apps.tenants.services import create_organization
 
@@ -26,10 +26,10 @@ def code_for(device, steps_ahead=0) -> str:
     return f"{totp.token():0{device.digits}d}"
 
 
-def enable_2fa(user) -> TOTPDevice:
+def enable_2fa(user) -> AuthenticatorDevice:
     device = two_factor.start_setup(user)
     two_factor.confirm_setup(user, device, code_for(device))
-    return TOTPDevice.objects.get(pk=device.pk)
+    return AuthenticatorDevice.objects.get(pk=device.pk)
 
 
 def settings_post(organization, **overrides):

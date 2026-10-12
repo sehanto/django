@@ -7,7 +7,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django_otp import login as otp_login
-from django_otp.plugins.otp_static.models import StaticDevice
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
@@ -40,6 +39,7 @@ from .forms import (
     TwoFactorLoginForm,
 )
 from .middleware import SUPPORTED_LANGUAGES
+from .models import BackupCodeDevice
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +333,7 @@ class LoginOTPView(FormView):
             services.send_security_notice(
                 self.user, "device_remembered", days=settings.TWO_FACTOR_REMEMBER_DAYS, device=remembered.label
             )
-        if isinstance(device, StaticDevice):
+        if isinstance(device, BackupCodeDevice):
             left = two_factor.remaining_backup_codes(self.user)
             messages.warning(self.request, ngettext(
                 "You signed in with a backup code. %(count)s backup code is left.",

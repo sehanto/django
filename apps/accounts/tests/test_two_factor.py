@@ -12,9 +12,9 @@ from django.core import mail
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.oath import TOTP
-from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.accounts import two_factor
+from apps.accounts.models import AuthenticatorDevice
 
 LOGIN = reverse("accounts:login")
 OTP = reverse("accounts:login_otp")
@@ -40,7 +40,7 @@ def enabled(user):
     """User with an authenticator and backup codes (the setup code is already used)."""
     device = two_factor.start_setup(user)
     codes = two_factor.confirm_setup(user, device, code_for(device))
-    return {"device": TOTPDevice.objects.get(pk=device.pk), "backup_codes": codes}
+    return {"device": AuthenticatorDevice.objects.get(pk=device.pk), "backup_codes": codes}
 
 
 def password_step(client, user, next_url=None):
@@ -54,7 +54,7 @@ def password_step(client, user, next_url=None):
 def test_setup_flow(auth_client, user):
     page = auth_client.get(reverse("accounts:two_factor_setup"))
     assert page.context["qr_code"].startswith("data:image/svg+xml")
-    device = TOTPDevice.objects.get(user=user, confirmed=False)
+    device = AuthenticatorDevice.objects.get(user=user, confirmed=False)
     assert page.context["manual_key"].replace(" ", "")  # typed-in fallback
 
     bad_password = auth_client.post(reverse("accounts:two_factor_setup"), {"password": "nope", "code": code_for(device)})
@@ -194,5 +194,5 @@ def test_admin_requires_a_verified_second_factor(client, django_user_model):
     two_factor.confirm_setup(admin, device, code_for(device))
     client.logout()
     client.post(LOGIN, {"username": admin.email, "password": PASSWORD})
-    client.post(OTP, {"code": code_for(TOTPDevice.objects.get(pk=device.pk), steps_ahead=1)})
+    client.post(OTP, {"code": code_for(AuthenticatorDevice.objects.get(pk=device.pk), steps_ahead=1)})
     assert client.get(reverse("admin:index")).status_code == 200

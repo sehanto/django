@@ -24,3 +24,6 @@ XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
 # SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
 vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
+
+# Database field encryption keys are required in production (never derived from SECRET_KEY).
+FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS")  # noqa: F405

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 20:01+0700\n"
-"PO-Revision-Date: 2026-10-12 20:01\n"
+"POT-Creation-Date: 2026-10-12 20:08+0700\n"
+"PO-Revision-Date: 2026-10-12 20:08\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: apps/accounts/admin.py:16 templates/accounts/profile.html:2
+#: apps/accounts/admin.py:18 templates/accounts/profile.html:2
 msgid "Profile"
 msgstr "Profil"
 
-#: apps/accounts/admin.py:17
+#: apps/accounts/admin.py:19
 msgid "Permissions"
 msgstr "Hak akses"
 
-#: apps/accounts/admin.py:18
+#: apps/accounts/admin.py:20
 msgid "Important dates"
 msgstr "Tanggal"
 
@@ -88,73 +88,85 @@ msgstr "Jangan minta kode di perangkat ini selama %(days)s hari"
 msgid "Only on your own device, never on a shared or public computer."
 msgstr "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
 
-#: apps/accounts/models.py:34 apps/contacts/models.py:22 apps/tenants/models.py:56
+#: apps/accounts/models.py:42 apps/contacts/models.py:22 apps/tenants/models.py:56
 msgid "email"
 msgstr "email"
 
-#: apps/accounts/models.py:35
+#: apps/accounts/models.py:43
 msgid "full name"
 msgstr "nama lengkap"
 
-#: apps/accounts/models.py:36
+#: apps/accounts/models.py:44
 msgid "phone number"
 msgstr "no. telepon"
 
-#: apps/accounts/models.py:38
+#: apps/accounts/models.py:46
 msgid "interface language"
 msgstr "bahasa antarmuka"
 
-#: apps/accounts/models.py:40 apps/contacts/models.py:37 apps/invoicing/models.py:43
+#: apps/accounts/models.py:48 apps/contacts/models.py:37 apps/invoicing/models.py:43
 #: apps/ledger/models.py:25 apps/taxes/models.py:27
 msgid "active"
 msgstr "aktif"
 
-#: apps/accounts/models.py:41
+#: apps/accounts/models.py:49
 msgid "staff status"
 msgstr "staf admin"
 
-#: apps/accounts/models.py:42
+#: apps/accounts/models.py:50
 msgid "date joined"
 msgstr "bergabung"
 
-#: apps/accounts/models.py:43
+#: apps/accounts/models.py:51
 msgid "email verified at"
 msgstr "email dikonfirmasi pada"
 
-#: apps/accounts/models.py:52
+#: apps/accounts/models.py:60
 msgid "user"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:53
+#: apps/accounts/models.py:61
 msgid "users"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:79
-#| msgid "Service"
+#: apps/accounts/models.py:87
 msgid "device"
 msgstr "perangkat"
 
-#: apps/accounts/models.py:80
-#| msgid "member"
+#: apps/accounts/models.py:88
 msgid "remembered on"
 msgstr "diingat pada"
 
-#: apps/accounts/models.py:81
+#: apps/accounts/models.py:89
 msgid "last used"
 msgstr "terakhir dipakai"
 
-#: apps/accounts/models.py:82
-#| msgid "Expired"
+#: apps/accounts/models.py:90
 msgid "expires"
 msgstr "berlaku sampai"
 
-#: apps/accounts/models.py:86
+#: apps/accounts/models.py:94
 msgid "remembered device"
 msgstr "perangkat yang diingat"
 
-#: apps/accounts/models.py:87
+#: apps/accounts/models.py:95
 msgid "remembered devices"
 msgstr "perangkat yang diingat"
+
+#: apps/accounts/models.py:119
+#| msgid "QR code for your authenticator app"
+msgid "authenticator app"
+msgstr "aplikasi autentikator"
+
+#: apps/accounts/models.py:120
+#| msgid "QR code for your authenticator app"
+msgid "authenticator apps"
+msgstr "aplikasi autentikator"
+
+#: apps/accounts/models.py:174 apps/accounts/models.py:175
+#| msgid "Backup codes"
+msgid "backup codes"
+msgstr "kode cadangan"
 
 #: apps/accounts/services.py:59
 msgid "This confirmation link has expired. Request a new one."
@@ -2162,7 +2174,6 @@ msgstr "Perangkat ini"
 
 #: templates/accounts/security.html:37
 #, python-format
-#| msgid "Revenue %(revenue)s · Expenses %(expense)s"
 msgid "Remembered %(created)s · until %(expires)s"
 msgstr "Diingat %(created)s · sampai %(expires)s"
 
