@@ -1,9 +1,11 @@
 from datetime import date, timedelta
+from unittest import mock
 
 import pytest
+from axes.models import AccessLog
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
@@ -61,12 +63,26 @@ def test_organization_deletion_is_logged_and_survives(organization):
     assert events(A.ORGANIZATION_CREATED, organization_name=organization.name).exists()
 
 
-def test_prune_removes_only_old_events(user):
-    old = AuditEvent.objects.create(action=A.LOGIN_SUCCEEDED, actor=user, created_at=timezone.now() - timedelta(days=800))
-    recent = audit.record(A.LOGIN_SUCCEEDED, actor=user)
-    call_command("prune_audit_log", "--days", "730")  # tests connect as the owner, who may prune
-    assert not AuditEvent.objects.filter(pk=old.pk).exists()
-    assert AuditEvent.objects.filter(pk=recent.pk).exists()
+def test_audit_events_and_sign_in_records_share_one_retention_period(user):
+    assert settings.SECURITY_LOG_RETENTION_DAYS == 90
+    days_ago = lambda days: timezone.now() - timedelta(days=days)  # noqa: E731
+    AuditEvent.objects.create(action=A.LOGIN_SUCCEEDED, actor=user, created_at=days_ago(91))
+    kept_event = AuditEvent.objects.create(action=A.LOGIN_SUCCEEDED, actor=user, created_at=days_ago(89))
+    old_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.5", user_agent="x")
+    kept_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.6", user_agent="x")
+    AccessLog.objects.filter(pk=old_sign_in.pk).update(attempt_time=days_ago(91))
+    AccessLog.objects.filter(pk=kept_sign_in.pk).update(attempt_time=days_ago(89))
+
+    call_command("prune_security_logs")  # default period; tests connect as the owner, who may prune
+
+    assert set(AuditEvent.objects.values_list("pk", flat=True)) == {kept_event.pk}
+    assert set(AccessLog.objects.values_list("pk", flat=True)) == {kept_sign_in.pk}
+
+
+def test_pruning_needs_the_owner(user):
+    with mock.patch("apps.audit.management.commands.prune_security_logs.connected_role_can_alter_schema", return_value=False):
+        with pytest.raises(CommandError, match="DATABASE_OWNER_URL"):
+            call_command("prune_security_logs")
 
 
 # --- Sign-in --------------------------------------------------------------------------

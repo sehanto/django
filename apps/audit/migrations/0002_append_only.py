@@ -3,7 +3,7 @@
 - INSERT: always allowed.
 - UPDATE: only clearing ``actor_id``/``organization_id`` (Django's SET_NULL when a
   user or organization is deleted); the email/name snapshots keep the record readable.
-- DELETE: only the owner of the table (retention pruning: ``manage.py prune_audit_log``).
+- DELETE: only the owner of the table (retention pruning: ``manage.py prune_security_logs``).
   The data-only app role can never remove or rewrite events.
 """
 
