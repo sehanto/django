@@ -16,6 +16,8 @@ APP_ROLE_GRANTS = (
     # Tables created later by the owner outside migrate (e.g. createcachetable).
     "ALTER DEFAULT PRIVILEGES IN SCHEMA {schema} GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {role}",
     "ALTER DEFAULT PRIVILEGES IN SCHEMA {schema} GRANT USAGE, SELECT ON SEQUENCES TO {role}",
+    # Tenant offboarding (ledger migration 0005): wipes one whole organization's ledger.
+    "GRANT EXECUTE ON FUNCTION {schema}.ledger_purge_organization(bigint) TO {role}",
     # Migration history is the owner's business.
     "REVOKE INSERT, UPDATE, DELETE ON {schema}.django_migrations FROM {role}",
 )

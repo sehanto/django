@@ -8,7 +8,7 @@ The database enforces the same invariants independently (triggers in
 ``ledger/migrations/0004_immutable_ledger.py``): entries are inserted as drafts,
 become posted only through a balanced ``draft -> posted`` update, and posted
 entries and their lines can never be updated or deleted. The only exception is
-``purge_organization_ledger`` (tenant offboarding).
+``purge_organization_ledger`` (tenant offboarding, migration 0005).
 """
 
 from collections.abc import Sequence
@@ -257,21 +257,14 @@ def reverse_manual_journal_entry(*, entry: JournalEntry, date: date, created_by=
     return reverse_journal_entry(entry=entry, date=date, created_by=created_by)
 
 
-PURGE_SETTING = "ledger.purge"  # read by the database triggers
-
-
 @transaction.atomic
 def purge_organization_ledger(organization) -> None:
     """Delete every journal entry of a tenant that is being offboarded.
 
-    The only sanctioned way to remove posted entries: it lifts the database
-    guard for this transaction, deletes, and restores it immediately.
+    The only sanctioned way to remove posted entries. The data-only app role
+    cannot lift the database guard itself; ``ledger_purge_organization`` (a
+    SECURITY DEFINER function owned by the schema owner, migration 0005) does it
+    for exactly one whole organization.
     """
     with connection.cursor() as cursor:
-        cursor.execute("SELECT set_config(%s, 'on', true)", [PURGE_SETTING])
-        try:
-            entries = JournalEntry.objects.filter(organization=organization)
-            entries.filter(reversal_of__isnull=False).delete()  # reversals point at their originals
-            entries.delete()
-        finally:
-            cursor.execute("SELECT set_config(%s, 'off', true)", [PURGE_SETTING])
+        cursor.execute("SELECT ledger_purge_organization(%s)", [organization.pk])

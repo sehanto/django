@@ -68,8 +68,10 @@ Key design decisions:
     may be cleared when that user is deleted).
 
   Tenant offboarding (`tenants.services.delete_organization`) is the single
-  exception: `ledger.services.purge_organization_ledger` lifts the guard for that
-  transaction only. A role that owns the tables can still disable triggers, so the
+  exception. `ledger.services.purge_organization_ledger` calls
+  `ledger_purge_organization(org_id)`, a `SECURITY DEFINER` function owned by the
+  schema owner. It can only wipe one whole organization's ledger. Only the owner can
+  lift the guard: the data-only app role cannot, even by setting `ledger.purge`. A role that owns the tables can still disable triggers, so the
   app connects as a data-only role (see [Database roles](#database-roles)).
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
@@ -119,7 +121,8 @@ The app uses two PostgreSQL roles:
 | Owner (`msme_user`, `DATABASE_OWNER_URL`) | `migrate`, `createcachetable`, the test runner | Everything on its tables: DDL, `DISABLE TRIGGER`, `TRUNCATE` |
 | App (`msme_app`, `DATABASE_URL`) | The web app, `seed_demo`, `process_billing` and other commands | `SELECT`/`INSERT`/`UPDATE`/`DELETE` on rows only |
 
-The app role cannot alter tables or disable triggers. The ledger's immutability
+The app role cannot alter tables, disable triggers, or switch the ledger guard off.
+Its only way to remove posted entries is offboarding a whole organization. The ledger's immutability
 triggers (see Architecture) therefore hold even if the application is compromised. It
 also cannot rewrite `django_migrations`.
 
