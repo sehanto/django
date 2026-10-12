@@ -2,6 +2,11 @@ from django import template
 from django.utils import timezone
 from django.utils.timesince import timeuntil
 
+from apps.billing.models import SubscriptionInvoice
+from apps.invoicing.domain import InvoiceStatus
+from apps.invoicing.models import InvoiceStatusFilter, Payment
+from apps.ledger.models import JournalEntry
+
 register = template.Library()
 
 
@@ -14,18 +19,24 @@ def add_class(field, css):
     return field.as_widget(attrs={"class": f"{existing} {css}".strip()})
 
 
+# Bootstrap colour per status. Members of different enums that share a value
+# (e.g. "paid", "void") are equal as dict keys, so they must share a colour.
 STATUS_BADGES = {
-    "draft": "secondary",
-    "posted": "success",
-    "issued": "primary",
-    "partial": "warning",
-    "paid": "success",
-    "void": "dark",
-    "overdue": "danger",
-    "pending": "warning",
-    "expired": "dark",
-    "canceled": "dark",
-    "failed": "danger",
+    JournalEntry.Status.DRAFT: "secondary",
+    JournalEntry.Status.POSTED: "success",
+    InvoiceStatus.DRAFT: "secondary",
+    InvoiceStatus.ISSUED: "primary",
+    InvoiceStatus.PARTIAL: "warning",
+    InvoiceStatus.PAID: "success",
+    InvoiceStatus.VOID: "dark",
+    InvoiceStatusFilter.OVERDUE: "danger",
+    Payment.Status.POSTED: "success",
+    Payment.Status.VOID: "dark",
+    SubscriptionInvoice.Status.PENDING: "warning",
+    SubscriptionInvoice.Status.PAID: "success",
+    SubscriptionInvoice.Status.EXPIRED: "dark",
+    SubscriptionInvoice.Status.CANCELED: "dark",
+    SubscriptionInvoice.Status.FAILED: "danger",
 }
 
 

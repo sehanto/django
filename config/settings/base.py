@@ -78,6 +78,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "apps.tenants.context_processors.current_organization",
                 "apps.billing.context_processors.subscription_notice",
+                "apps.invoicing.context_processors.invoice_kinds",
             ],
         },
     },

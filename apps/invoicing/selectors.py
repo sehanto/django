@@ -7,15 +7,15 @@ from django.utils import timezone
 
 from apps.core.money import ZERO
 
-from .domain import AGING_BUCKETS, aging_bucket
-from .models import Invoice, InvoiceKind, Item, Payment
+from .domain import AgingBucket, aging_bucket
+from .models import Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment
 
 
 def invoices_for(
     organization, kind: str, *, query: str = "", status: str = "", contact_id: int | None = None
 ) -> QuerySet[Invoice]:
     qs = Invoice.objects.for_organization(organization).filter(kind=kind).select_related("contact")
-    if status == "overdue":
+    if status == InvoiceStatusFilter.OVERDUE:
         qs = qs.filter(status__in=Invoice.OPEN_STATUSES, due_date__lt=timezone.localdate())
     elif status:
         qs = qs.filter(status=status)
@@ -69,7 +69,7 @@ def invoices_created_this_month(organization) -> int:
 @dataclass
 class AgingRow:
     contact_name: str
-    buckets: dict[str, Decimal] = field(default_factory=lambda: {key: ZERO for key, _ in AGING_BUCKETS})
+    buckets: dict[AgingBucket, Decimal] = field(default_factory=lambda: dict.fromkeys(AgingBucket, ZERO))
 
     @property
     def total(self) -> Decimal:
@@ -98,7 +98,7 @@ def aging_report(organization, kind: str) -> AgingReport:
     for invoice in open_invoices(organization, kind).order_by("contact__name"):
         row = rows.setdefault(invoice.contact_id, AgingRow(contact_name=invoice.contact.name))
         row.buckets[aging_bucket((today - invoice.due_date).days)] += invoice.balance_due
-    return AgingReport(as_of=today, rows=list(rows.values()), bucket_labels=AGING_BUCKETS)
+    return AgingReport(as_of=today, rows=list(rows.values()), bucket_labels=AgingBucket.choices)
 
 
 def outstanding_summary(organization, kind: str) -> dict:

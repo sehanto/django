@@ -30,7 +30,7 @@ from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subsc
 
 from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, coverage_for_payment, switch_quote, unused_credit
 from .gateways import get_gateway
-from .gateways.base import CheckoutRequest, GatewayError, PaymentStatus
+from .gateways.base import CheckoutRequest, GatewayError, GatewayName, PaymentStatus
 from .models import SubscriptionInvoice
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def _reusable_checkout(organization, plan, period, credit: Decimal) -> Subscript
     return pending.order_by("-created_at").first()
 
 
-def _new_invoice(organization, plan, period, quote: SwitchQuote, credit: Credit, *, gateway: str, created_by, **extra):
+def _new_invoice(organization, plan, period, quote: SwitchQuote, credit: Credit, *, gateway: GatewayName, created_by, **extra):
     charge = quote.charge
     invoice = SubscriptionInvoice.objects.create(
         number=f"tmp-{uuid.uuid4().hex[:20]}",
@@ -127,7 +127,7 @@ def _switch_with_credit(organization, plan, period, quote: SwitchQuote, credit: 
         extension_days=quote.extension_days,
     )
     invoice = _new_invoice(
-        organization, plan, period, quote, credit, gateway="credit", created_by=created_by,
+        organization, plan, period, quote, credit, gateway=GatewayName.CREDIT, created_by=created_by,
         status=Status.PAID, paid_at=timezone.now(), coverage_start=start, coverage_end=end,
     )
     invoice.coverage_value = credit.amount  # all of the credit went into this coverage

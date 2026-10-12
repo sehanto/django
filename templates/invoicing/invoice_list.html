@@ -12,7 +12,7 @@
 </div>
 <form class="row g-2 mb-3" method="get">
   <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, contact, reference' %}"></div>
-  <div class="col-md-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}<option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>{% translate "Overdue" %}</option></select></div>
+  <div class="col-md-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">

@@ -1,11 +1,11 @@
 from django.conf import settings
 
-from .base import PaymentGateway
+from .base import GatewayName, PaymentGateway
 
 
 def get_gateway() -> PaymentGateway:
-    """The configured gateway (``BILLING_GATEWAY``): ``"xendit"`` in production, ``"fake"`` for dev/tests."""
-    if settings.BILLING_GATEWAY == "xendit":
+    """The configured gateway (``BILLING_GATEWAY``): ``xendit`` in production, ``fake`` for dev/tests."""
+    if settings.BILLING_GATEWAY == GatewayName.XENDIT:
         from .xendit import XenditGateway
 
         return XenditGateway(
@@ -13,7 +13,7 @@ def get_gateway() -> PaymentGateway:
             callback_token=settings.XENDIT_CALLBACK_TOKEN,
             api_url=settings.XENDIT_API_URL,
         )
-    if settings.BILLING_GATEWAY == "fake":
+    if settings.BILLING_GATEWAY == GatewayName.FAKE:
         from .fake import FakeGateway
 
         return FakeGateway()

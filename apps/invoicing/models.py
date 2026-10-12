@@ -10,12 +10,17 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import code_validator, tax_invoice_number_validator
 
-from .domain import LineSpec, TaxSpec
+from .domain import InvoiceStatus, LineSpec, TaxSpec
 
 
 class InvoiceKind(models.TextChoices):
     SALES = "sales", _("Sales")
     PURCHASE = "purchase", _("Purchase")
+
+    @property
+    def payment_label(self) -> str:
+        """How payments against this kind of invoice are called."""
+        return _("Receipts (sales)") if self == InvoiceKind.SALES else _("Disbursements (purchases)")
 
 
 class Item(TenantOwnedModel):
@@ -52,12 +57,7 @@ class Item(TenantOwnedModel):
 
 
 class Invoice(TenantOwnedModel):
-    class Status(models.TextChoices):
-        DRAFT = "draft", _("Draft")
-        ISSUED = "issued", _("Unpaid")
-        PARTIAL = "partial", _("Partially paid")
-        PAID = "paid", _("Paid")
-        VOID = "void", _("Void")
+    Status = InvoiceStatus
 
     OPEN_STATUSES = (Status.ISSUED, Status.PARTIAL)
 
@@ -142,6 +142,13 @@ class InvoiceLine(TimeStampedModel):
         if self.tax_rate_id:
             tax = TaxSpec(self.tax_rate_id, self.tax_rate.rate, self.tax_rate.dpp_numerator, self.tax_rate.dpp_denominator)
         return LineSpec(self.quantity, self.unit_price, self.discount_percent, tax)
+
+
+# Invoice list filter: every stored status plus the derived "overdue" (open and past due).
+InvoiceStatusFilter = models.TextChoices(
+    "InvoiceStatusFilter",
+    [(status.name, (status.value, status.label)) for status in Invoice.Status] + [("OVERDUE", ("overdue", _("Overdue")))],
+)
 
 
 class Payment(TenantOwnedModel):

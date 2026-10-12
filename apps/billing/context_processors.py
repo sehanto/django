@@ -20,6 +20,7 @@ def subscription_notice(request):
     return {
         "subscription_notice": {
             "state": state,
+            "states": SubscriptionState,
             "plan": organization.plan.name,
             "paid_until": organization.plan_paid_until,
             "lapse_on": organization.plan_paid_until + timedelta(days=settings.BILLING_GRACE_DAYS + 1),

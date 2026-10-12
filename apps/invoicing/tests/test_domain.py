@@ -4,6 +4,8 @@ import pytest
 
 from apps.core.exceptions import ValidationFailed
 from apps.invoicing.domain import (
+    AgingBucket,
+    InvoiceStatus,
     LineSpec,
     TaxSpec,
     aging_bucket,
@@ -52,11 +54,14 @@ def test_allocate_keeps_total_exact():
 
 
 def test_payment_state():
-    assert payment_state(D("100"), D("0")) == "issued"
-    assert payment_state(D("100"), D("40")) == "partial"
-    assert payment_state(D("100"), D("100")) == "paid"
+    assert payment_state(D("100"), D("0")) == InvoiceStatus.ISSUED
+    assert payment_state(D("100"), D("40")) == InvoiceStatus.PARTIAL
+    assert payment_state(D("100"), D("100")) == InvoiceStatus.PAID
 
 
-@pytest.mark.parametrize(("days", "bucket"), [(-3, "current"), (0, "current"), (1, "d1_30"), (45, "d31_60"), (90, "d61_90"), (91, "d90_plus")])
+@pytest.mark.parametrize(("days", "bucket"), [
+    (-3, AgingBucket.CURRENT), (0, AgingBucket.CURRENT), (1, AgingBucket.DAYS_1_30),
+    (45, AgingBucket.DAYS_31_60), (90, AgingBucket.DAYS_61_90), (91, AgingBucket.OVER_90),
+])
 def test_aging_bucket(days, bucket):
     assert aging_bucket(days) == bucket

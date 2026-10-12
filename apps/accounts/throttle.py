@@ -1,11 +1,18 @@
 """Fixed-window request counters in Django's cache (shared across workers in production)."""
 
 import hashlib
+from enum import StrEnum
 
 from django.core.cache import cache
 
 
-def allow(scope: str, identity: str, *, limit: int, window_seconds: int) -> bool:
+class ThrottleScope(StrEnum):
+    EMAIL_VERIFICATION = "email-verification"
+    PASSWORD_RESET_EMAIL = "password-reset-email"
+    PASSWORD_RESET_IP = "password-reset-ip"
+
+
+def allow(scope: ThrottleScope, identity: str, *, limit: int, window_seconds: int) -> bool:
     """Count one event for ``identity`` and say whether it is still within ``limit`` per window."""
     digest = hashlib.sha256(identity.encode()).hexdigest()[:32]  # no personal data in cache keys
     key = f"throttle:{scope}:{digest}"

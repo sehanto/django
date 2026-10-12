@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TimeStampedModel, money_field
 
 from .domain import BillingPeriod
+from .gateways.base import GatewayName
 
 
 class SubscriptionInvoice(TimeStampedModel):
@@ -51,7 +52,7 @@ class SubscriptionInvoice(TimeStampedModel):
     total = money_field(_("total"))
 
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.PENDING)
-    gateway = models.CharField(_("payment gateway"), max_length=20)
+    gateway = models.CharField(_("payment gateway"), max_length=20, choices=GatewayName.choices)
     gateway_reference = models.CharField(_("gateway reference"), max_length=64, blank=True)
     gateway_payment_id = models.CharField(_("gateway payment ID"), max_length=64, blank=True)
     payment_url = models.URLField(_("payment link"), max_length=500, blank=True)

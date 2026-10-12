@@ -8,26 +8,37 @@ re-fetch the session and trust its status and amount, never the webhook body.
 import hmac
 import logging
 from decimal import Decimal
+from enum import StrEnum
 
 import requests
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 
-from .base import Checkout, CheckoutRequest, GatewayError, GatewayPayment, PaymentStatus
+from .base import Checkout, CheckoutRequest, GatewayError, GatewayName, GatewayPayment, PaymentStatus
 
 logger = logging.getLogger(__name__)
 
+
+class SessionStatus(StrEnum):
+    """Payment Session statuses as Xendit reports them."""
+
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    EXPIRED = "EXPIRED"
+    CANCELED = "CANCELED"
+
+
 STATUS_MAP = {
-    "ACTIVE": PaymentStatus.PENDING,
-    "COMPLETED": PaymentStatus.PAID,
-    "EXPIRED": PaymentStatus.EXPIRED,
-    "CANCELED": PaymentStatus.CANCELED,
+    SessionStatus.ACTIVE: PaymentStatus.PENDING,
+    SessionStatus.COMPLETED: PaymentStatus.PAID,
+    SessionStatus.EXPIRED: PaymentStatus.EXPIRED,
+    SessionStatus.CANCELED: PaymentStatus.CANCELED,
 }
 TIMEOUT_SECONDS = 15
 
 
 class XenditGateway:
-    name = "xendit"
+    name = GatewayName.XENDIT
 
     def __init__(self, *, secret_key: str, callback_token: str, api_url: str = "https://api.xendit.co", http=None):
         if not secret_key or not callback_token:

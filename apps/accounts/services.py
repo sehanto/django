@@ -31,7 +31,7 @@ def make_verification_token(user) -> str:
 
 def send_verification_email(user) -> bool:
     """Email a verification link (in the user's language). Returns False when throttled."""
-    if not throttle.allow("email-verification", str(user.pk), limit=settings.EMAIL_VERIFICATION_EMAILS_PER_HOUR, window_seconds=3600):
+    if not throttle.allow(throttle.ThrottleScope.EMAIL_VERIFICATION, str(user.pk), limit=settings.EMAIL_VERIFICATION_EMAILS_PER_HOUR, window_seconds=3600):
         logger.warning("Verification email throttled for user %s", user.pk)
         return False
     link = settings.SITE_URL.rstrip("/") + reverse("accounts:verify_email", args=[make_verification_token(user)])

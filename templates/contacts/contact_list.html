@@ -18,8 +18,8 @@
       <td>{{ c.name }}{% if not c.is_active %} <span class="badge text-bg-secondary">{% translate "inactive" %}</span>{% endif %}</td>
       <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.city }}</td>
       <td class="text-end text-nowrap">
-        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'sales' %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}"><i class="bi bi-receipt"></i></a>{% endif %}
-        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'purchase' %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}"><i class="bi bi-bag"></i></a>{% endif %}
+        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}"><i class="bi bi-receipt"></i></a>{% endif %}
+        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}"><i class="bi bi-bag"></i></a>{% endif %}
         {% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'contacts:update' c.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil"></i></a>
         <form method="post" action="{% url 'contacts:delete' c.pk %}" class="d-inline" data-confirm="{% translate 'Delete this contact?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash"></i></button></form>{% endif %}
       </td>

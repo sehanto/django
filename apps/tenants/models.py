@@ -102,6 +102,8 @@ class Organization(TimeStampedModel):
 class Membership(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="memberships")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="memberships")
+    Role = Role  # so templates can compare ``membership.role == membership.Role.OWNER``
+
     role = models.CharField(_("role"), max_length=20, choices=Role.choices, default=Role.VIEWER)
 
     class Meta:

@@ -12,8 +12,8 @@
   <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
     <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary"></i>{% translate "Receivables & payables aging" %}</h2>
     <p class="small text-secondary">{% translate "Open balances by days past due." %}</p>
-    <a href="{% url 'reports:aging' 'sales' %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
-    <a href="{% url 'reports:aging' 'purchase' %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>
+    <a href="{% url 'reports:aging' invoice_kinds.SALES %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
+    <a href="{% url 'reports:aging' invoice_kinds.PURCHASE %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>
   </div></div></div>
 </div>
 {% endblock %}

@@ -1,11 +1,12 @@
 import csv
 from datetime import timedelta
 
+from django.db import models
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
-from apps.core.params import year_choices, year_param
+from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import aging_report, vat_summary
@@ -14,6 +15,10 @@ from apps.tenants.mixins import OrganizationMixin
 
 from .forms import AsOfForm, LedgerForm, PeriodForm, start_of_year
 from .statements import build_balance_sheet, build_income_statement, build_trial_balance
+
+
+class ExportFormat(models.TextChoices):
+    CSV = "csv", "CSV"
 
 
 def csv_response(filename: str, rows) -> HttpResponse:
@@ -40,9 +45,9 @@ class ReportView(OrganizationMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         form = self.get_form()
         report = self.build(form.cleaned_data) if form.is_valid() else None
-        if report is not None and self.csv_name and request.GET.get("download") == "csv":
+        if report is not None and self.csv_name and choice_param(request.GET, "download", ExportFormat.values) == ExportFormat.CSV:
             return csv_response(self.csv_name, report.csv_rows())
-        return self.render_to_response(self.get_context_data(form=form, report=report))
+        return self.render_to_response(self.get_context_data(form=form, report=report, export_formats=ExportFormat))
 
 
 class ReportIndexView(OrganizationMixin, TemplateView):

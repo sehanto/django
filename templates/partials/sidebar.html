@@ -27,8 +27,8 @@
   <ul class="nav flex-column">
     <li><a class="nav-link {% if url.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2 me-2"></i>{% translate "Dashboard" %}</a></li>
     <li class="nav-heading">{% translate "Transactions" %}</li>
-    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == 'sales' %}active{% endif %}" href="{% url 'invoicing:list' 'sales' %}"><i class="bi bi-receipt me-2"></i>{% translate "Sales" %}</a></li>
-    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == 'purchase' %}active{% endif %}" href="{% url 'invoicing:list' 'purchase' %}"><i class="bi bi-bag me-2"></i>{% translate "Purchases" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.SALES %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.SALES %}"><i class="bi bi-receipt me-2"></i>{% translate "Sales" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.PURCHASE %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}"><i class="bi bi-bag me-2"></i>{% translate "Purchases" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'payments' %}active{% endif %}" href="{% url 'invoicing:payments' %}"><i class="bi bi-cash-coin me-2"></i>{% translate "Payments" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'journals' or url.url_name == 'journal_detail' or url.url_name == 'journal_create' %}active{% endif %}" href="{% url 'ledger:journals' %}"><i class="bi bi-journal-text me-2"></i>{% translate "General journal" %}</a></li>
     <li class="nav-heading">{% translate "Master data" %}</li>

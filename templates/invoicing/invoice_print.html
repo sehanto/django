@@ -12,7 +12,7 @@
     <div class="text-end">
       <h1 class="h3 text-uppercase mb-1">{% if invoice.is_sales %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</h1>
       <div class="fw-semibold">{{ invoice.number }}</div>
-      {% if invoice.status == 'void' %}<div class="text-danger fw-bold">{% translate "VOID" %}</div>{% elif invoice.status == 'paid' %}<div class="text-success fw-bold">{% translate "PAID" %}</div>{% endif %}
+      {% if invoice.status == invoice.Status.VOID %}<div class="text-danger fw-bold">{% translate "VOID" %}</div>{% elif invoice.status == invoice.Status.PAID %}<div class="text-success fw-bold">{% translate "PAID" %}</div>{% endif %}
     </div>
   </div>
   {% include "invoicing/_invoice_body.html" %}

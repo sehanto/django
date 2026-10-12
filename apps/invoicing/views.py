@@ -14,7 +14,7 @@ from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
 from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, VoidForm, line_inputs
-from .models import Invoice, InvoiceKind
+from .models import Invoice, InvoiceKind, InvoiceStatusFilter
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for
 
 # Complete phrases rather than fragments, so each language can word them naturally.
@@ -65,12 +65,12 @@ class InvoiceListView(InvoiceKindMixin, OrganizationMixin, ListView):
         return invoices_for(
             self.organization, self.kind,
             query=text_param(params, "q"),
-            status=choice_param(params, "status", [*Invoice.Status.values, "overdue"]),
+            status=choice_param(params, "status", InvoiceStatusFilter.values),
         )
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            statuses=Invoice.Status.choices, summary=outstanding_summary(self.organization, self.kind), **kwargs
+            statuses=InvoiceStatusFilter.choices, summary=outstanding_summary(self.organization, self.kind), **kwargs
         )
 
 
@@ -249,7 +249,7 @@ class PaymentListView(OrganizationMixin, ListView):
         )
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(kinds=InvoiceKind.choices, **kwargs)
+        return super().get_context_data(kinds=[(kind, kind.payment_label) for kind in InvoiceKind], **kwargs)
 
 
 class PaymentVoidView(WriteMixin, View):

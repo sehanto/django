@@ -173,8 +173,8 @@ class PasswordResetView(auth_views.PasswordResetView):
     def form_valid(self, form):
         email = form.cleaned_data["email"].lower()
         within_limits = all([
-            throttle.allow("password-reset-email", email, limit=settings.PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR, window_seconds=3600),
-            throttle.allow("password-reset-ip", client_ip(self.request) or "unknown",
+            throttle.allow(throttle.ThrottleScope.PASSWORD_RESET_EMAIL, email, limit=settings.PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR, window_seconds=3600),
+            throttle.allow(throttle.ThrottleScope.PASSWORD_RESET_IP, client_ip(self.request) or "unknown",
                            limit=settings.PASSWORD_RESET_REQUESTS_PER_IP_PER_HOUR, window_seconds=3600),
         ])
         if not within_limits:

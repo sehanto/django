@@ -3,13 +3,24 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 from typing import Protocol
+
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.exceptions import DomainError
 
 
-class PaymentStatus(Enum):
+class GatewayName(models.TextChoices):
+    """How a subscription invoice is settled (``SubscriptionInvoice.gateway``, ``BILLING_GATEWAY``)."""
+
+    XENDIT = "xendit", "Xendit"
+    FAKE = "fake", _("Simulated (development)")
+    CREDIT = "credit", _("Plan credit")  # fully covered by proration credit; no gateway involved
+
+
+class PaymentStatus(StrEnum):
     PENDING = "pending"
     PAID = "paid"
     EXPIRED = "expired"
@@ -46,7 +57,7 @@ class GatewayError(DomainError):
 
 
 class PaymentGateway(Protocol):
-    name: str
+    name: GatewayName
 
     def create_checkout(self, request: CheckoutRequest) -> Checkout: ...
 

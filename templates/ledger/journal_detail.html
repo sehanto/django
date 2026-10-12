@@ -7,11 +7,11 @@
     <div class="text-secondary">{{ entry.date|date:"d F Y" }} · {{ entry.get_source_display }}{% if entry.reference %} · {% translate "Reference" %}: {{ entry.reference }}{% endif %}</div>
   </div>
   {% if can_write %}<div class="d-flex gap-2 no-print">
-    {% if entry.status == 'draft' and entry.source == 'manual' %}
+    {% if entry.status == entry.Status.DRAFT and entry.source == entry.Source.MANUAL %}
       <a href="{% url 'ledger:journal_update' entry.pk %}" class="btn btn-outline-secondary">{% translate "Edit" %}</a>
       <form method="post" action="{% url 'ledger:journal_delete' entry.pk %}" data-confirm="{% translate 'Delete this draft?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Delete" %}</button></form>
       <form method="post" action="{% url 'ledger:journal_post' entry.pk %}">{% csrf_token %}<button class="btn btn-primary">{% translate "Post" %}</button></form>
-    {% elif entry.is_posted and entry.source == 'manual' and not entry.is_reversed %}
+    {% elif entry.is_posted and entry.source == entry.Source.MANUAL and not entry.is_reversed %}
       <form method="post" action="{% url 'ledger:journal_reverse' entry.pk %}" class="d-flex gap-2" data-confirm="{% translate 'Create a reversing entry?' %}">{% csrf_token %}
         {{ reverse_form.date|add_class:'form-control' }}<button class="btn btn-outline-danger text-nowrap">{% translate "Reverse entry" %}</button></form>
     {% endif %}

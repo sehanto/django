@@ -20,9 +20,9 @@ from apps.tenants.mixins import ManageMixin
 from apps.tenants.models import Plan
 
 from . import services
-from .domain import BillingPeriod
+from .domain import BillingPeriod, SubscriptionState
 from .gateways import get_gateway
-from .gateways.base import GatewayError, PaymentStatus
+from .gateways.base import GatewayError, GatewayName, PaymentStatus
 from .models import SubscriptionInvoice
 from .selectors import invoices_for, plan_offers, state_of
 
@@ -38,6 +38,8 @@ class OverviewView(ManageMixin, TemplateView):
             state=state_of(self.organization),
             invoices=invoices_for(self.organization)[:24],
             grace_days=settings.BILLING_GRACE_DAYS,
+            states=SubscriptionState,
+            periods=BillingPeriod,
             **kwargs,
         )
 
@@ -143,21 +145,22 @@ class FakeCheckoutView(ManageMixin, TemplateView):
     """Development stand-in for the hosted payment page (fake gateway only)."""
 
     template_name = "billing/fake_checkout.html"
+    OUTCOMES = (PaymentStatus.PAID, PaymentStatus.EXPIRED)
 
     def dispatch(self, request, *args, **kwargs):
-        if settings.BILLING_GATEWAY != "fake":
+        if settings.BILLING_GATEWAY != GatewayName.FAKE:
             raise Http404
         return super().dispatch(request, *args, **kwargs)
 
     def get_invoice(self):
-        return get_object_or_404(invoices_for(self.organization), gateway="fake", gateway_reference=self.kwargs["reference"])
+        return get_object_or_404(invoices_for(self.organization), gateway=GatewayName.FAKE, gateway_reference=self.kwargs["reference"])
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(invoice=self.get_invoice(), **kwargs)
+        return super().get_context_data(invoice=self.get_invoice(), paid=PaymentStatus.PAID, expired=PaymentStatus.EXPIRED, **kwargs)
 
     def post(self, request, reference):
         invoice = self.get_invoice()
-        outcome = PaymentStatus.PAID if request.POST.get("outcome") == "paid" else PaymentStatus.EXPIRED
+        outcome = PaymentStatus(choice_param(request.POST, "outcome", self.OUTCOMES, default=PaymentStatus.EXPIRED))
         get_gateway().simulate(reference, outcome)
         services.handle_webhook(headers={}, payload={"reference": reference})  # what the real webhook would do
         return redirect(reverse("billing:invoice", args=[invoice.pk]) + "?returned=1")

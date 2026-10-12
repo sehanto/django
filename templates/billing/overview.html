@@ -7,7 +7,7 @@
   <div>
     <div class="stat-label">{% translate "Current plan" %}</div>
     <div class="fs-4 fw-semibold">{{ current_organization.plan.name }}
-      <span class="badge align-middle {% if state == 'active' %}text-bg-success{% elif state == 'expiring' %}text-bg-warning{% elif state == 'grace' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ state.label }}</span>
+      <span class="badge align-middle {% if state == states.ACTIVE %}text-bg-success{% elif state == states.EXPIRING %}text-bg-warning{% elif state == states.GRACE %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ state.label }}</span>
     </div>
   </div>
   <div class="text-secondary">
@@ -48,8 +48,8 @@
         {% else %}
           <form method="post" action="{% url 'billing:checkout' %}" class="d-grid gap-2">{% csrf_token %}
             <input type="hidden" name="plan" value="{{ plan.pk }}">
-            {% include "billing/_offer_button.html" with quote=offer.monthly period="monthly" css="btn-outline-primary" %}
-            {% include "billing/_offer_button.html" with quote=offer.yearly period="yearly" css="btn-primary" %}
+            {% include "billing/_offer_button.html" with quote=offer.monthly period=periods.MONTHLY css="btn-outline-primary" %}
+            {% include "billing/_offer_button.html" with quote=offer.yearly period=periods.YEARLY css="btn-primary" %}
             <div class="small text-secondary text-center">{% translate "Amounts include PPN." %}</div>
           </form>
         {% endif %}

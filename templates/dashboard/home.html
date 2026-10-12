@@ -4,8 +4,8 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
   <div><h1 class="h4 mb-0">{% translate "Dashboard" %}</h1><div class="text-secondary small">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
   {% if can_write %}<div class="d-flex gap-2">
-    <a href="{% url 'invoicing:create' 'sales' %}" class="btn btn-primary"><i class="bi bi-receipt"></i> {% translate "Sales invoice" %}</a>
-    <a href="{% url 'invoicing:create' 'purchase' %}" class="btn btn-outline-primary"><i class="bi bi-bag"></i> {% translate "Record purchase" %}</a>
+    <a href="{% url 'invoicing:create' invoice_kinds.SALES %}" class="btn btn-primary"><i class="bi bi-receipt"></i> {% translate "Sales invoice" %}</a>
+    <a href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}" class="btn btn-outline-primary"><i class="bi bi-bag"></i> {% translate "Record purchase" %}</a>
   </div>{% endif %}
 </div>
 
@@ -14,11 +14,11 @@
     <div class="stat-label">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
     <div class="small text-secondary">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
   </div></div></div>
-  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' 'sales' %}" class="card h-100 text-decoration-none"><div class="card-body">
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' invoice_kinds.SALES %}" class="card h-100 text-decoration-none"><div class="card-body">
     <div class="stat-label">{% translate "Accounts receivable" %}</div><div class="stat-value text-body">{{ receivables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=receivables %}
   </div></a></div>
-  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' 'purchase' %}" class="card h-100 text-decoration-none"><div class="card-body">
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}" class="card h-100 text-decoration-none"><div class="card-body">
     <div class="stat-label">{% translate "Accounts payable" %}</div><div class="stat-value text-body">{{ payables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=payables %}
   </div></a></div>
@@ -52,8 +52,8 @@
     </table>
   </div></div></div>
   <div class="col-xl-5">
-    {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind="sales" empty=_("No sales invoices yet.") %}
-    {% include "dashboard/_recent.html" with title=_("Recent purchases") invoices=recent_purchases kind="purchase" empty=_("No purchase bills yet.") %}
+    {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind=invoice_kinds.SALES empty=_("No sales invoices yet.") %}
+    {% include "dashboard/_recent.html" with title=_("Recent purchases") invoices=recent_purchases kind=invoice_kinds.PURCHASE empty=_("No purchase bills yet.") %}
   </div>
 </div>
 {% endblock %}

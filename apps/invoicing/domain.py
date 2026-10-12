@@ -5,6 +5,7 @@ from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.exceptions import ValidationFailed
@@ -12,6 +13,22 @@ from apps.core.money import ZERO, quantize
 from apps.taxes.domain import compute_vat
 
 HUNDRED = Decimal("100")
+
+
+class InvoiceStatus(models.TextChoices):
+    DRAFT = "draft", _("Draft")
+    ISSUED = "issued", _("Unpaid")
+    PARTIAL = "partial", _("Partially paid")
+    PAID = "paid", _("Paid")
+    VOID = "void", _("Void")
+
+
+class AgingBucket(models.TextChoices):
+    CURRENT = "current", _("Not yet due")
+    DAYS_1_30 = "d1_30", _("1-30 days")
+    DAYS_31_60 = "d31_60", _("31-60 days")
+    DAYS_61_90 = "d61_90", _("61-90 days")
+    OVER_90 = "d90_plus", _("> 90 days")
 
 
 @dataclass(frozen=True)
@@ -94,36 +111,22 @@ def allocate(amount: Decimal, weights: Sequence[Decimal]) -> list[Decimal]:
     return shares
 
 
-class PaymentState:
-    ISSUED = "issued"
-    PARTIAL = "partial"
-    PAID = "paid"
-
-
-def payment_state(total: Decimal, amount_paid: Decimal) -> str:
+def payment_state(total: Decimal, amount_paid: Decimal) -> InvoiceStatus:
     if amount_paid <= 0:
-        return PaymentState.ISSUED
+        return InvoiceStatus.ISSUED
     if amount_paid >= total:
-        return PaymentState.PAID
-    return PaymentState.PARTIAL
+        return InvoiceStatus.PAID
+    return InvoiceStatus.PARTIAL
 
 
-def aging_bucket(days_overdue: int) -> str:
+def aging_bucket(days_overdue: int) -> AgingBucket:
     if days_overdue <= 0:
-        return "current"
+        return AgingBucket.CURRENT
     if days_overdue <= 30:
-        return "d1_30"
+        return AgingBucket.DAYS_1_30
     if days_overdue <= 60:
-        return "d31_60"
+        return AgingBucket.DAYS_31_60
     if days_overdue <= 90:
-        return "d61_90"
-    return "d90_plus"
+        return AgingBucket.DAYS_61_90
+    return AgingBucket.OVER_90
 
-
-AGING_BUCKETS = [
-    ("current", _("Not yet due")),
-    ("d1_30", _("1-30 days")),
-    ("d31_60", _("31-60 days")),
-    ("d61_90", _("61-90 days")),
-    ("d90_plus", _("> 90 days")),
-]

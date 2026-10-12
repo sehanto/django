@@ -17,11 +17,11 @@ from django.utils import timezone
 
 from apps.contacts.models import Contact
 from apps.invoicing import services as invoicing
-from apps.invoicing.models import InvoiceKind, Item
+from apps.invoicing.models import InvoiceKind, Item, Payment
 from apps.ledger.models import Account
 from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.taxes.models import TaxRate
-from apps.tenants.models import Plan
+from apps.tenants.models import Organization, Plan
 from apps.tenants.services import create_organization, set_subscription
 
 D = Decimal
@@ -47,7 +47,7 @@ class Command(BaseCommand):
             email=email, password=password, full_name="Rina Wulandari", email_verified_at=timezone.now()
         )
         org = create_organization(
-            owner=user, name="Kopi Nusantara Rina", legal_form="perorangan", is_pkp=True,
+            owner=user, name="Kopi Nusantara Rina", legal_form=Organization.LegalForm.PERORANGAN, is_pkp=True,
             npwp="0123456789012345", address="Jl. Malioboro No. 12", city="Yogyakarta", phone="0812-3456-7890",
         )
 
@@ -72,7 +72,7 @@ class Command(BaseCommand):
         )
 
         customers = [
-            Contact.objects.create(organization=org, kind="customer", name=name, payment_terms_days=terms, city=city, npwp=npwp)
+            Contact.objects.create(organization=org, kind=Contact.Kind.CUSTOMER, name=name, payment_terms_days=terms, city=city, npwp=npwp)
             for name, terms, city, npwp in [
                 ("PT Hotel Merapi Indah", 30, "Sleman", "0987654321098765"),
                 ("Kafe Senja", 14, "Yogyakarta", ""),
@@ -80,7 +80,7 @@ class Command(BaseCommand):
             ]
         ]
         suppliers = [
-            Contact.objects.create(organization=org, kind="supplier", name=name, payment_terms_days=30, city=city)
+            Contact.objects.create(organization=org, kind=Contact.Kind.SUPPLIER, name=name, payment_terms_days=30, city=city)
             for name, city in [("UD Petani Kopi Temanggung", "Temanggung"), ("Toko Kemasan Sejahtera", "Yogyakarta")]
         ]
         arabika = Item.objects.create(
@@ -89,7 +89,7 @@ class Command(BaseCommand):
             expense_account=acc("5-1000"), tax_rate=ppn,
         )
         Item.objects.create(
-            organization=org, code="JASA-BARISTA", name="Pelatihan Barista", type="service", unit="sesi",
+            organization=org, code="JASA-BARISTA", name="Pelatihan Barista", type=Item.Type.SERVICE, unit="sesi",
             sale_price=D("1500000"), income_account=acc("4-1100"), tax_rate=ppn,
         )
 
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                 invoice = invoicing.issue_invoice(invoice=invoice, issued_by=user)
                 paid_on = sale_day + timedelta(days=customer.payment_terms_days)
                 if paid_on <= today - timedelta(days=10) and not (month >= 4 and index == 0):
-                    invoicing.record_payment(invoice=invoice, date=paid_on, amount=invoice.total, cash_account=acc("1-1100"), method="transfer")
+                    invoicing.record_payment(invoice=invoice, date=paid_on, amount=invoice.total, cash_account=acc("1-1100"), method=Payment.Method.TRANSFER)
 
             for code, amount, label in [("6-1100", "2500000", "Sewa kios"), ("6-1000", "4500000", "Gaji karyawan"), ("6-1200", "850000", "Listrik & internet")]:
                 when = day + timedelta(days=20)

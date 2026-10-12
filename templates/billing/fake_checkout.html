@@ -8,8 +8,8 @@
     <div class="display-6 fw-bold my-2">{{ invoice.total|rupiah }}</div>
     <div class="mb-4">{{ invoice.plan.name }} · {{ invoice.get_billing_period_display }}</div>
     <form method="post" class="d-grid gap-2">{% csrf_token %}
-      <button name="outcome" value="paid" class="btn btn-success">{% translate "Simulate successful payment" %}</button>
-      <button name="outcome" value="expired" class="btn btn-outline-secondary">{% translate "Simulate expired link" %}</button>
+      <button name="outcome" value="{{ paid }}" class="btn btn-success">{% translate "Simulate successful payment" %}</button>
+      <button name="outcome" value="{{ expired }}" class="btn btn-outline-secondary">{% translate "Simulate expired link" %}</button>
     </form>
   </div></div>
 </div>

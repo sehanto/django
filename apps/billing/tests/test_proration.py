@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from apps.billing import services
 from apps.billing.domain import BillingPeriod, Credit, PaidPeriod, compute_charge, switch_quote, unused_credit
-from apps.billing.gateways.base import PaymentStatus
+from apps.billing.gateways.base import GatewayName, PaymentStatus
 from apps.billing.gateways.fake import FakeGateway
 from apps.billing.models import SubscriptionInvoice
 
@@ -88,7 +88,7 @@ def test_downgrade_covered_by_credit_switches_immediately(free_org, plans):
         subscribe(free_org, plans["pro"], "yearly")  # 2026 paid in full
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
         invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
-    assert invoice.status == Status.PAID and invoice.total == 0 and invoice.gateway == "credit"
+    assert invoice.status == Status.PAID and invoice.total == 0 and invoice.gateway == GatewayName.CREDIT
     assert invoice.extension_days == 139
     free_org.refresh_from_db()
     assert free_org.plan == plans["usaha"] and free_org.plan_paid_until == date(2027, 3, 30)
