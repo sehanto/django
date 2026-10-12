@@ -20,11 +20,12 @@ from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.params import int_param
 from apps.tenants.selectors import organizations_requiring_two_factor
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
-from . import services, throttle, two_factor
+from . import services, throttle, trusted_devices, two_factor
 from .client_ip import client_ip
 from .forms import (
     ChangeEmailForm,
@@ -36,6 +37,7 @@ from .forms import (
     SignUpForm,
     TwoFactorCodeForm,
     TwoFactorConfirmForm,
+    TwoFactorLoginForm,
 )
 from .middleware import SUPPORTED_LANGUAGES
 
@@ -57,11 +59,14 @@ class LoginView(auth_views.LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
-        if two_factor.is_enabled(user):
+        remembered = two_factor.is_enabled(user) and trusted_devices.recognized(self.request, user)
+        if two_factor.is_enabled(user) and not remembered:
             # Password accepted; the user is not logged in until the second factor is checked.
             two_factor.begin_login(self.request, user, next_url=self.get_success_url())
             return redirect("accounts:login_otp")
         response = super().form_valid(form)
+        if remembered:
+            otp_login(self.request, two_factor.authenticator(user))  # this browser proved the code earlier
         adopt_chosen_language(self.request)
         return response
 
@@ -293,7 +298,10 @@ class LoginOTPView(FormView):
     """Second sign-in step: authenticator code or backup code."""
 
     template_name = "accounts/login_otp.html"
-    form_class = TwoFactorCodeForm
+    form_class = TwoFactorLoginForm
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "offer_remember": trusted_devices.is_offered(self.user)}
 
     def dispatch(self, request, *args, **kwargs):
         self.pending = two_factor.pending_login(request)
@@ -319,6 +327,12 @@ class LoginOTPView(FormView):
         login(self.request, self.user, backend=self.pending["backend"])
         otp_login(self.request, device)  # marks this session as verified (needed for the admin)
         adopt_chosen_language(self.request)
+        response = redirect(self.pending["next"])
+        if form.cleaned_data.get("remember"):
+            remembered = trusted_devices.remember(self.request, response, self.user)
+            services.send_security_notice(
+                self.user, "device_remembered", days=settings.TWO_FACTOR_REMEMBER_DAYS, device=remembered.label
+            )
         if isinstance(device, StaticDevice):
             left = two_factor.remaining_backup_codes(self.user)
             messages.warning(self.request, ngettext(
@@ -326,7 +340,7 @@ class LoginOTPView(FormView):
                 "You signed in with a backup code. %(count)s backup codes are left.",
                 left,
             ) % {"count": left})
-        return redirect(self.pending["next"])
+        return response
 
 
 BACKUP_CODES_SESSION_KEY = "two_factor_new_backup_codes"  # shown once, then removed
@@ -341,8 +355,22 @@ class SecurityView(LoginRequiredMixin, TemplateView):
             two_factor_enabled=two_factor.is_enabled(user),
             backup_codes_left=two_factor.remaining_backup_codes(user),
             required_by=list(organizations_requiring_two_factor(user)),
+            trusted_devices=trusted_devices.devices_for(user),
+            this_device_id=trusted_devices.current_device_id(self.request),
             **kwargs,
         )
+
+
+class ForgetTrustedDeviceView(LoginRequiredMixin, View):
+    def post(self, request):
+        device_id = int_param(request.POST, "device", minimum=1)
+        count = trusted_devices.forget(request.user, device_id)  # None = all devices
+        messages.success(request, ngettext(
+            "%(count)s remembered device forgotten. It will be asked for a code at the next sign-in.",
+            "%(count)s remembered devices forgotten. They will be asked for a code at the next sign-in.",
+            count,
+        ) % {"count": count})
+        return redirect("accounts:security")
 
 
 class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
@@ -473,6 +501,7 @@ class TwoFactorDisableView(LoginRequiredMixin, FormView):
             form.add_error("code", _("That code is not valid. Check your authenticator app and try again."))
             return self.form_invalid(form)
         two_factor.disable(user)
+        trusted_devices.forget(user)
         services.send_security_notice(user, "two_factor_disabled")
         messages.warning(self.request, _("Two-factor authentication is off. Your account is protected by your password only."))
         return redirect("accounts:security")

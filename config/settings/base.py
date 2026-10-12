@@ -182,3 +182,4 @@ OTP_TOTP_ISSUER = SITE_NAME  # label shown in the authenticator app
 TWO_FACTOR_PENDING_SECONDS = 5 * 60  # time to enter the code after the password
 TWO_FACTOR_MAX_ATTEMPTS = 5  # wrong codes before the password must be entered again
 TWO_FACTOR_BACKUP_CODES = 10
+TWO_FACTOR_REMEMBER_DAYS = 30  # "don't ask again on this device"

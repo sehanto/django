@@ -25,6 +25,26 @@
   </div>
   {% if two_factor_enabled and backup_codes_left < 3 %}<div class="alert alert-warning small mt-3 mb-0">{% translate "You are running out of backup codes. Create new ones and keep them somewhere safe." %}</div>{% endif %}
 </div></div>
+{% if two_factor_enabled %}
+<div class="card mb-3" style="max-width: 760px;"><div class="card-body">
+  <h2 class="h6">{% translate "Remembered devices" %}</h2>
+  <p class="small text-secondary">{% translate "These devices don't ask for a code when you sign in. Changing your password forgets all of them." %}</p>
+  {% if trusted_devices %}
+    <ul class="list-group mb-3">
+    {% for device in trusted_devices %}
+      <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+        <span><i class="bi bi-laptop me-1"></i>{{ device.label }}{% if device.pk == this_device_id %} <span class="badge text-bg-primary">{% translate "This device" %}</span>{% endif %}
+          <span class="d-block small text-secondary">{% blocktranslate trimmed with created=device.created_at|date:"d M Y" expires=device.expires_at|date:"d M Y" %}Remembered {{ created }} · until {{ expires }}{% endblocktranslate %}{% if device.last_used_at %} · {% blocktranslate trimmed with used=device.last_used_at|date:"d M Y H:i" %}last used {{ used }}{% endblocktranslate %}{% endif %}</span></span>
+        <form method="post" action="{% url 'accounts:forget_trusted_device' %}">{% csrf_token %}<input type="hidden" name="device" value="{{ device.pk }}"><button class="btn btn-sm btn-outline-secondary">{% translate "Forget" %}</button></form>
+      </li>
+    {% endfor %}
+    </ul>
+    <form method="post" action="{% url 'accounts:forget_trusted_device' %}" data-confirm="{% translate 'Forget all remembered devices?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Forget all devices" %}</button></form>
+  {% else %}
+    <p class="small mb-0">{% translate "No remembered devices." %}</p>
+  {% endif %}
+</div></div>
+{% endif %}
 <div class="card" style="max-width: 760px;"><div class="card-body">
   <h2 class="h6">{% translate "Password" %}</h2>
   <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">{% translate "Change password" %}</a>

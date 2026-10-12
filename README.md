@@ -116,7 +116,7 @@ The tests cover:
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
 - email verification (gate, link validity and tampering, resend throttle, address correction)
-- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin, organization requirement)
+- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin, organization requirement, remembered devices)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -197,6 +197,17 @@ Users can protect their account with a second factor from **Profile → Security
 | Turning off | Needs the password and a current code. |
 | Notifications | Turning 2FA on or off and regenerating backup codes email the account holder (in their language). |
 | Django admin | Requires a verified second factor (`OTPAdminSite`). **Staff must turn on 2FA in the app before they can use the admin.** |
+
+### Remember this device
+
+On the code step, users can tick **"Don't ask for a code on this device for 30 days"**
+(`TWO_FACTOR_REMEMBER_DAYS`). The password is still required on every sign-in; only the code step is skipped.
+
+- **What's stored:** the browser keeps a random secret in a cookie that is `HttpOnly`, `Secure` in production, `SameSite=Lax`, and sent only to `/account/` pages. The server stores only its SHA-256 hash and a label such as "Chrome · Windows".
+- **When it stops working:** after 30 days (counted from when it was remembered, not extended by use), on any password change or reset, or when 2FA is turned off.
+- **Managing devices:** they're listed on the Security page with "Forget" / "Forget all", and support can revoke them in the Django admin. Remembering a new device emails the account holder.
+- **Organization rule:** a remembered sign-in counts as two-factor verified, so it satisfies an organization's 2FA requirement.
+- **Staff:** staff accounts (Django admin access) always enter a code; the option isn't offered and existing cookies are ignored.
 
 ### Requiring 2FA for an organization
 

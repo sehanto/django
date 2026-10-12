@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 19:42+0700\n"
-"PO-Revision-Date: 2026-10-12 19:43\n"
+"POT-Creation-Date: 2026-10-12 20:01+0700\n"
+"PO-Revision-Date: 2026-10-12 20:01\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -34,50 +34,59 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:14 apps/accounts/forms.py:24 apps/accounts/forms.py:51
+#: apps/accounts/forms.py:15 apps/accounts/forms.py:25 apps/accounts/forms.py:52
 #: templates/accounts/profile.html:6 templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
 
-#: apps/accounts/forms.py:23
+#: apps/accounts/forms.py:24
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: apps/accounts/forms.py:26 templates/accounts/security.html:29
+#: apps/accounts/forms.py:27 templates/accounts/security.html:49
 msgid "Password"
 msgstr "Kata sandi"
 
-#: apps/accounts/forms.py:27 apps/tenants/forms.py:47
+#: apps/accounts/forms.py:28 apps/tenants/forms.py:47
 msgid "Business name"
 msgstr "Nama usaha"
 
-#: apps/accounts/forms.py:28 apps/tenants/forms.py:48
+#: apps/accounts/forms.py:29 apps/tenants/forms.py:48
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:33 apps/accounts/services.py:85
+#: apps/accounts/forms.py:34 apps/accounts/services.py:85
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
-#: apps/accounts/forms.py:65
+#: apps/accounts/forms.py:66
 msgid "Correct email address"
 msgstr "Alamat email yang benar"
 
-#: apps/accounts/forms.py:66 apps/accounts/forms.py:97
+#: apps/accounts/forms.py:67 apps/accounts/forms.py:111
 msgid "Current password"
 msgstr "Kata sandi saat ini"
 
-#: apps/accounts/forms.py:75 apps/accounts/forms.py:106
+#: apps/accounts/forms.py:76 apps/accounts/forms.py:120
 msgid "Your password is incorrect."
 msgstr "Kata sandi Anda salah."
 
-#: apps/accounts/forms.py:84
+#: apps/accounts/forms.py:85
 msgid "Authentication code"
 msgstr "Kode autentikasi"
 
-#: apps/accounts/forms.py:85
+#: apps/accounts/forms.py:86
 msgid "The 6-digit code from your authenticator app, or one of your backup codes."
 msgstr "Kode 6 digit dari aplikasi autentikator Anda, atau salah satu kode cadangan Anda."
+
+#: apps/accounts/forms.py:102
+#, python-format
+msgid "Don't ask for a code on this device for %(days)s days"
+msgstr "Jangan minta kode di perangkat ini selama %(days)s hari"
+
+#: apps/accounts/forms.py:103
+msgid "Only on your own device, never on a shared or public computer."
+msgstr "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
 
 #: apps/accounts/models.py:34 apps/contacts/models.py:22 apps/tenants/models.py:56
 msgid "email"
@@ -120,6 +129,33 @@ msgstr "pengguna"
 msgid "users"
 msgstr "pengguna"
 
+#: apps/accounts/models.py:79
+#| msgid "Service"
+msgid "device"
+msgstr "perangkat"
+
+#: apps/accounts/models.py:80
+#| msgid "member"
+msgid "remembered on"
+msgstr "diingat pada"
+
+#: apps/accounts/models.py:81
+msgid "last used"
+msgstr "terakhir dipakai"
+
+#: apps/accounts/models.py:82
+#| msgid "Expired"
+msgid "expires"
+msgstr "berlaku sampai"
+
+#: apps/accounts/models.py:86
+msgid "remembered device"
+msgstr "perangkat yang diingat"
+
+#: apps/accounts/models.py:87
+msgid "remembered devices"
+msgstr "perangkat yang diingat"
+
 #: apps/accounts/services.py:59
 msgid "This confirmation link has expired. Request a new one."
 msgstr "Tautan konfirmasi ini sudah kedaluwarsa. Minta tautan baru."
@@ -146,78 +182,95 @@ msgstr ""
 "Kode cadangan autentikasi dua faktor yang baru telah dibuat untuk akun Anda. Kode lama tidak "
 "berlaku lagi."
 
-#: apps/accounts/views.py:120
+#: apps/accounts/services.py:97
+#, python-format
+msgid ""
+"A device was remembered for two-factor sign-in and won't be asked for a code for %(days)s days: "
+"%(device)s."
+msgstr ""
+"Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak akan diminta kode "
+"selama %(days)s hari: %(device)s."
+
+#: apps/accounts/views.py:125
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:129
+#: apps/accounts/views.py:134
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
-#: apps/accounts/views.py:245
+#: apps/accounts/views.py:250
 #, python-format
 msgid "We sent a new confirmation link to %(email)s."
 msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
 
-#: apps/accounts/views.py:247
+#: apps/accounts/views.py:252
 msgid "Too many emails were requested. Please wait an hour and try again."
 msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
 
-#: apps/accounts/views.py:257
+#: apps/accounts/views.py:262
 #, python-format
 msgid "Email address updated. We sent a confirmation link to %(email)s."
 msgstr "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
 
-#: apps/accounts/views.py:274
+#: apps/accounts/views.py:279
 msgid "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has been set up."
 msgstr "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
 
-#: apps/accounts/views.py:276
+#: apps/accounts/views.py:281
 msgid "Email address confirmed. You can sign in now."
 msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
-#: apps/accounts/views.py:286
+#: apps/accounts/views.py:291
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
 msgstr[0] "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
-#: apps/accounts/views.py:302
+#: apps/accounts/views.py:310
 msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
-#: apps/accounts/views.py:313 apps/accounts/views.py:378 apps/accounts/views.py:473
+#: apps/accounts/views.py:321 apps/accounts/views.py:406 apps/accounts/views.py:501
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba lagi."
 
-#: apps/accounts/views.py:315
+#: apps/accounts/views.py:323
 msgid "Too many wrong codes. Please sign in again."
 msgstr "Terlalu banyak kode salah. Silakan masuk kembali."
 
-#: apps/accounts/views.py:325
+#: apps/accounts/views.py:339
 #, python-format
 msgid "You signed in with a backup code. %(count)s backup code is left."
 msgid_plural "You signed in with a backup code. %(count)s backup codes are left."
 msgstr[0] "Anda masuk dengan kode cadangan. Tersisa %(count)s kode cadangan."
 
-#: apps/accounts/views.py:410
+#: apps/accounts/views.py:369
+#, python-format
+msgid "%(count)s remembered device forgotten. It will be asked for a code at the next sign-in."
+msgid_plural ""
+"%(count)s remembered devices forgotten. They will be asked for a code at the next sign-in."
+msgstr[0] ""
+"%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi saat masuk berikutnya."
+
+#: apps/accounts/views.py:438
 msgid "That code is not valid. Check that the time on your phone is correct and try again."
 msgstr "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:415
+#: apps/accounts/views.py:443
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:443
+#: apps/accounts/views.py:471
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:465 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:493 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid "You can't turn off two-factor authentication while %(organizations)s requires it."
 msgstr "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s mewajibkannya."
 
-#: apps/accounts/views.py:477
+#: apps/accounts/views.py:506
 msgid "Two-factor authentication is off. Your account is protected by your password only."
 msgstr "Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata sandi."
 
@@ -1581,7 +1634,6 @@ msgid "business ID (NIB)"
 msgstr "NIB"
 
 #: apps/tenants/forms.py:36
-#| msgid "Two-factor authentication is off. Your account is protected by your password only."
 msgid "Turn on two-factor authentication for your own account first (Profile → Security)."
 msgstr "Aktifkan dulu autentikasi dua faktor untuk akun Anda sendiri (Profil → Keamanan)."
 
@@ -1691,7 +1743,6 @@ msgid "PP 55/2022: 0.5% final income tax on gross turnover."
 msgstr "PP 55/2022: PPh final 0,5% dari peredaran bruto."
 
 #: apps/tenants/models.py:70
-#| msgid "Turn on two-factor authentication"
 msgid "require two-factor authentication"
 msgstr "wajibkan autentikasi dua faktor"
 
@@ -1781,7 +1832,6 @@ msgstr[0] "Organisasi memiliki %(count)s pengguna, melebihi batas paket %(plan)s
 
 #: apps/tenants/views.py:37
 #, python-format
-#| msgid "Two-factor authentication is off. Your account is protected by your password only."
 msgid ""
 "Two-factor authentication is now required. %(count)s member without it was notified by email."
 msgid_plural ""
@@ -1976,7 +2026,7 @@ msgstr "Batal dan masuk kembali"
 
 #: templates/accounts/password_change.html:2 templates/accounts/password_change.html:4
 #: templates/accounts/password_reset_confirm.html:8 templates/accounts/profile.html:11
-#: templates/accounts/security.html:30
+#: templates/accounts/security.html:50
 msgid "Change password"
 msgstr "Ubah kata sandi"
 
@@ -2095,6 +2145,47 @@ msgstr "Aktifkan autentikasi dua faktor"
 #: templates/accounts/security.html:26
 msgid "You are running out of backup codes. Create new ones and keep them somewhere safe."
 msgstr "Kode cadangan Anda hampir habis. Buat kode baru dan simpan di tempat aman."
+
+#: templates/accounts/security.html:30
+msgid "Remembered devices"
+msgstr "Perangkat yang diingat"
+
+#: templates/accounts/security.html:31
+msgid ""
+"These devices don't ask for a code when you sign in. Changing your password forgets all of them."
+msgstr ""
+"Perangkat ini tidak meminta kode saat Anda masuk. Mengubah kata sandi akan melupakan semuanya."
+
+#: templates/accounts/security.html:36
+msgid "This device"
+msgstr "Perangkat ini"
+
+#: templates/accounts/security.html:37
+#, python-format
+#| msgid "Revenue %(revenue)s · Expenses %(expense)s"
+msgid "Remembered %(created)s · until %(expires)s"
+msgstr "Diingat %(created)s · sampai %(expires)s"
+
+#: templates/accounts/security.html:37
+#, python-format
+msgid "last used %(used)s"
+msgstr "terakhir dipakai %(used)s"
+
+#: templates/accounts/security.html:38
+msgid "Forget"
+msgstr "Lupakan"
+
+#: templates/accounts/security.html:42
+msgid "Forget all remembered devices?"
+msgstr "Lupakan semua perangkat yang diingat?"
+
+#: templates/accounts/security.html:42
+msgid "Forget all devices"
+msgstr "Lupakan semua perangkat"
+
+#: templates/accounts/security.html:44
+msgid "No remembered devices."
+msgstr "Tidak ada perangkat yang diingat."
 
 #: templates/accounts/signup.html:2 templates/accounts/signup.html:7
 msgid "Sign up"
@@ -3388,7 +3479,6 @@ msgstr ""
 
 #: templates/tenants/emails/two_factor_required_subject.txt:1
 #, python-format
-#| msgid "Turn on two-factor authentication"
 msgid "%(organization)s now requires two-factor authentication"
 msgstr "%(organization)s kini mewajibkan autentikasi dua faktor"
 

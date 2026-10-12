@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.utils import translation
@@ -89,6 +90,19 @@ def two_factor_code_field(*, autofocus: bool) -> forms.CharField:
 
 class TwoFactorCodeForm(BaseForm):
     code = two_factor_code_field(autofocus=True)
+
+
+class TwoFactorLoginForm(TwoFactorCodeForm):
+    """Sign-in code step, with the optional "remember this device"."""
+
+    def __init__(self, *args, offer_remember: bool, **kwargs):
+        super().__init__(*args, **kwargs)
+        if offer_remember:
+            self.fields["remember"] = forms.BooleanField(
+                label=_("Don't ask for a code on this device for %(days)s days") % {"days": settings.TWO_FACTOR_REMEMBER_DAYS},
+                help_text=_("Only on your own device, never on a shared or public computer."),
+                required=False,
+            )
 
 
 class PasswordConfirmationForm(BaseForm):

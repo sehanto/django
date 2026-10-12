@@ -64,3 +64,27 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.full_name.split(" ")[0] if self.full_name else self.email
+
+
+class TrustedDevice(models.Model):
+    """A browser where the user chose "don't ask for a code again" after 2FA.
+
+    Only a SHA-256 hash of the cookie secret is stored. ``password_fingerprint``
+    ties the record to the current password, so any password change forgets it.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="trusted_devices")
+    token_hash = models.CharField(max_length=64, unique=True)
+    password_fingerprint = models.CharField(max_length=128)
+    label = models.CharField(_("device"), max_length=100)
+    created_at = models.DateTimeField(_("remembered on"), auto_now_add=True)
+    last_used_at = models.DateTimeField(_("last used"), null=True, blank=True)
+    expires_at = models.DateTimeField(_("expires"))
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("remembered device")
+        verbose_name_plural = _("remembered devices")
+
+    def __str__(self):
+        return f"{self.user} · {self.label}"
