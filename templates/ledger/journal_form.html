@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static ui %}
+{% block title %}Jurnal Umum{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">{% if entry %}Ubah Draf {{ entry.number }}{% else %}Jurnal Umum Baru{% endif %}</h1>
+<form method="post" data-formset="form">{% csrf_token %}
+  <div class="card mb-3"><div class="card-body">
+    {% include "partials/form_fields.html" with col="col-md-4" %}
+  </div></div>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+  <div class="card"><div class="table-responsive">
+    <table class="table formset-table mb-0">
+      <thead><tr><th style="width:32%">Akun</th><th>Keterangan</th><th style="width:16%" class="num">Debit</th><th style="width:16%" class="num">Kredit</th><th></th></tr></thead>
+      <tbody data-formset-body>
+        {% for f in formset %}
+        <tr data-formset-row>
+          <td>{{ f.account|add_class:'form-select form-select-sm' }}{% for e in f.account.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+          <td>{{ f.description|add_class:'form-control form-control-sm' }}</td>
+          <td>{{ f.debit|add_class:'form-control form-control-sm text-end' }}</td>
+          <td>{{ f.credit|add_class:'form-control form-control-sm text-end' }}</td>
+          <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove><i class="bi bi-x-lg"></i></button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus"></i> Tambah baris</button></td>
+          <td class="text-end"><span data-balance-status class="badge"></span></td>
+          <td class="num fw-semibold" data-total-debit></td><td class="num fw-semibold" data-total-credit></td><td></td></tr>
+      </tfoot>
+    </table>
+    <template data-formset-empty>
+      <tr data-formset-row>
+        <td>{{ formset.empty_form.account|add_class:'form-select form-select-sm' }}</td>
+        <td>{{ formset.empty_form.description|add_class:'form-control form-control-sm' }}</td>
+        <td>{{ formset.empty_form.debit|add_class:'form-control form-control-sm text-end' }}</td>
+        <td>{{ formset.empty_form.credit|add_class:'form-control form-control-sm text-end' }}</td>
+        <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove><i class="bi bi-x-lg"></i></button></td>
+      </tr>
+    </template>
+  </div>
+  <div class="card-footer d-flex gap-2 justify-content-end">
+    <a href="{% url 'ledger:journals' %}" class="btn btn-outline-secondary">Batal</a>
+    <button name="draft" class="btn btn-outline-primary">Simpan Draf</button>
+    <button name="post" class="btn btn-primary">Simpan & Posting</button>
+  </div></div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/formset.js' %}"></script>{% endblock %}

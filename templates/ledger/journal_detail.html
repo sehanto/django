@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load money ui %}
+{% block title %}{{ entry.number }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h4 mb-1">{{ entry.number }} <span class="badge text-bg-{{ entry.status|status_badge }} align-middle">{{ entry.get_status_display }}</span></h1>
+    <div class="text-secondary">{{ entry.date|date:"d F Y" }} · {{ entry.get_source_display }}{% if entry.reference %} · Ref: {{ entry.reference }}{% endif %}</div>
+  </div>
+  {% if can_write %}<div class="d-flex gap-2 no-print">
+    {% if entry.status == 'draft' and entry.source == 'manual' %}
+      <a href="{% url 'ledger:journal_update' entry.pk %}" class="btn btn-outline-secondary">Ubah</a>
+      <form method="post" action="{% url 'ledger:journal_delete' entry.pk %}" onsubmit="return confirm('Hapus draf?')">{% csrf_token %}<button class="btn btn-outline-danger">Hapus</button></form>
+      <form method="post" action="{% url 'ledger:journal_post' entry.pk %}">{% csrf_token %}<button class="btn btn-primary">Posting</button></form>
+    {% elif entry.is_posted and entry.source == 'manual' and not entry.is_reversed %}
+      <form method="post" action="{% url 'ledger:journal_reverse' entry.pk %}" class="d-flex gap-2" onsubmit="return confirm('Buat jurnal pembalik?')">{% csrf_token %}
+        {{ reverse_form.date|add_class:'form-control' }}<button class="btn btn-outline-danger text-nowrap">Balik Jurnal</button></form>
+    {% endif %}
+  </div>{% endif %}
+</div>
+<p>{{ entry.description }}</p>
+{% if entry.reversal_of %}<div class="alert alert-info">Jurnal ini membalik <a href="{% url 'ledger:journal_detail' entry.reversal_of.pk %}">{{ entry.reversal_of.number }}</a>.</div>{% endif %}
+{% if entry.is_reversed %}<div class="alert alert-warning">Jurnal ini telah dibalik oleh <a href="{% url 'ledger:journal_detail' entry.reversed_by.pk %}">{{ entry.reversed_by.number }}</a>.</div>{% endif %}
+<div class="card"><table class="table mb-0">
+  <thead><tr><th>Akun</th><th>Keterangan</th><th class="num">Debit</th><th class="num">Kredit</th></tr></thead>
+  <tbody>{% for line in entry.lines.all %}
+    <tr><td>{{ line.account }}</td><td>{{ line.description }}</td>
+      <td class="num">{% if line.debit %}{{ line.debit|rupiah }}{% endif %}</td><td class="num">{% if line.credit %}{{ line.credit|rupiah }}{% endif %}</td></tr>
+  {% endfor %}</tbody>
+  <tfoot><tr class="fw-semibold"><td colspan="2">Total</td><td class="num">{{ entry.total|rupiah }}</td><td class="num">{{ entry.total|rupiah }}</td></tr></tfoot>
+</table></div>
+<p class="small text-secondary mt-2">Dibuat oleh {{ entry.created_by|default:"sistem" }} · {{ entry.created_at|date:"d M Y H:i" }}</p>
+{% endblock %}

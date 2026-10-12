@@ -1,0 +1,5 @@
+{% load money %}
+<tr class="section-title"><td colspan="2">{{ section.title }}</td><td></td></tr>
+{% for row in section.rows %}<tr><td class="ps-4 text-secondary" style="width:110px">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td></tr>
+{% empty %}<tr><td></td><td class="text-secondary small">Tidak ada saldo</td><td></td></tr>{% endfor %}
+<tr class="subtotal"><td></td><td>Total {{ section.title }}</td><td class="num">{{ section.total|rupiah }}</td></tr>

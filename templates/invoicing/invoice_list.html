@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load money ui %}
+{% block title %}{{ labels.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">{{ labels.title }}</h1>
+  {% if can_write %}<a href="{% url 'invoicing:create' kind %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Buat {{ labels.short }}</a>{% endif %}
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% if kind == 'sales' %}Piutang belum dibayar{% else %}Utang belum dibayar{% endif %}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label"><i class="bi bi-exclamation-triangle text-danger me-1"></i>Jatuh tempo ({{ summary.overdue_count }} dokumen)</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
+  <div class="col-md-4 d-flex align-items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline-secondary">Lihat laporan umur {% if kind == 'sales' %}piutang{% else %}utang{% endif %} &rarr;</a></div>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Cari nomor, {{ labels.contact|lower }}, referensi"></div>
+  <div class="col-md-4"><select name="status" class="form-select"><option value="">Semua status</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}<option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>Jatuh tempo</option></select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>Nomor</th><th>Tanggal</th><th>{{ labels.contact }}</th><th>Jatuh Tempo</th><th class="num">Total</th><th class="num">Sisa</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for inv in object_list %}
+    <tr>
+      <td><a href="{% url 'invoicing:detail' kind inv.pk %}">{{ inv.display_number }}</a></td>
+      <td class="text-nowrap">{{ inv.date|date:"d M Y" }}</td>
+      <td>{{ inv.contact.name }}</td>
+      <td class="text-nowrap {% if inv.is_overdue %}text-danger fw-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
+      <td class="num">{{ inv.total|rupiah }}</td>
+      <td class="num">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
+      <td><span class="badge text-bg-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}Jatuh tempo{% else %}{{ inv.get_status_display }}{% endif %}</span></td>
+    </tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">Belum ada dokumen.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

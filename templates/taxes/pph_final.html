@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load money ui %}
+{% block title %}PPh Final UMKM{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">PPh Final UMKM {{ year }}</h1>
+  <form method="get" class="d-flex gap-2"><select name="tahun" class="form-select" onchange="this.form.submit()">
+    {% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
+</div>
+{% if not current_organization.uses_pph_final %}
+  <div class="alert alert-warning">Organisasi ini tidak menggunakan skema PPh Final. Aktifkan di <a href="{% url 'tenants:settings' %}">pengaturan</a>.</div>
+{% endif %}
+{% if over_limit %}
+  <div class="alert alert-danger">Peredaran bruto tahun ini melebihi {{ limit|rupiah }}. Skema PPh Final UMKM tidak lagi berlaku untuk tahun pajak berikutnya, dan usaha wajib dikukuhkan sebagai PKP.</div>
+{% endif %}
+<div class="row g-3 mb-3">
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">Peredaran bruto {{ year }}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">PPh Final terutang ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">Jenis Wajib Pajak</div><div class="stat-value fs-6 pt-2">{% if current_organization.is_individual_taxpayer %}Orang Pribadi: bebas s.d. Rp500 juta/tahun{% else %}Badan: {{ current_organization.get_legal_form_display }}{% endif %}</div></div></div></div>
+</div>
+<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>Masa</th><th class="num">Peredaran Bruto</th><th class="num">Tidak Kena Pajak</th><th class="num">Dasar Pengenaan</th><th class="num">PPh Final</th><th>Setoran</th></tr></thead>
+  <tbody>
+  {% for m, payment in rows %}
+    <tr>
+      <td>{{ m.month|stringformat:"02d" }}/{{ year }}</td>
+      <td class="num">{{ m.gross_turnover|rupiah }}</td>
+      <td class="num">{{ m.exempt_turnover|rupiah }}</td>
+      <td class="num">{{ m.taxable_turnover|rupiah }}</td>
+      <td class="num fw-semibold">{{ m.tax|rupiah }}</td>
+      <td>
+        {% if payment %}
+          <span class="badge text-bg-success">Disetor {{ payment.paid_on|date:"d/m/Y" }}</span>
+          <a href="{% url 'ledger:journal_detail' payment.journal_entry_id %}" class="small ms-1">{{ payment.journal_entry.number }}</a>
+          {% if payment.ntpn %}<div class="small text-secondary">NTPN {{ payment.ntpn }}</div>{% endif %}
+          {% if can_write %}<form method="post" action="{% url 'taxes:pph_final_cancel' payment.pk %}" class="d-inline" onsubmit="return confirm('Batalkan setoran ini?')">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">batal</button></form>{% endif %}
+        {% elif m.tax and can_write and current_organization.uses_pph_final %}
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal" data-month="{{ m.month }}">Catat setoran</button>
+        {% elif m.tax %}<span class="badge text-bg-warning">Belum disetor</span>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+<p class="small text-secondary mt-2">Dasar hukum: PP 55/2022. Setoran paling lambat tanggal 15 bulan berikutnya. Peredaran bruto dihitung dari akun Pendapatan Usaha yang telah diposting.</p>
+
+<div class="modal fade" id="payModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'taxes:pph_final_pay' %}" class="modal-content">{% csrf_token %}
+  <input type="hidden" name="tahun" value="{{ year }}">
+  <div class="modal-header"><h5 class="modal-title">Catat Setoran PPh Final</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-12" %}</div>
+  <div class="modal-footer"><button class="btn btn-primary">Simpan & Jurnal</button></div>
+</form></div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("payModal").addEventListener("show.bs.modal", (e) => {
+  document.querySelector('#payModal [name="month"]').value = e.relatedTarget.dataset.month;
+});
+</script>
+{% endblock %}

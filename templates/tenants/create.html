@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Organisasi Baru{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width: 520px;">
+<h1 class="h4 mb-3">Buat Organisasi Baru</h1>
+<p class="text-secondary">Bagan akun standar SAK EMKM dan tarif PPN akan dibuat otomatis.</p>
+<form method="post" class="card"><div class="card-body">{% csrf_token %}
+  {% include "partials/form_fields.html" with col="col-12" %}
+  <button class="btn btn-primary mt-4">Buat</button>
+</div></form>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load money chart ui %}
+{% block title %}Dasbor{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div><h1 class="h4 mb-0">Dasbor</h1><div class="text-secondary small">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
+  {% if can_write %}<div class="d-flex gap-2">
+    <a href="{% url 'invoicing:create' 'sales' %}" class="btn btn-primary"><i class="bi bi-receipt"></i> Faktur Penjualan</a>
+    <a href="{% url 'invoicing:create' 'purchase' %}" class="btn btn-outline-primary"><i class="bi bi-bag"></i> Catat Pembelian</a>
+  </div>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
+    <div class="stat-label">Kas & Bank</div><div class="stat-value">{{ cash_total|rupiah }}</div>
+    <div class="small text-secondary">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+  </div></div></div>
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' 'sales' %}" class="card h-100 text-decoration-none"><div class="card-body">
+    <div class="stat-label">Piutang Usaha</div><div class="stat-value text-body">{{ receivables.outstanding|rupiah }}</div>
+    {% if receivables.overdue_count %}<div class="small text-danger"><i class="bi bi-exclamation-circle"></i> {{ receivables.overdue|rupiah }} jatuh tempo ({{ receivables.overdue_count }})</div>{% else %}<div class="small text-secondary">Tidak ada yang jatuh tempo</div>{% endif %}
+  </div></a></div>
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' 'purchase' %}" class="card h-100 text-decoration-none"><div class="card-body">
+    <div class="stat-label">Utang Usaha</div><div class="stat-value text-body">{{ payables.outstanding|rupiah }}</div>
+    {% if payables.overdue_count %}<div class="small text-danger"><i class="bi bi-exclamation-circle"></i> {{ payables.overdue|rupiah }} jatuh tempo ({{ payables.overdue_count }})</div>{% else %}<div class="small text-secondary">Tidak ada yang jatuh tempo</div>{% endif %}
+  </div></a></div>
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'reports:income_statement' %}" class="card h-100 text-decoration-none"><div class="card-body">
+    <div class="stat-label">Laba bulan ini</div><div class="stat-value text-body">{{ this_month.profit|rupiah }}</div>
+    <div class="small text-secondary">Pendapatan {{ this_month.revenue|rupiah }} · Beban {{ this_month.expense|rupiah }}</div>
+  </div></a></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-7"><div class="card h-100"><div class="card-body">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+      <h2 class="h6 mb-0">Pendapatan vs Beban · 6 bulan terakhir</h2>
+      <div class="small text-secondary">
+        <span class="me-3"><span class="legend-swatch bar-revenue"></span>Pendapatan</span>
+        <span><span class="legend-swatch bar-expense"></span>Beban</span>
+      </div>
+    </div>
+    <div class="bar-chart" role="img" aria-label="Grafik pendapatan dan beban per bulan; data lengkap ada pada tabel di bawah.">
+      {% for m in months %}
+        <div class="bar-group">
+          <div class="bar bar-revenue" style="height: {% bar_height m.revenue chart_peak %}%" title="{{ m.month|date:'F Y' }} · Pendapatan {{ m.revenue|rupiah }}"></div>
+          <div class="bar bar-expense" style="height: {% bar_height m.expense chart_peak %}%" title="{{ m.month|date:'F Y' }} · Beban {{ m.expense|rupiah }}"></div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="bar-labels mt-1">{% for m in months %}<span>{{ m.month|date:"M y" }}</span>{% endfor %}</div>
+    <table class="table table-sm small mt-3 mb-0">
+      <thead><tr><th>Bulan</th><th class="num">Pendapatan</th><th class="num">Beban</th><th class="num">Laba</th></tr></thead>
+      <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div></div></div>
+  <div class="col-xl-5">
+    <div class="card mb-3"><div class="card-body">
+      <div class="d-flex justify-content-between"><h2 class="h6">Penjualan terbaru</h2><a class="small" href="{% url 'invoicing:list' 'sales' %}">Semua</a></div>
+      {% for inv in recent_sales %}
+        <div class="d-flex justify-content-between border-top py-2 small"><a href="{% url 'invoicing:detail' 'sales' inv.pk %}">{{ inv.display_number }} · {{ inv.contact.name }}</a>
+          <span><span class="num">{{ inv.total|rupiah }}</span> <span class="badge text-bg-{{ inv.status|status_badge }}">{{ inv.get_status_display }}</span></span></div>
+      {% empty %}<p class="small text-secondary mb-0">Belum ada faktur penjualan.</p>{% endfor %}
+    </div></div>
+    <div class="card"><div class="card-body">
+      <div class="d-flex justify-content-between"><h2 class="h6">Pembelian terbaru</h2><a class="small" href="{% url 'invoicing:list' 'purchase' %}">Semua</a></div>
+      {% for inv in recent_purchases %}
+        <div class="d-flex justify-content-between border-top py-2 small"><a href="{% url 'invoicing:detail' 'purchase' inv.pk %}">{{ inv.display_number }} · {{ inv.contact.name }}</a>
+          <span><span class="num">{{ inv.total|rupiah }}</span> <span class="badge text-bg-{{ inv.status|status_badge }}">{{ inv.get_status_display }}</span></span></div>
+      {% empty %}<p class="small text-secondary mb-0">Belum ada tagihan pembelian.</p>{% endfor %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

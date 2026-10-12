@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Anggota Tim{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Anggota Tim</h1>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card"><table class="table mb-0 align-middle">
+      <thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th></th></tr></thead>
+      <tbody>
+      {% for m in members %}
+        <tr><td>{{ m.user.full_name }}</td><td>{{ m.user.email }}</td><td>{{ m.get_role_display }}</td>
+          <td class="text-end">{% if m.role != 'owner' and m.user != request.user %}
+            <form method="post" action="{% url 'tenants:remove_member' m.pk %}" onsubmit="return confirm('Hapus anggota ini?')">{% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button></form>{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p class="small text-secondary mt-2">Paket {{ current_organization.plan.name }}: maks.
+      {% if current_organization.plan.max_users %}{{ current_organization.plan.max_users }}{% else %}tak terbatas{% endif %} pengguna.</p>
+  </div>
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">Tambah anggota</h2>
+      <p class="small text-secondary">Pengguna harus sudah mendaftar akun BukuUMKM.</p>
+      <form method="post">{% csrf_token %}
+        {% include "partials/form_fields.html" with col="col-12" %}
+        <button class="btn btn-primary mt-3">Tambahkan</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

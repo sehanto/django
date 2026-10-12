@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Paket Langganan{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Paket Langganan</h1>
+<div class="row g-3">
+{% for plan in plans %}
+  <div class="col-md-4">
+    <div class="card h-100 {% if plan.pk == current_organization.plan_id %}border-primary border-2{% endif %}">
+      <div class="card-body">
+        <h2 class="h5">{{ plan.name }}</h2>
+        <div class="fs-3 fw-bold">{% if plan.monthly_price %}{{ plan.monthly_price|rupiah }}<span class="fs-6 fw-normal text-secondary">/bulan</span>{% else %}Gratis{% endif %}</div>
+        <ul class="list-unstyled mt-3 small">
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_users %}{{ plan.max_users }} pengguna{% else %}Pengguna tak terbatas{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_invoices_per_month %}{{ plan.max_invoices_per_month }} faktur/bulan{% else %}Faktur tak terbatas{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>Laporan keuangan SAK EMKM</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>PPN & PPh Final UMKM</li>
+        </ul>
+      </div>
+      <div class="card-footer bg-transparent">
+        {% if plan.pk == current_organization.plan_id %}
+          <button class="btn btn-outline-primary w-100" disabled>Paket saat ini</button>
+        {% else %}
+          <form method="post">{% csrf_token %}<input type="hidden" name="plan" value="{{ plan.pk }}">
+            <button class="btn btn-primary w-100">Pilih {{ plan.name }}</button></form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+<p class="small text-secondary mt-3">Integrasi pembayaran (mis. Midtrans/Xendit) dapat dihubungkan pada layanan <code>change_plan</code>.</p>
+{% endblock %}

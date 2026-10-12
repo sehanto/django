@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load money ui %}
+{% block title %}Pembayaran{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Pembayaran</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Cari nomor, faktur, kontak"></div>
+  <div class="col-md-4"><select name="kind" class="form-select"><option value="">Penerimaan & pengeluaran</option>
+    <option value="sales" {% if request.GET.kind == 'sales' %}selected{% endif %}>Penerimaan (penjualan)</option>
+    <option value="purchase" {% if request.GET.kind == 'purchase' %}selected{% endif %}>Pengeluaran (pembelian)</option></select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>Nomor</th><th>Tanggal</th><th>Kontak</th><th>Faktur</th><th>Akun</th><th>Metode</th><th class="num">Jumlah</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for p in object_list %}
+    <tr class="{% if p.status == 'void' %}text-secondary{% endif %}">
+      <td>{{ p.number }}</td><td class="text-nowrap">{{ p.date|date:"d M Y" }}</td><td>{{ p.invoice.contact.name }}</td>
+      <td><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></td>
+      <td class="small">{{ p.cash_account.name }}</td><td class="small">{{ p.get_method_display }}</td>
+      <td class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>
+      <td><span class="badge text-bg-{% if p.status == 'void' %}dark{% else %}success{% endif %}">{{ p.get_status_display }}</span></td>
+    </tr>
+  {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">Belum ada pembayaran.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

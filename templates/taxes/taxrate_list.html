@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tarif PPN{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Tarif PPN</h1>
+  {% if can_write %}<a href="{% url 'taxes:rate_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tarif Baru</a>{% endif %}
+</div>
+{% if not current_organization.is_pkp %}
+<div class="alert alert-warning">Organisasi belum berstatus PKP, jadi PPN tidak dapat dipungut pada faktur penjualan. PPN pada pembelian akan dibebankan ke biaya.</div>
+{% endif %}
+<div class="card"><table class="table mb-0 align-middle">
+  <thead><tr><th>Nama</th><th class="num">Tarif</th><th class="num">DPP</th><th class="num">Tarif Efektif</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for r in object_list %}
+    <tr><td>{{ r.name }}</td><td class="num">{{ r.rate }}%</td><td class="num">{{ r.dpp_numerator }}/{{ r.dpp_denominator }}</td><td class="num">{{ r.effective_rate }}%</td>
+      <td>{% if r.is_active %}<span class="badge text-bg-success">Aktif</span>{% else %}<span class="badge text-bg-secondary">Nonaktif</span>{% endif %}</td>
+      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'taxes:rate_update' r.pk %}"><i class="bi bi-pencil"></i></a>{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+<p class="small text-secondary mt-2">Sejak 1 Januari 2025 (PMK 131/2024) tarif PPN 12%; untuk barang/jasa non-mewah DPP memakai nilai lain 11/12 sehingga tarif efektif 11%.</p>
+{% endblock %}

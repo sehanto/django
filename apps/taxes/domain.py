@@ -1,0 +1,74 @@
+"""Indonesian tax calculations (pure functions, no database access)."""
+
+from collections.abc import Sequence
+from dataclasses import dataclass
+from decimal import Decimal
+
+from apps.core.money import ZERO, quantize, round_down_rupiah
+
+HUNDRED = Decimal("100")
+
+# PP 55/2022 (previously PP 23/2018): final income tax for MSMEs.
+PPH_FINAL_RATE = Decimal("0.005")
+# Individual taxpayers are exempt on the first Rp500 juta of annual turnover.
+PPH_FINAL_INDIVIDUAL_THRESHOLD = Decimal("500000000")
+# Turnover limit for using the PPh Final scheme and for mandatory PKP status.
+MSME_TURNOVER_LIMIT = Decimal("4800000000")
+
+
+@dataclass(frozen=True)
+class VatResult:
+    dpp: Decimal  # Dasar Pengenaan Pajak (tax base)
+    tax: Decimal
+
+
+def compute_vat(base: Decimal, rate_percent: Decimal, dpp_numerator: int = 1, dpp_denominator: int = 1) -> VatResult:
+    """PPN = DPP x tarif, rounded down to whole rupiah.
+
+    From 2025 (PMK 131/2024) the statutory rate is 12%, but non-luxury goods
+    and services use DPP "nilai lain" of 11/12 of the selling price, which
+    makes the effective rate 11%.
+    """
+    if base <= 0 or rate_percent <= 0:
+        return VatResult(dpp=quantize(max(base, ZERO)), tax=ZERO)
+    dpp = quantize(base * Decimal(dpp_numerator) / Decimal(dpp_denominator))
+    return VatResult(dpp=dpp, tax=round_down_rupiah(dpp * rate_percent / HUNDRED))
+
+
+@dataclass(frozen=True)
+class PphFinalMonth:
+    month: int
+    gross_turnover: Decimal
+    cumulative_before: Decimal
+    exempt_turnover: Decimal
+    taxable_turnover: Decimal
+    tax: Decimal
+
+
+def compute_pph_final(monthly_turnover: Sequence[Decimal], *, is_individual: bool) -> list[PphFinalMonth]:
+    """Monthly PPh Final for one tax year.
+
+    ``monthly_turnover[i]`` is the gross turnover (peredaran bruto) of month
+    ``i + 1``. For individuals the Rp500 juta exemption is consumed
+    chronologically through the year.
+    """
+    threshold = PPH_FINAL_INDIVIDUAL_THRESHOLD if is_individual else ZERO
+    cumulative = ZERO
+    result = []
+    for index, gross in enumerate(monthly_turnover, start=1):
+        gross = quantize(max(gross, ZERO))
+        remaining_exemption = max(threshold - cumulative, ZERO)
+        exempt = min(gross, remaining_exemption)
+        taxable = gross - exempt
+        result.append(
+            PphFinalMonth(
+                month=index,
+                gross_turnover=gross,
+                cumulative_before=cumulative,
+                exempt_turnover=exempt,
+                taxable_turnover=taxable,
+                tax=round_down_rupiah(taxable * PPH_FINAL_RATE),
+            )
+        )
+        cumulative += gross
+    return result

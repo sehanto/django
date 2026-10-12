@@ -1,0 +1,63 @@
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import CreateView, ListView, UpdateView
+
+from apps.core.exceptions import DomainError
+from apps.core.views import flash_domain_error
+from apps.tenants.mixins import OrganizationMixin, WriteMixin
+
+from . import services
+from .forms import ContactForm
+from .models import Contact
+from .selectors import contacts_for
+
+
+class ContactListView(OrganizationMixin, ListView):
+    template_name = "contacts/contact_list.html"
+    paginate_by = 25
+
+    def get_queryset(self):
+        return contacts_for(self.organization, query=self.request.GET.get("q", ""), kind=self.request.GET.get("kind", ""))
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(kinds=Contact.Kind.choices, **kwargs)
+
+
+class ContactFormMixin(WriteMixin):
+    form_class = ContactForm
+    template_name = "contacts/contact_form.html"
+    success_url = reverse_lazy("contacts:list")
+
+    def get_queryset(self):
+        return contacts_for(self.organization)
+
+    def form_valid(self, form):
+        self.save(form.cleaned_data)
+        messages.success(self.request, "Kontak disimpan.")
+        return redirect(self.success_url)
+
+
+class ContactCreateView(ContactFormMixin, CreateView):
+    def get_initial(self):
+        return {"kind": self.request.GET.get("kind", Contact.Kind.CUSTOMER)}
+
+    def save(self, data):
+        services.create_contact(organization=self.organization, **data)
+
+
+class ContactUpdateView(ContactFormMixin, UpdateView):
+    def save(self, data):
+        services.update_contact(contact=self.object, **data)
+
+
+class ContactDeleteView(WriteMixin, View):
+    def post(self, request, pk):
+        contact = get_object_or_404(contacts_for(self.organization), pk=pk)
+        try:
+            services.delete_contact(contact=contact)
+            messages.success(request, "Kontak dihapus.")
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("contacts:list")

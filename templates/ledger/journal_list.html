@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load money ui %}
+{% block title %}Jurnal{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Jurnal</h1>
+  {% if can_write %}<a href="{% url 'ledger:journal_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Jurnal Umum</a>{% endif %}
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-4"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Cari nomor, keterangan, referensi"></div>
+  <div class="col-md-3"><select name="source" class="form-select"><option value="">Semua sumber</option>{% for v, l in sources %}<option value="{{ v }}" {% if request.GET.source == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="status" class="form-select"><option value="">Semua status</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>Tanggal</th><th>Nomor</th><th>Keterangan</th><th>Sumber</th><th class="num">Jumlah</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for entry in object_list %}
+    <tr>
+      <td class="text-nowrap">{{ entry.date|date:"d M Y" }}</td>
+      <td><a href="{% url 'ledger:journal_detail' entry.pk %}">{{ entry.number }}</a></td>
+      <td>{{ entry.description }}</td>
+      <td class="small">{{ entry.get_source_display }}</td>
+      <td class="num">{{ entry.total|rupiah }}</td>
+      <td><span class="badge text-bg-{{ entry.status|status_badge }}">{{ entry.get_status_display }}</span></td>
+    </tr>
+  {% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">Belum ada jurnal.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

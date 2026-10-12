@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Laporan Laba Rugi{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">Laporan Laba Rugi</h1>
+<p class="text-secondary">{{ current_organization.name }}{% if report %} · {{ report.date_from|date:"d M Y" }} s.d. {{ report.date_to|date:"d M Y" }}{% endif %}</p>
+{% include "reports/_filter.html" with csv=True %}
+{% if report %}
+<div class="card" style="max-width: 900px;"><table class="table table-statement mb-0">
+  {% include "reports/_section.html" with section=report.revenue %}
+  {% include "reports/_section.html" with section=report.cost_of_sales %}
+  <tr class="grand-total"><td></td><td>LABA KOTOR</td><td class="num">{{ report.gross_profit|rupiah }}</td></tr>
+  {% include "reports/_section.html" with section=report.operating_expenses %}
+  <tr class="grand-total"><td></td><td>LABA USAHA</td><td class="num">{{ report.operating_profit|rupiah }}</td></tr>
+  {% include "reports/_section.html" with section=report.other_income %}
+  {% include "reports/_section.html" with section=report.other_expenses %}
+  <tr class="grand-total"><td></td><td>LABA SEBELUM PAJAK</td><td class="num">{{ report.profit_before_tax|rupiah }}</td></tr>
+  {% include "reports/_section.html" with section=report.income_tax %}
+  <tr class="grand-total"><td></td><td>LABA (RUGI) BERSIH</td><td class="num {% if report.net_profit < 0 %}text-danger{% endif %}">{{ report.net_profit|rupiah }}</td></tr>
+</table></div>
+{% endif %}
+{% endblock %}

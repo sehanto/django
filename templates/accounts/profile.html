@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Profil Saya</h1>
+<div class="card"><div class="card-body">
+  <p class="text-secondary">Email: <strong>{{ request.user.email }}</strong></p>
+  <form method="post">{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-primary">Simpan</button>
+      <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">Ubah kata sandi</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% with url=request.resolver_match %}
+<nav class="app-sidebar p-3 no-print">
+  <a href="{% url 'dashboard:home' %}" class="d-flex align-items-center gap-2 mb-3 text-decoration-none text-body">
+    <i class="bi bi-journal-bookmark-fill fs-4 text-primary"></i><span class="fw-bold fs-5">BukuUMKM</span>
+  </a>
+  <div class="dropdown mb-2">
+    <button class="btn btn-outline-secondary btn-sm w-100 text-start dropdown-toggle text-truncate" data-bs-toggle="dropdown">
+      <i class="bi bi-building me-1"></i>{{ current_organization.name }}
+    </button>
+    <ul class="dropdown-menu w-100">
+      {% for org in user_organizations %}
+        <li>
+          <form method="post" action="{% url 'tenants:switch' org.pk %}">{% csrf_token %}
+            <button class="dropdown-item {% if org.pk == current_organization.pk %}active{% endif %}">{{ org.name }}</button>
+          </form>
+        </li>
+      {% endfor %}
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="{% url 'tenants:create' %}"><i class="bi bi-plus-lg me-1"></i>Organisasi baru</a></li>
+    </ul>
+  </div>
+  <div class="small text-secondary mb-2">{{ current_membership.get_role_display }} · Paket {{ current_organization.plan.name }}</div>
+
+  <ul class="nav flex-column">
+    <li><a class="nav-link {% if url.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2 me-2"></i>Dasbor</a></li>
+    <li class="nav-heading">Transaksi</li>
+    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == 'sales' %}active{% endif %}" href="{% url 'invoicing:list' 'sales' %}"><i class="bi bi-receipt me-2"></i>Penjualan</a></li>
+    <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == 'purchase' %}active{% endif %}" href="{% url 'invoicing:list' 'purchase' %}"><i class="bi bi-bag me-2"></i>Pembelian</a></li>
+    <li><a class="nav-link {% if url.url_name == 'payments' %}active{% endif %}" href="{% url 'invoicing:payments' %}"><i class="bi bi-cash-coin me-2"></i>Pembayaran</a></li>
+    <li><a class="nav-link {% if url.url_name == 'journals' or url.url_name == 'journal_detail' or url.url_name == 'journal_create' %}active{% endif %}" href="{% url 'ledger:journals' %}"><i class="bi bi-journal-text me-2"></i>Jurnal Umum</a></li>
+    <li class="nav-heading">Data Master</li>
+    <li><a class="nav-link {% if url.namespace == 'contacts' %}active{% endif %}" href="{% url 'contacts:list' %}"><i class="bi bi-people me-2"></i>Kontak</a></li>
+    <li><a class="nav-link {% if url.url_name == 'items' %}active{% endif %}" href="{% url 'invoicing:items' %}"><i class="bi bi-box-seam me-2"></i>Barang & Jasa</a></li>
+    <li><a class="nav-link {% if url.url_name == 'accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}"><i class="bi bi-diagram-3 me-2"></i>Bagan Akun</a></li>
+    <li class="nav-heading">Pajak & Laporan</li>
+    <li><a class="nav-link {% if url.url_name == 'pph_final' %}active{% endif %}" href="{% url 'taxes:pph_final' %}"><i class="bi bi-percent me-2"></i>PPh Final UMKM</a></li>
+    <li><a class="nav-link {% if url.url_name == 'rates' %}active{% endif %}" href="{% url 'taxes:rates' %}"><i class="bi bi-sliders me-2"></i>Tarif PPN</a></li>
+    <li><a class="nav-link {% if url.namespace == 'reports' %}active{% endif %}" href="{% url 'reports:index' %}"><i class="bi bi-bar-chart-line me-2"></i>Laporan Keuangan</a></li>
+    {% if can_manage %}
+    <li class="nav-heading">Pengaturan</li>
+    <li><a class="nav-link {% if url.url_name == 'settings' %}active{% endif %}" href="{% url 'tenants:settings' %}"><i class="bi bi-gear me-2"></i>Organisasi</a></li>
+    <li><a class="nav-link {% if url.url_name == 'members' %}active{% endif %}" href="{% url 'tenants:members' %}"><i class="bi bi-person-badge me-2"></i>Anggota Tim</a></li>
+    <li><a class="nav-link {% if url.url_name == 'plans' %}active{% endif %}" href="{% url 'tenants:plans' %}"><i class="bi bi-stars me-2"></i>Paket Langganan</a></li>
+    {% endif %}
+  </ul>
+  <hr>
+  <div class="d-flex justify-content-between align-items-center small">
+    <a href="{% url 'accounts:profile' %}" class="text-decoration-none text-truncate"><i class="bi bi-person-circle me-1"></i>{{ request.user.get_short_name }}</a>
+    <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0">Keluar</button></form>
+  </div>
+</nav>
+{% endwith %}

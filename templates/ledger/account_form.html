@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Akun{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">{% if object %}Ubah Akun {{ object.code }}{% else %}Akun Baru{% endif %}</h1>
+<form method="post" class="card" style="max-width: 760px;"><div class="card-body">{% csrf_token %}
+  {% include "partials/form_fields.html" %}
+</div>
+<div class="card-footer d-flex gap-2 justify-content-end">
+  <a href="{% url 'ledger:accounts' %}" class="btn btn-outline-secondary">Batal</a><button class="btn btn-primary">Simpan</button>
+</div></form>
+{% endblock %}

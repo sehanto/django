@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Buku Besar{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">Buku Besar</h1>
+<p class="text-secondary">{{ current_organization.name }}</p>
+{% include "reports/_filter.html" %}
+{% if report %}
+<h2 class="h5">{{ report.account }}</h2>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
+  <thead><tr><th>Tanggal</th><th>No. Jurnal</th><th>Keterangan</th><th class="num">Debit</th><th class="num">Kredit</th><th class="num">Saldo</th></tr></thead>
+  <tbody>
+    <tr class="table-light"><td colspan="5">Saldo awal</td><td class="num">{{ report.opening_balance|rupiah }}</td></tr>
+    {% for r in report.rows %}
+    <tr><td class="text-nowrap">{{ r.date|date:"d M Y" }}</td><td><a href="{% url 'ledger:journal_detail' r.entry.pk %}">{{ r.entry.number }}</a></td><td>{{ r.description }}</td>
+      <td class="num">{% if r.debit %}{{ r.debit|rupiah }}{% endif %}</td><td class="num">{% if r.credit %}{{ r.credit|rupiah }}{% endif %}</td><td class="num">{{ r.balance|rupiah }}</td></tr>
+    {% empty %}<tr><td colspan="6" class="text-center text-secondary">Tidak ada mutasi pada periode ini.</td></tr>{% endfor %}
+  </tbody>
+  <tfoot><tr class="fw-semibold"><td colspan="3">Saldo akhir</td><td class="num">{{ report.total_debit|rupiah }}</td><td class="num">{{ report.total_credit|rupiah }}</td><td class="num">{{ report.closing_balance|rupiah }}</td></tr></tfoot>
+</table></div></div>
+{% else %}<p class="text-secondary">Pilih akun untuk melihat buku besar.</p>{% endif %}
+{% endblock %}
