@@ -155,3 +155,14 @@ AXES_USERNAME_CALLABLE = "apps.accounts.client_ip.login_username"
 AXES_CLIENT_IP_CALLABLE = "apps.accounts.client_ip.client_ip"
 # Number of reverse proxies in front of Django that append to X-Forwarded-For (0 = none).
 TRUSTED_PROXY_COUNT = env.int("TRUSTED_PROXY_COUNT", default=0)
+
+# Password reset by email. Links are single-use and expire after an hour (Django's
+# default is 3 days). Requests are throttled per address and per IP to stop email bombing.
+PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60)
+PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR = 3
+PASSWORD_RESET_REQUESTS_PER_IP_PER_HOUR = 10
+SITE_NAME = env("SITE_NAME", default="BukuUMKM")  # shown in emails
+
+# Shared cache (throttling, fake gateway). Use a cache shared by all workers in
+# production: "dbcache://django_cache" (run createcachetable) or a Redis URL.
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}

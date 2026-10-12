@@ -114,6 +114,7 @@ The tests cover:
 - statement integrity (trial balance and balance sheet always balance)
 - hostile and malformed input (control/bidi characters, NUL bytes, bad parameters, oversized submissions, CSV formulas)
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
+- password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -181,6 +182,23 @@ Every input is handled in layers, so no single mistake lets bad data through:
 
 `test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
 `BaseModelForm`.
+
+## Password reset
+
+"Forgot password?" on the sign-in page (and on the lockout page) emails a reset link. The
+flow is Django's own: signed, single-use tokens that become invalid once the password changes.
+The project adds:
+
+| Behaviour | Why |
+|---|---|
+| Links expire after **1 hour** (`PASSWORD_RESET_TIMEOUT`; Django's default is 3 days). | A reset link is a credential; keep its exposure short. |
+| The "check your email" page looks the same whether or not the address has an account, and inactive accounts get nothing. | No account enumeration. |
+| At most **3 emails per address** and **10 requests per IP** per hour; extra requests are silently dropped. | Stops email bombing and address spraying without revealing the limit. |
+| The link is built from `SITE_URL`, never from the request's `Host` header. | A forged `Host` can't point the link at an attacker's site. |
+| The email is in the **account holder's** language, not the requester's. | The person who receives it can read it. |
+| Choosing a new password lifts any login lockout and signs the user out on every other device. | Proving control of the mailbox restores access; stolen sessions die. |
+
+Locally, emails are printed to the `runserver` console.
 
 ## Login rate limiting
 
@@ -278,7 +296,18 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 ## Production
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
-`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS` and `DATABASE_URL`. Then:
+`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL`, `SITE_URL` (the public
+address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
+and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above.
+
+Throttling needs a cache shared by all workers. The default in production is Django's
+database cache (set `CACHE_URL` to a Redis URL to use Redis instead); create its table once:
+
+```bash
+.venv/bin/python manage.py createcachetable
+```
+
+Then:
 
 ```bash
 .venv/bin/python manage.py collectstatic --noinput

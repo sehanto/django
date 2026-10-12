@@ -21,4 +21,6 @@ LOGGING = {
 BILLING_GATEWAY = "xendit"
 XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY")  # noqa: F405
 XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
-EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")  # noqa: F405
+# SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
+vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
+CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers

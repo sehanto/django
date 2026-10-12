@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import BaseForm, BaseModelForm, SanitizedFormMixin
@@ -42,3 +43,17 @@ class ProfileForm(BaseModelForm):
     class Meta:
         model = User
         fields = ["full_name", "phone", "language"]
+
+
+class ResetPasswordForm(SanitizedFormMixin, PasswordResetForm):
+    """Django's reset form; the email goes out in the recipient's own language."""
+
+    email = forms.EmailField(label=_("Email"), max_length=254, widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}))
+
+    def send_mail(self, subject_template_name, email_template_name, context, *args, **kwargs):
+        with translation.override(context["user"].language):
+            super().send_mail(subject_template_name, email_template_name, context, *args, **kwargs)
+
+
+class NewPasswordForm(SanitizedFormMixin, SetPasswordForm):
+    """Choose a new password (passwords are never sanitized; Django uses ``strip=False``)."""

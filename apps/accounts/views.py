@@ -1,3 +1,8 @@
+import logging
+from datetime import timedelta
+from urllib.parse import urlsplit
+
+from axes.utils import reset as axes_reset
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
@@ -14,8 +19,12 @@ from django.views.generic import FormView, UpdateView
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
-from .forms import LoginForm, ProfileForm, SignUpForm
+from . import throttle
+from .client_ip import client_ip
+from .forms import LoginForm, NewPasswordForm, ProfileForm, ResetPasswordForm, SignUpForm
 from .middleware import SUPPORTED_LANGUAGES
+
+logger = logging.getLogger(__name__)
 
 
 def remember_language(response, request, language: str) -> None:
@@ -113,3 +122,68 @@ class SetLanguageView(View):
             request.user.save(update_fields=["language"])
         remember_language(response, request, language)
         return response
+
+
+# --- Password reset by email -----------------------------------------------------------
+
+
+def _reset_link_lifetime():
+    return {"link_lifetime": timedelta(seconds=settings.PASSWORD_RESET_TIMEOUT)}
+
+
+class PasswordResetView(auth_views.PasswordResetView):
+    """Request a reset link. Always ends on the same "check your email" page, whether or
+    not the address has an account or the request was throttled, so nothing leaks."""
+
+    template_name = "accounts/password_reset_form.html"
+    form_class = ResetPasswordForm
+    email_template_name = "accounts/emails/password_reset.txt"
+    subject_template_name = "accounts/emails/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password_reset_done")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"].lower()
+        within_limits = all([
+            throttle.allow("password-reset-email", email, limit=settings.PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR, window_seconds=3600),
+            throttle.allow("password-reset-ip", client_ip(self.request) or "unknown",
+                           limit=settings.PASSWORD_RESET_REQUESTS_PER_IP_PER_HOUR, window_seconds=3600),
+        ])
+        if not within_limits:
+            logger.warning("Password reset throttled for a request from %s", client_ip(self.request))
+            return redirect(self.success_url)
+        # Build the link from SITE_URL, never from the request's Host header (which a client controls).
+        site = urlsplit(settings.SITE_URL)
+        form.save(
+            domain_override=site.netloc,
+            use_https=site.scheme == "https",
+            request=self.request,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            subject_template_name=self.subject_template_name,
+            email_template_name=self.email_template_name,
+            token_generator=self.token_generator,
+            extra_email_context={"site_name": settings.SITE_NAME, **_reset_link_lifetime()},
+        )
+        return redirect(self.success_url)
+
+
+class PasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = "accounts/password_reset_done.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**_reset_link_lifetime(), **kwargs)
+
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = "accounts/password_reset_confirm.html"
+    form_class = NewPasswordForm
+    success_url = reverse_lazy("accounts:password_reset_complete")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Proving control of the mailbox lifts any login lockout for this account.
+        axes_reset(username=self.user.email.lower())
+        return response
+
+
+class PasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = "accounts/password_reset_complete.html"

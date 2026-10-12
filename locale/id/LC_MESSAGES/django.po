@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 19:17+0700\n"
-"PO-Revision-Date: 2026-10-12 19:17\n"
+"POT-Creation-Date: 2026-10-12 19:22+0700\n"
+"PO-Revision-Date: 2026-10-12 19:22\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -34,28 +34,28 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:13 apps/accounts/forms.py:23 templates/accounts/profile.html:6
-#: templates/tenants/members.html:8
+#: apps/accounts/forms.py:14 apps/accounts/forms.py:24 apps/accounts/forms.py:51
+#: templates/accounts/profile.html:6 templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
 
-#: apps/accounts/forms.py:22
+#: apps/accounts/forms.py:23
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: apps/accounts/forms.py:25
+#: apps/accounts/forms.py:26
 msgid "Password"
 msgstr "Kata sandi"
 
-#: apps/accounts/forms.py:26 apps/tenants/forms.py:35
+#: apps/accounts/forms.py:27 apps/tenants/forms.py:35
 msgid "Business name"
 msgstr "Nama usaha"
 
-#: apps/accounts/forms.py:27 apps/tenants/forms.py:36
+#: apps/accounts/forms.py:28 apps/tenants/forms.py:36
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:32
+#: apps/accounts/forms.py:33
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
@@ -96,15 +96,15 @@ msgstr "pengguna"
 msgid "users"
 msgstr "pengguna"
 
-#: apps/accounts/views.py:70
+#: apps/accounts/views.py:79
 msgid "Welcome! A standard SAK EMKM chart of accounts has been set up."
 msgstr "Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
 
-#: apps/accounts/views.py:87
+#: apps/accounts/views.py:96
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:96
+#: apps/accounts/views.py:105
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
@@ -1693,6 +1693,35 @@ msgstr "Halaman tidak ditemukan"
 msgid "Simple accounting for Indonesian MSMEs, following SAK EMKM"
 msgstr "Akuntansi sederhana untuk UMKM Indonesia, sesuai SAK EMKM"
 
+#: templates/accounts/emails/password_reset.txt:1
+#, python-format
+#| msgid "Edit %(name)s"
+msgid "Hello %(name)s,"
+msgstr "Halo %(name)s,"
+
+#: templates/accounts/emails/password_reset.txt:3
+#, python-format
+msgid ""
+"Someone asked to reset the password of your %(site_name)s account (%(email)s). To choose a new "
+"password, open this link:"
+msgstr ""
+"Ada permintaan untuk mengatur ulang kata sandi akun %(site_name)s Anda (%(email)s). Untuk membuat "
+"kata sandi baru, buka tautan ini:"
+
+#: templates/accounts/emails/password_reset.txt:7
+#, python-format
+msgid "The link works once and expires in %(lifetime)s."
+msgstr "Tautan ini hanya bisa dipakai sekali dan berlaku selama %(lifetime)s."
+
+#: templates/accounts/emails/password_reset.txt:9
+msgid "If you did not ask for this, you can ignore this email: your password stays the same."
+msgstr "Jika Anda tidak memintanya, abaikan email ini: kata sandi Anda tidak berubah."
+
+#: templates/accounts/emails/password_reset_subject.txt:1
+#, python-format
+msgid "Reset your %(site_name)s password"
+msgstr "Atur ulang kata sandi %(site_name)s Anda"
+
 #: templates/accounts/locked_out.html:2 templates/accounts/locked_out.html:4
 msgid "Too many sign-in attempts"
 msgstr "Terlalu banyak percobaan masuk"
@@ -1710,32 +1739,47 @@ msgid "Please try again in %(wait)s."
 msgstr "Silakan coba lagi dalam %(wait)s."
 
 #: templates/accounts/locked_out.html:13
+#| msgid ""
+#| "If you have forgotten your password, ask the owner of your organization or contact support. Every "
+#| "new failed attempt restarts the waiting time."
 msgid ""
-"If you have forgotten your password, ask the owner of your organization or contact support. Every "
-"new failed attempt restarts the waiting time."
+"Forgotten your password? Reset it by email: the pause is lifted as soon as you choose a new "
+"password. Every new failed attempt restarts the waiting time."
 msgstr ""
-"Jika Anda lupa kata sandi, hubungi pemilik organisasi Anda atau tim dukungan. Setiap percobaan "
-"gagal yang baru akan mengulang waktu tunggu."
+"Lupa kata sandi? Atur ulang lewat email: penghentian sementara langsung dicabut begitu Anda "
+"membuat kata sandi baru. Setiap percobaan gagal yang baru akan mengulang waktu tunggu."
 
-#: templates/accounts/locked_out.html:14
+#: templates/accounts/locked_out.html:15 templates/accounts/password_reset_form.html:2
+#: templates/accounts/password_reset_form.html:4
+#| msgid "Change password"
+msgid "Reset password"
+msgstr "Atur ulang kata sandi"
+
+#: templates/accounts/locked_out.html:16 templates/accounts/password_reset_done.html:9
+#: templates/accounts/password_reset_form.html:10
 msgid "Back to sign in"
 msgstr "Kembali ke halaman masuk"
 
-#: templates/accounts/login.html:2 templates/accounts/login.html:4 templates/accounts/login.html:7
-#: templates/accounts/signup.html:9
+#: templates/accounts/login.html:2 templates/accounts/login.html:4 templates/accounts/login.html:8
+#: templates/accounts/password_reset_complete.html:6 templates/accounts/signup.html:9
 msgid "Sign in"
 msgstr "Masuk"
 
-#: templates/accounts/login.html:9
+#: templates/accounts/login.html:7
+#| msgid "Change password"
+msgid "Forgot password?"
+msgstr "Lupa kata sandi?"
+
+#: templates/accounts/login.html:10
 msgid "Don't have an account?"
 msgstr "Belum punya akun?"
 
-#: templates/accounts/login.html:9
+#: templates/accounts/login.html:10
 msgid "Sign up free"
 msgstr "Daftar gratis"
 
 #: templates/accounts/password_change.html:2 templates/accounts/password_change.html:4
-#: templates/accounts/profile.html:11
+#: templates/accounts/password_reset_confirm.html:8 templates/accounts/profile.html:11
 msgid "Change password"
 msgstr "Ubah kata sandi"
 
@@ -1744,6 +1788,68 @@ msgstr "Ubah kata sandi"
 #: templates/ledger/account_form.html:9 templates/taxes/taxrate_form.html:9
 msgid "Save"
 msgstr "Simpan"
+
+#: templates/accounts/password_reset_complete.html:2
+#: templates/accounts/password_reset_complete.html:4
+#| msgid "Password changed successfully."
+msgid "Password changed"
+msgstr "Kata sandi diubah"
+
+#: templates/accounts/password_reset_complete.html:5
+msgid ""
+"Your password has been changed and you have been signed out everywhere else. Sign in with your new"
+" password."
+msgstr ""
+"Kata sandi Anda telah diubah dan Anda telah dikeluarkan dari semua perangkat lain. Masuk dengan "
+"kata sandi baru Anda."
+
+#: templates/accounts/password_reset_confirm.html:2 templates/accounts/password_reset_confirm.html:5
+#| msgid "Change password"
+msgid "Choose a new password"
+msgstr "Buat kata sandi baru"
+
+#: templates/accounts/password_reset_confirm.html:11
+msgid "This link can't be used"
+msgstr "Tautan ini tidak dapat digunakan"
+
+#: templates/accounts/password_reset_confirm.html:12
+msgid "The password reset link is invalid, has expired, or was already used."
+msgstr "Tautan atur ulang kata sandi tidak valid, sudah kedaluwarsa, atau sudah pernah dipakai."
+
+#: templates/accounts/password_reset_confirm.html:13
+msgid "Request a new link"
+msgstr "Minta tautan baru"
+
+#: templates/accounts/password_reset_done.html:2 templates/accounts/password_reset_done.html:4
+#| msgid "User email"
+msgid "Check your email"
+msgstr "Periksa email Anda"
+
+#: templates/accounts/password_reset_done.html:5
+msgid "If an account exists for that address, we have sent it a link to choose a new password."
+msgstr ""
+"Jika ada akun dengan alamat tersebut, kami telah mengirimkan tautan untuk membuat kata sandi baru."
+
+#: templates/accounts/password_reset_done.html:6
+#, python-format
+msgid ""
+"The link works once and expires in %(lifetime)s. If no email arrives within a few minutes, check "
+"your spam folder or request a new link."
+msgstr ""
+"Tautan hanya bisa dipakai sekali dan berlaku selama %(lifetime)s. Jika email tidak masuk dalam "
+"beberapa menit, periksa folder spam atau minta tautan baru."
+
+#: templates/accounts/password_reset_form.html:5
+msgid ""
+"Enter the email address of your account. If it exists, we will send you a link to choose a new "
+"password."
+msgstr ""
+"Masukkan alamat email akun Anda. Jika akunnya ada, kami akan mengirimkan tautan untuk membuat kata"
+" sandi baru."
+
+#: templates/accounts/password_reset_form.html:8
+msgid "Send reset link"
+msgstr "Kirim tautan"
 
 #: templates/accounts/profile.html:4
 msgid "My profile"
