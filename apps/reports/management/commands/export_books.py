@@ -4,6 +4,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.reports.exports import write_books_archive
 from apps.tenants.models import Organization
 
@@ -33,6 +35,7 @@ def export_books(organization: Organization, path: Path, language: str) -> None:
     try:
         with translation.override(language), path.open("xb") as target:
             write_books_archive(organization, target)
+        audit.record(AuditAction.BOOKS_EXPORTED, organization=organization, target=path.name, via="command")
     except BaseException:
         path.unlink(missing_ok=True)  # never leave a truncated archive behind
         raise

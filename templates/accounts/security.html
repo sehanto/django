@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n audit %}
 {% block title %}{% translate "Security" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-3">{% translate "Security" %}</h1>
@@ -48,5 +48,19 @@
 <div class="card" style="max-width: 760px;"><div class="card-body">
   <h2 class="h6">{% translate "Password" %}</h2>
   <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">{% translate "Change password" %}</a>
+</div></div>
+<div class="card mt-4" style="max-width: 760px;"><div class="card-body">
+  <h2 class="h6">{% translate "Recent security activity" %}</h2>
+  <p class="small text-secondary">{% translate "Sign-ins and security changes on your account. If you don't recognize something, change your password and turn on two-factor authentication." %}</p>
+  {% if recent_activity %}
+  <ul class="list-group list-group-flush small">
+    {% for event in recent_activity %}
+      <li class="list-group-item px-0 d-flex justify-content-between gap-2">
+        <span>{{ event.get_action_display }}{% with summary=event|audit_summary %}{% if summary and summary != request.user.email %} <span class="text-secondary">· {{ summary }}</span>{% endif %}{% endwith %}</span>
+        <span class="text-secondary text-nowrap">{{ event.created_at|date:"d M Y H:i" }}{% if event.ip_address %} · {{ event.ip_address }}{% endif %}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="small mb-0">{% translate "No activity recorded yet." %}</p>{% endif %}
 </div></div>
 {% endblock %}

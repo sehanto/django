@@ -1,5 +1,4 @@
 import csv
-import logging
 import tempfile
 from datetime import timedelta
 
@@ -18,14 +17,13 @@ from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
 from apps.accounts.throttle import ThrottleScope, allow
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.tenants.mixins import ManageMixin, OrganizationMixin
 
 from .exports import archive_filename, write_books_archive
 from .forms import AsOfForm, LedgerForm, PeriodForm, start_of_year
 from .statements import build_balance_sheet, build_income_statement, build_trial_balance
-
-
-logger = logging.getLogger(__name__)
 
 
 class ExportFormat(models.TextChoices):
@@ -147,7 +145,7 @@ class ExportBooksView(ManageMixin, TemplateView):
         archive = tempfile.SpooledTemporaryFile(max_size=self.SPOOL_BYTES)
         write_books_archive(organization, archive, exported_by=request.user)
         archive.seek(0)
-        logger.info("Books of organization %s exported by user %s", organization.pk, request.user.pk)
+        audit.record(AuditAction.BOOKS_EXPORTED, request=request, organization=organization, via="web")
         return FileResponse(
             archive, as_attachment=True, content_type="application/zip",
             filename=archive_filename(organization, timezone.localdate()),

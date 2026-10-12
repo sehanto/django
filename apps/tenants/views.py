@@ -7,6 +7,8 @@ from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import FormView, UpdateView
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.core.exceptions import DomainError
 from apps.core.views import DomainErrorFormMixin, flash_domain_error
 
@@ -30,6 +32,11 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        if form.changed_data:
+            audit.record(
+                AuditAction.ORGANIZATION_SETTINGS_CHANGED, request=self.request, organization=self.object,
+                changes={name: [form.initial.get(name), form.cleaned_data[name]] for name in form.changed_data},
+            )
         # ModelForm already applied the new value to the instance, so use changed_data.
         if "require_two_factor" in form.changed_data and form.cleaned_data["require_two_factor"]:
             notified = services.notify_two_factor_requirement(organization=self.object, enabled_by=self.request.user)
@@ -69,7 +76,11 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
         return super().get_context_data(members=members_of(self.organization), **kwargs)
 
     def perform(self, form):
-        services.add_member(organization=self.organization, **form.cleaned_data)
+        membership = services.add_member(organization=self.organization, **form.cleaned_data)
+        audit.record(
+            AuditAction.MEMBER_ADDED, request=self.request, organization=self.organization,
+            target=membership.user.email, role=membership.role,
+        )
         messages.success(self.request, _("Member added."))
         return redirect(self.success_url)
 
@@ -77,7 +88,11 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
 class RemoveMemberView(ManageMixin, View):
     def post(self, request, pk):
         try:
-            services.remove_member(organization=self.organization, membership_id=pk, acting_user=request.user)
+            removed = services.remove_member(organization=self.organization, membership_id=pk, acting_user=request.user)
+            audit.record(
+                AuditAction.MEMBER_REMOVED, request=request, organization=self.organization,
+                target=removed.user.email, role=removed.role,
+            )
             messages.success(request, _("Member removed."))
         except DomainError as exc:
             flash_domain_error(request, exc)

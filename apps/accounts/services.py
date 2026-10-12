@@ -16,6 +16,8 @@ from django.utils.translation import gettext_lazy
 
 from apps.core.exceptions import ValidationFailed
 
+from apps.audit.domain import AuditAction
+
 from . import throttle
 
 logger = logging.getLogger(__name__)
@@ -89,17 +91,17 @@ def change_unverified_email(*, user, new_email: str):
     return user
 
 
-SECURITY_EVENTS = {
-    "two_factor_enabled": gettext_lazy("Two-factor authentication was turned on for your account."),
-    "two_factor_disabled": gettext_lazy("Two-factor authentication was turned off for your account."),
-    "backup_codes_regenerated": gettext_lazy("New two-factor backup codes were created for your account. The old codes no longer work."),
-    "device_remembered": gettext_lazy(
+SECURITY_EVENTS = {  # emailed to the account holder; also recorded in the audit log
+    AuditAction.TWO_FACTOR_ENABLED: gettext_lazy("Two-factor authentication was turned on for your account."),
+    AuditAction.TWO_FACTOR_DISABLED: gettext_lazy("Two-factor authentication was turned off for your account."),
+    AuditAction.BACKUP_CODES_REGENERATED: gettext_lazy("New two-factor backup codes were created for your account. The old codes no longer work."),
+    AuditAction.DEVICE_REMEMBERED: gettext_lazy(
         "A device was remembered for two-factor sign-in and won't be asked for a code for %(days)s days: %(device)s."
     ),
 }
 
 
-def send_security_notice(user, event: str, **params) -> None:
+def send_security_notice(user, event: AuditAction, **params) -> None:
     """Tell the account holder about a security change, so an attacker can't make one silently."""
     with translation.override(user.language):
         event_text = str(SECURITY_EVENTS[event]) % params if params else str(SECURITY_EVENTS[event])

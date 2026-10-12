@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 06:21+0700\n"
+"POT-Creation-Date: 2026-10-13 06:34+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -56,7 +56,7 @@ msgstr "Nama usaha"
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:34 apps/accounts/services.py:85
+#: apps/accounts/forms.py:34 apps/accounts/services.py:87
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
@@ -128,7 +128,7 @@ msgstr "bergabung"
 msgid "email verified at"
 msgstr "email dikonfirmasi pada"
 
-#: apps/accounts/models.py:60
+#: apps/accounts/models.py:60 apps/audit/models.py:18
 msgid "user"
 msgstr "pengguna"
 
@@ -172,27 +172,27 @@ msgstr "aplikasi autentikator"
 msgid "backup codes"
 msgstr "kode cadangan"
 
-#: apps/accounts/services.py:59
+#: apps/accounts/services.py:61
 msgid "This confirmation link has expired. Request a new one."
 msgstr "Tautan konfirmasi ini sudah kedaluwarsa. Minta tautan baru."
 
-#: apps/accounts/services.py:61 apps/accounts/services.py:64
+#: apps/accounts/services.py:63 apps/accounts/services.py:66
 msgid "This confirmation link is not valid."
 msgstr "Tautan konfirmasi ini tidak valid."
 
-#: apps/accounts/services.py:83
+#: apps/accounts/services.py:85
 msgid "A confirmed email address can't be changed here."
 msgstr "Alamat email yang sudah dikonfirmasi tidak dapat diubah di sini."
 
-#: apps/accounts/services.py:93
+#: apps/accounts/services.py:95
 msgid "Two-factor authentication was turned on for your account."
 msgstr "Autentikasi dua faktor telah dihidupkan untuk akun Anda."
 
-#: apps/accounts/services.py:94
+#: apps/accounts/services.py:96
 msgid "Two-factor authentication was turned off for your account."
 msgstr "Autentikasi dua faktor telah dimatikan untuk akun Anda."
 
-#: apps/accounts/services.py:95
+#: apps/accounts/services.py:97
 msgid ""
 "New two-factor backup codes were created for your account. The old codes no "
 "longer work."
@@ -200,7 +200,7 @@ msgstr ""
 "Kode cadangan autentikasi dua faktor yang baru telah dibuat untuk akun Anda."
 " Kode lama tidak berlaku lagi."
 
-#: apps/accounts/services.py:97
+#: apps/accounts/services.py:99
 #, python-format
 msgid ""
 "A device was remembered for two-factor sign-in and won't be asked for a code"
@@ -209,30 +209,30 @@ msgstr ""
 "Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak"
 " akan diminta kode selama %(days)s hari: %(device)s."
 
-#: apps/accounts/views.py:125
+#: apps/accounts/views.py:128
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:134
+#: apps/accounts/views.py:139
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
-#: apps/accounts/views.py:250
+#: apps/accounts/views.py:256
 #, python-format
 msgid "We sent a new confirmation link to %(email)s."
 msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
 
-#: apps/accounts/views.py:252
+#: apps/accounts/views.py:258
 msgid "Too many emails were requested. Please wait an hour and try again."
 msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
 
-#: apps/accounts/views.py:262
+#: apps/accounts/views.py:270
 #, python-format
 msgid "Email address updated. We sent a confirmation link to %(email)s."
 msgstr ""
 "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
 
-#: apps/accounts/views.py:279
+#: apps/accounts/views.py:287
 msgid ""
 "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has "
 "been set up."
@@ -240,40 +240,40 @@ msgstr ""
 "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah"
 " disiapkan."
 
-#: apps/accounts/views.py:281
+#: apps/accounts/views.py:289
 msgid "Email address confirmed. You can sign in now."
 msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
-#: apps/accounts/views.py:291
+#: apps/accounts/views.py:299
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
 msgstr[0] ""
 "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
-#: apps/accounts/views.py:310
+#: apps/accounts/views.py:318
 msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
-#: apps/accounts/views.py:321 apps/accounts/views.py:406
-#: apps/accounts/views.py:501
+#: apps/accounts/views.py:330 apps/accounts/views.py:421
+#: apps/accounts/views.py:518
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr ""
 "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba "
 "lagi."
 
-#: apps/accounts/views.py:323
+#: apps/accounts/views.py:332
 msgid "Too many wrong codes. Please sign in again."
 msgstr "Terlalu banyak kode salah. Silakan masuk kembali."
 
-#: apps/accounts/views.py:339
+#: apps/accounts/views.py:350
 #, python-format
 msgid "You signed in with a backup code. %(count)s backup code is left."
 msgid_plural ""
 "You signed in with a backup code. %(count)s backup codes are left."
 msgstr[0] "Anda masuk dengan kode cadangan. Tersisa %(count)s kode cadangan."
 
-#: apps/accounts/views.py:369
+#: apps/accounts/views.py:384
 #, python-format
 msgid ""
 "%(count)s remembered device forgotten. It will be asked for a code at the "
@@ -285,22 +285,22 @@ msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi "
 "saat masuk berikutnya."
 
-#: apps/accounts/views.py:438
+#: apps/accounts/views.py:453
 msgid ""
 "That code is not valid. Check that the time on your phone is correct and try"
 " again."
 msgstr ""
 "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:443
+#: apps/accounts/views.py:459
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:471
+#: apps/accounts/views.py:488
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:493 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:510 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid ""
 "You can't turn off two-factor authentication while %(organizations)s "
@@ -309,7 +309,7 @@ msgstr ""
 "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s "
 "mewajibkannya."
 
-#: apps/accounts/views.py:506
+#: apps/accounts/views.py:524
 msgid ""
 "Two-factor authentication is off. Your account is protected by your password"
 " only."
@@ -317,11 +317,184 @@ msgstr ""
 "Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata "
 "sandi."
 
-#: apps/billing/admin.py:24
+#: apps/audit/apps.py:7
+msgid "Audit log"
+msgstr "Log audit"
+
+#: apps/audit/domain.py:13
+msgid "Account security"
+msgstr "Keamanan akun"
+
+#: apps/audit/domain.py:14 templates/partials/sidebar.html:44
+msgid "Organization"
+msgstr "Organisasi"
+
+#: apps/audit/domain.py:15
+msgid "Subscription"
+msgstr "Langganan"
+
+#: apps/audit/domain.py:16 templates/audit/organization_activity.html:18
+msgid "System"
+msgstr "Sistem"
+
+#: apps/audit/domain.py:20
+msgid "Signed in"
+msgstr "Masuk"
+
+#: apps/audit/domain.py:21
+msgid "Failed sign-in attempt"
+msgstr "Percobaan masuk gagal"
+
+#: apps/audit/domain.py:22
+msgid "Sign-in locked after repeated failures"
+msgstr "Masuk dikunci setelah gagal berulang kali"
+
+#: apps/audit/domain.py:23 templates/accounts/password_reset_complete.html:2
+#: templates/accounts/password_reset_complete.html:4
+msgid "Password changed"
+msgstr "Kata sandi diubah"
+
+#: apps/audit/domain.py:24
+msgid "Password reset by email"
+msgstr "Kata sandi diatur ulang melalui email"
+
+#: apps/audit/domain.py:25
+msgid "Email address changed"
+msgstr "Alamat email diubah"
+
+#: apps/audit/domain.py:26
+msgid "Two-factor authentication turned on"
+msgstr "Autentikasi dua faktor diaktifkan"
+
+#: apps/audit/domain.py:27
+msgid "Two-factor authentication turned off"
+msgstr "Autentikasi dua faktor dinonaktifkan"
+
+#: apps/audit/domain.py:28
+msgid "New backup codes created"
+msgstr "Kode cadangan baru dibuat"
+
+#: apps/audit/domain.py:29
+msgid "Signed in with a backup code"
+msgstr "Masuk dengan kode cadangan"
+
+#: apps/audit/domain.py:30
+msgid "Device remembered for two-factor sign-in"
+msgstr "Perangkat diingat untuk masuk dua faktor"
+
+#: apps/audit/domain.py:31
+msgid "Remembered devices forgotten"
+msgstr "Perangkat yang diingat dilupakan"
+
+#: apps/audit/domain.py:33
+msgid "Organization created"
+msgstr "Organisasi dibuat"
+
+#: apps/audit/domain.py:34
+msgid "Organization settings changed"
+msgstr "Pengaturan organisasi diubah"
+
+#: apps/audit/domain.py:35
+msgid "Member added"
+msgstr "Anggota ditambahkan"
+
+#: apps/audit/domain.py:36
+msgid "Member removed"
+msgstr "Anggota dihapus"
+
+#: apps/audit/domain.py:37
+msgid "Books exported"
+msgstr "Pembukuan diekspor"
+
+#: apps/audit/domain.py:38
+msgid "Organization deleted"
+msgstr "Organisasi dihapus"
+
+#: apps/audit/domain.py:40
+msgid "Subscription plan changed"
+msgstr "Paket langganan diubah"
+
+#: apps/audit/domain.py:41
+msgid "Payment confirmed manually"
+msgstr "Pembayaran dikonfirmasi manual"
+
+#: apps/audit/domain.py:43
+msgid "Encryption keys rotated"
+msgstr "Kunci enkripsi dirotasi"
+
+#: apps/audit/models.py:15
+msgid "time"
+msgstr "waktu"
+
+#: apps/audit/models.py:16
+msgid "action"
+msgstr "tindakan"
+
+#: apps/audit/models.py:20
+msgid "user email"
+msgstr "email pengguna"
+
+#: apps/audit/models.py:23 apps/billing/models.py:30 apps/core/models.py:29
+#: apps/tenants/models.py:90
+msgid "organization"
+msgstr "organisasi"
+
+#: apps/audit/models.py:25
+msgid "organization name"
+msgstr "nama organisasi"
+
+#: apps/audit/models.py:26 templates/audit/organization_activity.html:13
+msgid "IP address"
+msgstr "alamat IP"
+
+#: apps/audit/models.py:27
+msgid "browser"
+msgstr "peramban"
+
+#: apps/audit/models.py:28
+msgid "target"
+msgstr "sasaran"
+
+#: apps/audit/models.py:29
+msgid "details"
+msgstr "rincian"
+
+#: apps/audit/models.py:33
+msgid "audit event"
+msgstr "peristiwa audit"
+
+#: apps/audit/models.py:34
+msgid "audit log"
+msgstr "log audit"
+
+#: apps/audit/templatetags/audit.py:16 apps/reports/exports.py:67
+msgid "Yes"
+msgstr "Ya"
+
+#: apps/audit/templatetags/audit.py:16 apps/reports/exports.py:67
+msgid "No"
+msgstr "Tidak"
+
+#: apps/audit/templatetags/audit.py:41
+#, python-format
+msgid "%(email)s, wrong two-factor code"
+msgstr "%(email)s, kode dua faktor salah"
+
+#: apps/audit/templatetags/audit.py:48
+#, python-format
+msgid "%(count)s device"
+msgid_plural "%(count)s devices"
+msgstr[0] "%(count)s perangkat"
+
+#: apps/audit/templatetags/audit.py:50
+msgid "By the system operator"
+msgstr "Oleh operator sistem"
+
+#: apps/billing/admin.py:26
 msgid "Mark as paid (bank transfer confirmed)"
 msgstr "Tandai lunas (transfer bank terkonfirmasi)"
 
-#: apps/billing/admin.py:33
+#: apps/billing/admin.py:39
 msgid "Check status with the payment gateway"
 msgstr "Cek status ke payment gateway"
 
@@ -405,10 +578,6 @@ msgstr "Gagal"
 #: apps/invoicing/models.py:166 apps/ledger/models.py:60
 msgid "number"
 msgstr "nomor"
-
-#: apps/billing/models.py:30 apps/core/models.py:29 apps/tenants/models.py:90
-msgid "organization"
-msgstr "organisasi"
 
 #: apps/billing/models.py:32 apps/tenants/models.py:81
 msgid "plan"
@@ -1544,14 +1713,6 @@ msgstr "Jurnal dibalik dengan %(number)s."
 msgid "Reports"
 msgstr "Laporan"
 
-#: apps/reports/exports.py:67
-msgid "Yes"
-msgstr "Ya"
-
-#: apps/reports/exports.py:67
-msgid "No"
-msgstr "Tidak"
-
 #: apps/reports/exports.py:98
 msgid "General journal: one row per line, drafts and posted entries."
 msgstr ""
@@ -1800,15 +1961,15 @@ msgstr "TOTAL"
 msgid "Total %(section)s"
 msgstr "Total %(section)s"
 
-#: apps/reports/views.py:121
+#: apps/reports/views.py:119
 msgid "Receivables aging"
 msgstr "Umur Piutang"
 
-#: apps/reports/views.py:121
+#: apps/reports/views.py:119
 msgid "Payables aging"
 msgstr "Umur Utang"
 
-#: apps/reports/views.py:145
+#: apps/reports/views.py:143
 msgid "Too many exports in the last hour. Please try again later."
 msgstr ""
 "Terlalu banyak ekspor dalam satu jam terakhir. Silakan coba lagi nanti."
@@ -2183,7 +2344,7 @@ msgstr "Akuntan / Staf Keuangan"
 msgid "View only"
 msgstr "Hanya Lihat"
 
-#: apps/tenants/services.py:65
+#: apps/tenants/services.py:68
 #, python-format
 msgid ""
 "The %(plan)s plan allows only %(limit)s user. Please upgrade your plan."
@@ -2193,29 +2354,29 @@ msgstr[0] ""
 "Paket %(plan)s hanya mengizinkan %(limit)s pengguna. Silakan tingkatkan "
 "paket Anda."
 
-#: apps/tenants/services.py:77
+#: apps/tenants/services.py:80
 msgid "No user with that email is registered yet. Ask them to sign up first."
 msgstr ""
 "Pengguna dengan email tersebut belum terdaftar. Minta mereka mendaftar "
 "terlebih dahulu."
 
-#: apps/tenants/services.py:79
+#: apps/tenants/services.py:82
 msgid "This user is already a member of the organization."
 msgstr "Pengguna sudah menjadi anggota organisasi ini."
 
-#: apps/tenants/services.py:81
+#: apps/tenants/services.py:84
 msgid "The owner role cannot be given to a new member."
 msgstr "Peran pemilik tidak dapat diberikan melalui undangan."
 
-#: apps/tenants/services.py:90
+#: apps/tenants/services.py:93
 msgid "The organization owner cannot be removed."
 msgstr "Pemilik organisasi tidak dapat dihapus."
 
-#: apps/tenants/services.py:92
+#: apps/tenants/services.py:95
 msgid "You cannot remove yourself."
 msgstr "Anda tidak dapat menghapus diri sendiri."
 
-#: apps/tenants/services.py:102
+#: apps/tenants/services.py:106
 #, python-format
 msgid ""
 "The organization has %(count)s user, more than the %(plan)s plan allows "
@@ -2227,7 +2388,7 @@ msgstr[0] ""
 "Organisasi memiliki %(count)s pengguna, melebihi batas paket %(plan)s "
 "(%(limit)s)."
 
-#: apps/tenants/views.py:37
+#: apps/tenants/views.py:44
 #, python-format
 msgid ""
 "Two-factor authentication is now required. %(count)s member without it was "
@@ -2239,20 +2400,20 @@ msgstr[0] ""
 "Autentikasi dua faktor kini wajib. %(count)s anggota yang belum memakainya "
 "telah diberi tahu lewat email."
 
-#: apps/tenants/views.py:41
+#: apps/tenants/views.py:48
 msgid "Organization settings saved."
 msgstr "Pengaturan organisasi disimpan."
 
-#: apps/tenants/views.py:52
+#: apps/tenants/views.py:59
 #, python-format
 msgid "Organization %(name)s created."
 msgstr "Organisasi %(name)s berhasil dibuat."
 
-#: apps/tenants/views.py:73
+#: apps/tenants/views.py:84
 msgid "Member added."
 msgstr "Anggota berhasil ditambahkan."
 
-#: apps/tenants/views.py:81
+#: apps/tenants/views.py:96
 msgid "Member removed."
 msgstr "Anggota dihapus."
 
@@ -2456,11 +2617,6 @@ msgstr "Ubah kata sandi"
 msgid "Save"
 msgstr "Simpan"
 
-#: templates/accounts/password_reset_complete.html:2
-#: templates/accounts/password_reset_complete.html:4
-msgid "Password changed"
-msgstr "Kata sandi diubah"
-
 #: templates/accounts/password_reset_complete.html:5
 msgid ""
 "Your password has been changed and you have been signed out everywhere else."
@@ -2625,6 +2781,23 @@ msgstr "Lupakan semua perangkat"
 msgid "No remembered devices."
 msgstr "Tidak ada perangkat yang diingat."
 
+#: templates/accounts/security.html:53
+msgid "Recent security activity"
+msgstr "Aktivitas keamanan terbaru"
+
+#: templates/accounts/security.html:54
+msgid ""
+"Sign-ins and security changes on your account. If you don't recognize "
+"something, change your password and turn on two-factor authentication."
+msgstr ""
+"Aktivitas masuk dan perubahan keamanan pada akun Anda. Jika ada yang tidak "
+"Anda kenali, ganti kata sandi dan aktifkan autentikasi dua faktor."
+
+#: templates/accounts/security.html:64
+#: templates/audit/organization_activity.html:24
+msgid "No activity recorded yet."
+msgstr "Belum ada aktivitas yang tercatat."
+
 #: templates/accounts/signup.html:2 templates/accounts/signup.html:7
 msgid "Sign up"
 msgstr "Daftar"
@@ -2753,7 +2926,7 @@ msgstr ""
 
 #: templates/accounts/two_factor_verify_session.html:11
 #: templates/accounts/verify_email_pending.html:21
-#: templates/partials/sidebar.html:52
+#: templates/partials/sidebar.html:53
 msgid "Sign out"
 msgstr "Keluar"
 
@@ -2791,6 +2964,44 @@ msgstr "Salah alamat email?"
 #: templates/accounts/verify_email_pending.html:16
 msgid "Update and send link"
 msgstr "Perbarui dan kirim tautan"
+
+#: templates/audit/organization_activity.html:2
+#: templates/audit/organization_activity.html:4
+#: templates/partials/sidebar.html:46
+msgid "Activity log"
+msgstr "Log aktivitas"
+
+#: templates/audit/organization_activity.html:5
+msgid ""
+"Sensitive changes in this organization: settings, members, exports and the "
+"subscription. Entries cannot be edited or deleted."
+msgstr ""
+"Perubahan penting di organisasi ini: pengaturan, anggota, ekspor, dan "
+"langganan. Catatan tidak dapat diubah atau dihapus."
+
+#: templates/audit/organization_activity.html:7
+msgid "Category"
+msgstr "Kategori"
+
+#: templates/audit/organization_activity.html:8
+msgid "All activity"
+msgstr "Semua aktivitas"
+
+#: templates/audit/organization_activity.html:13
+msgid "Time"
+msgstr "Waktu"
+
+#: templates/audit/organization_activity.html:13
+msgid "User"
+msgstr "Pengguna"
+
+#: templates/audit/organization_activity.html:13
+msgid "Action"
+msgstr "Tindakan"
+
+#: templates/audit/organization_activity.html:13
+msgid "Details"
+msgstr "Rincian"
 
 #: templates/base.html:6
 msgid "MSME accounting"
@@ -2844,7 +3055,7 @@ msgid "Simulate expired link"
 msgstr "Simulasikan tautan kedaluwarsa"
 
 #: templates/billing/invoice_detail.html:6 templates/billing/overview.html:2
-#: templates/billing/overview.html:4 templates/partials/sidebar.html:46
+#: templates/billing/overview.html:4 templates/partials/sidebar.html:47
 msgid "Subscription plan"
 msgstr "Paket Langganan"
 
@@ -3630,10 +3841,6 @@ msgstr "Laporan Keuangan"
 #: templates/partials/sidebar.html:43
 msgid "Settings"
 msgstr "Pengaturan"
-
-#: templates/partials/sidebar.html:44
-msgid "Organization"
-msgstr "Organisasi"
 
 #: templates/partials/sidebar.html:45 templates/tenants/members.html:2
 #: templates/tenants/members.html:4

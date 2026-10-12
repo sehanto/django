@@ -1,6 +1,8 @@
 from django.contrib import admin, messages
 from django.utils.translation import gettext_lazy as _
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.core.exceptions import DomainError
 
 from . import services
@@ -26,6 +28,10 @@ class SubscriptionInvoiceAdmin(admin.ModelAdmin):
         for invoice in queryset:
             try:
                 services.mark_paid_manually(invoice=invoice, confirmed_by=request.user)
+                audit.record(
+                    AuditAction.PAYMENT_CONFIRMED_MANUALLY, request=request, organization=invoice.organization,
+                    target=invoice.number, total=invoice.total,
+                )
                 self.message_user(request, f"{invoice.number}: OK")
             except DomainError as exc:
                 self.message_user(request, f"{invoice.number}: {exc.message}", messages.ERROR)

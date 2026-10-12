@@ -164,6 +164,35 @@ therefore requires either `--export-to` (it writes the books before deleting) or
 explicit `--skip-export`, for example when the customer already downloaded them.
 Subscription invoices (our own sales records) survive.
 
+### Audit log
+
+Sensitive actions are recorded in `audit.AuditEvent` (`apps/audit`). Each event has
+the time, user, organization, IP address, browser and what changed.
+
+| Category | Actions |
+|---|---|
+| Account security | Sign-in (and failed attempts, including a wrong two-factor code), lockout, password change and reset, email change, 2FA on/off, new backup codes, backup code used, device remembered/forgotten |
+| Organization | Created, settings changed (each field old → new, e.g. the lock date), member added/removed, books exported, organization deleted |
+| Subscription | Plan changed, payment confirmed manually in the admin |
+| System | Encryption keys rotated |
+
+Bookkeeping is audited by the ledger itself: entries are immutable and record their
+author. Passwords, codes and keys are never recorded.
+
+- **Who sees it:** owners and admins see their organization's events under **Settings →
+  Activity log**. Every user sees their own sign-ins and security changes on the
+  Security page. Staff see everything, read-only, in the Django admin.
+- **Append-only:** a PostgreSQL trigger (migration `audit/0002`) rejects updates and
+  deletes for every role. It only allows clearing the user/organization link when that
+  row is deleted (email and organization name are snapshotted, so deleted
+  organizations stay traceable). The table owner may also delete, for retention.
+- **Retention:** `manage.py prune_audit_log` (owner connection, e.g. monthly) deletes
+  events older than `AUDIT_RETENTION_DAYS` (default 730).
+
+To record a new sensitive action, add an `AuditAction` (with its category) and call
+`apps.audit.services.record(action, request=..., organization=..., target=..., **details)`
+after the action succeeds.
+
 ### Exporting the books
 
 Owners and admins can download their organization's complete books from

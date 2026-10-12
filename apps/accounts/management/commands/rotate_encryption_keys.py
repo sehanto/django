@@ -9,6 +9,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import AuthenticatorDevice
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.core import crypto
 
 
@@ -21,4 +23,6 @@ class Command(BaseCommand):
         for device in devices:
             device.encrypted_key = crypto.rotate(device.encrypted_key)
             device.save(update_fields=["encrypted_key"])
-        self.stdout.write(f"Re-encrypted {devices.count()} authenticator secret(s) with the newest key.")
+        count = devices.count()
+        audit.record(AuditAction.ENCRYPTION_KEYS_ROTATED, authenticator_secrets=count)
+        self.stdout.write(f"Re-encrypted {count} authenticator secret(s) with the newest key.")

@@ -18,6 +18,9 @@ from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
+from apps.audit.selectors import account_events
 from apps.core.exceptions import DomainError
 from apps.core.params import int_param
 from apps.tenants.selectors import organizations_requiring_two_factor
@@ -131,8 +134,10 @@ class PasswordChangeView(auth_views.PasswordChangeView):
     success_url = reverse_lazy("accounts:profile")
 
     def form_valid(self, form):
+        response = super().form_valid(form)
+        audit.record(AuditAction.PASSWORD_CHANGED, request=self.request)
         messages.success(self.request, _("Password changed successfully."))
-        return super().form_valid(form)
+        return response
 
 
 class SetLanguageView(View):
@@ -212,6 +217,7 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
         # Proving control of the mailbox lifts any login lockout and confirms the address.
         axes_reset(username=self.user.email.lower())
         services.mark_email_verified(self.user)
+        audit.record(AuditAction.PASSWORD_RESET, request=self.request, actor=self.user)
         return response
 
 
@@ -258,7 +264,9 @@ class ChangeEmailView(LoginRequiredMixin, View):
         form = ChangeEmailForm(request.POST, user=request.user)
         if form.is_valid():
             try:
+                previous = request.user.email
                 services.change_unverified_email(user=request.user, new_email=form.cleaned_data["email"])
+                audit.record(AuditAction.EMAIL_CHANGED, request=request, target=request.user.email, previous=previous)
                 messages.success(request, _("Email address updated. We sent a confirmation link to %(email)s.") % {"email": request.user.email})
                 return redirect("accounts:verify_email_pending")
             except DomainError as exc:
@@ -317,6 +325,7 @@ class LoginOTPView(FormView):
             return self.form_invalid(form)
         device = two_factor.verify(self.user, form.cleaned_data["code"])
         if device is None:
+            audit.record(AuditAction.LOGIN_FAILED, request=self.request, actor=self.user, target=self.user.email, step="two_factor")
             if two_factor.record_failed_attempt(self.request):
                 form.add_error("code", _("That code is not valid. Check your authenticator app and try again."))
                 return self.form_invalid(form)
@@ -330,10 +339,12 @@ class LoginOTPView(FormView):
         response = redirect(self.pending["next"])
         if form.cleaned_data.get("remember"):
             remembered = trusted_devices.remember(self.request, response, self.user)
+            audit.record(AuditAction.DEVICE_REMEMBERED, request=self.request, target=remembered.label)
             services.send_security_notice(
-                self.user, "device_remembered", days=settings.TWO_FACTOR_REMEMBER_DAYS, device=remembered.label
+                self.user, AuditAction.DEVICE_REMEMBERED, days=settings.TWO_FACTOR_REMEMBER_DAYS, device=remembered.label
             )
         if isinstance(device, BackupCodeDevice):
+            audit.record(AuditAction.BACKUP_CODE_USED, request=self.request)
             left = two_factor.remaining_backup_codes(self.user)
             messages.warning(self.request, ngettext(
                 "You signed in with a backup code. %(count)s backup code is left.",
@@ -348,6 +359,7 @@ BACKUP_CODES_SESSION_KEY = "two_factor_new_backup_codes"  # shown once, then rem
 
 class SecurityView(LoginRequiredMixin, TemplateView):
     template_name = "accounts/security.html"
+    RECENT_ACTIVITY = 15
 
     def get_context_data(self, **kwargs):
         user = self.request.user
@@ -357,6 +369,7 @@ class SecurityView(LoginRequiredMixin, TemplateView):
             required_by=list(organizations_requiring_two_factor(user)),
             trusted_devices=trusted_devices.devices_for(user),
             this_device_id=trusted_devices.current_device_id(self.request),
+            recent_activity=account_events(user)[: self.RECENT_ACTIVITY],
             **kwargs,
         )
 
@@ -365,6 +378,8 @@ class ForgetTrustedDeviceView(LoginRequiredMixin, View):
     def post(self, request):
         device_id = int_param(request.POST, "device", minimum=1)
         count = trusted_devices.forget(request.user, device_id)  # None = all devices
+        if count:
+            audit.record(AuditAction.DEVICES_FORGOTTEN, request=request, count=count)
         messages.success(request, ngettext(
             "%(count)s remembered device forgotten. It will be asked for a code at the next sign-in.",
             "%(count)s remembered devices forgotten. They will be asked for a code at the next sign-in.",
@@ -438,7 +453,8 @@ class TwoFactorSetupView(LoginRequiredMixin, FormView):
             form.add_error("code", _("That code is not valid. Check that the time on your phone is correct and try again."))
             return self.form_invalid(form)
         otp_login(self.request, two_factor.authenticator(user))  # this session already proved the code
-        services.send_security_notice(user, "two_factor_enabled")
+        audit.record(AuditAction.TWO_FACTOR_ENABLED, request=self.request)
+        services.send_security_notice(user, AuditAction.TWO_FACTOR_ENABLED)
         self.request.session[BACKUP_CODES_SESSION_KEY] = codes
         messages.success(self.request, _("Two-factor authentication is on."))
         return redirect("accounts:two_factor_backup_codes")
@@ -467,7 +483,8 @@ class BackupCodesView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         self.request.session[BACKUP_CODES_SESSION_KEY] = two_factor.generate_backup_codes(self.request.user)
-        services.send_security_notice(self.request.user, "backup_codes_regenerated")
+        audit.record(AuditAction.BACKUP_CODES_REGENERATED, request=self.request)
+        services.send_security_notice(self.request.user, AuditAction.BACKUP_CODES_REGENERATED)
         messages.success(self.request, _("New backup codes created. The old ones no longer work."))
         return redirect("accounts:two_factor_backup_codes")
 
@@ -502,6 +519,7 @@ class TwoFactorDisableView(LoginRequiredMixin, FormView):
             return self.form_invalid(form)
         two_factor.disable(user)
         trusted_devices.forget(user)
-        services.send_security_notice(user, "two_factor_disabled")
+        audit.record(AuditAction.TWO_FACTOR_DISABLED, request=self.request)
+        services.send_security_notice(user, AuditAction.TWO_FACTOR_DISABLED)
         messages.warning(self.request, _("Two-factor authentication is off. Your account is protected by your password only."))
         return redirect("accounts:security")

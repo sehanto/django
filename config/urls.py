@@ -8,6 +8,7 @@ admin.site.__class__ = OTPAdminSite
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("account/", include("apps.accounts.urls")),
+    path("organization/activity/", include("apps.audit.urls")),
     path("organization/", include("apps.tenants.urls")),
     path("ledger/", include("apps.ledger.urls")),
     path("contacts/", include("apps.contacts.urls")),

@@ -12,6 +12,8 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.core.exceptions import PlanLimitExceeded, ValidationFailed
 from apps.ledger.services import seed_chart_of_accounts
 from apps.taxes.services import seed_tax_rates
@@ -44,6 +46,7 @@ def create_organization(*, owner, name: str, legal_form: str, **profile) -> Orga
     Membership.objects.create(user=owner, organization=organization, role=Role.OWNER)
     seed_chart_of_accounts(organization)
     seed_tax_rates(organization)
+    audit.record(AuditAction.ORGANIZATION_CREATED, actor=owner, organization=organization, target=organization.name)
     return organization
 
 
@@ -84,13 +87,14 @@ def add_member(*, organization: Organization, email: str, role: str) -> Membersh
 
 
 @transaction.atomic
-def remove_member(*, organization: Organization, membership_id: int, acting_user) -> None:
+def remove_member(*, organization: Organization, membership_id: int, acting_user) -> Membership:
     membership = Membership.objects.select_for_update().get(organization=organization, pk=membership_id)
     if membership.role == Role.OWNER:
         raise ValidationFailed(_("The organization owner cannot be removed."))
     if membership.user_id == acting_user.pk:
         raise ValidationFailed(_("You cannot remove yourself."))
     membership.delete()
+    return membership
 
 
 def ensure_usage_fits(*, organization: Organization, plan: Plan) -> None:
@@ -110,6 +114,11 @@ def ensure_usage_fits(*, organization: Organization, plan: Plan) -> None:
 @transaction.atomic
 def set_subscription(*, organization: Organization, plan: Plan, paid_until: date | None) -> Organization:
     """Record the organization's effective plan. Payment is handled by ``apps.billing``."""
+    if organization.plan_id != plan.pk:
+        audit.record(
+            AuditAction.PLAN_CHANGED, organization=organization, target=plan.name,
+            previous_plan=organization.plan.name, paid_until=paid_until,
+        )
     organization.plan = plan
     organization.plan_paid_until = paid_until
     organization.save(update_fields=["plan", "plan_paid_until", "updated_at"])
