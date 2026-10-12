@@ -32,6 +32,7 @@ LOCAL_APPS = [
     "apps.taxes",
     "apps.invoicing",
     "apps.reports",
+    "apps.billing",
     "apps.dashboard",
 ]
 
@@ -64,6 +65,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.tenants.context_processors.current_organization",
+                "apps.billing.context_processors.subscription_notice",
             ],
         },
     },
@@ -113,3 +115,18 @@ STORAGES = {
 }
 
 MESSAGE_TAGS = {40: "danger"}
+
+# Subscription billing (apps.billing). Plan prices exclude PPN.
+BILLING_GATEWAY = env("BILLING_GATEWAY", default="fake")  # "xendit" in production
+XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY", default="")
+XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN", default="")
+XENDIT_API_URL = env("XENDIT_API_URL", default="https://api.xendit.co")
+BILLING_CHECKOUT_HOURS = env.int("BILLING_CHECKOUT_HOURS", default=24)  # payment link lifetime
+BILLING_REMINDER_DAYS = env.int("BILLING_REMINDER_DAYS", default=7)  # remind this many days before expiry
+BILLING_GRACE_DAYS = env.int("BILLING_GRACE_DAYS", default=7)  # keep the plan this long after expiry
+# Seller details printed on subscription receipts.
+BILLING_SELLER_NAME = env("BILLING_SELLER_NAME", default="BukuUMKM")
+BILLING_SELLER_NPWP = env("BILLING_SELLER_NPWP", default="")
+BILLING_SELLER_ADDRESS = env("BILLING_SELLER_ADDRESS", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="BukuUMKM <noreply@bukuumkm.id>")
+SITE_URL = env("SITE_URL", default="http://localhost:8000")  # absolute links in emails

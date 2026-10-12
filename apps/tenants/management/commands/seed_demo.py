@@ -20,7 +20,7 @@ from apps.ledger.models import Account
 from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.taxes.models import TaxRate
 from apps.tenants.models import Plan
-from apps.tenants.services import create_organization
+from apps.tenants.services import create_organization, set_subscription
 
 D = Decimal
 
@@ -43,8 +43,9 @@ class Command(BaseCommand):
             npwp="0123456789012345", address="Jl. Malioboro No. 12", city="Yogyakarta", phone="0812-3456-7890",
         )
 
-        org.plan = Plan.objects.filter(code="pro").first() or org.plan
-        org.save(update_fields=["plan"])
+        pro = Plan.objects.filter(code="pro").first()
+        if pro:
+            set_subscription(organization=org, plan=pro, paid_until=timezone.localdate() + timedelta(days=30))
 
         def acc(code):
             return Account.objects.get(organization=org, code=code)

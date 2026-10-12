@@ -20,6 +20,7 @@
   <main class="{% if current_organization %}app-main{% endif %}">
     <div class="container-fluid px-3 px-lg-4 py-4">
       {% include "partials/messages.html" %}
+      {% if subscription_notice %}{% include "partials/subscription_notice.html" %}{% endif %}
       {% block content %}{% endblock %}
     </div>
   </main>

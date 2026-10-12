@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import FormView, TemplateView, UpdateView
+from django.views.generic import FormView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.views import DomainErrorFormMixin, flash_domain_error
@@ -12,8 +12,7 @@ from apps.core.views import DomainErrorFormMixin, flash_domain_error
 from . import services
 from .forms import AddMemberForm, OrganizationCreateForm, OrganizationSettingsForm
 from .mixins import ManageMixin
-from .models import Plan
-from .selectors import available_plans, members_of, organizations_for_user
+from .selectors import members_of, organizations_for_user
 from .session import set_current_organization
 
 
@@ -71,18 +70,3 @@ class RemoveMemberView(ManageMixin, View):
             flash_domain_error(request, exc)
         return redirect("tenants:members")
 
-
-class PlanView(ManageMixin, TemplateView):
-    template_name = "tenants/plans.html"
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(plans=available_plans(), **kwargs)
-
-    def post(self, request):
-        plan = get_object_or_404(Plan, pk=request.POST.get("plan"))
-        try:
-            services.change_plan(organization=self.organization, plan=plan)
-            messages.success(request, _("Plan changed to %(plan)s.") % {"plan": plan.name})
-        except DomainError as exc:
-            flash_domain_error(request, exc)
-        return redirect("tenants:plans")

@@ -10,5 +10,4 @@ urlpatterns = [
     path("<int:pk>/switch/", views.SwitchOrganizationView.as_view(), name="switch"),
     path("members/", views.MembersView.as_view(), name="members"),
     path("members/<int:pk>/remove/", views.RemoveMemberView.as_view(), name="remove_member"),
-    path("plan/", views.PlanView.as_view(), name="plans"),
 ]

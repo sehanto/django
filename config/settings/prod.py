@@ -16,3 +16,9 @@ LOGGING = {
     "handlers": {"console": {"class": "logging.StreamHandler"}},
     "root": {"handlers": ["console"], "level": "INFO"},
 }
+
+# Real payments only: fail fast if Xendit is not configured.
+BILLING_GATEWAY = "xendit"
+XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY")  # noqa: F405
+XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")  # noqa: F405

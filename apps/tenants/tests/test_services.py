@@ -41,7 +41,7 @@ def test_add_member_respects_plan_and_rules(organization, user, other_organizati
     with pytest.raises(PlanLimitExceeded):
         services.add_member(organization=organization, email="third@example.com", role=Role.VIEWER)
     with pytest.raises(PlanLimitExceeded):
-        services.change_plan(organization=organization, plan=Plan.objects.create(code="solo", name="Solo", max_users=1))
+        services.ensure_usage_fits(organization=organization, plan=Plan.objects.create(code="solo", name="Solo", max_users=1))
 
 
 def test_owner_cannot_be_removed(organization, user, make_member):

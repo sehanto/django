@@ -1,0 +1,73 @@
+{% extends "base.html" %}{% load i18n money ui %}
+{% block title %}{% translate "Subscription plan" %}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">{% translate "Subscription plan" %}</h1>
+
+<div class="card mb-4"><div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+  <div>
+    <div class="stat-label">{% translate "Current plan" %}</div>
+    <div class="fs-4 fw-semibold">{{ current_organization.plan.name }}
+      <span class="badge align-middle {% if state == 'active' %}text-bg-success{% elif state == 'expiring' %}text-bg-warning{% elif state == 'grace' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ state.label }}</span>
+    </div>
+  </div>
+  <div class="text-secondary">
+    {% if current_organization.plan_paid_until %}
+      {% blocktranslate trimmed with date=current_organization.plan_paid_until|date:"d F Y" %}Paid until {{ date }}{% endblocktranslate %}
+    {% else %}{% translate "No payment needed" %}{% endif %}
+  </div>
+</div></div>
+
+<div class="row g-3">
+{% for offer in offers %}{% with plan=offer.plan %}
+  <div class="col-lg-4">
+    <div class="card h-100 {% if plan.pk == current_organization.plan_id %}border-primary border-2{% endif %}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="h5">{{ plan.name }}</h2>
+          {% if plan.pk == current_organization.plan_id %}<span class="badge text-bg-primary">{% translate "Current plan" %}</span>{% endif %}
+        </div>
+        {% if offer.is_free %}
+          <div class="fs-3 fw-bold">{% translate "Free" %}</div>
+        {% else %}
+          <div class="fs-3 fw-bold">{{ offer.monthly.subtotal|rupiah }}<span class="fs-6 fw-normal text-secondary">{% translate "/month" %}</span></div>
+          <div class="small text-secondary">{% blocktranslate trimmed with price=offer.yearly.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
+        {% endif %}
+        <ul class="list-unstyled mt-3 small">
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% translate "SAK EMKM financial reports" %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% translate "PPN & MSME PPh Final" %}</li>
+        </ul>
+      </div>
+      <div class="card-footer bg-transparent">
+        {% if offer.is_free %}
+          <p class="small text-secondary mb-0">{% if plan.pk == current_organization.plan_id %}{% translate "Upgrade any time; no card needed." %}{% else %}{% blocktranslate trimmed with days=grace_days %}If your paid plan is not renewed, you move to this plan {{ days }} days after it ends.{% endblocktranslate %}{% endif %}</p>
+        {% else %}
+          <form method="post" action="{% url 'billing:checkout' %}" class="d-grid gap-2">{% csrf_token %}
+            <input type="hidden" name="plan" value="{{ plan.pk }}">
+            <button name="period" value="monthly" class="btn btn-outline-primary">{% blocktranslate trimmed with total=offer.monthly.total|rupiah %}Pay monthly · {{ total }}{% endblocktranslate %}</button>
+            <button name="period" value="yearly" class="btn btn-primary">{% blocktranslate trimmed with total=offer.yearly.total|rupiah %}Pay yearly · {{ total }}{% endblocktranslate %}</button>
+            <div class="small text-secondary text-center">{% translate "Amounts include PPN." %}</div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endwith %}{% endfor %}
+</div>
+<p class="small text-secondary mt-3">{% blocktranslate trimmed %}
+  Prices exclude PPN of 12% on a tax base of 11/12 (effectively 11%). Paying for your current plan extends it from its end date;
+  a different plan starts on the payment date, and remaining time on the old plan is not credited.
+  Pay by QRIS, bank virtual account, e-wallet or card through our payment partner Xendit.
+{% endblocktranslate %}</p>
+
+<h2 class="h5 mt-4">{% translate "Billing history" %}</h2>
+<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+  <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Plan" %}</th><th>{% translate "Billing period" %}</th><th class="num">{% translate "Total" %}</th><th>{% translate "Status" %}</th></tr></thead>
+  <tbody>{% for inv in invoices %}
+    <tr><td><a href="{% url 'billing:invoice' inv.pk %}">{{ inv.number }}</a></td><td class="text-nowrap">{{ inv.created_at|date:"d M Y" }}</td>
+      <td>{{ inv.plan.name }}</td><td>{{ inv.get_billing_period_display }}</td><td class="num">{{ inv.total|rupiah }}</td>
+      <td><span class="badge text-bg-{{ inv.status|status_badge }}">{{ inv.get_status_display }}</span></td></tr>
+  {% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">{% translate "No subscription payments yet." %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

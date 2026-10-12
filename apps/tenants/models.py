@@ -12,7 +12,8 @@ class Plan(TimeStampedModel):
 
     code = models.SlugField(_("code"), unique=True)
     name = models.CharField(_("name"), max_length=50)
-    monthly_price = money_field(_("monthly price"))
+    monthly_price = money_field(_("monthly price"), help_text=_("Excluding PPN."))
+    yearly_price = money_field(_("yearly price"), help_text=_("Excluding PPN."))
     max_users = models.PositiveIntegerField(_("max. users"), null=True, blank=True)
     max_invoices_per_month = models.PositiveIntegerField(_("max. invoices per month"), null=True, blank=True)
     is_default = models.BooleanField(_("default plan"), default=False)
@@ -64,6 +65,10 @@ class Organization(TimeStampedModel):
     )
 
     plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name="organizations", verbose_name=_("plan"))
+    plan_paid_until = models.DateField(
+        _("plan paid until"), null=True, blank=True, help_text=_("Last day covered by payment; empty for the free plan.")
+    )
+    renewal_reminder_sent_for = models.DateField(null=True, blank=True, editable=False)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through="Membership", related_name="organizations")
 
     class Meta:

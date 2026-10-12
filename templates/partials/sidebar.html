@@ -43,7 +43,7 @@
     <li class="nav-heading">{% translate "Settings" %}</li>
     <li><a class="nav-link {% if url.url_name == 'settings' %}active{% endif %}" href="{% url 'tenants:settings' %}"><i class="bi bi-gear me-2"></i>{% translate "Organization" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'members' %}active{% endif %}" href="{% url 'tenants:members' %}"><i class="bi bi-person-badge me-2"></i>{% translate "Team members" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'plans' %}active{% endif %}" href="{% url 'tenants:plans' %}"><i class="bi bi-stars me-2"></i>{% translate "Subscription plan" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'billing' %}active{% endif %}" href="{% url 'billing:overview' %}"><i class="bi bi-stars me-2"></i>{% translate "Subscription plan" %}</a></li>
     {% endif %}
   </ul>
   <hr>

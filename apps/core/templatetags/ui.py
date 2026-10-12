@@ -20,6 +20,10 @@ STATUS_BADGES = {
     "paid": "success",
     "void": "dark",
     "overdue": "danger",
+    "pending": "warning",
+    "expired": "dark",
+    "canceled": "dark",
+    "failed": "danger",
 }
 
 

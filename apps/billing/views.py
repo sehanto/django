@@ -1,0 +1,155 @@
+import json
+import logging
+
+from django.conf import settings
+from django.contrib import messages
+from django.http import Http404, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.utils import formats
+from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import DetailView, TemplateView
+
+from apps.core.exceptions import DomainError
+from apps.core.views import flash_domain_error
+from apps.tenants.mixins import ManageMixin
+from apps.tenants.models import Plan
+
+from . import services
+from .domain import BillingPeriod
+from .gateways import get_gateway
+from .gateways.base import GatewayError, PaymentStatus
+from .models import SubscriptionInvoice
+from .selectors import invoices_for, plan_offers, state_of
+
+logger = logging.getLogger(__name__)
+
+
+class OverviewView(ManageMixin, TemplateView):
+    template_name = "billing/overview.html"
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            offers=plan_offers(),
+            state=state_of(self.organization),
+            invoices=invoices_for(self.organization)[:24],
+            grace_days=settings.BILLING_GRACE_DAYS,
+            **kwargs,
+        )
+
+
+class CheckoutView(ManageMixin, View):
+    def post(self, request):
+        plan = get_object_or_404(Plan, pk=request.POST.get("plan"))
+        period = request.POST.get("period")
+        if period not in BillingPeriod.values:
+            return HttpResponseBadRequest()
+        try:
+            invoice = services.start_checkout(
+                organization=self.organization, plan=plan, period=period, created_by=request.user,
+                return_url_for=lambda inv: request.build_absolute_uri(reverse("billing:invoice", args=[inv.pk]) + "?returned=1"),
+            )
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+            return redirect("billing:overview")
+        return redirect(invoice.payment_url)
+
+
+class InvoiceDetailView(ManageMixin, DetailView):
+    template_name = "billing/invoice_detail.html"
+    context_object_name = "invoice"
+
+    def get_queryset(self):
+        return invoices_for(self.organization)
+
+    def get_object(self, queryset=None):
+        invoice = super().get_object(queryset)
+        if self.request.GET.get("returned"):  # back from the payment page
+            invoice = _sync_with_feedback(self.request, invoice)
+        return invoice
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            seller={
+                "name": settings.BILLING_SELLER_NAME, "npwp": settings.BILLING_SELLER_NPWP,
+                "address": settings.BILLING_SELLER_ADDRESS,
+            },
+            **kwargs,
+        )
+
+
+def _sync_with_feedback(request, invoice):
+    """Bring a pending invoice up to date, then tell the customer where it stands.
+
+    The webhook often confirms the payment before the customer is redirected
+    back, so the message depends on the final status, not on who confirmed it.
+    """
+    try:
+        invoice = services.sync_payment(invoice)  # no-op unless still pending
+    except DomainError as exc:
+        flash_domain_error(request, exc)
+        return invoice
+    if invoice.status == SubscriptionInvoice.Status.PAID:
+        messages.success(request, _("Payment received. Your %(plan)s plan is active until %(date)s.") % {
+            "plan": invoice.plan.name, "date": formats.date_format(invoice.coverage_end, "d F Y"),
+        })
+    elif invoice.status == SubscriptionInvoice.Status.PENDING:
+        messages.info(request, _("We have not received the payment yet. This page updates once it is confirmed."))
+    return invoice
+
+
+class InvoiceRefreshView(ManageMixin, View):
+    def post(self, request, pk):
+        invoice = get_object_or_404(invoices_for(self.organization), pk=pk)
+        _sync_with_feedback(request, invoice)
+        return redirect("billing:invoice", pk=invoice.pk)
+
+
+@method_decorator(csrf_exempt, name="dispatch")  # called by the gateway; authenticated by its token instead
+class WebhookView(View):
+    http_method_names = ["post"]
+
+    def post(self, request, gateway):
+        if gateway != settings.BILLING_GATEWAY:
+            raise Http404
+        try:
+            payload = json.loads(request.body or b"{}")
+        except ValueError:
+            return HttpResponseBadRequest("invalid JSON")
+        try:
+            services.handle_webhook(headers=request.headers, payload=payload)
+        except services.WebhookRejected:
+            logger.warning("Rejected %s webhook from %s", gateway, request.META.get("REMOTE_ADDR"))
+            return JsonResponse({"status": "forbidden"}, status=403)
+        except GatewayError:
+            return JsonResponse({"status": "retry"}, status=503)  # the gateway will retry later
+        except services.PaymentAmountMismatch:
+            pass  # logged for manual review; retrying would not help
+        return JsonResponse({"status": "ok"})
+
+
+class FakeCheckoutView(ManageMixin, TemplateView):
+    """Development stand-in for the hosted payment page (fake gateway only)."""
+
+    template_name = "billing/fake_checkout.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if settings.BILLING_GATEWAY != "fake":
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_invoice(self):
+        return get_object_or_404(invoices_for(self.organization), gateway="fake", gateway_reference=self.kwargs["reference"])
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(invoice=self.get_invoice(), **kwargs)
+
+    def post(self, request, reference):
+        invoice = self.get_invoice()
+        outcome = PaymentStatus.PAID if request.POST.get("outcome") == "paid" else PaymentStatus.EXPIRED
+        get_gateway().simulate(reference, outcome)
+        services.handle_webhook(headers={}, payload={"reference": reference})  # what the real webhook would do
+        return redirect(reverse("billing:invoice", args=[invoice.pk]) + "?returned=1")

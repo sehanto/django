@@ -6,3 +6,5 @@ STORAGES["staticfiles"] = {  # noqa: F405
     "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
 }
 MIDDLEWARE.remove("whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405 - runserver serves static
+BILLING_GATEWAY = "fake"
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"

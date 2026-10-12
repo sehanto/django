@@ -8,7 +8,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 
 | Area | What it does |
 |---|---|
-| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Subscription plans (Gratis / Usaha / Pro) limit users and invoices per month. |
+| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Subscription plans (Gratis / Usaha / Pro) limit users and invoices per month, paid monthly or yearly through Xendit (see [Subscription billing](#subscription-billing)). |
 | **Bagan akun (SAK EMKM)** | Every new organization gets a default chart of accounts that follows the SAK EMKM statement structure, including contra accounts and *system roles* used by automated postings. |
 | **Double-entry ledger** | Manual journals (draft → posted), immutable posted entries, reversal instead of deletion, and a period lock date (*tanggal kunci*). |
 | **Penjualan & Pembelian** | Sales invoices and purchase bills: draft → issued → partially paid / paid, or void. Issuing posts the journal and voiding reverses it. Numbering is gap-free in the Indonesian style (`INV/2026/10/0001`). Items catalog and printable invoices are included. |
@@ -164,6 +164,61 @@ Commit both `django.po` and `django.mo`, so servers don't need gettext to run th
 These two commands do need GNU gettext on your machine (`sudo apt install gettext`). The test
 suite fails if a message is untranslated, fuzzy, or missing from the compiled `.mo`.
 
+## Subscription billing
+
+Plans are **prepaid**: each payment buys one month or one year. Customers pay on Xendit's
+hosted checkout page with QRIS, bank virtual accounts, e-wallets or cards, so no stored card is needed.
+
+| Rule | Behaviour |
+|---|---|
+| Prices | Plan prices exclude PPN. PPN is 12% on a tax base (DPP) of 11/12 (effectively 11%) and is added at checkout. Annual = 10 × monthly (2 months free). |
+| Renewing | Paying for the current plan extends it from its end date, so no paid days are lost. |
+| Switching | A different plan starts on the payment date; remaining time on the old plan is not credited. A plan whose user limit the organization already exceeds can't be bought. |
+| Expiry | Owners and admins get an email and an in-app banner 7 days before the end. After the end there are 7 days of grace, then the organization moves to the free plan. Its data is never deleted. |
+| Records | Each payment is a `SubscriptionInvoice` with a buyer snapshot and a printable receipt. These are the seller's sales records: they can't be deleted and survive tenant deletion. The official Faktur Pajak is issued separately through Coretax. |
+
+How a payment is confirmed: checkout creates a Xendit **Payment Session** (`POST /sessions`,
+`session_type=PAY`, `mode=PAYMENT_LINK`). When Xendit calls the webhook, the app checks the
+`x-callback-token` and then re-fetches the session (`GET /sessions/{id}`). The plan is
+activated only when that session is `COMPLETED` for the exact invoice amount. Activation is
+idempotent, so Xendit's webhook retries are harmless. The customer can also press
+**Check payment status**, which runs the same check.
+
+### Setting up Xendit
+
+1. In the Xendit Dashboard, create a **secret API key** with write permission for accepting payments,
+   and copy the **webhook verification token** (Settings → Webhooks).
+2. Set the payment session webhook URL to `https://<your-domain>/billing/webhooks/xendit/`.
+3. Configure the environment (production settings refuse to start without the keys):
+
+   ```
+   BILLING_GATEWAY=xendit
+   XENDIT_SECRET_KEY=xnd_...
+   XENDIT_CALLBACK_TOKEN=...
+   SITE_URL=https://<your-domain>
+   BILLING_SELLER_NAME=...        # printed on receipts
+   BILLING_SELLER_NPWP=...
+   BILLING_SELLER_ADDRESS=...
+   ```
+
+4. Schedule the daily job (expires stale payment links, sends reminders, downgrades lapsed plans):
+
+   ```bash
+   .venv/bin/python manage.py process_billing
+   ```
+
+Use Xendit's test-mode keys first. Webhooks can't reach `localhost`, so for local testing
+with real keys either expose the dev server through a tunnel, or rely on the
+**Check payment status** button, which polls Xendit directly. Xendit only accepts HTTPS return
+URLs, so on plain-HTTP dev servers the customer returns from Xendit manually.
+
+Without keys, development and tests use a built-in **fake gateway** (`BILLING_GATEWAY=fake`, the
+default outside production). It shows a test payment page with "Simulate successful payment"
+and "Simulate expired link" buttons, and the rest of the flow behaves exactly as with Xendit.
+
+If a customer pays by plain bank transfer, staff can confirm it in the Django admin
+(Subscription invoices → "Mark as paid (bank transfer confirmed)").
+
 ## Production
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
@@ -181,7 +236,9 @@ Static files are served by WhiteNoise.
 
 ## Possible next steps
 
-- Payment-gateway billing for plans (Midtrans/Xendit) inside `tenants.services.change_plan`
+- Credit unused time when switching plans mid-period (proration)
+- Automatic renewal via Xendit `SUBSCRIPTION` sessions for customers who want to save a card or e-wallet
+- Issue the Faktur Pajak for subscriptions through the Coretax API
 - e-Faktur / Coretax export, PPh 21/23 withholding
 - Inventory with perpetual costing, fixed-asset depreciation schedules
 - Email invitations for team members, REST API (the service layer is already delivery-agnostic)

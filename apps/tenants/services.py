@@ -1,5 +1,7 @@
 """Use cases for organizations (tenants), memberships and subscriptions."""
 
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils.translation import gettext as _
@@ -86,13 +88,8 @@ def remove_member(*, organization: Organization, membership_id: int, acting_user
     membership.delete()
 
 
-@transaction.atomic
-def change_plan(*, organization: Organization, plan: Plan) -> Organization:
-    """Switch subscription tier.
-
-    Payment collection (e.g. Midtrans/Xendit) would hook in here; this
-    implementation only validates that current usage fits the new plan.
-    """
+def ensure_usage_fits(*, organization: Organization, plan: Plan) -> None:
+    """Refuse a plan whose limits the organization already exceeds."""
     member_count = organization.memberships.count()
     if plan.max_users is not None and member_count > plan.max_users:
         raise PlanLimitExceeded(
@@ -103,10 +100,15 @@ def change_plan(*, organization: Organization, plan: Plan) -> Organization:
             )
             % {"count": member_count, "plan": plan.name, "limit": plan.max_users}
         )
-    organization.plan = plan
-    organization.save(update_fields=["plan", "updated_at"])
-    return organization
 
+
+@transaction.atomic
+def set_subscription(*, organization: Organization, plan: Plan, paid_until: date | None) -> Organization:
+    """Record the organization's effective plan. Payment is handled by ``apps.billing``."""
+    organization.plan = plan
+    organization.plan_paid_until = paid_until
+    organization.save(update_fields=["plan", "plan_paid_until", "updated_at"])
+    return organization
 
 
 @transaction.atomic

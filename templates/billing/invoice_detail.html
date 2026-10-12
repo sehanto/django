@@ -1,0 +1,66 @@
+{% extends "base.html" %}{% load i18n money ui %}
+{% block title %}{{ invoice.number }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3 no-print">
+  <div>
+    <a href="{% url 'billing:overview' %}" class="small text-decoration-none">&larr; {% translate "Subscription plan" %}</a>
+    <h1 class="h4 mb-0">{{ invoice.number }} <span class="badge align-middle text-bg-{{ invoice.status|status_badge }}">{{ invoice.get_status_display }}</span></h1>
+  </div>
+  {% if invoice.status == 'paid' %}<button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print receipt" %}</button>{% endif %}
+</div>
+
+{% if invoice.status == 'pending' %}
+  {% if invoice.is_payable %}
+  <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 no-print">
+    <span>{% blocktranslate trimmed with date=invoice.expires_at|date:"d F Y H:i" %}Waiting for payment. The payment link is valid until {{ date }}.{% endblocktranslate %}</span>
+    <span class="d-flex gap-2">
+      <form method="post" action="{% url 'billing:invoice_refresh' invoice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">{% translate "Check payment status" %}</button></form>
+      <a href="{{ invoice.payment_url }}" class="btn btn-sm btn-primary">{% translate "Pay now" %}</a>
+    </span>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary no-print">{% translate "This payment link is no longer valid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
+  {% endif %}
+{% elif invoice.status != 'paid' %}
+  <div class="alert alert-secondary no-print">{% translate "This invoice was not paid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
+{% endif %}
+
+<div class="card" style="max-width: 860px;"><div class="card-body p-4">
+  <div class="d-flex justify-content-between mb-4">
+    <div>
+      <div class="fw-bold fs-5">{{ seller.name }}</div>
+      {% if seller.address %}<div class="small">{{ seller.address }}</div>{% endif %}
+      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp }}</div>{% endif %}
+    </div>
+    <div class="text-end">
+      <div class="h5 text-uppercase mb-1">{% if invoice.status == 'paid' %}{% translate "Receipt" %}{% else %}{% translate "Invoice" %}{% endif %}</div>
+      <div class="fw-semibold">{{ invoice.number }}</div>
+      <div class="small">{{ invoice.created_at|date:"d F Y" }}</div>
+    </div>
+  </div>
+  <div class="mb-4">
+    <div class="small text-secondary">{% translate "Bill to" %}</div>
+    <div class="fw-semibold">{{ invoice.buyer_name }}</div>
+    {% if invoice.buyer_address %}<div class="small">{{ invoice.buyer_address }}</div>{% endif %}
+    {% if invoice.buyer_npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.buyer_npwp }}</div>{% endif %}
+  </div>
+  <table class="table">
+    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
+    <tbody><tr>
+      <td>{% blocktranslate trimmed with seller=seller.name plan=invoice.plan.name period=invoice.get_billing_period_display %}{{ seller }} {{ plan }} plan, {{ period }}{% endblocktranslate %}
+        {% if invoice.coverage_start %}<div class="small text-secondary">{% blocktranslate trimmed with start=invoice.coverage_start|date:"d M Y" end=invoice.coverage_end|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</div>{% endif %}</td>
+      <td class="num">{{ invoice.subtotal|rupiah }}</td>
+    </tr></tbody>
+    <tfoot>
+      <tr><td class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
+      <tr><td class="text-end small text-secondary">{% translate "Tax base (DPP 11/12)" %}</td><td class="num small text-secondary">{{ invoice.tax_base|rupiah }}</td></tr>
+      <tr><td class="text-end">{% translate "PPN 12%" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>
+      <tr class="fw-bold"><td class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
+    </tfoot>
+  </table>
+  {% if invoice.status == 'paid' %}
+    <p class="small mb-1">{% blocktranslate trimmed with date=invoice.paid_at|date:"d F Y H:i" %}Paid on {{ date }}.{% endblocktranslate %}{% if invoice.gateway_payment_id %} {% translate "Payment reference" %}: {{ invoice.gateway_payment_id }}{% endif %}</p>
+  {% endif %}
+  <p class="small text-secondary mb-0">{% translate "The official tax invoice (Faktur Pajak) is issued separately through Coretax." %}</p>
+</div></div>
+{% endblock %}

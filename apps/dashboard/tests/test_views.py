@@ -42,7 +42,7 @@ PAGES = [
     ("reports:vat", {}),
     ("tenants:settings", {}),
     ("tenants:members", {}),
-    ("tenants:plans", {}),
+    ("billing:overview", {}),
     ("accounts:profile", {}),
 ]
 

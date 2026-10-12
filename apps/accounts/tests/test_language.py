@@ -109,7 +109,7 @@ def test_counts_use_correct_plural_forms(auth_client, user, organization):
     Plan.objects.create(code="solo", name="Solo", max_users=1, max_invoices_per_month=1)
     user.language = "en"
     user.save(update_fields=["language"])
-    html = auth_client.get(reverse("tenants:plans")).content.decode()
+    html = auth_client.get(reverse("billing:overview")).content.decode()
     assert "1 user<" in html and "1 users" not in html
     assert "1 invoice/month" in html
 
