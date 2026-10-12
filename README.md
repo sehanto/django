@@ -438,12 +438,9 @@ Support tasks:
 .venv/bin/python manage.py axes_reset_username someone@example.com
 ```
 
-Attempts are also visible, and can be deleted, in the Django admin under **Axes**. Schedule
-a daily cleanup of old access logs:
-
-```bash
-.venv/bin/python manage.py axes_reset_logs --age 90
-```
+Attempts are also visible, and can be deleted, in the Django admin under **Axes**. Old access
+logs (sign-in records with IP address and browser) are deleted daily after 90 days by
+`axes_reset_logs --age 90` (see [Scheduled jobs](#scheduled-jobs)).
 
 This limit stops guessing many passwords for one account. It doesn't stop slow
 "credential stuffing" spread across many accounts and addresses; for that, add a CAPTCHA or
@@ -525,6 +522,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
+| `axes_reset_logs --age 90` | Daily 02:45 | Delete django-axes access logs (sign-in IP/browser records) older than 90 days |
 | `prune_audit_log` | 1st of the month 03:30 | Delete audit events older than `AUDIT_RETENTION_DAYS` (needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's
