@@ -504,11 +504,9 @@ idempotent, so Xendit's webhook retries are harmless. The customer can also pres
    BILLING_SELLER_ADDRESS=...
    ```
 
-4. Schedule the daily job (expires stale payment links, sends reminders, downgrades lapsed plans):
-
-   ```bash
-   .venv/bin/python manage.py process_billing
-   ```
+4. Schedule the daily job (expires stale payment links, sends reminders, downgrades lapsed
+   plans): `manage.py process_billing`, installed by `deploy/cron/install.sh` (see
+   [Scheduled jobs](#scheduled-jobs)).
 
 Use Xendit's test-mode keys first. Webhooks can't reach `localhost`, so for local testing
 with real keys either expose the dev server through a tunnel, or rely on the
@@ -521,6 +519,36 @@ and "Simulate expired link" buttons, and the rest of the flow behaves exactly as
 
 If a customer pays by plain bank transfer, staff can confirm it in the Django admin
 (Subscription invoices → "Mark as paid (bank transfer confirmed)").
+
+## Scheduled jobs
+
+| Job | When | What |
+|---|---|---|
+| `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
+| `prune_audit_log` | 1st of the month 03:30 | Delete audit events older than `AUDIT_RETENTION_DAYS` (needs `DATABASE_OWNER_URL`) |
+
+The jobs are defined in `deploy/cron/crontab`. Install them into the current user's
+crontab with:
+
+```bash
+deploy/cron/install.sh
+```
+
+It is idempotent: it replaces its own marked block and leaves other entries alone.
+`deploy/cron/install.sh --remove` takes them out again. Times follow the server's time
+zone, so set the server to Asia/Jakarta or adjust the times.
+
+Each job runs through `deploy/cron/run.sh`, which:
+- runs from the project directory with `.venv/bin/python`;
+- takes `DJANGO_SETTINGS_MODULE` from `.env`. This matters because `manage.py` would
+  otherwise fall back to the dev settings under cron's minimal environment;
+- skips a run while the previous one still holds its lock (`flock`);
+- appends one entry per run to `logs/<command>.log`;
+- stays silent on success. On failure it writes the output to stderr, so cron emails
+  it once `MAILTO` is set in the crontab and the server can send mail.
+
+Rotate `logs/` with logrotate if you keep the server for years. The logs only grow by a
+few lines a day.
 
 ## Production
 

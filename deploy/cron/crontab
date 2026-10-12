@@ -1,0 +1,10 @@
+# BukuUMKM scheduled jobs. Times are in the server's time zone (WIB on Asia/Jakarta servers).
+# Install with deploy/cron/install.sh, which fills in the project path.
+# Uncomment MAILTO to receive failures by email (needs a working local mailer).
+# MAILTO=ops@example.com
+
+# Daily: close expired payment links, send renewal reminders, downgrade lapsed plans.
+15 1 * * * @PROJECT_DIR@/deploy/cron/run.sh process_billing
+
+# Monthly: delete audit events older than AUDIT_RETENTION_DAYS (needs DATABASE_OWNER_URL).
+30 3 1 * * @PROJECT_DIR@/deploy/cron/run.sh prune_audit_log
