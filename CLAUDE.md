@@ -10,7 +10,8 @@ Conventions:
 - Business rules in `domain.py` (no ORM), writes in `services.py` (atomic, raise `apps.core.exceptions.DomainError`), reads in `selectors.py`. Views stay thin.
 - Every tenant query goes through `Model.objects.for_organization(org)`; views get the org from `OrganizationMixin`/`WriteMixin`/`ManageMixin`.
 - All ledger postings go through `ledger.services.create_journal_entry`. Never edit/delete posted entries; reverse them.
-- Interface text: English source strings, always marked for translation (`gettext_lazy` for module-level/labels/choices, `gettext` for runtime messages, `{% translate %}`/`{% blocktranslate trimmed %}` in templates). Use `%(name)s` placeholders, never f-strings, and whole phrases rather than fragments. Then `makemessages -l id`, translate in `locale/id/LC_MESSAGES/django.po`, `compilemessages`, commit .po and .mo (a test enforces this).
-- Indonesian is the default language; users may pick English (`User.language`, `apps.accounts.middleware`). Stored business data (chart of accounts, journal descriptions, tax-rate/plan names) stays Indonesian and is not translated.
-- Format money with the `|rupiah` filter.
+- Language policy is in README "Languages"; follow it. URLs are English and language-neutral; never put the language in the URL.
+- Interface text: English source strings, always marked for translation (`gettext_lazy` for module-level/labels/choices, `gettext` for runtime messages, `{% translate %}`/`{% blocktranslate trimmed %}` in templates). Use `%(name)s` placeholders, whole sentences, `ngettext`/`{% blocktranslate count %}` for anything counted, `pgettext` for ambiguous short words. Then `makemessages -l id`, translate in `locale/id/LC_MESSAGES/django.po`, `compilemessages`, commit .po and .mo (a test enforces this).
+- Money: `|rupiah` in templates, `apps.core.formatting.localized_rupiah` in messages (separators follow the active language). Customer-facing documents render in `Contact.document_language`.
+- Stored business data (chart of accounts, journal descriptions, tax-rate/plan names) stays Indonesian (UU KUP Art. 28(4)) and is never translated.
 - Tests must not rely on data migrations (transactional tests flush the DB); create needed rows in fixtures.

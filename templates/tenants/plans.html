@@ -10,8 +10,8 @@
         <h2 class="h5">{{ plan.name }}</h2>
         <div class="fs-3 fw-bold">{% if plan.monthly_price %}{{ plan.monthly_price|rupiah }}<span class="fs-6 fw-normal text-secondary">{% translate "/month" %}</span>{% else %}{% translate "Free" %}{% endif %}</div>
         <ul class="list-unstyled mt-3 small">
-          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_users %}{% blocktranslate trimmed with count=plan.max_users %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
-          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_invoices_per_month %}{% blocktranslate trimmed with count=plan.max_invoices_per_month %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
+          <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
           <li><i class="bi bi-check2 text-success me-1"></i>{% translate "SAK EMKM financial reports" %}</li>
           <li><i class="bi bi-check2 text-success me-1"></i>{% translate "PPN & MSME PPh Final" %}</li>
         </ul>

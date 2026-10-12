@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -20,6 +21,13 @@ class Contact(TenantOwnedModel):
     address = models.TextField(_("address"), blank=True)
     city = models.CharField(_("city/regency"), max_length=100, blank=True)
     payment_terms_days = models.PositiveSmallIntegerField(_("payment terms (days)"), default=30)
+    document_language = models.CharField(
+        _("document language"),
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
+        help_text=_("Language of the invoices and bills printed for this contact."),
+    )
     notes = models.TextField(_("notes"), blank=True)
     is_active = models.BooleanField(_("active"), default=True)
 

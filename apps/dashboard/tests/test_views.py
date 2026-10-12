@@ -170,3 +170,39 @@ def test_reports_render_with_data_and_export_csv(auth_client, organization, cust
     assert ledger.context["report"].closing_balance == D("750000")
     assert auth_client.get(reverse("reports:aging", kwargs={"kind": "sales"})).context["report"].grand_total == D("750000")
     assert auth_client.get(reverse("invoicing:print", kwargs={"kind": "sales", "pk": invoice.pk})).status_code == 200
+
+
+def test_printed_invoice_uses_contacts_document_language(auth_client, user, organization, customer, account):
+    invoice = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 1),
+        lines=[InvoiceLineInput("Jasa", account("4-1000"), D("1"), D("1250000"))],
+    ))
+    user.language = "en"  # staff member works in English...
+    user.save(update_fields=["language"])
+    print_url = reverse("invoicing:print", kwargs={"kind": "sales", "pk": invoice.pk})
+
+    html = auth_client.get(print_url).content.decode()  # ...customer document defaults to Indonesian
+    assert '<html lang="id">' in html and "Ditagihkan kepada" in html and "Rp 1.250.000" in html
+
+    customer.document_language = "en"
+    customer.save(update_fields=["document_language"])
+    response = auth_client.get(print_url)
+    html = response.content.decode()
+    assert response["Content-Language"] == "en"
+    assert "Bill to" in html and "Rp 1,250,000" in html
+
+    detail = auth_client.get(reverse("invoicing:detail", kwargs={"kind": "sales", "pk": invoice.pk})).content.decode()
+    assert "Receive payment" in detail  # on-screen pages still follow the viewer
+
+
+def test_amounts_in_error_messages_are_formatted(organization, customer, account):
+    from django.utils import translation
+
+    from apps.core.exceptions import ValidationFailed
+
+    invoice = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 1),
+        lines=[InvoiceLineInput("Jasa", account("4-1000"), D("1"), D("1250000"))],
+    ))
+    with translation.override("en"), pytest.raises(ValidationFailed, match=r"\(Rp 1,250,000\)"):
+        invoicing.record_payment(invoice=invoice, date=date(2026, 3, 2), amount=D("9999999"), cash_account=account("1-1000"))

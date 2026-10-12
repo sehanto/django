@@ -16,7 +16,7 @@
       </tbody>
     </table></div>
     <p class="small text-secondary mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
-      {% blocktranslate trimmed with name=plan.name count=plan.max_users %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}
+      {% blocktranslate trimmed with name=plan.name count count=plan.max_users %}{{ name }} plan: up to {{ count }} user.{% plural %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}
     {% else %}
       {% blocktranslate trimmed with name=plan.name %}{{ name }} plan: unlimited users.{% endblocktranslate %}
     {% endif %}{% endwith %}</p>

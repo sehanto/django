@@ -15,12 +15,25 @@ from apps.ledger.domain import ensure_period_open
 SET_LANGUAGE = reverse("accounts:set_language")
 
 
-def test_visitors_get_indonesian_even_if_browser_prefers_english(client, db):
+@pytest.mark.parametrize(
+    ("accept_language", "expected"),
+    [("", "id"), ("id-ID,id;q=0.9", "id"), ("en-US,en;q=0.9", "en"), ("fr-FR,fr;q=0.9", "id")],
+)
+def test_first_visit_uses_browser_language_as_a_hint(client, db, accept_language, expected):
+    response = client.get(reverse("accounts:login"), HTTP_ACCEPT_LANGUAGE=accept_language)
+    assert f'<html lang="{expected}">' in response.content.decode()
+    assert response["Content-Language"] == expected
+
+
+def test_explicit_choice_beats_browser_language(client, db):
+    client.post(SET_LANGUAGE, {"language": "id", "next": "/"})
     response = client.get(reverse("accounts:login"), HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
-    html = response.content.decode()
-    assert '<html lang="id">' in html
-    assert "Masuk" in html
-    assert response["Content-Language"] == "id"
+    assert '<html lang="id">' in response.content.decode()
+
+
+def test_responses_vary_on_language_signals(client, db):
+    vary = client.get(reverse("accounts:login"))["Vary"]
+    assert "Accept-Language" in vary and "Cookie" in vary
 
 
 def test_visitor_can_switch_to_english_with_cookie(client, db):
@@ -88,3 +101,23 @@ def test_language_picked_on_sign_in_page_is_kept_after_login(client, user):
     user.refresh_from_db()
     assert user.language == "en"
     assert "My profile" in client.get(reverse("accounts:profile")).content.decode()
+
+
+def test_counts_use_correct_plural_forms(auth_client, user, organization):
+    from apps.tenants.models import Plan
+
+    Plan.objects.create(code="solo", name="Solo", max_users=1, max_invoices_per_month=1)
+    user.language = "en"
+    user.save(update_fields=["language"])
+    html = auth_client.get(reverse("tenants:plans")).content.decode()
+    assert "1 user<" in html and "1 users" not in html
+    assert "1 invoice/month" in html
+
+
+def test_money_follows_reader_locale():
+    from apps.core.formatting import localized_rupiah
+
+    with translation.override("id"):
+        assert localized_rupiah("1234567.5") == "Rp 1.234.567,50"
+    with translation.override("en"):
+        assert localized_rupiah("1234567.5") == "Rp 1,234,567.50"

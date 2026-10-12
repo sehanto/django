@@ -14,8 +14,10 @@ from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, ValidationFailed
+from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.sequences import next_document_number
 from apps.ledger.domain import SystemRole
@@ -84,7 +86,11 @@ def _ensure_plan_allows_new_invoice(organization) -> None:
     limit = organization.plan.max_invoices_per_month
     if limit is not None and invoices_created_this_month(organization) >= limit:
         raise PlanLimitExceeded(
-            _("The %(plan)s plan's limit of %(limit)s invoices per month has been reached. Please upgrade your plan.")
+            ngettext(
+                "The %(plan)s plan's limit of %(limit)s invoice per month has been reached. Please upgrade your plan.",
+                "The %(plan)s plan's limit of %(limit)s invoices per month has been reached. Please upgrade your plan.",
+                limit,
+            )
             % {"plan": organization.plan.name, "limit": limit}
         )
 
@@ -300,7 +306,7 @@ def record_payment(
         raise ValidationFailed(_("The payment amount must be greater than zero."))
     if amount > invoice.balance_due:
         raise ValidationFailed(
-            _("The payment amount exceeds the balance due (%(balance)s).") % {"balance": invoice.balance_due}
+            _("The payment amount exceeds the balance due (%(balance)s).") % {"balance": localized_rupiah(invoice.balance_due)}
         )
     if date < invoice.date:
         raise ValidationFailed(_("The payment date cannot be before the invoice date."))

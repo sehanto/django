@@ -5,7 +5,7 @@
   <div>
     <a href="{% url 'invoicing:list' kind %}" class="small text-decoration-none">&larr; {{ labels.plural }}</a>
     <h1 class="h4 mb-0">{{ invoice.display_number }}
-      <span class="badge align-middle text-bg-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed with days=invoice.days_overdue %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.get_status_display }}{% endif %}</span></h1>
+      <span class="badge align-middle text-bg-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.get_status_display }}{% endif %}</span></h1>
   </div>
   <div class="d-flex flex-wrap gap-2">
     {% if invoice.status != 'draft' %}<a href="{% url 'invoicing:print' kind invoice.pk %}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</a>{% endif %}

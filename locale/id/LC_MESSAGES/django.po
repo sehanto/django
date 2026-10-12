@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 12:28+0700\n"
-"PO-Revision-Date: 2026-10-12 12:28\n"
+"POT-Creation-Date: 2026-10-12 12:53+0700\n"
+"PO-Revision-Date: 2026-10-12 12:53\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -59,7 +59,7 @@ msgstr "Bentuk usaha"
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
-#: apps/accounts/models.py:31 apps/contacts/models.py:18 apps/tenants/models.py:46
+#: apps/accounts/models.py:31 apps/contacts/models.py:19 apps/tenants/models.py:46
 msgid "email"
 msgstr "email"
 
@@ -75,7 +75,7 @@ msgstr "no. telepon"
 msgid "interface language"
 msgstr "bahasa antarmuka"
 
-#: apps/accounts/models.py:37 apps/contacts/models.py:24 apps/invoicing/models.py:39
+#: apps/accounts/models.py:37 apps/contacts/models.py:32 apps/invoicing/models.py:39
 #: apps/ledger/models.py:24 apps/taxes/models.py:25
 msgid "active"
 msgstr "aktif"
@@ -96,15 +96,15 @@ msgstr "pengguna"
 msgid "users"
 msgstr "pengguna"
 
-#: apps/accounts/views.py:52
+#: apps/accounts/views.py:70
 msgid "Welcome! A standard SAK EMKM chart of accounts has been set up."
 msgstr "Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
 
-#: apps/accounts/views.py:69
+#: apps/accounts/views.py:87
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:78
+#: apps/accounts/views.py:96
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
@@ -113,56 +113,65 @@ msgstr "Kata sandi berhasil diubah."
 msgid "Contacts"
 msgstr "Kontak"
 
-#: apps/contacts/models.py:11 apps/invoicing/forms.py:42 apps/invoicing/views.py:24
+#: apps/contacts/models.py:12 apps/invoicing/forms.py:42 apps/invoicing/views.py:24
 msgid "Customer"
 msgstr "Pelanggan"
 
-#: apps/contacts/models.py:12 apps/invoicing/forms.py:45 apps/invoicing/views.py:34
+#: apps/contacts/models.py:13 apps/invoicing/forms.py:45 apps/invoicing/views.py:34
 msgid "Supplier"
 msgstr "Pemasok"
 
-#: apps/contacts/models.py:13
+#: apps/contacts/models.py:14
 msgid "Customer & supplier"
 msgstr "Pelanggan & Pemasok"
 
-#: apps/contacts/models.py:15 apps/invoicing/models.py:26 apps/invoicing/models.py:60
+#: apps/contacts/models.py:16 apps/invoicing/models.py:26 apps/invoicing/models.py:60
 msgid "type"
 msgstr "jenis"
 
-#: apps/contacts/models.py:16 apps/invoicing/models.py:25 apps/taxes/models.py:16
+#: apps/contacts/models.py:17 apps/invoicing/models.py:25 apps/taxes/models.py:16
 #: apps/tenants/models.py:14
 msgid "name"
 msgstr "nama"
 
-#: apps/contacts/models.py:17 apps/tenants/models.py:41
+#: apps/contacts/models.py:18 apps/tenants/models.py:41
 msgid "tax ID (NPWP)"
 msgstr "NPWP"
 
-#: apps/contacts/models.py:19 apps/tenants/models.py:45
+#: apps/contacts/models.py:20 apps/tenants/models.py:45
 msgid "phone"
 msgstr "telepon"
 
-#: apps/contacts/models.py:20 apps/tenants/models.py:43
+#: apps/contacts/models.py:21 apps/tenants/models.py:43
 msgid "address"
 msgstr "alamat"
 
-#: apps/contacts/models.py:21 apps/tenants/models.py:44
+#: apps/contacts/models.py:22 apps/tenants/models.py:44
 msgid "city/regency"
 msgstr "kota/kabupaten"
 
-#: apps/contacts/models.py:22
+#: apps/contacts/models.py:23
 msgid "payment terms (days)"
 msgstr "termin pembayaran (hari)"
 
-#: apps/contacts/models.py:23 apps/invoicing/models.py:69
+#: apps/contacts/models.py:25
+#| msgid "interface language"
+msgid "document language"
+msgstr "bahasa dokumen"
+
+#: apps/contacts/models.py:29
+msgid "Language of the invoices and bills printed for this contact."
+msgstr "Bahasa faktur dan tagihan yang dicetak untuk kontak ini."
+
+#: apps/contacts/models.py:31 apps/invoicing/models.py:69
 msgid "notes"
 msgstr "catatan"
 
-#: apps/contacts/models.py:28 apps/invoicing/models.py:62
+#: apps/contacts/models.py:36 apps/invoicing/models.py:62
 msgid "contact"
 msgstr "kontak"
 
-#: apps/contacts/models.py:29
+#: apps/contacts/models.py:37
 msgid "contacts"
 msgstr "kontak"
 
@@ -497,81 +506,87 @@ msgstr "pembayaran"
 msgid "payments"
 msgstr "pembayaran"
 
-#: apps/invoicing/services.py:63
+#: apps/invoicing/services.py:65
 msgid "Contact not found."
 msgstr "Kontak tidak ditemukan."
 
-#: apps/invoicing/services.py:65
+#: apps/invoicing/services.py:67
 msgid "This contact is not a customer."
 msgstr "Kontak bukan pelanggan."
 
-#: apps/invoicing/services.py:67
+#: apps/invoicing/services.py:69
 msgid "This contact is not a supplier."
 msgstr "Kontak bukan pemasok."
 
-#: apps/invoicing/services.py:69
+#: apps/invoicing/services.py:71
 msgid "The due date cannot be before the invoice date."
 msgstr "Tanggal jatuh tempo tidak boleh sebelum tanggal faktur."
 
-#: apps/invoicing/services.py:75
+#: apps/invoicing/services.py:77
 msgid "Invoice line data is not valid for this organization."
 msgstr "Data baris faktur tidak valid untuk organisasi ini."
 
-#: apps/invoicing/services.py:77 apps/ledger/services.py:125
+#: apps/invoicing/services.py:79 apps/ledger/services.py:125
 #, python-format
 msgid "Account %(account)s is inactive."
 msgstr "Akun %(account)s tidak aktif."
 
-#: apps/invoicing/services.py:79
+#: apps/invoicing/services.py:81
 msgid "Only a VAT-registered business (PKP) can charge PPN. Change the PKP status in the settings."
 msgstr "Hanya Pengusaha Kena Pajak (PKP) yang dapat memungut PPN. Ubah status PKP di pengaturan."
 
-#: apps/invoicing/services.py:87
+#: apps/invoicing/services.py:90
 #, python-format
+#| msgid ""
+#| "The %(plan)s plan's limit of %(limit)s invoices per month has been reached. Please upgrade your "
+#| "plan."
 msgid ""
+"The %(plan)s plan's limit of %(limit)s invoice per month has been reached. Please upgrade your "
+"plan."
+msgid_plural ""
 "The %(plan)s plan's limit of %(limit)s invoices per month has been reached. Please upgrade your "
 "plan."
-msgstr ""
+msgstr[0] ""
 "Batas %(limit)s faktur per bulan untuk paket %(plan)s telah tercapai. Tingkatkan paket Anda."
 
-#: apps/invoicing/services.py:157
+#: apps/invoicing/services.py:163
 msgid "Only draft invoices can be changed or deleted."
 msgstr "Hanya faktur berstatus draf yang dapat diubah atau dihapus."
 
-#: apps/invoicing/services.py:245
+#: apps/invoicing/services.py:251
 msgid "The invoice total must be greater than zero."
 msgstr "Total faktur harus lebih dari nol."
 
-#: apps/invoicing/services.py:270
+#: apps/invoicing/services.py:276
 msgid "Void all payments on this invoice first."
 msgstr "Batalkan seluruh pembayaran faktur ini terlebih dahulu."
 
-#: apps/invoicing/services.py:272
+#: apps/invoicing/services.py:278
 msgid "Only issued invoices can be voided."
 msgstr "Hanya faktur yang sudah diterbitkan yang dapat dibatalkan."
 
-#: apps/invoicing/services.py:298
+#: apps/invoicing/services.py:304
 msgid "This invoice is not awaiting payment."
 msgstr "Faktur tidak dalam status menunggu pembayaran."
 
-#: apps/invoicing/services.py:300
+#: apps/invoicing/services.py:306
 msgid "The payment amount must be greater than zero."
 msgstr "Jumlah pembayaran harus lebih dari nol."
 
-#: apps/invoicing/services.py:303
+#: apps/invoicing/services.py:309
 #, python-format
 msgid "The payment amount exceeds the balance due (%(balance)s)."
 msgstr "Jumlah pembayaran melebihi sisa tagihan (%(balance)s)."
 
-#: apps/invoicing/services.py:306
+#: apps/invoicing/services.py:312
 msgid "The payment date cannot be before the invoice date."
 msgstr "Tanggal pembayaran tidak boleh sebelum tanggal faktur."
 
-#: apps/invoicing/services.py:308 apps/taxes/services.py:37
+#: apps/invoicing/services.py:314 apps/taxes/services.py:37
 msgid "Choose a valid cash or bank account."
 msgstr "Pilih akun kas/bank yang valid."
 
-#: apps/invoicing/services.py:340
+#: apps/invoicing/services.py:346
 msgid "The payment is already voided."
 msgstr "Pembayaran sudah dibatalkan."
 
@@ -640,36 +655,36 @@ msgstr "%(document)s %(number)s diterbitkan."
 msgid "Draft saved."
 msgstr "Draf disimpan."
 
-#: apps/invoicing/views.py:192
+#: apps/invoicing/views.py:202
 #, python-format
 msgid "Invoice %(number)s issued and posted to the ledger."
 msgstr "Faktur %(number)s diterbitkan dan dijurnal."
 
-#: apps/invoicing/views.py:201
+#: apps/invoicing/views.py:211
 #, python-format
 msgid "Invoice %(number)s voided; its journal entry was reversed."
 msgstr "Faktur %(number)s dibatalkan; jurnal telah dibalik."
 
-#: apps/invoicing/views.py:208
+#: apps/invoicing/views.py:218
 msgid "Draft deleted."
 msgstr "Draf dihapus."
 
-#: apps/invoicing/views.py:217
+#: apps/invoicing/views.py:227
 #, python-format
 msgid "Invalid payment data: %(errors)s"
 msgstr "Data pembayaran tidak valid: %(errors)s"
 
-#: apps/invoicing/views.py:219
+#: apps/invoicing/views.py:229
 #, python-format
 msgid "Payment %(number)s recorded."
 msgstr "Pembayaran %(number)s dicatat."
 
-#: apps/invoicing/views.py:242
+#: apps/invoicing/views.py:252
 #, python-format
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:269
+#: apps/invoicing/views.py:279
 msgid "Item saved."
 msgstr "Barang/jasa disimpan."
 
@@ -677,144 +692,144 @@ msgstr "Barang/jasa disimpan."
 msgid "General Ledger"
 msgstr "Buku Besar"
 
-#: apps/ledger/domain.py:16 apps/ledger/forms.py:28 apps/reports/statements.py:214
+#: apps/ledger/domain.py:17 apps/ledger/forms.py:28 apps/reports/statements.py:214
 #: templates/ledger/journal_detail.html:28 templates/ledger/journal_form.html:13
 #: templates/reports/general_ledger.html:10 templates/reports/trial_balance.html:9
 msgid "Debit"
 msgstr "Debit"
 
-#: apps/ledger/domain.py:17 apps/ledger/forms.py:29 apps/reports/statements.py:214
+#: apps/ledger/domain.py:18 apps/ledger/forms.py:29 apps/reports/statements.py:214
 #: templates/ledger/journal_detail.html:28 templates/ledger/journal_form.html:13
 #: templates/reports/general_ledger.html:10 templates/reports/trial_balance.html:9
 msgid "Credit"
 msgstr "Kredit"
 
-#: apps/ledger/domain.py:21
+#: apps/ledger/domain.py:22
 msgid "Asset"
 msgstr "Aset"
 
-#: apps/ledger/domain.py:22
+#: apps/ledger/domain.py:23
 msgid "Liability"
 msgstr "Liabilitas"
 
-#: apps/ledger/domain.py:23 apps/ledger/domain.py:48 templates/reports/balance_sheet.html:19
+#: apps/ledger/domain.py:24 apps/ledger/domain.py:49 templates/reports/balance_sheet.html:19
 msgid "Equity"
 msgstr "Ekuitas"
 
-#: apps/ledger/domain.py:24 templates/dashboard/home.html:36 templates/dashboard/home.html:50
+#: apps/ledger/domain.py:25 templates/dashboard/home.html:36 templates/dashboard/home.html:50
 msgid "Revenue"
 msgstr "Pendapatan"
 
-#: apps/ledger/domain.py:25
+#: apps/ledger/domain.py:26
 msgid "Expense"
 msgstr "Beban"
 
-#: apps/ledger/domain.py:41
+#: apps/ledger/domain.py:42
 msgid "Cash and cash equivalents"
 msgstr "Kas dan Setara Kas"
 
-#: apps/ledger/domain.py:42 templates/reports/index.html:15
+#: apps/ledger/domain.py:43 templates/reports/index.html:15
 msgid "Receivables"
 msgstr "Piutang"
 
-#: apps/ledger/domain.py:43
+#: apps/ledger/domain.py:44
 msgid "Inventory"
 msgstr "Persediaan"
 
-#: apps/ledger/domain.py:44
+#: apps/ledger/domain.py:45
 msgid "Other current assets"
 msgstr "Aset Lancar Lainnya"
 
-#: apps/ledger/domain.py:45 apps/reports/statements.py:176
+#: apps/ledger/domain.py:46 apps/reports/statements.py:176
 msgid "Fixed assets"
 msgstr "Aset Tetap"
 
-#: apps/ledger/domain.py:46 apps/reports/statements.py:177
+#: apps/ledger/domain.py:47 apps/reports/statements.py:177
 msgid "Current liabilities"
 msgstr "Liabilitas Jangka Pendek"
 
-#: apps/ledger/domain.py:47 apps/reports/statements.py:178
+#: apps/ledger/domain.py:48 apps/reports/statements.py:178
 msgid "Long-term liabilities"
 msgstr "Liabilitas Jangka Panjang"
 
-#: apps/ledger/domain.py:49 apps/reports/statements.py:99
+#: apps/ledger/domain.py:50 apps/reports/statements.py:99
 msgid "Operating revenue"
 msgstr "Pendapatan Usaha"
 
-#: apps/ledger/domain.py:50 apps/reports/statements.py:102
+#: apps/ledger/domain.py:51 apps/reports/statements.py:102
 msgid "Other income"
 msgstr "Pendapatan Lain-lain"
 
-#: apps/ledger/domain.py:51 apps/reports/statements.py:100
+#: apps/ledger/domain.py:52 apps/reports/statements.py:100
 msgid "Cost of sales"
 msgstr "Beban Pokok Penjualan"
 
-#: apps/ledger/domain.py:52 apps/reports/statements.py:101
+#: apps/ledger/domain.py:53 apps/reports/statements.py:101
 msgid "Operating expenses"
 msgstr "Beban Usaha"
 
-#: apps/ledger/domain.py:53 apps/reports/statements.py:103
+#: apps/ledger/domain.py:54 apps/reports/statements.py:103
 msgid "Other expenses"
 msgstr "Beban Lain-lain"
 
-#: apps/ledger/domain.py:54 apps/reports/statements.py:104
+#: apps/ledger/domain.py:55 apps/reports/statements.py:104
 msgid "Income tax expense"
 msgstr "Beban Pajak Penghasilan"
 
-#: apps/ledger/domain.py:86 templates/dashboard/home.html:18
+#: apps/ledger/domain.py:87 templates/dashboard/home.html:18
 msgid "Accounts receivable"
 msgstr "Piutang Usaha"
 
-#: apps/ledger/domain.py:87 templates/dashboard/home.html:22
+#: apps/ledger/domain.py:88 templates/dashboard/home.html:22
 msgid "Accounts payable"
 msgstr "Utang Usaha"
 
-#: apps/ledger/domain.py:88
+#: apps/ledger/domain.py:89
 msgid "Output VAT (PPN Keluaran)"
 msgstr "PPN Keluaran"
 
-#: apps/ledger/domain.py:89
+#: apps/ledger/domain.py:90
 msgid "Input VAT (PPN Masukan)"
 msgstr "PPN Masukan"
 
-#: apps/ledger/domain.py:90
+#: apps/ledger/domain.py:91
 msgid "Sales revenue"
 msgstr "Pendapatan Penjualan"
 
-#: apps/ledger/domain.py:91
+#: apps/ledger/domain.py:92
 msgid "Purchases / cost of sales"
 msgstr "Pembelian / Beban Pokok"
 
-#: apps/ledger/domain.py:92
+#: apps/ledger/domain.py:93
 msgid "Retained earnings"
 msgstr "Saldo Laba"
 
-#: apps/ledger/domain.py:93
+#: apps/ledger/domain.py:94
 msgid "Final income tax expense"
 msgstr "Beban PPh Final"
 
-#: apps/ledger/domain.py:94
+#: apps/ledger/domain.py:95
 msgid "Final income tax payable"
 msgstr "Utang PPh Final"
 
-#: apps/ledger/domain.py:119
+#: apps/ledger/domain.py:120
 msgid "A journal entry needs at least two lines."
 msgstr "Jurnal minimal terdiri dari dua baris."
 
-#: apps/ledger/domain.py:124
+#: apps/ledger/domain.py:125
 msgid "Debit and credit amounts cannot be negative."
 msgstr "Nilai debit/kredit tidak boleh negatif."
 
-#: apps/ledger/domain.py:126
+#: apps/ledger/domain.py:127
 msgid "Each journal line must have either a debit or a credit, not both."
 msgstr "Setiap baris jurnal harus berisi debit atau kredit saja."
 
-#: apps/ledger/domain.py:131
+#: apps/ledger/domain.py:132
 #, python-format
 msgid "The entry is not balanced: total debit %(debit)s ≠ total credit %(credit)s."
 msgstr "Jurnal tidak seimbang: total debit %(debit)s ≠ total kredit %(credit)s."
 
-#: apps/ledger/domain.py:140
+#: apps/ledger/domain.py:141
 #, python-format
 msgid "The period up to %(date)s is locked. Use a later date."
 msgstr "Periode sampai %(date)s sudah dikunci. Gunakan tanggal setelahnya."
@@ -1363,35 +1378,40 @@ msgstr "Akuntan / Staf Keuangan"
 msgid "View only"
 msgstr "Hanya Lihat"
 
-#: apps/tenants/services.py:56
+#: apps/tenants/services.py:58
 #, python-format
-msgid "The %(plan)s plan allows only %(limit)s users. Please upgrade your plan."
-msgstr "Paket %(plan)s hanya mengizinkan %(limit)s pengguna. Silakan tingkatkan paket Anda."
+#| msgid "The %(plan)s plan allows only %(limit)s users. Please upgrade your plan."
+msgid "The %(plan)s plan allows only %(limit)s user. Please upgrade your plan."
+msgid_plural "The %(plan)s plan allows only %(limit)s users. Please upgrade your plan."
+msgstr[0] "Paket %(plan)s hanya mengizinkan %(limit)s pengguna. Silakan tingkatkan paket Anda."
 
-#: apps/tenants/services.py:65
+#: apps/tenants/services.py:70
 msgid "No user with that email is registered yet. Ask them to sign up first."
 msgstr "Pengguna dengan email tersebut belum terdaftar. Minta mereka mendaftar terlebih dahulu."
 
-#: apps/tenants/services.py:67
+#: apps/tenants/services.py:72
 msgid "This user is already a member of the organization."
 msgstr "Pengguna sudah menjadi anggota organisasi ini."
 
-#: apps/tenants/services.py:69
+#: apps/tenants/services.py:74
 msgid "The owner role cannot be given to a new member."
 msgstr "Peran pemilik tidak dapat diberikan melalui undangan."
 
-#: apps/tenants/services.py:78
+#: apps/tenants/services.py:83
 msgid "The organization owner cannot be removed."
 msgstr "Pemilik organisasi tidak dapat dihapus."
 
-#: apps/tenants/services.py:80
+#: apps/tenants/services.py:85
 msgid "You cannot remove yourself."
 msgstr "Anda tidak dapat menghapus diri sendiri."
 
-#: apps/tenants/services.py:94
+#: apps/tenants/services.py:100
 #, python-format
-msgid "The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s)."
-msgstr "Organisasi memiliki %(count)s pengguna, melebihi batas paket %(plan)s (%(limit)s)."
+#| msgid ""
+#| "The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s)."
+msgid "The organization has %(count)s user, more than the %(plan)s plan allows (%(limit)s)."
+msgid_plural "The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s)."
+msgstr[0] "Organisasi memiliki %(count)s pengguna, melebihi batas paket %(plan)s (%(limit)s)."
 
 #: apps/tenants/views.py:29
 msgid "Organization settings saved."
@@ -1701,8 +1721,10 @@ msgstr "Hapus baris"
 
 #: templates/invoicing/invoice_detail.html:8
 #, python-format
-msgid "Overdue %(days)s days"
-msgstr "Jatuh tempo %(days)s hari"
+#| msgid "Overdue %(days)s days"
+msgid "Overdue %(days)s day"
+msgid_plural "Overdue %(days)s days"
+msgstr[0] "Jatuh tempo %(days)s hari"
 
 #: templates/invoicing/invoice_detail.html:11 templates/invoicing/invoice_print.html:19
 #: templates/reports/_filter.html:9
@@ -1790,8 +1812,10 @@ msgstr "Simpan & Terbitkan"
 
 #: templates/invoicing/invoice_list.html:10
 #, python-format
-msgid "Overdue (%(count)s documents)"
-msgstr "Jatuh tempo (%(count)s dokumen)"
+#| msgid "Overdue (%(count)s documents)"
+msgid "Overdue (%(count)s document)"
+msgid_plural "Overdue (%(count)s documents)"
+msgstr[0] "Jatuh tempo (%(count)s dokumen)"
 
 #: templates/invoicing/invoice_list.html:14
 msgid "Search number, contact, reference"
@@ -2405,8 +2429,10 @@ msgstr "Hapus"
 
 #: templates/tenants/members.html:19
 #, python-format
-msgid "%(name)s plan: up to %(count)s users."
-msgstr "Paket %(name)s: maks. %(count)s pengguna."
+#| msgid "%(name)s plan: up to %(count)s users."
+msgid "%(name)s plan: up to %(count)s user."
+msgid_plural "%(name)s plan: up to %(count)s users."
+msgstr[0] "Paket %(name)s: maks. %(count)s pengguna."
 
 #: templates/tenants/members.html:21
 #, python-format
@@ -2435,8 +2461,10 @@ msgstr "Gratis"
 
 #: templates/tenants/plans.html:13
 #, python-format
-msgid "%(count)s users"
-msgstr "%(count)s pengguna"
+#| msgid "%(count)s users"
+msgid "%(count)s user"
+msgid_plural "%(count)s users"
+msgstr[0] "%(count)s pengguna"
 
 #: templates/tenants/plans.html:13
 msgid "Unlimited users"
@@ -2444,8 +2472,10 @@ msgstr "Pengguna tak terbatas"
 
 #: templates/tenants/plans.html:14
 #, python-format
-msgid "%(count)s invoices/month"
-msgstr "%(count)s faktur/bulan"
+#| msgid "%(count)s invoices/month"
+msgid "%(count)s invoice/month"
+msgid_plural "%(count)s invoices/month"
+msgstr[0] "%(count)s faktur/bulan"
 
 #: templates/tenants/plans.html:14
 msgid "Unlimited invoices"

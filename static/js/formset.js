@@ -6,7 +6,9 @@
     const n = parseFloat(String(v || "").replace(",", "."));
     return Number.isFinite(n) ? n : 0;
   };
-  const fmt = (n) => "Rp " + n.toLocaleString("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  // Digit grouping follows the page language (<html lang>), matching the server-side |rupiah filter.
+  const locale = document.documentElement.lang === "en" ? "en-US" : "id-ID";
+  const fmt = (n) => "Rp " + n.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
   document.querySelectorAll("[data-formset]").forEach((root) => {
     const prefix = root.dataset.formset;

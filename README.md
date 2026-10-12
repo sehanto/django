@@ -17,7 +17,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Deposits are recorded with an NTPN and journaled automatically. Warns when turnover passes Rp4,8 miliar. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
-| **Bahasa** | Bahasa Indonesia (default) or English. Each user's choice is saved on their account, and an ID/EN switch sits in the sidebar and on the sign-in pages. |
+| **Bahasa** | Bahasa Indonesia or English, per user, with an ID/EN switch everywhere. Invoices print in each customer's or supplier's own document language. See [Languages](#languages). |
 
 ## Architecture
 
@@ -116,13 +116,39 @@ The tests cover:
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
 
-## Translations
+## Languages
+
+The interface is bilingual (Bahasa Indonesia and English) and follows common practice for
+signed-in business software.
+
+| Concern | Policy |
+|---|---|
+| **Web addresses** | English and language-neutral (`/sales/12/`). The language is not part of the URL, so links work for everyone. A `/id/` or `/en/` prefix (Django `i18n_patterns` with `hreflang`) is only worth adding for a future public, search-indexed marketing site. |
+| **Choosing the language** | Most explicit signal wins: (1) a signed-in user's saved preference, (2) a choice made while signed out (cookie), (3) the browser's `Accept-Language`, as a first guess only, (4) Indonesian. A choice made on the sign-in page is saved to the account at login. |
+| **Switcher** | ID/EN buttons in the sidebar and on the sign-in pages, labelled with each language's own name for screen readers. No flags, since flags stand for countries, not languages. |
+| **Formatting** | The currency is always rupiah. Digit grouping, dates and month names follow the reader's language: `Rp 1.234.567,50` / `12 Oktober 2026` in Indonesian, `Rp 1,234,567.50` / `12 October 2026` in English. |
+| **Customer-facing documents** | The printable invoice or bill uses the contact's **document language** (default Indonesian), not the language of whoever prints it. On-screen pages always follow the viewer. |
+| **Business records** | The chart of accounts, journal descriptions, and tax-rate and plan names are stored data, written in Indonesian and never machine-translated. Indonesian tax law (UU KUP Art. 28(4)) requires bookkeeping in Bahasa Indonesia unless the Minister of Finance permits a foreign language, so the books stay in Indonesian whatever the interface language. |
+| **Caching** | Responses carry `Content-Language` and `Vary: Accept-Language, Cookie`, so shared caches never serve one person's language to another. |
+| **Accessibility** | `<html lang>` always matches the rendered language. |
+
+### Working with translations
 
 All interface text is written in English and marked for translation: `gettext` / `gettext_lazy`
-in Python, `{% translate %}` / `{% blocktranslate trimmed %}` in templates. The Indonesian text
-lives in `locale/id/LC_MESSAGES/django.po`.
+in Python, `{% translate %}` / `{% blocktranslate trimmed %}` in templates. Some rules:
 
-After adding or changing interface text:
+- Use named placeholders (`%(name)s`), never f-strings, and translate whole sentences
+  rather than gluing fragments together.
+- Use plural forms whenever a number is involved: `ngettext` in Python,
+  `{% blocktranslate count … %}…{% plural %}…` in templates. Indonesian has a single form;
+  English needs "1 user" vs "2 users".
+- When a short word means different things in different places, give it a context with
+  `pgettext` / `{% translate "…" context "…" %}` instead of rewording it.
+- Format amounts in messages with `apps.core.formatting.localized_rupiah`, and with the
+  `|rupiah` filter in templates.
+
+The Indonesian text lives in `locale/id/LC_MESSAGES/django.po`. After adding or changing
+interface text:
 
 ```bash
 .venv/bin/python manage.py makemessages -l id --ignore=.venv --no-obsolete
@@ -137,11 +163,6 @@ Fill in the new `msgstr` entries in `django.po` (and remove any `#, fuzzy` flags
 Commit both `django.po` and `django.mo`, so servers don't need gettext to run the app.
 These two commands do need GNU gettext on your machine (`sudo apt install gettext`). The test
 suite fails if a message is untranslated, fuzzy, or missing from the compiled `.mo`.
-
-Business records are deliberately **not** translated: the seeded chart of accounts, default
-tax-rate names, plan names and automatic journal descriptions are stored data in the
-organization's books, so they stay in Indonesian whichever interface language is active.
-Money is always formatted the Indonesian way (`Rp 1.234.567`).
 
 ## Production
 

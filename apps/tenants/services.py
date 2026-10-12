@@ -3,6 +3,7 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.core.exceptions import PlanLimitExceeded, ValidationFailed
 from apps.ledger.services import seed_chart_of_accounts
@@ -53,7 +54,11 @@ def _ensure_user_capacity(organization: Organization, plan: Plan | None = None) 
     plan = plan or organization.plan
     if plan.max_users is not None and organization.memberships.count() >= plan.max_users:
         raise PlanLimitExceeded(
-            _("The %(plan)s plan allows only %(limit)s users. Please upgrade your plan.")
+            ngettext(
+                "The %(plan)s plan allows only %(limit)s user. Please upgrade your plan.",
+                "The %(plan)s plan allows only %(limit)s users. Please upgrade your plan.",
+                plan.max_users,
+            )
             % {"plan": plan.name, "limit": plan.max_users}
         )
 
@@ -91,7 +96,11 @@ def change_plan(*, organization: Organization, plan: Plan) -> Organization:
     member_count = organization.memberships.count()
     if plan.max_users is not None and member_count > plan.max_users:
         raise PlanLimitExceeded(
-            _("The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s).")
+            ngettext(
+                "The organization has %(count)s user, more than the %(plan)s plan allows (%(limit)s).",
+                "The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s).",
+                member_count,
+            )
             % {"count": member_count, "plan": plan.name, "limit": plan.max_users}
         )
     organization.plan = plan

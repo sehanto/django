@@ -7,7 +7,7 @@
 </div>
 <div class="row g-3 mb-3">
   <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label"><i class="bi bi-exclamation-triangle text-danger me-1"></i>{% blocktranslate trimmed with count=summary.overdue_count %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label"><i class="bi bi-exclamation-triangle text-danger me-1"></i>{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
   <div class="col-md-4 d-flex align-items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline-secondary">{{ labels.aging }} &rarr;</a></div>
 </div>
 <form class="row g-2 mb-3" method="get">

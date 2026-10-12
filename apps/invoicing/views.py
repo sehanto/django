@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
@@ -170,7 +170,17 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
 
 
 class InvoicePrintView(InvoiceDetailView):
+    """The document sent to the customer/supplier, in *their* language, not the viewer's."""
+
     template_name = "invoicing/invoice_print.html"
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        language = self.object.contact.document_language
+        with translation.override(language):
+            response.render()
+        response.headers["Content-Language"] = language
+        return response
 
 
 class InvoiceActionView(InvoiceKindMixin, WriteMixin, View):

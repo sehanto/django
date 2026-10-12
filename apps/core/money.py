@@ -1,6 +1,7 @@
 """Money helpers for Indonesian Rupiah (IDR).
 
-Amounts are stored as ``Decimal`` with two decimal places. Indonesian tax
+Amounts are stored as ``Decimal`` with two decimal places. This module is pure
+Python; locale-aware display lives in ``apps.core.formatting``. Indonesian tax
 regulations round tax amounts *down* to whole rupiah, so dedicated helpers are
 provided for that.
 """
@@ -36,17 +37,18 @@ def round_down_rupiah(value) -> Decimal:
     return to_decimal(value).quantize(RUPIAH, rounding=ROUND_DOWN).quantize(CENT)
 
 
-def format_rupiah(value, with_symbol: bool = True) -> str:
-    """Format using Indonesian conventions: ``Rp 1.234.567,50``.
+def format_rupiah(value, with_symbol: bool = True, *, thousand_separator: str = ".", decimal_separator: str = ",") -> str:
+    """Format an IDR amount: ``Rp 1.234.567,50`` (Indonesian separators by default).
 
-    Fractions are omitted when the amount is a whole number.
+    Fractions are omitted when the amount is a whole number. Callers that know
+    the reader's locale pass its separators (see ``apps.core.formatting``).
     """
     amount = quantize(value)
     negative = amount < 0
     amount = abs(amount)
     integer_part, fraction = f"{amount:.2f}".split(".")
-    grouped = f"{int(integer_part):,}".replace(",", ".")
-    text = grouped if fraction == "00" else f"{grouped},{fraction}"
+    grouped = f"{int(integer_part):,}".replace(",", thousand_separator)
+    text = grouped if fraction == "00" else f"{grouped}{decimal_separator}{fraction}"
     if with_symbol:
         text = f"Rp {text}"
     return f"-{text}" if negative else text

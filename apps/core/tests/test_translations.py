@@ -28,7 +28,7 @@ def parse_po(path: Path) -> list[dict]:
             entry["flags"].update(flag.strip() for flag in line[2:].split(","))
         elif line.startswith("#"):
             continue
-        elif line.startswith(("msgid ", "msgstr ")):
+        elif line.startswith(("msgid ", "msgid_plural ", "msgstr ", "msgstr[")):
             field, _, value = line.partition(" ")
             entry[field] = _unquote(value)
         elif line.startswith('"') and field:
@@ -39,7 +39,7 @@ def parse_po(path: Path) -> list[dict]:
 def test_every_message_is_translated_and_not_fuzzy():
     entries = parse_po(LOCALE_DIR / "django.po")
     assert entries, "catalog is empty"
-    untranslated = [e["msgid"] for e in entries if not e.get("msgstr")]
+    untranslated = [e["msgid"] for e in entries if not (e.get("msgstr") or e.get("msgstr[0]"))]
     fuzzy = [e["msgid"] for e in entries if "fuzzy" in e["flags"]]
     assert not untranslated, f"untranslated messages: {untranslated}"
     assert not fuzzy, f"fuzzy messages: {fuzzy}"
@@ -48,5 +48,9 @@ def test_every_message_is_translated_and_not_fuzzy():
 def test_compiled_catalog_matches_source():
     with open(LOCALE_DIR / "django.mo", "rb") as handle:
         compiled = gettext.GNUTranslations(handle)
-    stale = [e["msgid"] for e in parse_po(LOCALE_DIR / "django.po") if compiled.gettext(e["msgid"]) != e["msgstr"]]
+    stale = [
+        e["msgid"] for e in parse_po(LOCALE_DIR / "django.po")
+        if (compiled.ngettext(e["msgid"], e["msgid_plural"], 1) != e["msgstr[0]"] if "msgid_plural" in e
+            else compiled.gettext(e["msgid"]) != e["msgstr"])
+    ]
     assert not stale, f"django.mo is out of date; run compilemessages. Stale: {stale[:5]}"

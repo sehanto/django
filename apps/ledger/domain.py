@@ -9,6 +9,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.exceptions import PeriodLocked, ValidationFailed
+from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize
 
 
@@ -129,7 +130,7 @@ def validate_lines(lines: Iterable[LineAmount]) -> tuple[Decimal, Decimal]:
     if total_debit != total_credit:
         raise ValidationFailed(
             _("The entry is not balanced: total debit %(debit)s ≠ total credit %(credit)s.")
-            % {"debit": total_debit, "credit": total_credit}
+            % {"debit": localized_rupiah(total_debit), "credit": localized_rupiah(total_credit)}
         )
     return total_debit, total_credit
 
