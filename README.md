@@ -116,6 +116,7 @@ The tests cover:
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
 - email verification (gate, link validity and tampering, resend throttle, address correction)
+- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -183,6 +184,23 @@ Every input is handled in layers, so no single mistake lets bad data through:
 
 `test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
 `BaseModelForm`.
+
+## Two-factor authentication
+
+Users can protect their account with a second factor from **Profile → Security**:
+
+| Part | Behaviour |
+|---|---|
+| Authenticator app (TOTP) | Any standard app (Google Authenticator, Microsoft Authenticator, 1Password, …). Setup shows a QR code rendered on our server (the secret is never sent to an online QR service) plus a typable key, and is confirmed with the current password and a first code. Codes can't be reused (replay protection) and small clock drift is tolerated. |
+| Backup codes | 10 single-use codes, shown once at setup. They can be regenerated with the password, which invalidates the old set. |
+| Sign-in | After the password (still rate-limited by axes) the user is **not** signed in until they enter a code. The pending step expires after 5 minutes and allows 5 wrong codes before the password is needed again. Wrong codes also trigger django-otp's exponential back-off, and the page says how long to wait. |
+| Turning off | Needs the password and a current code. |
+| Notifications | Turning 2FA on or off and regenerating backup codes email the account holder (in their language). |
+| Django admin | Requires a verified second factor (`OTPAdminSite`). **Staff must turn on 2FA in the app before they can use the admin.** |
+
+A password reset does not bypass 2FA. If someone loses both their phone and their backup codes,
+support can delete their devices in the Django admin (**OTP_TOTP / OTP_STATIC**) after verifying
+their identity; they can then sign in with the password and set up 2FA again.
 
 ## Email verification
 

@@ -1,0 +1,10 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed with name=user.get_short_name %}Hello {{ name }},{% endblocktranslate %}
+
+{{ event }}
+{% blocktranslate trimmed with when=when|date:"d F Y H:i" %}Time: {{ when }}{% endblocktranslate %}
+
+{% blocktranslate trimmed %}If this was you, no action is needed. If it wasn't, reset your password right away and review your security settings:{% endblocktranslate %}
+{{ security_url }}
+
+{{ site_name }}
+{% endautoescape %}

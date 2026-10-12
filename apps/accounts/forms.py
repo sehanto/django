@@ -74,3 +74,40 @@ class ChangeEmailForm(BaseForm):
         if not self.user.check_password(password):
             raise forms.ValidationError(_("Your password is incorrect."))
         return password
+
+
+def two_factor_code_field(*, autofocus: bool) -> forms.CharField:
+    attrs = {"autocomplete": "one-time-code", "autocapitalize": "off"}
+    if autofocus:
+        attrs["autofocus"] = True
+    return forms.CharField(
+        label=_("Authentication code"), max_length=20,
+        help_text=_("The 6-digit code from your authenticator app, or one of your backup codes."),
+        widget=forms.TextInput(attrs=attrs),
+    )
+
+
+class TwoFactorCodeForm(BaseForm):
+    code = two_factor_code_field(autofocus=True)
+
+
+class PasswordConfirmationForm(BaseForm):
+    """Re-authentication before a security change."""
+
+    password = forms.CharField(label=_("Current password"), widget=forms.PasswordInput, strip=False)
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(_("Your password is incorrect."))
+        return password
+
+
+class TwoFactorConfirmForm(PasswordConfirmationForm):
+    """Password plus a current code (used to turn 2FA on or off)."""
+
+    code = two_factor_code_field(autofocus=False)  # the password field comes first

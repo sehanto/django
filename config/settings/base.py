@@ -23,6 +23,9 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "axes",  # login rate limiting
+    "django_otp",  # two-factor authentication
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_static",
 ]
 
 LOCAL_APPS = [
@@ -47,6 +50,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",  # request.user.is_verified()
     "apps.accounts.middleware.UserLanguageMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -171,3 +175,9 @@ CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 # Email verification after sign-up: links are valid for 3 days; resends are throttled.
 EMAIL_VERIFICATION_TIMEOUT = env.int("EMAIL_VERIFICATION_TIMEOUT", default=60 * 60 * 24 * 3)
 EMAIL_VERIFICATION_EMAILS_PER_HOUR = 3
+
+# Two-factor authentication (django-otp): TOTP authenticator apps plus single-use backup codes.
+OTP_TOTP_ISSUER = SITE_NAME  # label shown in the authenticator app
+TWO_FACTOR_PENDING_SECONDS = 5 * 60  # time to enter the code after the password
+TWO_FACTOR_MAX_ATTEMPTS = 5  # wrong codes before the password must be entered again
+TWO_FACTOR_BACKUP_CODES = 10

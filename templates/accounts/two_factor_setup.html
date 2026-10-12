@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Turn on two-factor authentication" %}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">{% translate "Turn on two-factor authentication" %}</h1>
+<div class="card" style="max-width: 760px;"><div class="card-body">
+  <ol class="mb-3">
+    <li>{% translate "Install an authenticator app on your phone, such as Google Authenticator, Microsoft Authenticator or 1Password." %}</li>
+    <li>{% translate "In the app, add an account and scan this QR code:" %}</li>
+  </ol>
+  <div class="text-center mb-2"><img src="{{ qr_code }}" alt="{% translate 'QR code for your authenticator app' %}" width="220" height="220"></div>
+  <p class="small text-secondary text-center">{% translate "Can't scan it? Enter this key in the app instead:" %}<br><code class="fs-6 user-select-all">{{ manual_key }}</code></p>
+  <ol start="3"><li>{% translate "Enter the 6-digit code shown in the app, and your password to confirm." %}</li></ol>
+  <form method="post">{% csrf_token %}
+    {% include "partials/form_fields.html" with col="col-md-6" %}
+    <div class="d-flex gap-2 justify-content-end mt-4">
+      <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+      <button class="btn btn-primary">{% translate "Turn on" %}</button>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

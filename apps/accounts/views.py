@@ -6,6 +6,8 @@ from axes.utils import reset as axes_reset
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
+from django_otp import login as otp_login
+from django_otp.plugins.otp_static.models import StaticDevice
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
@@ -13,6 +15,7 @@ from django.urls import reverse_lazy
 from django.utils import translation
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
@@ -20,9 +23,19 @@ from apps.core.exceptions import DomainError
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
-from . import services, throttle
+from . import services, throttle, two_factor
 from .client_ip import client_ip
-from .forms import ChangeEmailForm, LoginForm, NewPasswordForm, ProfileForm, ResetPasswordForm, SignUpForm
+from .forms import (
+    ChangeEmailForm,
+    LoginForm,
+    NewPasswordForm,
+    PasswordConfirmationForm,
+    ProfileForm,
+    ResetPasswordForm,
+    SignUpForm,
+    TwoFactorCodeForm,
+    TwoFactorConfirmForm,
+)
 from .middleware import SUPPORTED_LANGUAGES
 
 logger = logging.getLogger(__name__)
@@ -42,14 +55,23 @@ class LoginView(auth_views.LoginView):
     redirect_authenticated_user = True
 
     def form_valid(self, form):
+        user = form.get_user()
+        if two_factor.is_enabled(user):
+            # Password accepted; the user is not logged in until the second factor is checked.
+            two_factor.begin_login(self.request, user, next_url=self.get_success_url())
+            return redirect("accounts:login_otp")
         response = super().form_valid(form)
-        # A language picked on the sign-in page is an explicit choice: keep it after login.
-        chosen = self.request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
-        user = self.request.user
-        if chosen in SUPPORTED_LANGUAGES and chosen != user.language:
-            user.language = chosen
-            user.save(update_fields=["language"])
+        adopt_chosen_language(self.request)
         return response
+
+
+def adopt_chosen_language(request) -> None:
+    """A language picked on the sign-in page is an explicit choice: keep it after login."""
+    chosen = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+    user = request.user
+    if chosen in SUPPORTED_LANGUAGES and chosen != user.language:
+        user.language = chosen
+        user.save(update_fields=["language"])
 
 
 class LogoutView(auth_views.LogoutView):
@@ -253,3 +275,158 @@ class VerifyEmailView(View):
         messages.success(request, _("Email address confirmed. You can sign in now."))
         # Someone else may be signed in on this browser; don't switch accounts.
         return redirect("dashboard:home" if request.user.is_authenticated else "accounts:login")
+
+
+# --- Two-factor authentication ---------------------------------------------------------
+
+
+def _wait_message(seconds: int) -> str:
+    return ngettext(
+        "Too many wrong codes. Wait %(seconds)s second and try again.",
+        "Too many wrong codes. Wait %(seconds)s seconds and try again.",
+        seconds,
+    ) % {"seconds": seconds}
+
+
+class LoginOTPView(FormView):
+    """Second sign-in step: authenticator code or backup code."""
+
+    template_name = "accounts/login_otp.html"
+    form_class = TwoFactorCodeForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.pending = two_factor.pending_login(request)
+        self.user = two_factor.pending_user(self.pending) if self.pending else None
+        if self.user is None:
+            messages.info(request, _("Please sign in again."))
+            return redirect("accounts:login")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if wait := two_factor.retry_after(two_factor.login_devices(self.user)):
+            form.add_error("code", _wait_message(wait))  # refused before checking: not counted as an attempt
+            return self.form_invalid(form)
+        device = two_factor.verify(self.user, form.cleaned_data["code"])
+        if device is None:
+            if two_factor.record_failed_attempt(self.request):
+                form.add_error("code", _("That code is not valid. Check your authenticator app and try again."))
+                return self.form_invalid(form)
+            messages.error(self.request, _("Too many wrong codes. Please sign in again."))
+            return redirect("accounts:login")
+
+        two_factor.cancel_login(self.request)
+        login(self.request, self.user, backend=self.pending["backend"])
+        otp_login(self.request, device)  # marks this session as verified (needed for the admin)
+        adopt_chosen_language(self.request)
+        if isinstance(device, StaticDevice):
+            left = two_factor.remaining_backup_codes(self.user)
+            messages.warning(self.request, ngettext(
+                "You signed in with a backup code. %(count)s backup code is left.",
+                "You signed in with a backup code. %(count)s backup codes are left.",
+                left,
+            ) % {"count": left})
+        return redirect(self.pending["next"])
+
+
+BACKUP_CODES_SESSION_KEY = "two_factor_new_backup_codes"  # shown once, then removed
+
+
+class SecurityView(LoginRequiredMixin, TemplateView):
+    template_name = "accounts/security.html"
+
+    def get_context_data(self, **kwargs):
+        user = self.request.user
+        return super().get_context_data(
+            two_factor_enabled=two_factor.is_enabled(user),
+            backup_codes_left=two_factor.remaining_backup_codes(user),
+            **kwargs,
+        )
+
+
+class TwoFactorSetupView(LoginRequiredMixin, FormView):
+    template_name = "accounts/two_factor_setup.html"
+    form_class = TwoFactorConfirmForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and two_factor.is_enabled(request.user):
+            return redirect("accounts:security")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "user": self.request.user}
+
+    def get_context_data(self, **kwargs):
+        device = two_factor.start_setup(self.request.user)
+        return super().get_context_data(
+            qr_code=two_factor.qr_code_data_uri(device), manual_key=two_factor.manual_entry_key(device), **kwargs
+        )
+
+    def form_valid(self, form):
+        user = self.request.user
+        device = two_factor.start_setup(user)
+        if wait := two_factor.retry_after([device]):
+            form.add_error("code", _wait_message(wait))
+            return self.form_invalid(form)
+        codes = two_factor.confirm_setup(user, device, form.cleaned_data["code"])
+        if codes is None:
+            form.add_error("code", _("That code is not valid. Check that the time on your phone is correct and try again."))
+            return self.form_invalid(form)
+        otp_login(self.request, two_factor.authenticator(user))  # this session already proved the code
+        services.send_security_notice(user, "two_factor_enabled")
+        self.request.session[BACKUP_CODES_SESSION_KEY] = codes
+        messages.success(self.request, _("Two-factor authentication is on."))
+        return redirect("accounts:two_factor_backup_codes")
+
+
+class BackupCodesView(LoginRequiredMixin, FormView):
+    """Shows newly generated backup codes once; regenerating needs the password."""
+
+    template_name = "accounts/two_factor_backup_codes.html"
+    form_class = PasswordConfirmationForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not two_factor.is_enabled(request.user):
+            return redirect("accounts:security")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "user": self.request.user}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            new_codes=self.request.session.pop(BACKUP_CODES_SESSION_KEY, None),
+            backup_codes_left=two_factor.remaining_backup_codes(self.request.user),
+            **kwargs,
+        )
+
+    def form_valid(self, form):
+        self.request.session[BACKUP_CODES_SESSION_KEY] = two_factor.generate_backup_codes(self.request.user)
+        services.send_security_notice(self.request.user, "backup_codes_regenerated")
+        messages.success(self.request, _("New backup codes created. The old ones no longer work."))
+        return redirect("accounts:two_factor_backup_codes")
+
+
+class TwoFactorDisableView(LoginRequiredMixin, FormView):
+    template_name = "accounts/two_factor_disable.html"
+    form_class = TwoFactorConfirmForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not two_factor.is_enabled(request.user):
+            return redirect("accounts:security")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "user": self.request.user}
+
+    def form_valid(self, form):
+        user = self.request.user
+        if wait := two_factor.retry_after(two_factor.login_devices(user)):
+            form.add_error("code", _wait_message(wait))
+            return self.form_invalid(form)
+        if two_factor.verify(user, form.cleaned_data["code"]) is None:
+            form.add_error("code", _("That code is not valid. Check your authenticator app and try again."))
+            return self.form_invalid(form)
+        two_factor.disable(user)
+        services.send_security_notice(user, "two_factor_disabled")
+        messages.warning(self.request, _("Two-factor authentication is off. Your account is protected by your password only."))
+        return redirect("accounts:security")

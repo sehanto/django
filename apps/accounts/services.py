@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.core.exceptions import ValidationFailed
 
@@ -86,3 +87,20 @@ def change_unverified_email(*, user, new_email: str):
     user.save(update_fields=["email"])
     transaction.on_commit(lambda: send_verification_email(user))
     return user
+
+
+SECURITY_EVENTS = {
+    "two_factor_enabled": gettext_lazy("Two-factor authentication was turned on for your account."),
+    "two_factor_disabled": gettext_lazy("Two-factor authentication was turned off for your account."),
+    "backup_codes_regenerated": gettext_lazy("New two-factor backup codes were created for your account. The old codes no longer work."),
+}
+
+
+def send_security_notice(user, event: str) -> None:
+    """Tell the account holder about a security change, so an attacker can't make one silently."""
+    context = {"user": user, "site_name": settings.SITE_NAME, "event": SECURITY_EVENTS[event],
+               "when": timezone.localtime(), "security_url": settings.SITE_URL.rstrip("/") + reverse("accounts:security")}
+    with translation.override(user.language):
+        subject = "".join(render_to_string("accounts/emails/security_notice_subject.txt", context).splitlines())
+        body = render_to_string("accounts/emails/security_notice.txt", context)
+    send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email])
