@@ -56,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.tenants.middleware.CurrentOrganizationMiddleware",
     "apps.accounts.middleware.EmailVerificationMiddleware",
+    "apps.tenants.middleware.TwoFactorRequirementMiddleware",
     # Must be last: turns a locked-out login into the lockout response.
     "axes.middleware.AxesMiddleware",
 ]

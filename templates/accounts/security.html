@@ -2,6 +2,11 @@
 {% block title %}{% translate "Security" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-3">{% translate "Security" %}</h1>
+{% if required_by and not two_factor_enabled %}
+  <div class="alert alert-warning" style="max-width: 760px;"><i class="bi bi-shield-exclamation me-1"></i>
+    {% blocktranslate trimmed with organizations=required_by|join:", " %}{{ organizations }} requires two-factor authentication. Turn it on to continue.{% endblocktranslate %}
+  </div>
+{% endif %}
 <div class="card mb-3" style="max-width: 760px;"><div class="card-body">
   <div class="d-flex justify-content-between align-items-start gap-3">
     <div>

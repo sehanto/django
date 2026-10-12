@@ -66,6 +66,11 @@ class Organization(TimeStampedModel):
         # xgettext:no-python-format
         help_text=_("PP 55/2022: 0.5% final income tax on gross turnover."),
     )
+    require_two_factor = models.BooleanField(
+        _("require two-factor authentication"),
+        default=False,
+        help_text=_("Every member must use two-factor authentication to open this organization."),
+    )
     lock_date = models.DateField(
         _("period lock date"),
         null=True,

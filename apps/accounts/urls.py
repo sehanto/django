@@ -12,6 +12,7 @@ urlpatterns = [
     path("security/two-factor/setup/", views.TwoFactorSetupView.as_view(), name="two_factor_setup"),
     path("security/two-factor/backup-codes/", views.BackupCodesView.as_view(), name="two_factor_backup_codes"),
     path("security/two-factor/disable/", views.TwoFactorDisableView.as_view(), name="two_factor_disable"),
+    path("security/two-factor/verify/", views.TwoFactorVerifySessionView.as_view(), name="two_factor_verify_session"),
     path("signup/", views.SignUpView.as_view(), name="signup"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("password/", views.PasswordChangeView.as_view(), name="password_change"),

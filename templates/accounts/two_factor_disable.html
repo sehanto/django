@@ -3,6 +3,10 @@
 {% block content %}
 <h1 class="h4 mb-3">{% translate "Turn off two-factor authentication" %}</h1>
 <div class="card" style="max-width: 760px;"><div class="card-body">
+{% if required_by %}
+  <div class="alert alert-info">{% blocktranslate trimmed with organizations=required_by|join:", " %}You can't turn off two-factor authentication while {{ organizations }} requires it.{% endblocktranslate %}</div>
+  <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
+{% else %}
   <div class="alert alert-warning">{% translate "Your account will be protected by your password only. Your authenticator and backup codes will stop working." %}</div>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-md-6" %}
@@ -11,5 +15,6 @@
       <button class="btn btn-danger">{% translate "Turn off" %}</button>
     </div>
   </form>
+{% endif %}
 </div></div>
 {% endblock %}

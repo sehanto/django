@@ -11,7 +11,7 @@ from django_otp.plugins.otp_static.models import StaticDevice
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import translation
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
@@ -20,6 +20,7 @@ from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.tenants.selectors import organizations_requiring_two_factor
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
@@ -339,8 +340,45 @@ class SecurityView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(
             two_factor_enabled=two_factor.is_enabled(user),
             backup_codes_left=two_factor.remaining_backup_codes(user),
+            required_by=list(organizations_requiring_two_factor(user)),
             **kwargs,
         )
+
+
+class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
+    """Step-up: an already signed-in session proves the second factor (e.g. it began
+    before the user turned 2FA on, and an organization now requires it)."""
+
+    template_name = "accounts/two_factor_verify_session.html"
+    form_class = TwoFactorCodeForm
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not two_factor.is_enabled(request.user):
+            return redirect("accounts:security")
+        if request.user.is_authenticated and request.user.is_verified():
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        next_url = self.request.POST.get("next") or self.request.GET.get("next") or ""
+        if url_has_allowed_host_and_scheme(next_url, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()):
+            return next_url
+        return reverse("dashboard:home")
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(next=self.request.GET.get("next", ""), **kwargs)
+
+    def form_valid(self, form):
+        user = self.request.user
+        if wait := two_factor.retry_after(two_factor.login_devices(user)):
+            form.add_error("code", _wait_message(wait))
+            return self.form_invalid(form)
+        device = two_factor.verify(user, form.cleaned_data["code"])
+        if device is None:
+            form.add_error("code", _("That code is not valid. Check your authenticator app and try again."))
+            return self.form_invalid(form)
+        otp_login(self.request, device)
+        return redirect(self.get_success_url())
 
 
 class TwoFactorSetupView(LoginRequiredMixin, FormView):
@@ -410,6 +448,9 @@ class TwoFactorDisableView(LoginRequiredMixin, FormView):
     template_name = "accounts/two_factor_disable.html"
     form_class = TwoFactorConfirmForm
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(required_by=list(organizations_requiring_two_factor(self.request.user)), **kwargs)
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not two_factor.is_enabled(request.user):
             return redirect("accounts:security")
@@ -420,6 +461,11 @@ class TwoFactorDisableView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         user = self.request.user
+        if required_by := list(organizations_requiring_two_factor(user)):
+            form.add_error(None, _("You can't turn off two-factor authentication while %(organizations)s requires it.") % {
+                "organizations": ", ".join(org.name for org in required_by),
+            })
+            return self.form_invalid(form)
         if wait := two_factor.retry_after(two_factor.login_devices(user)):
             form.add_error("code", _wait_message(wait))
             return self.form_invalid(form)

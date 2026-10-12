@@ -2,8 +2,13 @@
 
 from datetime import date
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils import translation
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
@@ -132,3 +137,23 @@ def delete_organization(*, organization: Organization) -> None:
     for model in (Contact, TaxRate, Account, DocumentSequence):
         model.objects.filter(organization=organization).delete()
     organization.delete()
+
+
+def notify_two_factor_requirement(*, organization: Organization, enabled_by) -> int:
+    """Email members who don't use 2FA yet that the organization now requires it."""
+    from apps.accounts import two_factor  # accounts depends on tenants; import at use
+
+    sign_in_url = settings.SITE_URL.rstrip("/") + reverse("accounts:security")
+    notified = 0
+    for membership in Membership.objects.filter(organization=organization).select_related("user"):
+        member = membership.user
+        if member.pk == enabled_by.pk or not member.is_active or two_factor.is_enabled(member):
+            continue
+        context = {"member": member, "organization": organization.name, "enabled_by": enabled_by.get_full_name(),
+                   "url": sign_in_url, "site_name": settings.SITE_NAME}
+        with translation.override(member.language):
+            subject = "".join(render_to_string("tenants/emails/two_factor_required_subject.txt", context).splitlines())
+            body = render_to_string("tenants/emails/two_factor_required.txt", context)
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [member.email])
+        notified += 1
+    return notified

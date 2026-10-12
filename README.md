@@ -116,7 +116,7 @@ The tests cover:
 - login rate limiting (lockout, email+IP scoping, reset, cool-off, admin login, proxy IP resolution)
 - password reset (single use, expiry, throttling, Host-header safety, language, lockout and session handling)
 - email verification (gate, link validity and tampering, resend throttle, address correction)
-- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin)
+- two-factor authentication (setup, sign-in, replay, back-off, backup codes, disabling, admin, organization requirement)
 - both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
@@ -197,6 +197,18 @@ Users can protect their account with a second factor from **Profile → Security
 | Turning off | Needs the password and a current code. |
 | Notifications | Turning 2FA on or off and regenerating backup codes email the account holder (in their language). |
 | Django admin | Requires a verified second factor (`OTPAdminSite`). **Staff must turn on 2FA in the app before they can use the admin.** |
+
+### Requiring 2FA for an organization
+
+Owners and admins can tick **Require two-factor authentication** in the organization settings.
+
+- **Who can switch it on:** only someone who already uses 2FA, so the rule can't lock out the person who set it.
+- **When it's switched on:** members without 2FA get an email in their language, and the Team members page shows each member's 2FA status.
+- **Enforcement:** the check is that the session has *proved* a second factor, not merely that the user owns one.
+  - Members without 2FA are taken to the setup page.
+  - Members whose session started before they turned 2FA on are asked for a code once.
+  - Sign-out, the language switch and switching to another organization keep working.
+- **Turning 2FA off:** a member can't, while any of their organizations requires it.
 
 A password reset does not bypass 2FA. If someone loses both their phone and their backup codes,
 support can delete their devices in the Django admin (**OTP_TOTP / OTP_STATIC**) after verifying

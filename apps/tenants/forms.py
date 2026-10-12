@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts import two_factor
 from apps.contacts.validators import npwp_format_validator
 from django.utils import timezone
 
@@ -20,9 +21,20 @@ class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
         model = Organization
         fields = [
             "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email",
-            "is_pkp", "uses_pph_final", "lock_date",
+            "is_pkp", "uses_pph_final", "lock_date", "require_two_factor",
         ]
         widgets = {"address": forms.Textarea(attrs={"rows": 2}), "lock_date": DateInput()}
+
+    def __init__(self, *args, acting_user, **kwargs):
+        self.acting_user = acting_user
+        super().__init__(*args, **kwargs)
+
+    def clean_require_two_factor(self):
+        required = self.cleaned_data["require_two_factor"]
+        if required and not two_factor.is_enabled(self.acting_user):
+            # Otherwise the person setting the rule would be the first one locked out.
+            raise forms.ValidationError(_("Turn on two-factor authentication for your own account first (Profile → Security)."))
+        return required
 
     def clean_lock_date(self):
         lock_date = self.cleaned_data["lock_date"]

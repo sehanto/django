@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import FormView, UpdateView
 
@@ -24,9 +25,21 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.organization
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "acting_user": self.request.user}
+
     def form_valid(self, form):
+        response = super().form_valid(form)
+        # ModelForm already applied the new value to the instance, so use changed_data.
+        if "require_two_factor" in form.changed_data and form.cleaned_data["require_two_factor"]:
+            notified = services.notify_two_factor_requirement(organization=self.object, enabled_by=self.request.user)
+            messages.info(self.request, ngettext(
+                "Two-factor authentication is now required. %(count)s member without it was notified by email.",
+                "Two-factor authentication is now required. %(count)s members without it were notified by email.",
+                notified,
+            ) % {"count": notified})
         messages.success(self.request, _("Organization settings saved."))
-        return super().form_valid(form)
+        return response
 
 
 class OrganizationCreateView(LoginRequiredMixin, FormView):

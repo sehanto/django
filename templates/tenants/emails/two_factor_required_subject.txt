@@ -1,0 +1,1 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed %}{{ organization }} now requires two-factor authentication{% endblocktranslate %}{% endautoescape %}

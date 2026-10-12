@@ -1,0 +1,9 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed with name=member.get_short_name %}Hello {{ name }},{% endblocktranslate %}
+
+{% blocktranslate trimmed %}{{ enabled_by }} turned on a rule for {{ organization }}: every member must use two-factor authentication.{% endblocktranslate %}
+
+{% blocktranslate trimmed %}The next time you open {{ organization }} you will be asked to set it up. It takes about two minutes: install an authenticator app on your phone, scan a QR code and enter a code. You can do it now here:{% endblocktranslate %}
+{{ url }}
+
+{{ site_name }}
+{% endautoescape %}
