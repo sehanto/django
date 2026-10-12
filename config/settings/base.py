@@ -181,6 +181,9 @@ SITE_NAME = env("SITE_NAME", default="BukuUMKM")  # shown in emails
 # production: "dbcache://django_cache" (run createcachetable) or a Redis URL.
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
+# Books export (ZIP of CSVs) per organization; each one reads the whole ledger.
+BOOKS_EXPORTS_PER_HOUR = env.int("BOOKS_EXPORTS_PER_HOUR", default=10)
+
 # Email verification after sign-up: links are valid for 3 days; resends are throttled.
 EMAIL_VERIFICATION_TIMEOUT = env.int("EMAIL_VERIFICATION_TIMEOUT", default=60 * 60 * 24 * 3)
 EMAIL_VERIFICATION_EMAILS_PER_HOUR = 3

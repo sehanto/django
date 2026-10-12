@@ -1,8 +1,14 @@
 import csv
+import logging
+import tempfile
 from datetime import timedelta
 
+from django.conf import settings
+from django.contrib import messages
 from django.db import models
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
+from django.shortcuts import redirect
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
@@ -11,10 +17,15 @@ from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
-from apps.tenants.mixins import OrganizationMixin
+from apps.accounts.throttle import ThrottleScope, allow
+from apps.tenants.mixins import ManageMixin, OrganizationMixin
 
+from .exports import archive_filename, write_books_archive
 from .forms import AsOfForm, LedgerForm, PeriodForm, start_of_year
 from .statements import build_balance_sheet, build_income_statement, build_trial_balance
+
+
+logger = logging.getLogger(__name__)
 
 
 class ExportFormat(models.TextChoices):
@@ -120,3 +131,24 @@ class VatReportView(OrganizationMixin, TemplateView):
         rows = vat_summary(self.organization, year)
         totals = {key: sum(r[key] for r in rows) for key in ("output_base", "output", "input_base", "input", "net")}
         return super().get_context_data(year=year, years=year_choices(), rows=rows, totals=totals, **kwargs)
+
+
+class ExportBooksView(ManageMixin, TemplateView):
+    """Owners and admins download the organization's complete books (ZIP of CSV files)."""
+
+    template_name = "reports/export_books.html"
+    SPOOL_BYTES = 16 * 1024 * 1024  # larger archives go to a temporary file
+
+    def post(self, request):
+        organization = self.organization
+        if not allow(ThrottleScope.BOOKS_EXPORT, str(organization.pk), limit=settings.BOOKS_EXPORTS_PER_HOUR, window_seconds=3600):
+            messages.error(request, _("Too many exports in the last hour. Please try again later."))
+            return redirect("reports:export_books")
+        archive = tempfile.SpooledTemporaryFile(max_size=self.SPOOL_BYTES)
+        write_books_archive(organization, archive, exported_by=request.user)
+        archive.seek(0)
+        logger.info("Books of organization %s exported by user %s", organization.pk, request.user.pk)
+        return FileResponse(
+            archive, as_attachment=True, content_type="application/zip",
+            filename=archive_filename(organization, timezone.localdate()),
+        )

@@ -15,5 +15,6 @@
     <a href="{% url 'reports:aging' invoice_kinds.SALES %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
     <a href="{% url 'reports:aging' invoice_kinds.PURCHASE %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>
   </div></div></div>
+  {% if can_manage %}{% include "reports/_card.html" with href="reports:export_books" icon="file-earmark-zip" title=_("Export books") desc=_("All journals, invoices, payments and contacts as a ZIP of CSV files.") %}{% endif %}
 </div>
 {% endblock %}

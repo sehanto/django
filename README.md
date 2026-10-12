@@ -154,13 +154,35 @@ shows the command to use instead. Deleting one wipes its books, so it is a delib
 operator step that connects as the schema owner:
 
 ```bash
-.venv/bin/python manage.py delete_organization <organization id>
+.venv/bin/python manage.py delete_organization <organization id> --export-to books.zip
 ```
 
 It shows what will be removed and asks you to type the organization's name (`--yes`
 skips the prompt, for scripts). Without owner credentials it refuses. Indonesian
-taxpayers must keep their books for 10 years (UU KUP Art. 28(11)), so give the
-customer an export first. Subscription invoices (our own sales records) survive.
+taxpayers must keep their books for 10 years (UU KUP Art. 28(11)). The command
+therefore requires either `--export-to` (it writes the books before deleting) or an
+explicit `--skip-export`, for example when the customer already downloaded them.
+Subscription invoices (our own sales records) survive.
+
+### Exporting the books
+
+Owners and admins can download their organization's complete books from
+**Organization settings → Export books**, or from the Reports page. The ZIP contains:
+
+- the general journal (one row per line) and the chart of accounts;
+- sales invoices, purchase bills, their lines and payments;
+- contacts, items, PPN rates and PPh Final deposits;
+- the business profile, today's trial balance and a README.
+
+CSV files are UTF-8 with `;` separators (like the report downloads). Headers are in
+the user's language. Amounts use a dot as the decimal separator and dates are ISO
+(`YYYY-MM-DD`). Business data is exported as recorded. The export reads one
+consistent snapshot (`REPEATABLE READ`) and is limited to `BOOKS_EXPORTS_PER_HOUR`
+(default 10) per organization. Operators can write the same archive with:
+
+```bash
+.venv/bin/python manage.py export_books <organization id> books.zip --language id
+```
 
 ## Tests
 

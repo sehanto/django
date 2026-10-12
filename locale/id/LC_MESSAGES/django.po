@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 06:15+0700\n"
+"POT-Creation-Date: 2026-10-13 06:21+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -822,7 +822,7 @@ msgid "Disc. %"
 msgstr "Disc %"
 
 #: apps/invoicing/forms.py:59 apps/ledger/domain.py:108
-#: templates/invoicing/_invoice_body.html:17
+#: apps/reports/exports.py:146 templates/invoicing/_invoice_body.html:17
 #: templates/invoicing/invoice_form.html:13
 #: templates/invoicing/item_list.html:10
 msgid "Tax"
@@ -1544,6 +1544,165 @@ msgstr "Jurnal dibalik dengan %(number)s."
 msgid "Reports"
 msgstr "Laporan"
 
+#: apps/reports/exports.py:67
+msgid "Yes"
+msgstr "Ya"
+
+#: apps/reports/exports.py:67
+msgid "No"
+msgstr "Tidak"
+
+#: apps/reports/exports.py:98
+msgid "General journal: one row per line, drafts and posted entries."
+msgstr ""
+"Jurnal umum: satu baris per baris jurnal, termasuk draf dan jurnal yang "
+"sudah diposting."
+
+#: apps/reports/exports.py:101
+msgid "Entry description"
+msgstr "Keterangan jurnal"
+
+#: apps/reports/exports.py:102
+msgid "Reverses entry"
+msgstr "Membalik jurnal"
+
+#: apps/reports/exports.py:103 apps/reports/exports.py:145
+msgid "Account code"
+msgstr "Kode akun"
+
+#: apps/reports/exports.py:104
+msgid "Line description"
+msgstr "Keterangan baris"
+
+#: apps/reports/exports.py:110
+msgid "Chart of accounts."
+msgstr "Bagan akun."
+
+#: apps/reports/exports.py:117
+msgid "Customers and suppliers."
+msgstr "Pelanggan dan pemasok."
+
+#: apps/reports/exports.py:124
+msgid "Products and services."
+msgstr "Barang dan jasa."
+
+#: apps/reports/exports.py:126
+msgid "Revenue account code"
+msgstr "Kode akun pendapatan"
+
+#: apps/reports/exports.py:127
+msgid "Purchase/expense account code"
+msgstr "Kode akun pembelian/beban"
+
+#: apps/reports/exports.py:128
+msgid "Default tax"
+msgstr "Pajak default"
+
+#: apps/reports/exports.py:133
+msgid "Sales invoices and purchase bills."
+msgstr "Faktur penjualan dan tagihan pembelian."
+
+#: apps/reports/exports.py:134 apps/reports/exports.py:143
+#: apps/reports/exports.py:152
+msgid "Invoice ID"
+msgstr "ID faktur"
+
+#: apps/reports/exports.py:134 apps/reports/exports.py:153
+#: templates/contacts/contact_form.html:2
+#: templates/invoicing/payment_list.html:11 templates/reports/aging.html:7
+msgid "Contact"
+msgstr "Kontak"
+
+#: apps/reports/exports.py:135
+msgid "Contact NPWP"
+msgstr "NPWP kontak"
+
+#: apps/reports/exports.py:137 apps/reports/exports.py:155
+#: apps/reports/exports.py:169 templates/invoicing/invoice_detail.html:26
+msgid "Journal entry"
+msgstr "Jurnal"
+
+#: apps/reports/exports.py:142
+msgid "Invoice and bill lines (linked by invoice ID)."
+msgstr "Rincian faktur dan tagihan (terhubung melalui ID faktur)."
+
+#: apps/reports/exports.py:143 apps/reports/exports.py:153
+msgid "Invoice number"
+msgstr "Nomor faktur"
+
+#: apps/reports/exports.py:144
+msgid "Item code"
+msgstr "Kode barang/jasa"
+
+#: apps/reports/exports.py:151
+msgid "Receipts and disbursements."
+msgstr "Penerimaan dan pengeluaran."
+
+#: apps/reports/exports.py:154 apps/reports/exports.py:168
+msgid "Cash/bank account code"
+msgstr "Kode akun kas/bank"
+
+#: apps/reports/exports.py:160
+msgid "PPN rates."
+msgstr "Tarif PPN."
+
+#: apps/reports/exports.py:166
+msgid "MSME PPh Final deposits."
+msgstr "Setoran PPh Final UMKM."
+
+#: apps/reports/exports.py:190
+msgid "Field"
+msgstr "Kolom"
+
+#: apps/reports/exports.py:190
+msgid "Value"
+msgstr "Nilai"
+
+#: apps/reports/exports.py:197
+msgid "Business profile."
+msgstr "Profil usaha."
+
+#: apps/reports/exports.py:199
+#, python-format
+msgid "Trial balance of posted entries as of %(date)s."
+msgstr "Neraca saldo dari jurnal yang diposting per %(date)s."
+
+#: apps/reports/exports.py:202
+#, python-format
+msgid "Books of %(organization)s"
+msgstr "Pembukuan %(organization)s"
+
+#: apps/reports/exports.py:203
+#, python-format
+msgid "Exported on %(datetime)s by %(user)s."
+msgstr "Diekspor pada %(datetime)s oleh %(user)s."
+
+#: apps/reports/exports.py:205
+msgid "the system operator"
+msgstr "operator sistem"
+
+#: apps/reports/exports.py:208
+msgid "Files:"
+msgstr "Berkas:"
+
+#: apps/reports/exports.py:211
+msgid ""
+"CSV files are UTF-8 and separated by semicolons (;). Amounts are in rupiah "
+"with a dot as the decimal separator; dates are YYYY-MM-DD. Account names, "
+"descriptions and other business data are exported as recorded."
+msgstr ""
+"Berkas CSV berformat UTF-8 dengan pemisah titik koma (;). Jumlah dalam "
+"rupiah dengan titik sebagai pemisah desimal; tanggal berformat YYYY-MM-DD. "
+"Nama akun, keterangan, dan data usaha lainnya diekspor sesuai yang dicatat."
+
+#: apps/reports/exports.py:214
+msgid ""
+"Indonesian taxpayers must keep their books and records for 10 years (UU KUP "
+"Art. 28(11))."
+msgstr ""
+"Wajib Pajak wajib menyimpan pembukuan dan catatan selama 10 tahun (UU KUP "
+"Pasal 28 ayat 11)."
+
 #: apps/reports/forms.py:17
 msgid "From"
 msgstr "Dari"
@@ -1641,13 +1800,18 @@ msgstr "TOTAL"
 msgid "Total %(section)s"
 msgstr "Total %(section)s"
 
-#: apps/reports/views.py:110
+#: apps/reports/views.py:121
 msgid "Receivables aging"
 msgstr "Umur Piutang"
 
-#: apps/reports/views.py:110
+#: apps/reports/views.py:121
 msgid "Payables aging"
 msgstr "Umur Utang"
+
+#: apps/reports/views.py:145
+msgid "Too many exports in the last hour. Please try again later."
+msgstr ""
+"Terlalu banyak ekspor dalam satu jam terakhir. Silakan coba lagi nanti."
 
 #: apps/taxes/apps.py:7
 msgid "Taxes"
@@ -2935,11 +3099,6 @@ msgstr "Status"
 msgid "No subscription payments yet."
 msgstr "Belum ada pembayaran langganan."
 
-#: templates/contacts/contact_form.html:2
-#: templates/invoicing/payment_list.html:11 templates/reports/aging.html:7
-msgid "Contact"
-msgstr "Kontak"
-
 #: templates/contacts/contact_form.html:4 templates/invoicing/item_form.html:4
 #, python-format
 msgid "Edit %(name)s"
@@ -3144,10 +3303,6 @@ msgstr "Terbitkan"
 #: templates/invoicing/invoice_detail.html:56
 msgid "Void invoice"
 msgstr "Batalkan Faktur"
-
-#: templates/invoicing/invoice_detail.html:26
-msgid "Journal entry"
-msgstr "Jurnal"
 
 #: templates/invoicing/invoice_detail.html:31
 msgid "Receive payment"
@@ -3525,6 +3680,51 @@ msgstr "Laporan tidak seimbang. Periksa data jurnal."
 msgid "Total equity"
 msgstr "Total Ekuitas"
 
+#: templates/reports/export_books.html:2 templates/reports/export_books.html:4
+#: templates/reports/index.html:18 templates/tenants/settings.html:18
+#: templates/tenants/settings.html:20
+msgid "Export books"
+msgstr "Ekspor pembukuan"
+
+#: templates/reports/export_books.html:6
+#, python-format
+msgid ""
+"Download the complete books of %(organization)s as a ZIP file of "
+"spreadsheets (CSV) you can open in Excel or import into another accounting "
+"system."
+msgstr ""
+"Unduh pembukuan lengkap %(organization)s sebagai berkas ZIP berisi lembar "
+"kerja (CSV) yang dapat dibuka di Excel atau diimpor ke sistem akuntansi "
+"lain."
+
+#: templates/reports/export_books.html:11
+msgid "General journal (every line of every entry) and chart of accounts"
+msgstr "Jurnal umum (setiap baris dari setiap jurnal) dan bagan akun"
+
+#: templates/reports/export_books.html:12
+msgid "Sales invoices, purchase bills, their lines and payments"
+msgstr "Faktur penjualan, tagihan pembelian, rinciannya, dan pembayaran"
+
+#: templates/reports/export_books.html:13
+msgid "Contacts, items, PPN rates and PPh Final deposits"
+msgstr "Kontak, barang/jasa, tarif PPN, dan setoran PPh Final"
+
+#: templates/reports/export_books.html:14
+msgid "Business profile and today's trial balance"
+msgstr "Profil usaha dan neraca saldo hari ini"
+
+#: templates/reports/export_books.html:16
+msgid ""
+"Indonesian taxpayers must keep their books and records for 10 years (UU KUP "
+"Art. 28(11)). Keep a copy somewhere safe."
+msgstr ""
+"Wajib Pajak wajib menyimpan pembukuan dan catatan selama 10 tahun (UU KUP "
+"Pasal 28 ayat 11). Simpan salinannya di tempat yang aman."
+
+#: templates/reports/export_books.html:18
+msgid "Download ZIP"
+msgstr "Unduh ZIP"
+
 #: templates/reports/general_ledger.html:2
 #: templates/reports/general_ledger.html:4 templates/reports/index.html:9
 msgid "General ledger"
@@ -3610,6 +3810,11 @@ msgstr "Saldo terbuka berdasarkan lama jatuh tempo."
 #: templates/reports/index.html:16
 msgid "Payables"
 msgstr "Utang"
+
+#: templates/reports/index.html:18
+msgid "All journals, invoices, payments and contacts as a ZIP of CSV files."
+msgstr ""
+"Semua jurnal, faktur, pembayaran, dan kontak dalam ZIP berisi berkas CSV."
 
 #: templates/reports/trial_balance.html:11
 msgid "No transactions yet."
@@ -3904,3 +4109,11 @@ msgstr ""
 #: templates/tenants/settings.html:15
 msgid "Save settings"
 msgstr "Simpan Pengaturan"
+
+#: templates/tenants/settings.html:19
+msgid ""
+"Download all journals, invoices, payments and contacts as a ZIP of CSV "
+"files."
+msgstr ""
+"Unduh semua jurnal, faktur, pembayaran, dan kontak dalam ZIP berisi berkas "
+"CSV."

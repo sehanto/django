@@ -10,6 +10,7 @@ class ThrottleScope(StrEnum):
     EMAIL_VERIFICATION = "email-verification"
     PASSWORD_RESET_EMAIL = "password-reset-email"
     PASSWORD_RESET_IP = "password-reset-ip"
+    BOOKS_EXPORT = "books-export"
 
 
 def allow(scope: ThrottleScope, identity: str, *, limit: int, window_seconds: int) -> bool:

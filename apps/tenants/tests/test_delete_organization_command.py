@@ -24,7 +24,7 @@ def books(organization, account):
 
 
 def test_deletes_with_yes(books, capsys):
-    call_command("delete_organization", str(books.pk), "--yes")
+    call_command("delete_organization", str(books.pk), "--yes", "--skip-export")
     assert not Organization.objects.filter(pk=books.pk).exists()
     assert not JournalEntry.objects.filter(organization_id=books.pk).exists()
     assert "1 journal entr" in capsys.readouterr().out
@@ -32,23 +32,23 @@ def test_deletes_with_yes(books, capsys):
 
 def test_asks_for_the_organization_name(books):
     with mock.patch("builtins.input", return_value="wrong"), pytest.raises(CommandError, match="nothing was deleted"):
-        call_command("delete_organization", str(books.pk))
+        call_command("delete_organization", str(books.pk), "--skip-export")
     assert Organization.objects.filter(pk=books.pk).exists()
 
     with mock.patch("builtins.input", return_value=f"  {books.name} "):
-        call_command("delete_organization", str(books.pk))
+        call_command("delete_organization", str(books.pk), "--skip-export")
     assert not Organization.objects.filter(pk=books.pk).exists()
 
 
 def test_refuses_without_owner_privileges(books):
     with mock.patch(f"{COMMAND}.can_purge_ledger", return_value=False), pytest.raises(CommandError, match="DATABASE_OWNER_URL"):
-        call_command("delete_organization", str(books.pk), "--yes")
+        call_command("delete_organization", str(books.pk), "--yes", "--skip-export")
     assert JournalEntry.objects.filter(organization=books).exists()
 
 
 def test_unknown_organization(db):
     with pytest.raises(CommandError, match="does not exist"):
-        call_command("delete_organization", "999999", "--yes")
+        call_command("delete_organization", "999999", "--yes", "--skip-export")
 
 
 def test_admin_cannot_delete_organizations(organization, user):

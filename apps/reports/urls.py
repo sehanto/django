@@ -12,4 +12,5 @@ urlpatterns = [
     path("general-ledger/", views.GeneralLedgerView.as_view(), name="general_ledger"),
     path("aging/<invoice_kind:kind>/", views.AgingView.as_view(), name="aging"),
     path("vat/", views.VatReportView.as_view(), name="vat"),
+    path("export/", views.ExportBooksView.as_view(), name="export_books"),
 ]
