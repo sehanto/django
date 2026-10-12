@@ -16,8 +16,8 @@ APP_ROLE_GRANTS = (
     # Tables created later by the owner outside migrate (e.g. createcachetable).
     "ALTER DEFAULT PRIVILEGES IN SCHEMA {schema} GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {role}",
     "ALTER DEFAULT PRIVILEGES IN SCHEMA {schema} GRANT USAGE, SELECT ON SEQUENCES TO {role}",
-    # Tenant offboarding (ledger migration 0005): wipes one whole organization's ledger.
-    "GRANT EXECUTE ON FUNCTION {schema}.ledger_purge_organization(bigint) TO {role}",
+    # Wiping a tenant's ledger is owner-only (manage.py delete_organization), never the app.
+    "REVOKE EXECUTE ON FUNCTION {schema}.ledger_purge_organization(bigint) FROM {role}",
     # Migration history is the owner's business.
     "REVOKE INSERT, UPDATE, DELETE ON {schema}.django_migrations FROM {role}",
 )
@@ -63,4 +63,11 @@ def connected_role_can_alter_schema(using: str = "default") -> bool:
             FROM pg_roles WHERE rolname = current_user
             """
         )
+        return bool(cursor.fetchone()[0])
+
+
+def can_purge_ledger(using: str = "default") -> bool:
+    """Whether the connected role may wipe a tenant's ledger (the schema owner; never the app role)."""
+    with connections[using].cursor() as cursor:
+        cursor.execute("SELECT has_function_privilege('ledger_purge_organization(bigint)', 'EXECUTE')")
         return bool(cursor.fetchone()[0])

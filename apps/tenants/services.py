@@ -122,6 +122,8 @@ def delete_organization(*, organization: Organization) -> None:
 
     Business tables use PROTECT foreign keys so that ledger history cannot be
     destroyed accidentally; this use case removes rows in dependency order.
+    Only the schema owner may wipe the ledger, so this runs from
+    ``manage.py delete_organization``, never from the web app.
     """
     from apps.contacts.models import Contact
     from apps.core.models import DocumentSequence

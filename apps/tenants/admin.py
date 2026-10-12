@@ -1,7 +1,7 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
 from .models import Membership, Organization, Plan
-from .services import delete_organization
 
 
 class MembershipInline(admin.TabularInline):
@@ -16,13 +16,19 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_filter = ("legal_form", "plan", "is_pkp")
     search_fields = ("name", "npwp")
     inlines = [MembershipInline]
+    readonly_fields = ["deletion"]
 
-    def delete_model(self, request, obj):
-        delete_organization(organization=obj)
+    def has_delete_permission(self, request, obj=None):
+        return False  # wiping a tenant's books is owner-only: manage.py delete_organization
 
-    def delete_queryset(self, request, queryset):
-        for organization in queryset:
-            delete_organization(organization=organization)
+    @admin.display(description=_("Deletion"))
+    def deletion(self, obj):
+        if obj.pk is None:
+            return "-"
+        return _(
+            "Organizations are deleted by the database owner, not in the admin: "
+            "manage.py delete_organization %(id)s"
+        ) % {"id": obj.pk}
 
 
 @admin.register(Plan)

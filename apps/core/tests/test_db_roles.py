@@ -76,7 +76,8 @@ def test_owner_grants_row_access_but_not_migration_history():
     statements = connection._cursor.statements[1:]
     assert 'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "public" TO "msme_app"' in statements
     assert 'REVOKE INSERT, UPDATE, DELETE ON "public".django_migrations FROM "msme_app"' in statements
-    assert not any(word in s for s in statements for word in ("TRUNCATE", "TRIGGER", "CREATE ON", "ALL PRIVILEGES"))
+    assert 'REVOKE EXECUTE ON FUNCTION "public".ledger_purge_organization(bigint) FROM "msme_app"' in statements
+    assert not any(word in s for s in statements for word in ("TRUNCATE", "TRIGGER", "CREATE ON", "ALL PRIVILEGES", "GRANT EXECUTE"))
 
 
 @override_settings(DATABASE_APP_ROLE="msme_app")

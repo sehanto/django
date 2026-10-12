@@ -67,12 +67,13 @@ Key design decisions:
   - posted entries and their lines reject any `UPDATE`/`DELETE` (only `created_by`
     may be cleared when that user is deleted).
 
-  Tenant offboarding (`tenants.services.delete_organization`) is the single
-  exception. `ledger.services.purge_organization_ledger` calls
-  `ledger_purge_organization(org_id)`, a `SECURITY DEFINER` function owned by the
-  schema owner. It can only wipe one whole organization's ledger. Only the owner can
-  lift the guard: the data-only app role cannot, even by setting `ledger.purge`. A role that owns the tables can still disable triggers, so the
-  app connects as a data-only role (see [Database roles](#database-roles)).
+  Deleting an organization is the single exception, and it is an owner-only step
+  ([Deleting an organization](#deleting-an-organization)). The function
+  `ledger_purge_organization(org_id)` wipes one whole organization's ledger and
+  only the schema owner may execute it. The guard's `ledger.purge` switch also
+  works only for the owner. A role that owns the tables can disable triggers
+  anyway, so the app connects as a data-only role
+  (see [Database roles](#database-roles)).
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -121,8 +122,8 @@ The app uses two PostgreSQL roles:
 | Owner (`msme_user`, `DATABASE_OWNER_URL`) | `migrate`, `createcachetable`, the test runner | Everything on its tables: DDL, `DISABLE TRIGGER`, `TRUNCATE` |
 | App (`msme_app`, `DATABASE_URL`) | The web app, `seed_demo`, `process_billing` and other commands | `SELECT`/`INSERT`/`UPDATE`/`DELETE` on rows only |
 
-The app role cannot alter tables, disable triggers, or switch the ledger guard off.
-Its only way to remove posted entries is offboarding a whole organization. The ledger's immutability
+The app role cannot alter tables, disable triggers, switch the ledger guard off, or
+delete an organization's ledger. It has no way to remove posted entries. The ledger's immutability
 triggers (see Architecture) therefore hold even if the application is compromised. It
 also cannot rewrite `django_migrations`.
 
@@ -145,6 +146,21 @@ all tables (`apps/core/db_roles.py`), so new tables need no manual grants.
 Without `DATABASE_OWNER_URL`, one role does everything, which is fine for a quick
 local setup. `manage.py check --deploy` warns (`core.W001`) when the app connects as an
 owner or superuser.
+
+### Deleting an organization
+
+Neither the web app nor the Django admin can delete an organization. The admin
+shows the command to use instead. Deleting one wipes its books, so it is a deliberate
+operator step that connects as the schema owner:
+
+```bash
+.venv/bin/python manage.py delete_organization <organization id>
+```
+
+It shows what will be removed and asks you to type the organization's name (`--yes`
+skips the prompt, for scripts). Without owner credentials it refuses. Indonesian
+taxpayers must keep their books for 10 years (UU KUP Art. 28(11)), so give the
+customer an export first. Subscription invoices (our own sales records) survive.
 
 ## Tests
 
