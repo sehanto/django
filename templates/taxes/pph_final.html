@@ -24,7 +24,7 @@
   <tbody>
   {% for m, payment in rows %}
     <tr>
-      <td>{{ m.month|stringformat:"02d" }}/{{ year }}</td>
+      <td>{{ m.month.label }} {{ year }}</td>
       <td class="num">{{ m.gross_turnover|rupiah }}</td>
       <td class="num">{{ m.exempt_turnover|rupiah }}</td>
       <td class="num">{{ m.taxable_turnover|rupiah }}</td>

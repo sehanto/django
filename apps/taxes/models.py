@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, money_field
 from apps.core.validators import ntpn_validator
 
-from .domain import VatResult, compute_vat
+from .domain import Month, VatResult, compute_vat
 
 
 class TaxRate(TenantOwnedModel):
@@ -50,7 +50,7 @@ class PphFinalPayment(TenantOwnedModel):
     """Monthly PPh Final UMKM deposit (setoran), linked to its journal."""
 
     year = models.PositiveSmallIntegerField(_("year"))
-    month = models.PositiveSmallIntegerField(_("month"), validators=[MinValueValidator(1), MaxValueValidator(12)])
+    month = models.PositiveSmallIntegerField(_("month"), choices=Month.choices)
     gross_turnover = money_field(_("gross turnover"))
     taxable_turnover = money_field(_("taxable gross turnover"))
     tax_amount = money_field(_("tax due"))
@@ -69,4 +69,4 @@ class PphFinalPayment(TenantOwnedModel):
         ]
 
     def __str__(self):
-        return f"PPh Final {self.month:02d}/{self.year}"
+        return f"PPh Final {Month(self.month).tax_period(self.year)}"

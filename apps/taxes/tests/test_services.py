@@ -2,12 +2,15 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.utils import translation
 
 from apps.core.exceptions import ValidationFailed
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
 from apps.ledger.selectors import account_balance
 from apps.ledger.services import JournalLineInput, create_journal_entry
+from apps.taxes.domain import Month
+from apps.taxes.forms import PphFinalPaymentForm
 from apps.taxes.models import TaxRate
 from apps.taxes.selectors import monthly_gross_turnover, pph_final_schedule
 from apps.taxes.services import cancel_pph_final_payment, record_pph_final_payment
@@ -53,12 +56,14 @@ def test_record_and_cancel_pph_final_payment(other_organization, user):
     payment = record_pph_final_payment(
         organization=org, year=2026, month=1, paid_on=date(2026, 2, 10), cash_account=acc("1-1000"), ntpn="ABC123"
     )
+    assert payment.journal_entry.description == "Setoran PPh Final UMKM masa 01/2026"
+    assert str(payment) == "PPh Final 01/2026"
     expense = Account.objects.get(organization=org, system_role=SystemRole.PPH_FINAL_EXPENSE)
     assert account_balance(org, expense) == D("100000")
     assert account_balance(org, acc("1-1000")) == D("19900000")
 
-    with pytest.raises(ValidationFailed):
-        record_pph_final_payment(organization=org, year=2026, month=1, paid_on=date(2026, 2, 10), cash_account=acc("1-1000"))
+    with translation.override("id"), pytest.raises(ValidationFailed, match="Januari 2026"):
+        record_pph_final_payment(organization=org, year=2026, month=Month.JANUARY, paid_on=date(2026, 2, 10), cash_account=acc("1-1000"))
 
     cancel_pph_final_payment(payment=payment, on=date(2026, 2, 11))
     assert account_balance(org, expense) == 0
@@ -70,3 +75,13 @@ def test_individual_below_threshold_owes_nothing(organization, account):
         record_pph_final_payment(
             organization=organization, year=2026, month=1, paid_on=date(2026, 2, 10), cash_account=account("1-1000")
         )
+
+
+@pytest.mark.parametrize(("raw", "valid"), [("3", True), ("12", True), ("0", False), ("13", False), ("maret", False)])
+def test_payment_form_accepts_only_calendar_months(organization, account, raw, valid):
+    form = PphFinalPaymentForm(
+        {"month": raw, "paid_on": "2026-04-10", "cash_account": account("1-1000").pk, "ntpn": ""}, organization=organization
+    )
+    assert form.is_valid() is valid
+    if valid:
+        assert form.cleaned_data["month"] is Month(int(raw))

@@ -14,7 +14,7 @@ def _unquote(line: str) -> str:
 
 
 def parse_po(path: Path) -> list[dict]:
-    """Minimal .po reader: enough for msgid/msgstr pairs, continuation lines and flags."""
+    """Minimal .po reader: enough for msgctxt/msgid/msgstr, continuation lines and flags."""
     entries, entry, field = [], None, None
     for raw in path.read_text(encoding="utf-8").splitlines() + [""]:
         line = raw.strip()
@@ -28,7 +28,7 @@ def parse_po(path: Path) -> list[dict]:
             entry["flags"].update(flag.strip() for flag in line[2:].split(","))
         elif line.startswith("#"):
             continue
-        elif line.startswith(("msgid ", "msgid_plural ", "msgstr ", "msgstr[")):
+        elif line.startswith(("msgctxt ", "msgid ", "msgid_plural ", "msgstr ", "msgstr[")):
             field, _, value = line.partition(" ")
             entry[field] = _unquote(value)
         elif line.startswith('"') and field:
@@ -51,6 +51,7 @@ def test_compiled_catalog_matches_source():
     stale = [
         e["msgid"] for e in parse_po(LOCALE_DIR / "django.po")
         if (compiled.ngettext(e["msgid"], e["msgid_plural"], 1) != e["msgstr[0]"] if "msgid_plural" in e
+            else compiled.pgettext(e["msgctxt"], e["msgid"]) != e["msgstr"] if "msgctxt" in e
             else compiled.gettext(e["msgid"]) != e["msgstr"])
     ]
     assert not stale, f"django.mo is out of date; run compilemessages. Stale: {stale[:5]}"

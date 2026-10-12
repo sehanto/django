@@ -1,6 +1,8 @@
 from decimal import Decimal
 
-from apps.taxes.domain import compute_pph_final, compute_vat
+from django.utils import translation
+
+from apps.taxes.domain import Month, compute_pph_final, compute_vat
 
 D = Decimal
 
@@ -34,3 +36,17 @@ def test_pph_final_individual_threshold_consumed_chronologically():
     assert [m.tax for m in months[:4]] == [0, 0, D("500000.00"), D("250000.00")]
     assert months[2].exempt_turnover == D("100000000")
     assert months[2].taxable_turnover == D("100000000")
+
+
+def test_pph_final_schedule_is_keyed_by_month():
+    months = compute_pph_final([D("0")] * 12, is_individual=False)
+    assert [m.month for m in months] == list(Month)
+    assert months[2].month is Month.MARCH
+
+
+def test_month_tax_period_and_localized_name():
+    assert Month.MARCH.tax_period(2026) == "03/2026"
+    with translation.override("id"):
+        assert str(Month.MAY.label) == "Mei"
+    with translation.override("en"):
+        assert str(Month.MAY.label) == "May"

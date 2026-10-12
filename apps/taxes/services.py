@@ -8,6 +8,7 @@ from apps.ledger.domain import SystemRole
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
+from .domain import Month
 from .models import PphFinalPayment, TaxRate
 from .selectors import pph_final_schedule
 
@@ -29,14 +30,15 @@ def seed_tax_rates(organization) -> None:
 
 @transaction.atomic
 def record_pph_final_payment(
-    *, organization, year: int, month: int, paid_on: date, cash_account, ntpn: str = "", created_by=None
+    *, organization, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None
 ) -> PphFinalPayment:
+    month = Month(month)
     if not organization.uses_pph_final:
         raise ValidationFailed(_("This organization does not use the MSME PPh Final scheme."))
     if not cash_account.is_cash or cash_account.organization_id != organization.pk:
         raise ValidationFailed(_("Choose a valid cash or bank account."))
     if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month).exists():
-        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % {"period": f"{month:02d}/{year}"})
+        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % {"period": f"{month.label} {year}"})
     period = pph_final_schedule(organization, year)[month - 1]
     if period.tax <= 0:
         raise ValidationFailed(_("No PPh Final is due for this period."))
@@ -45,7 +47,7 @@ def record_pph_final_payment(
     entry = create_journal_entry(
         organization=organization,
         date=paid_on,
-        description=f"Setoran PPh Final UMKM masa {month:02d}/{year}",
+        description=f"Setoran PPh Final UMKM masa {month.tax_period(year)}",
         reference=ntpn,
         source=JournalEntry.Source.TAX,
         created_by=created_by,
@@ -73,6 +75,6 @@ def record_pph_final_payment(
 def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=None) -> None:
     reverse_journal_entry(
         entry=payment.journal_entry, date=on, created_by=created_by,
-        description=f"Pembatalan setoran PPh Final masa {payment.month:02d}/{payment.year}",
+        description=f"Pembatalan setoran PPh Final masa {Month(payment.month).tax_period(payment.year)}",
     )
     payment.delete()

@@ -4,6 +4,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 
+from django.db import models
+from django.utils.translation import pgettext_lazy
+
 from apps.core.money import ZERO, quantize, round_down_rupiah
 
 HUNDRED = Decimal("100")
@@ -14,6 +17,27 @@ PPH_FINAL_RATE = Decimal("0.005")
 PPH_FINAL_INDIVIDUAL_THRESHOLD = Decimal("500000000")
 # Turnover limit for using the PPh Final scheme and for mandatory PKP status.
 MSME_TURNOVER_LIMIT = Decimal("4800000000")
+
+
+class Month(models.IntegerChoices):
+    """Calendar month of a tax period (masa pajak)."""
+
+    JANUARY = 1, pgettext_lazy("month name", "January")
+    FEBRUARY = 2, pgettext_lazy("month name", "February")
+    MARCH = 3, pgettext_lazy("month name", "March")
+    APRIL = 4, pgettext_lazy("month name", "April")
+    MAY = 5, pgettext_lazy("month name", "May")
+    JUNE = 6, pgettext_lazy("month name", "June")
+    JULY = 7, pgettext_lazy("month name", "July")
+    AUGUST = 8, pgettext_lazy("month name", "August")
+    SEPTEMBER = 9, pgettext_lazy("month name", "September")
+    OCTOBER = 10, pgettext_lazy("month name", "October")
+    NOVEMBER = 11, pgettext_lazy("month name", "November")
+    DECEMBER = 12, pgettext_lazy("month name", "December")
+
+    def tax_period(self, year: int) -> str:
+        """The masa pajak as written on tax forms and journal entries, e.g. ``03/2026``."""
+        return f"{self.value:02d}/{year}"
 
 
 @dataclass(frozen=True)
@@ -37,7 +61,7 @@ def compute_vat(base: Decimal, rate_percent: Decimal, dpp_numerator: int = 1, dp
 
 @dataclass(frozen=True)
 class PphFinalMonth:
-    month: int
+    month: Month
     gross_turnover: Decimal
     cumulative_before: Decimal
     exempt_turnover: Decimal
@@ -62,7 +86,7 @@ def compute_pph_final(monthly_turnover: Sequence[Decimal], *, is_individual: boo
         taxable = gross - exempt
         result.append(
             PphFinalMonth(
-                month=index,
+                month=Month(index),
                 gross_turnover=gross,
                 cumulative_before=cumulative,
                 exempt_turnover=exempt,

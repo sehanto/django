@@ -6,6 +6,7 @@ from apps.core.validators import ntpn_validator
 from apps.ledger.models import Account
 from apps.ledger.selectors import cash_accounts
 
+from .domain import Month
 from .models import TaxRate
 
 
@@ -16,7 +17,7 @@ class TaxRateForm(OrganizationFormMixin, BaseModelForm):
 
 
 class PphFinalPaymentForm(OrganizationFormMixin, BaseForm):
-    month = forms.IntegerField(widget=forms.HiddenInput, min_value=1, max_value=12)
+    month = forms.TypedChoiceField(widget=forms.HiddenInput, choices=Month.choices, coerce=lambda value: Month(int(value)))
     paid_on = BusinessDateField(label=_("Payment date"))
     cash_account = forms.ModelChoiceField(label=_("Paid from"), queryset=Account.objects.none())
     ntpn = forms.CharField(label=_("NTPN"), max_length=32, required=False)
