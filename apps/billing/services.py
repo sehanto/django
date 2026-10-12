@@ -28,7 +28,7 @@ from apps.tenants.models import Membership, Organization, Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subscription
 
-from .domain import BillingPeriod, compute_charge, coverage_for_payment
+from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, coverage_for_payment, switch_quote, unused_credit
 from .gateways import get_gateway
 from .gateways.base import CheckoutRequest, GatewayError, PaymentStatus
 from .models import SubscriptionInvoice
@@ -49,15 +49,93 @@ def price_for(plan: Plan, period: BillingPeriod) -> Decimal:
     return plan.yearly_price if period == BillingPeriod.YEARLY else plan.monthly_price
 
 
+# --- Proration ------------------------------------------------------------------------------
+
+
+def _paid_periods(organization, plan) -> list[PaidPeriod]:
+    """Paid, not yet superseded coverage of ``plan`` (renewals can stack several)."""
+    invoices = SubscriptionInvoice.objects.filter(
+        organization=organization, plan=plan, status=Status.PAID, superseded_on__isnull=True,
+        coverage_start__isnull=False, coverage_end__isnull=False,
+    )
+    return [PaidPeriod(inv.coverage_start, inv.coverage_end, inv.coverage_value) for inv in invoices]
+
+
+def switch_credit(organization, plan: Plan, *, today: date | None = None) -> Credit:
+    """Credit for unused paid time when moving to a *different* plan (none when renewing)."""
+    today = today or timezone.localdate()
+    current = organization.plan
+    if plan.pk == current.pk or not organization.plan_paid_until or organization.plan_paid_until <= today:
+        return Credit.none()
+    return unused_credit(_paid_periods(organization, current), today)
+
+
+def quote_for(organization, plan: Plan, period: BillingPeriod, *, today: date | None = None) -> SwitchQuote:
+    today = today or timezone.localdate()
+    return switch_quote(
+        price=price_for(plan, period), credit=switch_credit(organization, plan, today=today), period=period, starts_on=today
+    )
+
+
+def _supersede_other_plans(organization, new_plan, today: date) -> None:
+    """A switch ends the previous plan's paid time now: it was credited (or forfeited) once."""
+    SubscriptionInvoice.objects.filter(
+        organization=organization, status=Status.PAID, superseded_on__isnull=True, coverage_end__gte=today,
+    ).exclude(plan=new_plan).update(superseded_on=today)
+
+
 # --- Checkout -------------------------------------------------------------------------------
 
 
-def _reusable_checkout(organization, plan, period) -> SubscriptionInvoice | None:
+def _reusable_checkout(organization, plan, period, credit: Decimal) -> SubscriptionInvoice | None:
     pending = SubscriptionInvoice.objects.filter(
         organization=organization, plan=plan, billing_period=period, status=Status.PENDING,
         expires_at__gt=timezone.now() + timedelta(minutes=10),
+        credit_amount=credit,  # the credit shrinks daily; an older quote isn't reused
     ).exclude(payment_url="")
     return pending.order_by("-created_at").first()
+
+
+def _new_invoice(organization, plan, period, quote: SwitchQuote, credit: Credit, *, gateway: str, created_by, **extra):
+    charge = quote.charge
+    invoice = SubscriptionInvoice.objects.create(
+        number=f"tmp-{uuid.uuid4().hex[:20]}",
+        organization=organization, plan=plan, billing_period=period,
+        buyer_name=organization.name, buyer_npwp=organization.npwp,
+        buyer_address=", ".join(filter(None, [organization.address, organization.city])),
+        buyer_email=organization.email or getattr(created_by, "email", ""),
+        subtotal=charge.subtotal, credit_amount=charge.credit, tax_base=charge.tax_base, tax_amount=charge.tax,
+        total=charge.total, coverage_value=charge.subtotal,
+        credited_plan=organization.plan if charge.credit else None,
+        credited_days=credit.days if charge.credit else 0,
+        credit_basis_until=organization.plan_paid_until if charge.credit else None,
+        extension_days=quote.extension_days,
+        gateway=gateway, created_by=created_by, **extra,
+    )
+    invoice.number = f"SUB-{timezone.localdate():%Y%m}-{invoice.pk:06d}"
+    invoice.save(update_fields=["number"])
+    return invoice
+
+
+@transaction.atomic
+def _switch_with_credit(organization, plan, period, quote: SwitchQuote, credit: Credit, created_by) -> SubscriptionInvoice:
+    """The credit covers the whole price: switch now, nothing to pay, leftover becomes extra days."""
+    organization = Organization.objects.select_for_update().get(pk=organization.pk)
+    today = timezone.localdate()
+    start, end = coverage_for_payment(
+        paid_on=today, period=period, renewing_same_plan=False, current_paid_until=None,
+        extension_days=quote.extension_days,
+    )
+    invoice = _new_invoice(
+        organization, plan, period, quote, credit, gateway="credit", created_by=created_by,
+        status=Status.PAID, paid_at=timezone.now(), coverage_start=start, coverage_end=end,
+    )
+    invoice.coverage_value = credit.amount  # all of the credit went into this coverage
+    invoice.save(update_fields=["coverage_value"])
+    _supersede_other_plans(organization, plan, today)
+    set_subscription(organization=organization, plan=plan, paid_until=end)
+    logger.info("Organization %s switched to %s using credit; covered until %s", organization.pk, plan.code, end)
+    return invoice
 
 
 def start_checkout(
@@ -70,23 +148,17 @@ def start_checkout(
     if price <= 0:
         raise ValidationFailed(_("This plan is free and needs no payment."))
     ensure_usage_fits(organization=organization, plan=plan)
-    if existing := _reusable_checkout(organization, plan, period):
+    today = timezone.localdate()
+    credit = switch_credit(organization, plan, today=today)
+    quote = switch_quote(price=price, credit=credit, period=period, starts_on=today)
+    if not quote.needs_payment:
+        return _switch_with_credit(organization, plan, period, quote, credit, created_by)
+    if existing := _reusable_checkout(organization, plan, period, quote.charge.credit):
         return existing
 
-    charge = compute_charge(price)
     gateway = get_gateway()
     with transaction.atomic():
-        invoice = SubscriptionInvoice.objects.create(
-            number=f"tmp-{uuid.uuid4().hex[:20]}",
-            organization=organization, plan=plan, billing_period=period,
-            buyer_name=organization.name, buyer_npwp=organization.npwp,
-            buyer_address=", ".join(filter(None, [organization.address, organization.city])),
-            buyer_email=organization.email or getattr(created_by, "email", ""),
-            subtotal=charge.subtotal, tax_base=charge.tax_base, tax_amount=charge.tax, total=charge.total,
-            gateway=gateway.name, created_by=created_by,
-        )
-        invoice.number = f"SUB-{timezone.localdate():%Y%m}-{invoice.pk:06d}"
-        invoice.save(update_fields=["number"])
+        invoice = _new_invoice(organization, plan, period, quote, credit, gateway=gateway.name, created_by=created_by)
 
     expires_at = timezone.now() + timedelta(hours=settings.BILLING_CHECKOUT_HOURS)
     try:
@@ -140,12 +212,30 @@ def _record_payment(invoice_pk: int, *, amount: Decimal, payment_id: str, paid_a
     paid_at = paid_at or timezone.now()
     if invoice.organization_id:
         organization = Organization.objects.select_for_update().get(pk=invoice.organization_id)
+        paid_on = timezone.localdate(paid_at)
+        share = Decimal(1)
+        if invoice.credit_amount:
+            # The credit was quoted at checkout. If the plan changed since (e.g. another
+            # checkout was paid first), that time was already used: don't credit it twice.
+            # The money paid then buys a proportional share of the period instead.
+            credit_still_valid = (
+                organization.plan_id == invoice.credited_plan_id
+                and organization.plan_paid_until == invoice.credit_basis_until
+            )
+            if not credit_still_valid:
+                share = invoice.net_subtotal / invoice.subtotal
+                logger.warning("Credit on %s no longer valid at payment; covering %s of the period", invoice.number, share)
         start, end = coverage_for_payment(
-            paid_on=timezone.localdate(paid_at),
+            paid_on=paid_on,
             period=BillingPeriod(invoice.billing_period),
             renewing_same_plan=organization.plan_id == invoice.plan_id,
             current_paid_until=organization.plan_paid_until,
+            extension_days=invoice.extension_days if share == 1 else 0,
+            share=share,
         )
+        invoice.coverage_value = invoice.subtotal if share == 1 else invoice.net_subtotal
+        if organization.plan_id != invoice.plan_id:
+            _supersede_other_plans(organization, invoice.plan, paid_on)
         set_subscription(organization=organization, plan=invoice.plan, paid_until=end)
         invoice.coverage_start, invoice.coverage_end = start, end
     invoice.status = Status.PAID

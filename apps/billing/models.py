@@ -37,6 +37,15 @@ class SubscriptionInvoice(TimeStampedModel):
     buyer_email = models.EmailField(_("buyer email"), blank=True)
 
     subtotal = money_field(_("subtotal"))
+    # Proration: unused time on the previous plan, deducted before PPN.
+    credit_amount = money_field(_("credit for unused time"))
+    credited_plan = models.ForeignKey(
+        "tenants.Plan", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("credited plan")
+    )
+    credited_days = models.PositiveIntegerField(_("credited days"), default=0)
+    credit_basis_until = models.DateField(null=True, blank=True, editable=False)  # paid-until the credit was based on
+    extension_days = models.PositiveIntegerField(_("extra days from credit"), default=0)
+    coverage_value = money_field(_("value of coverage"))  # excl. PPN; for valuing unused days later
     tax_base = money_field(_("tax base (DPP)"))
     tax_amount = money_field(_("PPN"))
     total = money_field(_("total"))
@@ -50,6 +59,9 @@ class SubscriptionInvoice(TimeStampedModel):
     paid_at = models.DateTimeField(_("paid at"), null=True, blank=True)
     coverage_start = models.DateField(_("covered from"), null=True, blank=True)
     coverage_end = models.DateField(_("covered until"), null=True, blank=True)
+    # Set when a switch to another plan ends this coverage early; its unused time
+    # was credited (or forfeited) then and must never be credited again.
+    superseded_on = models.DateField(_("ended early on"), null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
@@ -65,6 +77,10 @@ class SubscriptionInvoice(TimeStampedModel):
 
     def __str__(self):
         return self.number
+
+    @property
+    def net_subtotal(self):
+        return self.subtotal - self.credit_amount
 
     @property
     def is_payable(self) -> bool:

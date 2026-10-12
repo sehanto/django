@@ -1,0 +1,13 @@
+{% load i18n money %}
+{% if quote.needs_payment %}
+  {% if period == "monthly" %}
+    <button name="period" value="monthly" class="btn {{ css }}">{% blocktranslate trimmed with total=quote.charge.total|rupiah %}Pay monthly · {{ total }}{% endblocktranslate %}</button>
+  {% else %}
+    <button name="period" value="yearly" class="btn {{ css }}">{% blocktranslate trimmed with total=quote.charge.total|rupiah %}Pay yearly · {{ total }}{% endblocktranslate %}</button>
+  {% endif %}
+{% else %}
+  <button name="period" value="{{ period }}" class="btn {{ css }}" data-confirm="{% translate 'Switch plan now? Your remaining credit pays for it.' %}">
+    {% if period == "monthly" %}{% translate "Switch monthly · covered by your credit" %}{% else %}{% translate "Switch yearly · covered by your credit" %}{% endif %}
+    <span class="d-block small">{% blocktranslate trimmed with date=quote.covered_until|date:"d M Y" %}active until {{ date }}{% endblocktranslate %}</span>
+  </button>
+{% endif %}

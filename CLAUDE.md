@@ -23,4 +23,5 @@ Conventions:
 - `Organization.require_two_factor` is enforced by `apps.tenants.middleware.TwoFactorRequirementMiddleware` (checks `request.user.is_verified()`); views a member must reach before completing 2FA go in its `EXEMPT` set.
 - Remembered devices (`apps/accounts/trusted_devices.py`) skip only the code step and are bound to `user.get_session_auth_hash()`. In tests sign out via the logout view, not `client.logout()` (which also wipes the remember cookie).
 - 2FA devices are `accounts.AuthenticatorDevice` (Fernet-encrypted key) and `BackupCodeDevice`/`BackupCode` (keyed hashes); never use django-otp's `TOTPDevice`/`StaticDevice` (plaintext). Encryption/hashing goes through `apps.core.crypto` with `FIELD_ENCRYPTION_KEYS`.
+- Plan switches are prorated in `apps.billing` (`switch_credit`, `switch_quote`): PPN on the net amount, free switches when credit covers the price, `superseded_on` prevents reusing credit. Billing tests that pay then switch must `refresh_from_db()` the organization.
 - Tests must not rely on data migrations (transactional tests flush the DB); create needed rows in fixtures.

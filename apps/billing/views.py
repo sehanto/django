@@ -34,7 +34,7 @@ class OverviewView(ManageMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            offers=plan_offers(),
+            offers=plan_offers(self.organization),
             state=state_of(self.organization),
             invoices=invoices_for(self.organization)[:24],
             grace_days=settings.BILLING_GRACE_DAYS,
@@ -56,6 +56,11 @@ class CheckoutView(ManageMixin, View):
         except DomainError as exc:
             flash_domain_error(request, exc)
             return redirect("billing:overview")
+        if invoice.status == SubscriptionInvoice.Status.PAID:  # covered entirely by credit: switched already
+            messages.success(request, _("Switched to the %(plan)s plan, paid with your remaining credit. Active until %(date)s.") % {
+                "plan": invoice.plan.name, "date": formats.date_format(invoice.coverage_end, "d F Y"),
+            })
+            return redirect("billing:invoice", pk=invoice.pk)
         return redirect(invoice.payment_url)
 
 

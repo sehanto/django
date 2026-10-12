@@ -29,8 +29,11 @@
         {% if offer.is_free %}
           <div class="fs-3 fw-bold">{% translate "Free" %}</div>
         {% else %}
-          <div class="fs-3 fw-bold">{{ offer.monthly.subtotal|rupiah }}<span class="fs-6 fw-normal text-secondary">{% translate "/month" %}</span></div>
-          <div class="small text-secondary">{% blocktranslate trimmed with price=offer.yearly.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
+          <div class="fs-3 fw-bold">{{ offer.monthly.charge.subtotal|rupiah }}<span class="fs-6 fw-normal text-secondary">{% translate "/month" %}</span></div>
+          <div class="small text-secondary">{% blocktranslate trimmed with price=offer.yearly.charge.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
+          {% if offer.credit %}
+            <div class="small text-success mt-2"><i class="bi bi-arrow-repeat me-1"></i>{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
+          {% endif %}
         {% endif %}
         <ul class="list-unstyled mt-3 small">
           <li><i class="bi bi-check2 text-success me-1"></i>{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
@@ -45,8 +48,8 @@
         {% else %}
           <form method="post" action="{% url 'billing:checkout' %}" class="d-grid gap-2">{% csrf_token %}
             <input type="hidden" name="plan" value="{{ plan.pk }}">
-            <button name="period" value="monthly" class="btn btn-outline-primary">{% blocktranslate trimmed with total=offer.monthly.total|rupiah %}Pay monthly · {{ total }}{% endblocktranslate %}</button>
-            <button name="period" value="yearly" class="btn btn-primary">{% blocktranslate trimmed with total=offer.yearly.total|rupiah %}Pay yearly · {{ total }}{% endblocktranslate %}</button>
+            {% include "billing/_offer_button.html" with quote=offer.monthly period="monthly" css="btn-outline-primary" %}
+            {% include "billing/_offer_button.html" with quote=offer.yearly period="yearly" css="btn-primary" %}
             <div class="small text-secondary text-center">{% translate "Amounts include PPN." %}</div>
           </form>
         {% endif %}
@@ -56,8 +59,9 @@
 {% endwith %}{% endfor %}
 </div>
 <p class="small text-secondary mt-3">{% blocktranslate trimmed %}
-  Prices exclude PPN of 12% on a tax base of 11/12 (effectively 11%). Paying for your current plan extends it from its end date;
-  a different plan starts on the payment date, and remaining time on the old plan is not credited.
+  Prices exclude PPN of 12% on a tax base of 11/12 (effectively 11%). Paying for your current plan extends it from its end date.
+  A different plan starts on the payment date, and unused paid time on your current plan is credited against it; if the credit
+  covers the whole price, you switch right away and the rest becomes extra days.
   Pay by QRIS, bank virtual account, e-wallet or card through our payment partner Xendit.
 {% endblocktranslate %}</p>
 

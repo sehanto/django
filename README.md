@@ -344,9 +344,27 @@ hosted checkout page with QRIS, bank virtual accounts, e-wallets or cards, so no
 |---|---|
 | Prices | Plan prices exclude PPN. PPN is 12% on a tax base (DPP) of 11/12 (effectively 11%) and is added at checkout. Annual = 10 × monthly (2 months free). |
 | Renewing | Paying for the current plan extends it from its end date, so no paid days are lost. |
-| Switching | A different plan starts on the payment date; remaining time on the old plan is not credited. A plan whose user limit the organization already exceeds can't be bought. |
+| Switching | A different plan starts on the payment date, and unused paid time on the current plan is **credited** against it (see below). A plan whose user limit the organization already exceeds can't be bought. |
 | Expiry | Owners and admins get an email and an in-app banner 7 days before the end. After the end there are 7 days of grace, then the organization moves to the free plan. Its data is never deleted. |
 | Records | Each payment is a `SubscriptionInvoice` with a buyer snapshot and a printable receipt. These are the seller's sales records: they can't be deleted and survive tenant deletion. The official Faktur Pajak is issued separately through Coretax. |
+
+**Proration when switching plans.** The credit is the unused value of the current plan:
+amount paid (excluding PPN) × unused days ÷ days covered, summed over every paid period still
+ahead (stacked renewals included). Today counts as used.
+
+- **Upgrade** (credit smaller than the new price): the credit is deducted and PPN is charged on the
+  net amount, so the customer pays only the difference plus its tax. Example: switching from Usaha to
+  Pro with 19 of 31 days left credits Rp60.677, so Pro costs Rp209.038 instead of Rp276.390.
+- **Downgrade, or credit covering the whole price:** the switch happens immediately with nothing to
+  pay, and the leftover credit becomes extra days on the new plan. The card shows the resulting end
+  date. A Rp0 receipt (gateway "credit") records it. No balances are kept and nothing is refunded.
+- **Not credited:** renewals of the same plan, plans in their grace period, the free plan, and
+  time granted without payment (the grandfathered month).
+- **Credit is used once:** a switch marks the old plan's paid periods as ended early
+  (`superseded_on`). The credit is fixed when checkout starts. If the plan changed before that checkout
+  was paid (two checkouts in two tabs, for example), the payment can't reuse the credit; it buys a
+  proportional share of the period instead.
+- **Receipts** itemize the credit ("Credit for unused Usaha plan (19 days)") before PPN.
 
 How a payment is confirmed: checkout creates a Xendit **Payment Session** (`POST /sessions`,
 `session_type=PAY`, `mode=PAYMENT_LINK`). When Xendit calls the webhook, the app checks the
@@ -419,7 +437,6 @@ Static files are served by WhiteNoise.
 
 ## Possible next steps
 
-- Credit unused time when switching plans mid-period (proration)
 - Automatic renewal via Xendit `SUBSCRIPTION` sessions for customers who want to save a card or e-wallet
 - Issue the Faktur Pajak for subscriptions through the Coretax API
 - e-Faktur / Coretax export, PPh 21/23 withholding

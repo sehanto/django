@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 20:08+0700\n"
-"PO-Revision-Date: 2026-10-12 20:08\n"
+"POT-Creation-Date: 2026-10-12 20:19+0700\n"
+"PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
@@ -154,17 +154,14 @@ msgid "remembered devices"
 msgstr "perangkat yang diingat"
 
 #: apps/accounts/models.py:119
-#| msgid "QR code for your authenticator app"
 msgid "authenticator app"
 msgstr "aplikasi autentikator"
 
 #: apps/accounts/models.py:120
-#| msgid "QR code for your authenticator app"
 msgid "authenticator apps"
 msgstr "aplikasi autentikator"
 
 #: apps/accounts/models.py:174 apps/accounts/models.py:175
-#| msgid "Backup codes"
 msgid "backup codes"
 msgstr "kode cadangan"
 
@@ -334,7 +331,7 @@ msgstr "Penyedia pembayaran sedang tidak dapat dihubungi. Silakan coba lagi."
 msgid "The payment provider rejected the request. Please try again later."
 msgstr "Penyedia pembayaran menolak permintaan. Silakan coba lagi nanti."
 
-#: apps/billing/gateways/xendit.py:68 apps/billing/services.py:112
+#: apps/billing/gateways/xendit.py:68 apps/billing/services.py:184
 msgid "The payment provider did not return a payment link."
 msgstr "Penyedia pembayaran tidak mengembalikan tautan pembayaran."
 
@@ -399,86 +396,110 @@ msgstr "email pembeli"
 msgid "subtotal"
 msgstr "subtotal"
 
-#: apps/billing/models.py:40
+#: apps/billing/models.py:41
+msgid "credit for unused time"
+msgstr "kredit sisa masa langganan"
+
+#: apps/billing/models.py:43
+msgid "credited plan"
+msgstr "paket yang dikreditkan"
+
+#: apps/billing/models.py:45
+msgid "credited days"
+msgstr "hari yang dikreditkan"
+
+#: apps/billing/models.py:47
+msgid "extra days from credit"
+msgstr "hari tambahan dari kredit"
+
+#: apps/billing/models.py:48
+msgid "value of coverage"
+msgstr "nilai masa langganan"
+
+#: apps/billing/models.py:49
 msgid "tax base (DPP)"
 msgstr "dasar pengenaan pajak (DPP)"
 
-#: apps/billing/models.py:41 templates/invoicing/_invoice_body.html:26
+#: apps/billing/models.py:50 templates/invoicing/_invoice_body.html:26
 msgid "PPN"
 msgstr "PPN"
 
-#: apps/billing/models.py:42 apps/invoicing/models.py:78
+#: apps/billing/models.py:51 apps/invoicing/models.py:78
 msgid "total"
 msgstr "total"
 
-#: apps/billing/models.py:44 apps/invoicing/models.py:74 apps/invoicing/models.py:166
+#: apps/billing/models.py:53 apps/invoicing/models.py:74 apps/invoicing/models.py:166
 #: apps/ledger/models.py:73
 msgid "status"
 msgstr "status"
 
-#: apps/billing/models.py:45
+#: apps/billing/models.py:54
 msgid "payment gateway"
 msgstr "payment gateway"
 
-#: apps/billing/models.py:46
+#: apps/billing/models.py:55
 msgid "gateway reference"
 msgstr "referensi gateway"
 
-#: apps/billing/models.py:47
+#: apps/billing/models.py:56
 msgid "gateway payment ID"
 msgstr "ID pembayaran gateway"
 
-#: apps/billing/models.py:48
+#: apps/billing/models.py:57
 msgid "payment link"
 msgstr "tautan pembayaran"
 
-#: apps/billing/models.py:49
+#: apps/billing/models.py:58
 msgid "payment link expires"
 msgstr "tautan pembayaran berlaku sampai"
 
-#: apps/billing/models.py:50
+#: apps/billing/models.py:59
 msgid "paid at"
 msgstr "dibayar pada"
 
-#: apps/billing/models.py:51
+#: apps/billing/models.py:60
 msgid "covered from"
 msgstr "berlaku dari"
 
-#: apps/billing/models.py:52
+#: apps/billing/models.py:61
 msgid "covered until"
 msgstr "berlaku sampai"
 
-#: apps/billing/models.py:57
+#: apps/billing/models.py:64
+msgid "ended early on"
+msgstr "diakhiri lebih awal pada"
+
+#: apps/billing/models.py:69
 msgid "subscription invoice"
 msgstr "tagihan langganan"
 
-#: apps/billing/models.py:58
+#: apps/billing/models.py:70
 msgid "subscription invoices"
 msgstr "tagihan langganan"
 
-#: apps/billing/services.py:71
+#: apps/billing/services.py:149
 msgid "This plan is free and needs no payment."
 msgstr "Paket ini gratis dan tidak perlu dibayar."
 
-#: apps/billing/services.py:96
+#: apps/billing/services.py:168
 #, python-format
 msgid "%(seller)s %(plan)s plan (%(period)s), incl. PPN"
 msgstr "%(seller)s paket %(plan)s (%(period)s), termasuk PPN"
 
-#: apps/billing/services.py:138
+#: apps/billing/services.py:210
 msgid "The paid amount does not match the invoice. Our team will review it."
 msgstr "Jumlah yang dibayar tidak sesuai dengan tagihan. Tim kami akan memeriksanya."
 
-#: apps/billing/services.py:203
+#: apps/billing/services.py:293
 msgid "This invoice is already paid."
 msgstr "Tagihan ini sudah lunas."
 
-#: apps/billing/services.py:264
+#: apps/billing/services.py:354
 #, python-format
 msgid "Your %(plan)s plan for %(organization)s ends on %(date)s"
 msgstr "Paket %(plan)s untuk %(organization)s berakhir pada %(date)s"
 
-#: apps/billing/services.py:266
+#: apps/billing/services.py:356
 #, python-format
 msgid ""
 "Hello,\n"
@@ -495,12 +516,17 @@ msgstr ""
 "\n"
 "Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa tenggang singkat."
 
-#: apps/billing/views.py:97
+#: apps/billing/views.py:60
+#, python-format
+msgid "Switched to the %(plan)s plan, paid with your remaining credit. Active until %(date)s."
+msgstr "Beralih ke paket %(plan)s, dibayar dengan sisa kredit Anda. Aktif sampai %(date)s."
+
+#: apps/billing/views.py:102
 #, python-format
 msgid "Payment received. Your %(plan)s plan is active until %(date)s."
 msgstr "Pembayaran diterima. Paket %(plan)s Anda aktif sampai %(date)s."
 
-#: apps/billing/views.py:101
+#: apps/billing/views.py:106
 msgid "We have not received the payment yet. This page updates once it is confirmed."
 msgstr "Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembayaran terkonfirmasi."
 
@@ -2360,6 +2386,34 @@ msgstr "Perbarui dan kirim tautan"
 msgid "MSME accounting"
 msgstr "Akuntansi UMKM"
 
+#: templates/billing/_offer_button.html:4
+#, python-format
+msgid "Pay monthly · %(total)s"
+msgstr "Bayar bulanan · %(total)s"
+
+#: templates/billing/_offer_button.html:6
+#, python-format
+msgid "Pay yearly · %(total)s"
+msgstr "Bayar tahunan · %(total)s"
+
+#: templates/billing/_offer_button.html:9
+msgid "Switch plan now? Your remaining credit pays for it."
+msgstr "Ganti paket sekarang? Sisa kredit Anda akan membayarnya."
+
+#: templates/billing/_offer_button.html:10
+msgid "Switch monthly · covered by your credit"
+msgstr "Ganti bulanan · dibayar dengan kredit"
+
+#: templates/billing/_offer_button.html:10
+msgid "Switch yearly · covered by your credit"
+msgstr "Ganti tahunan · dibayar dengan kredit"
+
+#: templates/billing/_offer_button.html:11
+#, python-format
+#| msgid "Paid until %(date)s"
+msgid "active until %(date)s"
+msgstr "aktif sampai %(date)s"
+
 #: templates/billing/fake_checkout.html:2
 msgid "Test payment"
 msgstr "Pembayaran uji coba"
@@ -2444,37 +2498,49 @@ msgstr "Jumlah"
 msgid "%(seller)s %(plan)s plan, %(period)s"
 msgstr "%(seller)s paket %(plan)s, %(period)s"
 
-#: templates/billing/invoice_detail.html:55 templates/invoicing/_invoice_body.html:25
+#: templates/billing/invoice_detail.html:51
+#, python-format
+msgid "includes %(days)s extra day from credit"
+msgid_plural "includes %(days)s extra days from credit"
+msgstr[0] "termasuk %(days)s hari tambahan dari kredit"
+
+#: templates/billing/invoice_detail.html:56
+#, python-format
+msgid "Credit for unused %(plan)s plan (%(days)s day)"
+msgid_plural "Credit for unused %(plan)s plan (%(days)s days)"
+msgstr[0] "Kredit sisa paket %(plan)s (%(days)s hari)"
+
+#: templates/billing/invoice_detail.html:59 templates/invoicing/_invoice_body.html:25
 #: templates/invoicing/invoice_form.html:19
 msgid "Subtotal"
 msgstr "Subtotal"
 
-#: templates/billing/invoice_detail.html:56
+#: templates/billing/invoice_detail.html:60
 msgid "Tax base (DPP 11/12)"
 msgstr "DPP (11/12)"
 
-#: templates/billing/invoice_detail.html:57
+#: templates/billing/invoice_detail.html:61
 #, python-format
 msgid "PPN 12%%"
 msgstr "PPN 12%%"
 
-#: templates/billing/invoice_detail.html:58 templates/billing/overview.html:66
+#: templates/billing/invoice_detail.html:62 templates/billing/overview.html:70
 #: templates/invoicing/_invoice_body.html:27 templates/invoicing/invoice_list.html:19
 #: templates/ledger/journal_detail.html:33 templates/reports/aging.html:7
 #: templates/reports/aging.html:13 templates/reports/vat.html:14
 msgid "Total"
 msgstr "Total"
 
-#: templates/billing/invoice_detail.html:62
+#: templates/billing/invoice_detail.html:66
 #, python-format
 msgid "Paid on %(date)s."
 msgstr "Dibayar pada %(date)s."
 
-#: templates/billing/invoice_detail.html:62
+#: templates/billing/invoice_detail.html:66
 msgid "Payment reference"
 msgstr "Referensi pembayaran"
 
-#: templates/billing/invoice_detail.html:64
+#: templates/billing/invoice_detail.html:68
 msgid "The official tax invoice (Faktur Pajak) is issued separately through Coretax."
 msgstr "Faktur Pajak resmi diterbitkan terpisah melalui Coretax."
 
@@ -2508,102 +2574,100 @@ msgstr "atau %(price)s/tahun (gratis 2 bulan)"
 msgid "excl. PPN"
 msgstr "belum termasuk PPN"
 
-#: templates/billing/overview.html:36
+#: templates/billing/overview.html:35
+#, python-format
+#| msgid "Includes %(credit)s credit for your unused %(plan)s time"
+msgid "You have %(credit)s credit for unused %(plan)s time"
+msgstr "Anda punya kredit %(credit)s dari sisa masa paket %(plan)s"
+
+#: templates/billing/overview.html:39
 #, python-format
 msgid "%(count)s user"
 msgid_plural "%(count)s users"
 msgstr[0] "%(count)s pengguna"
 
-#: templates/billing/overview.html:36
+#: templates/billing/overview.html:39
 msgid "Unlimited users"
 msgstr "Pengguna tak terbatas"
 
-#: templates/billing/overview.html:37
+#: templates/billing/overview.html:40
 #, python-format
 msgid "%(count)s invoice/month"
 msgid_plural "%(count)s invoices/month"
 msgstr[0] "%(count)s faktur/bulan"
 
-#: templates/billing/overview.html:37
+#: templates/billing/overview.html:40
 msgid "Unlimited invoices"
 msgstr "Faktur tak terbatas"
 
-#: templates/billing/overview.html:38
+#: templates/billing/overview.html:41
 msgid "SAK EMKM financial reports"
 msgstr "Laporan keuangan SAK EMKM"
 
-#: templates/billing/overview.html:39
+#: templates/billing/overview.html:42
 msgid "PPN & MSME PPh Final"
 msgstr "PPN & PPh Final UMKM"
 
-#: templates/billing/overview.html:44
+#: templates/billing/overview.html:47
 msgid "Upgrade any time; no card needed."
 msgstr "Tingkatkan paket kapan saja; tidak perlu kartu kredit."
 
-#: templates/billing/overview.html:44
+#: templates/billing/overview.html:47
 #, python-format
 msgid "If your paid plan is not renewed, you move to this plan %(days)s days after it ends."
 msgstr ""
 "Jika paket berbayar tidak diperpanjang, Anda pindah ke paket ini %(days)s hari setelah paket "
 "berakhir."
 
-#: templates/billing/overview.html:48
-#, python-format
-msgid "Pay monthly · %(total)s"
-msgstr "Bayar bulanan · %(total)s"
-
-#: templates/billing/overview.html:49
-#, python-format
-msgid "Pay yearly · %(total)s"
-msgstr "Bayar tahunan · %(total)s"
-
-#: templates/billing/overview.html:50
+#: templates/billing/overview.html:53
 msgid "Amounts include PPN."
 msgstr "Jumlah sudah termasuk PPN."
 
-#: templates/billing/overview.html:58
+#: templates/billing/overview.html:61
 #, python-format
 msgid ""
 "Prices exclude PPN of 12%% on a tax base of 11/12 (effectively 11%%). Paying for your current plan"
-" extends it from its end date; a different plan starts on the payment date, and remaining time on "
-"the old plan is not credited. Pay by QRIS, bank virtual account, e-wallet or card through our "
-"payment partner Xendit."
+" extends it from its end date. A different plan starts on the payment date, and unused paid time "
+"on your current plan is credited against it; if the credit covers the whole price, you switch "
+"right away and the rest becomes extra days. Pay by QRIS, bank virtual account, e-wallet or card "
+"through our payment partner Xendit."
 msgstr ""
 "Harga belum termasuk PPN 12%% atas DPP 11/12 (efektif 11%%). Membayar paket yang sedang aktif akan"
-" memperpanjangnya dari tanggal berakhirnya; paket lain dimulai pada tanggal pembayaran, dan sisa "
-"masa paket lama tidak dikreditkan. Bayar dengan QRIS, virtual account bank, e-wallet, atau kartu "
-"melalui mitra pembayaran kami, Xendit."
+" memperpanjangnya dari tanggal berakhirnya. Paket lain dimulai pada tanggal pembayaran, dan sisa "
+"masa paket Anda yang sudah dibayar dikreditkan sebagai potongan; jika kreditnya menutupi seluruh "
+"harga, Anda langsung beralih dan sisanya menjadi hari tambahan. Bayar dengan QRIS, virtual account"
+" bank, e-wallet, atau kartu melalui mitra pembayaran kami, Xendit."
 
-#: templates/billing/overview.html:64
+#: templates/billing/overview.html:68
 msgid "Billing history"
 msgstr "Riwayat tagihan"
 
-#: templates/billing/overview.html:66 templates/invoicing/invoice_list.html:19
+#: templates/billing/overview.html:70 templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:13 templates/ledger/journal_list.html:15
 msgid "Number"
 msgstr "Nomor"
 
-#: templates/billing/overview.html:66 templates/invoicing/_invoice_body.html:10
+#: templates/billing/overview.html:70 templates/invoicing/_invoice_body.html:10
 #: templates/invoicing/invoice_list.html:19 templates/invoicing/payment_list.html:13
 #: templates/ledger/journal_list.html:15 templates/reports/general_ledger.html:10
 msgid "Date"
 msgstr "Tanggal"
 
-#: templates/billing/overview.html:66
+#: templates/billing/overview.html:70
 msgid "Plan"
 msgstr "Paket"
 
-#: templates/billing/overview.html:66
+#: templates/billing/overview.html:70
 msgid "Billing period"
 msgstr "Periode tagihan"
 
-#: templates/billing/overview.html:66 templates/invoicing/invoice_list.html:19
+#: templates/billing/overview.html:70 templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:13 templates/ledger/journal_list.html:15
 #: templates/taxes/taxrate_list.html:12
 msgid "Status"
 msgstr "Status"
 
-#: templates/billing/overview.html:71
+#: templates/billing/overview.html:75
 msgid "No subscription payments yet."
 msgstr "Belum ada pembayaran langganan."
 

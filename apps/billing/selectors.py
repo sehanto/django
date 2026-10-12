@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -7,7 +8,7 @@ from django.utils import timezone
 
 from apps.tenants.models import Plan
 
-from .domain import Charge, SubscriptionState, compute_charge, subscription_state
+from .domain import BillingPeriod, SubscriptionState, SwitchQuote, subscription_state
 from .models import SubscriptionInvoice
 
 
@@ -28,20 +29,30 @@ def state_of(organization, *, today: date | None = None) -> SubscriptionState:
 @dataclass
 class PlanOffer:
     plan: Plan
-    monthly: Charge | None
-    yearly: Charge | None
+    monthly: SwitchQuote | None
+    yearly: SwitchQuote | None
+    credit: Decimal = Decimal(0)  # unused paid time on the current plan, available for this switch
 
     @property
     def is_free(self) -> bool:
         return self.monthly is None
 
 
-def plan_offers() -> list[PlanOffer]:
+def plan_offers(organization) -> list[PlanOffer]:
+    """Every plan with what *this* organization would pay now (after any proration credit)."""
+    from .services import quote_for, switch_credit  # services import selectors
+
     offers = []
     for plan in Plan.objects.all():
-        monthly = compute_charge(plan.monthly_price) if plan.monthly_price > 0 else None
-        yearly = compute_charge(plan.yearly_price) if plan.yearly_price > 0 else None
-        offers.append(PlanOffer(plan=plan, monthly=monthly, yearly=yearly))
+        if plan.monthly_price <= 0:
+            offers.append(PlanOffer(plan=plan, monthly=None, yearly=None))
+            continue
+        offers.append(PlanOffer(
+            plan=plan,
+            monthly=quote_for(organization, plan, BillingPeriod.MONTHLY),
+            yearly=quote_for(organization, plan, BillingPeriod.YEARLY),
+            credit=switch_credit(organization, plan).amount,
+        ))
     return offers
 
 

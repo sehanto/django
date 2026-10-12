@@ -48,11 +48,15 @@
     <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
     <tbody><tr>
       <td>{% blocktranslate trimmed with seller=seller.name plan=invoice.plan.name period=invoice.get_billing_period_display %}{{ seller }} {{ plan }} plan, {{ period }}{% endblocktranslate %}
-        {% if invoice.coverage_start %}<div class="small text-secondary">{% blocktranslate trimmed with start=invoice.coverage_start|date:"d M Y" end=invoice.coverage_end|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</div>{% endif %}</td>
+        {% if invoice.coverage_start %}<div class="small text-secondary">{% blocktranslate trimmed with start=invoice.coverage_start|date:"d M Y" end=invoice.coverage_end|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% if invoice.extension_days %} · {% blocktranslate trimmed count days=invoice.extension_days %}includes {{ days }} extra day from credit{% plural %}includes {{ days }} extra days from credit{% endblocktranslate %}{% endif %}</div>{% endif %}</td>
       <td class="num">{{ invoice.subtotal|rupiah }}</td>
     </tr></tbody>
     <tfoot>
-      <tr><td class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
+      {% if invoice.credit_amount %}
+      <tr><td class="text-end">{% blocktranslate trimmed count days=invoice.credited_days with plan=invoice.credited_plan.name %}Credit for unused {{ plan }} plan ({{ days }} day){% plural %}Credit for unused {{ plan }} plan ({{ days }} days){% endblocktranslate %}</td>
+          <td class="num">-{{ invoice.credit_amount|rupiah }}</td></tr>
+      {% endif %}
+      <tr><td class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.net_subtotal|rupiah }}</td></tr>
       <tr><td class="text-end small text-secondary">{% translate "Tax base (DPP 11/12)" %}</td><td class="num small text-secondary">{{ invoice.tax_base|rupiah }}</td></tr>
       <tr><td class="text-end">{% translate "PPN 12%" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>
       <tr class="fw-bold"><td class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
