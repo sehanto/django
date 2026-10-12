@@ -7,6 +7,7 @@
 15 1 * * * @PROJECT_DIR@/deploy/cron/run.sh process_billing
 
 # Daily: delete sign-in/security records after SECURITY_LOG_RETENTION_DAYS (90) and
-# organization/subscription audit events after ORGANIZATION_LOG_RETENTION_DAYS (3650).
+# organization/subscription audit events after ORGANIZATION_LOG_RETENTION_DAYS (3650),
+# blanking their IP address and browser after 90 days.
 # Needs DATABASE_OWNER_URL.
 30 3 * * * @PROJECT_DIR@/deploy/cron/run.sh prune_security_logs

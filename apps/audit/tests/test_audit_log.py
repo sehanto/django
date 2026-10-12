@@ -42,7 +42,7 @@ def test_every_action_has_a_category():
 def test_events_cannot_be_rewritten(organization, user):
     event = audit.record(A.MEMBER_ADDED, actor=user, organization=organization, target="a@example.com")
     for change in ({"target": "someone-else"}, {"action": A.LOGIN_SUCCEEDED}, {"created_at": timezone.now() - timedelta(days=9)},
-                   {"details": {"forged": True}}):
+                   {"details": {"forged": True}}, {"ip_address": "198.51.100.66"}, {"user_agent": "forged"}):
         with pytest.raises(IntegrityError), transaction.atomic():
             AuditEvent.objects.filter(pk=event.pk).update(**change)
     event.refresh_from_db()
@@ -84,6 +84,24 @@ def test_retention_keeps_organization_history_longer(user, organization):
     remaining = set(AuditEvent.objects.filter(pk__in=expired | kept).values_list("pk", flat=True))
     assert remaining == kept
     assert set(AccessLog.objects.values_list("pk", flat=True)) == {kept_sign_in.pk}
+
+
+def test_network_details_of_kept_events_are_blanked_after_90_days(user, organization):
+    def event(action, days):
+        return AuditEvent.objects.create(
+            action=action, actor=user, actor_email=user.email, organization=organization, target="kasir@example.com",
+            ip_address="203.0.113.9", user_agent="Firefox/140", created_at=timezone.now() - timedelta(days=days),
+        )
+
+    old_member, recent_member, recent_sign_in = event(A.MEMBER_ADDED, 91), event(A.MEMBER_ADDED, 89), event(A.LOGIN_SUCCEEDED, 89)
+    call_command("prune_security_logs")
+
+    for kept in (old_member, recent_member, recent_sign_in):
+        kept.refresh_from_db()
+    assert (old_member.ip_address, old_member.user_agent) == (None, "")
+    assert (old_member.actor, old_member.actor_email, old_member.target) == (user, user.email, "kasir@example.com")
+    assert recent_member.ip_address == recent_sign_in.ip_address == "203.0.113.9"
+    assert recent_member.user_agent == "Firefox/140"
 
 
 def test_pruning_needs_the_owner(user):

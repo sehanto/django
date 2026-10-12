@@ -185,7 +185,8 @@ author. Passwords, codes and keys are never recorded.
 - **Append-only:** a PostgreSQL trigger (migration `audit/0002`) rejects updates and
   deletes for every role. It only allows clearing the user/organization link when that
   row is deleted (email and organization name are snapshotted, so deleted
-  organizations stay traceable). The table owner may also delete, for retention.
+  organizations stay traceable). For retention, the table owner may also delete events
+  and blank their IP address and browser (migration `audit/0003`).
 - **Retention:** `manage.py prune_security_logs` runs daily as the owner:
 
   | Records | Kept for | Setting |
@@ -194,7 +195,9 @@ author. Passwords, codes and keys are never recorded.
   | Organization and subscription events (settings such as the lock date, members, exports, deletion, plan changes, manual payments) | 10 years | `ORGANIZATION_LOG_RETENTION_DAYS` (3650) |
 
   Organization events document changes to the books, which taxpayers keep for 10 years
-  (UU KUP Art. 28(11)). Sign-in history is personal data with no such need. Which
+  (UU KUP Art. 28(11)). Sign-in history is personal data with no such need. The kept
+  organization events lose their IP address and browser after 90 days as well, but still
+  show who did what and when. Which
   categories are kept longer is `KEPT_LONGER` in `apps/audit/domain.py`.
 
 To record a new sensitive action, add an `AuditAction` (with its category) and call
@@ -531,7 +534,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
-| `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days and organization/subscription events after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
+| `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's
 crontab with:
