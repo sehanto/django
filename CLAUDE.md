@@ -4,7 +4,7 @@ Django 5.2 + PostgreSQL multi-tenant accounting SaaS for Indonesian MSMEs. See R
 
 - Run tests: `.venv/bin/pytest` (settings: `config.settings.test`; uses `--reuse-db`, add `--create-db` after model changes)
 - Dev server: `.venv/bin/python manage.py runserver`; demo data: `manage.py seed_demo`
-- PostgreSQL 18; `msme_user` owns `msme_db` (required to create tables in `public`) and needs CREATEDB for the test DB.
+- PostgreSQL 18; `msme_user` owns `msme_db` (required to create tables in `public`) and needs CREATEDB for the test DB. The app connects as data-only `msme_app` (`DATABASE_URL`); `migrate`, `createcachetable` and the test runner switch to the owner (`DATABASE_OWNER_URL`, `apps/core/db_roles.py`), and every `migrate` re-grants the app role. Any other command that changes the schema must call `use_owner_connection` too; never give the app role DDL or ownership.
 
 Conventions:
 - Business rules in `domain.py` (no ORM), writes in `services.py` (atomic, raise `apps.core.exceptions.DomainError`), reads in `selectors.py`. Views stay thin.

@@ -69,8 +69,8 @@ Key design decisions:
 
   Tenant offboarding (`tenants.services.delete_organization`) is the single
   exception: `ledger.services.purge_organization_ledger` lifts the guard for that
-  transaction only. A role that owns the tables can still disable triggers, so in
-  production run the app as a role that does not own the schema.
+  transaction only. A role that owns the tables can still disable triggers, so the
+  app connects as a data-only role (see [Database roles](#database-roles)).
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -84,14 +84,15 @@ python3 -m venv .venv
 cp .env.example .env   # then set the real password in DATABASE_URL
 ```
 
-The app's database user must own the database. Since PostgreSQL 15, only the
+The schema owner (`msme_user`) must own the database. Since PostgreSQL 15, only the
 database owner can create tables in the `public` schema. As a superuser, run once:
 
 ```bash
 sudo -u postgres psql -c "ALTER DATABASE msme_db OWNER TO msme_user;"
 ```
 
-Then:
+Optionally (always in production), let the app connect as a separate data-only role.
+See [Database roles](#database-roles). Then:
 
 ```bash
 .venv/bin/python manage.py migrate
@@ -108,6 +109,39 @@ Then:
 Open http://127.0.0.1:8000 and sign in with `demo@bukuumkm.id` / `demo12345`, or
 register a new business at `/account/signup/`. For the Django admin, run
 `manage.py createsuperuser`.
+
+### Database roles
+
+The app uses two PostgreSQL roles:
+
+| Role | Used by | Can |
+|---|---|---|
+| Owner (`msme_user`, `DATABASE_OWNER_URL`) | `migrate`, `createcachetable`, the test runner | Everything on its tables: DDL, `DISABLE TRIGGER`, `TRUNCATE` |
+| App (`msme_app`, `DATABASE_URL`) | The web app, `seed_demo`, `process_billing` and other commands | `SELECT`/`INSERT`/`UPDATE`/`DELETE` on rows only |
+
+The app role cannot alter tables or disable triggers. The ledger's immutability
+triggers (see Architecture) therefore hold even if the application is compromised. It
+also cannot rewrite `django_migrations`.
+
+Set it up once, as a superuser (the password goes into `DATABASE_URL`):
+
+```bash
+sudo -u postgres psql -d msme_db -v app_password='CHANGE_ME' < deploy/postgres/create_app_role.sql
+```
+
+Then in `.env`:
+
+```
+DATABASE_URL=postgres://msme_app:CHANGE_ME@localhost:5432/msme_db
+DATABASE_OWNER_URL=postgres://msme_user:OWNER_PASSWORD@localhost:5432/msme_db
+```
+
+and run `manage.py migrate`. `migrate` and `createcachetable` reconnect as the
+owner automatically. After every `migrate`, the owner grants the app role access to
+all tables (`apps/core/db_roles.py`), so new tables need no manual grants.
+Without `DATABASE_OWNER_URL`, one role does everything, which is fine for a quick
+local setup. `manage.py check --deploy` warns (`core.W001`) when the app connects as an
+owner or superuser.
 
 ## Tests
 
@@ -421,7 +455,8 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 ## Production
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
-`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL`, `FIELD_ENCRYPTION_KEYS` (see
+`DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` (the data-only app role) and
+`DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `FIELD_ENCRYPTION_KEYS` (see
 [How 2FA secrets are stored](#how-2fa-secrets-are-stored)), `SITE_URL` (the public
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
 and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above.

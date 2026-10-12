@@ -87,8 +87,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # Credentials come only from the environment / .env (see .env.example).
+# Two roles (README "Database roles"): the app connects as a data-only role
+# (DATABASE_URL); schema changes - migrate, createcachetable, test databases -
+# use the owner (DATABASE_OWNER_URL). Without an owner URL, one role does both.
 DATABASES = {"default": env.db("DATABASE_URL")}
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
+DATABASE_OWNER = env.db("DATABASE_OWNER_URL") if env.str("DATABASE_OWNER_URL", default="") else None
+DATABASE_APP_ROLE = DATABASES["default"]["USER"] if DATABASE_OWNER else None  # granted DML after each migrate
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

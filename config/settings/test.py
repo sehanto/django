@@ -9,3 +9,9 @@ MIDDLEWARE.remove("whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405 - 
 BILLING_GATEWAY = "fake"
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
+# The test runner creates and migrates its own database, which needs the owner role.
+if DATABASE_OWNER:  # noqa: F405
+    DATABASES["default"].update({key: DATABASE_OWNER[key] for key in ("USER", "PASSWORD", "HOST", "PORT")})  # noqa: F405
+    DATABASE_OWNER = None
+    DATABASE_APP_ROLE = None
