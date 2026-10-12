@@ -1,8 +1,7 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "base.html" %}{% load static i18n %}
 {% block title %}{{ labels.title }}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% if invoice %}Ubah Draf {{ labels.title }}{% else %}{{ labels.title }} Baru{% endif %}</h1>
+<h1 class="h4 mb-3">{% if invoice %}{{ labels.edit }}{% else %}{{ labels.new }}{% endif %}</h1>
 <form method="post" data-formset="form">{% csrf_token %}
   <div class="card mb-3"><div class="card-body">
     {% include "partials/form_fields.html" with col="col-md-4" %}
@@ -11,23 +10,23 @@
   {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
   <div class="card"><div class="table-responsive">
     <table class="table formset-table mb-0">
-      <thead><tr><th>Barang/Jasa</th><th style="min-width:180px">Deskripsi</th><th>Akun</th><th style="width:90px">Qty</th><th style="width:140px">Harga</th><th style="width:80px">Disc %</th><th>Pajak</th><th class="num">Jumlah</th><th></th></tr></thead>
+      <thead><tr><th>{% translate "Item" %}</th><th style="min-width:180px">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th style="width:90px">{% translate "Qty" %}</th><th style="width:140px">{% translate "Price" %}</th><th style="width:80px">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
       <tfoot><tr>
-        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus"></i> Tambah baris</button></td>
-        <td class="text-end fw-semibold">Subtotal</td><td class="num fw-semibold" data-subtotal></td><td></td>
+        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus"></i> {% translate "Add line" %}</button></td>
+        <td class="text-end fw-semibold">{% translate "Subtotal" %}</td><td class="num fw-semibold" data-subtotal></td><td></td>
       </tr></tfoot>
     </table>
     <template data-formset-empty>{% include "invoicing/_line_row.html" with f=formset.empty_form %}</template>
   </div>
   <div class="card-footer d-flex flex-wrap gap-2 justify-content-between align-items-center">
-    <span class="small text-secondary">PPN dihitung per tarif atas total DPP dan dibulatkan ke bawah (rupiah penuh).</span>
+    <span class="small text-secondary">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
     <div class="d-flex gap-2">
-      <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline-secondary">Batal</a>
-      <button name="draft" class="btn btn-outline-primary">Simpan Draf</button>
-      <button name="issue" class="btn btn-primary">Simpan & Terbitkan</button>
+      <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+      <button name="draft" class="btn btn-outline-primary">{% translate "Save draft" %}</button>
+      <button name="issue" class="btn btn-primary">{% translate "Save & issue" %}</button>
     </div>
   </div></div>
 </form>

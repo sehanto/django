@@ -5,6 +5,8 @@ from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from django.utils.translation import gettext_lazy as _
+
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO, quantize
 from apps.taxes.domain import compute_vat
@@ -30,11 +32,11 @@ class LineSpec:
     @property
     def net_amount(self) -> Decimal:
         if self.quantity <= 0:
-            raise ValidationFailed("Kuantitas harus lebih dari nol.")
+            raise ValidationFailed(_("Quantity must be greater than zero."))
         if self.unit_price < 0:
-            raise ValidationFailed("Harga satuan tidak boleh negatif.")
+            raise ValidationFailed(_("Unit price cannot be negative."))
         if not ZERO <= self.discount_percent <= HUNDRED:
-            raise ValidationFailed("Diskon harus di antara 0 dan 100%.")
+            raise ValidationFailed(_("Discount must be between 0 and 100%."))
         gross = self.quantity * self.unit_price
         return quantize(gross - gross * self.discount_percent / HUNDRED)
 
@@ -63,7 +65,7 @@ class InvoiceTotals:
 def compute_invoice_totals(lines: Sequence[LineSpec]) -> InvoiceTotals:
     """Tax is computed per rate on the aggregated base, like an e-Faktur."""
     if not lines:
-        raise ValidationFailed("Faktur harus memiliki minimal satu baris.")
+        raise ValidationFailed(_("An invoice needs at least one line."))
     amounts = [line.net_amount for line in lines]
     groups: OrderedDict[Hashable, TaxGroup] = OrderedDict()
     for index, (line, amount) in enumerate(zip(lines, amounts)):
@@ -119,9 +121,9 @@ def aging_bucket(days_overdue: int) -> str:
 
 
 AGING_BUCKETS = [
-    ("current", "Belum jatuh tempo"),
-    ("d1_30", "1-30 hari"),
-    ("d31_60", "31-60 hari"),
-    ("d61_90", "61-90 hari"),
-    ("d90_plus", "> 90 hari"),
+    ("current", _("Not yet due")),
+    ("d1_30", _("1-30 days")),
+    ("d31_60", _("31-60 days")),
+    ("d61_90", _("61-90 days")),
+    ("d90_plus", _("> 90 days")),
 ]

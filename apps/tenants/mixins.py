@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
+from django.utils.translation import gettext as _
 
 from .roles import Permission
 
@@ -20,7 +21,7 @@ class OrganizationMixin(LoginRequiredMixin):
         if request.organization is None:
             return redirect("tenants:create")
         if not request.membership.has_permission(self.permission):
-            raise PermissionDenied("Peran Anda tidak memiliki akses ke halaman ini.")
+            raise PermissionDenied(_("Your role does not have access to this page."))
         self.organization = request.organization
         self.membership = request.membership
         return super().dispatch(request, *args, **kwargs)

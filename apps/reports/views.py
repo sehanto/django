@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from apps.invoicing.models import InvoiceKind
@@ -100,7 +101,7 @@ class AgingView(OrganizationMixin, TemplateView):
         kind = self.kwargs["kind"]
         return super().get_context_data(
             report=aging_report(self.organization, kind),
-            title="Umur Piutang" if kind == InvoiceKind.SALES else "Umur Utang",
+            title=_("Receivables aging") if kind == InvoiceKind.SALES else _("Payables aging"),
             **kwargs,
         )
 

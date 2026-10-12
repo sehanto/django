@@ -35,7 +35,8 @@
       const balance = root.querySelector("[data-balance-status]");
       if (balance) {
         const ok = Math.abs(debit - credit) < 0.005 && debit > 0;
-        balance.textContent = ok ? "Seimbang" : "Selisih " + fmt(Math.abs(debit - credit));
+        // Labels come from the template so they follow the interface language.
+        balance.textContent = ok ? root.dataset.labelBalanced : root.dataset.labelDifference + " " + fmt(Math.abs(debit - credit));
         balance.className = "badge " + (ok ? "text-bg-success" : "text-bg-warning");
       }
     };

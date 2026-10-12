@@ -3,6 +3,7 @@
 from enum import IntEnum
 
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Permission(IntEnum):
@@ -12,10 +13,10 @@ class Permission(IntEnum):
 
 
 class Role(models.TextChoices):
-    OWNER = "owner", "Pemilik"
-    ADMIN = "admin", "Administrator"
-    ACCOUNTANT = "accountant", "Akuntan / Staf Keuangan"
-    VIEWER = "viewer", "Hanya Lihat"
+    OWNER = "owner", _("Owner")
+    ADMIN = "admin", _("Administrator")
+    ACCOUNTANT = "accountant", _("Accountant / finance staff")
+    VIEWER = "viewer", _("View only")
 
     def allows(self, permission: Permission) -> bool:
         return ROLE_LEVEL[self] >= permission

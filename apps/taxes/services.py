@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.db import transaction
+from django.utils.translation import gettext as _
 
 from apps.core.exceptions import ValidationFailed
 from apps.ledger.domain import SystemRole
@@ -31,15 +32,16 @@ def record_pph_final_payment(
     *, organization, year: int, month: int, paid_on: date, cash_account, ntpn: str = "", created_by=None
 ) -> PphFinalPayment:
     if not organization.uses_pph_final:
-        raise ValidationFailed("Organisasi tidak menggunakan skema PPh Final UMKM.")
+        raise ValidationFailed(_("This organization does not use the MSME PPh Final scheme."))
     if not cash_account.is_cash or cash_account.organization_id != organization.pk:
-        raise ValidationFailed("Pilih akun kas/bank yang valid.")
+        raise ValidationFailed(_("Choose a valid cash or bank account."))
     if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month).exists():
-        raise ValidationFailed(f"PPh Final masa {month:02d}/{year} sudah dicatat.")
+        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % {"period": f"{month:02d}/{year}"})
     period = pph_final_schedule(organization, year)[month - 1]
     if period.tax <= 0:
-        raise ValidationFailed("Tidak ada PPh Final terutang untuk masa ini.")
+        raise ValidationFailed(_("No PPh Final is due for this period."))
 
+    # Journal descriptions are stored business records and stay in Indonesian.
     entry = create_journal_entry(
         organization=organization,
         date=paid_on,

@@ -1,30 +1,33 @@
-{% extends "base.html" %}
-{% block title %}Anggota Tim{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Team members" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Anggota Tim</h1>
+<h1 class="h4 mb-3">{% translate "Team members" %}</h1>
 <div class="row g-4">
   <div class="col-lg-7">
     <div class="card"><table class="table mb-0 align-middle">
-      <thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th></th></tr></thead>
+      <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Email" %}</th><th>{% translate "Role" %}</th><th></th></tr></thead>
       <tbody>
       {% for m in members %}
         <tr><td>{{ m.user.full_name }}</td><td>{{ m.user.email }}</td><td>{{ m.get_role_display }}</td>
           <td class="text-end">{% if m.role != 'owner' and m.user != request.user %}
-            <form method="post" action="{% url 'tenants:remove_member' m.pk %}" onsubmit="return confirm('Hapus anggota ini?')">{% csrf_token %}
-              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i></button></form>{% endif %}</td></tr>
+            <form method="post" action="{% url 'tenants:remove_member' m.pk %}" data-confirm="{% translate 'Remove this member?' %}">{% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}"><i class="bi bi-x-lg"></i></button></form>{% endif %}</td></tr>
       {% endfor %}
       </tbody>
     </table></div>
-    <p class="small text-secondary mt-2">Paket {{ current_organization.plan.name }}: maks.
-      {% if current_organization.plan.max_users %}{{ current_organization.plan.max_users }}{% else %}tak terbatas{% endif %} pengguna.</p>
+    <p class="small text-secondary mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
+      {% blocktranslate trimmed with name=plan.name count=plan.max_users %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}
+    {% else %}
+      {% blocktranslate trimmed with name=plan.name %}{{ name }} plan: unlimited users.{% endblocktranslate %}
+    {% endif %}{% endwith %}</p>
   </div>
   <div class="col-lg-5">
     <div class="card"><div class="card-body">
-      <h2 class="h6">Tambah anggota</h2>
-      <p class="small text-secondary">Pengguna harus sudah mendaftar akun BukuUMKM.</p>
+      <h2 class="h6">{% translate "Add member" %}</h2>
+      <p class="small text-secondary">{% translate "The user must already have a BukuUMKM account." %}</p>
       <form method="post">{% csrf_token %}
         {% include "partials/form_fields.html" with col="col-12" %}
-        <button class="btn btn-primary mt-3">Tambahkan</button>
+        <button class="btn btn-primary mt-3">{% translate "Add" %}</button>
       </form>
     </div></div>
   </div>

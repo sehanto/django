@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
@@ -33,7 +34,7 @@ class TaxRateFormMixin(WriteMixin):
 
     def form_valid(self, form):
         form.instance.organization = self.organization
-        messages.success(self.request, "Tarif pajak disimpan.")
+        messages.success(self.request, _("Tax rate saved."))
         return super().form_valid(form)
 
 
@@ -79,13 +80,13 @@ class PphFinalPayView(WriteMixin, View):
         year = _selected_year(request)
         form = PphFinalPaymentForm(request.POST, organization=self.organization)
         if not form.is_valid():
-            messages.error(request, "Data setoran tidak lengkap.")
+            messages.error(request, _("The payment details are incomplete."))
         else:
             try:
                 services.record_pph_final_payment(
                     organization=self.organization, year=year, created_by=request.user, **form.cleaned_data
                 )
-                messages.success(request, "Setoran PPh Final dicatat dan dijurnal.")
+                messages.success(request, _("PPh Final payment recorded and posted to the ledger."))
             except DomainError as exc:
                 flash_domain_error(request, exc)
         return redirect(f"{reverse('taxes:pph_final')}?tahun={year}")
@@ -97,7 +98,7 @@ class PphFinalCancelView(WriteMixin, View):
         year = payment.year
         try:
             services.cancel_pph_final_payment(payment=payment, on=timezone.localdate(), created_by=request.user)
-            messages.success(request, "Setoran PPh Final dibatalkan (jurnal dibalik).")
+            messages.success(request, _("PPh Final payment cancelled (journal entry reversed)."))
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect(f"{reverse('taxes:pph_final')}?tahun={year}")

@@ -1,9 +1,10 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField("dibuat", auto_now_add=True)
-    updated_at = models.DateTimeField("diperbarui", auto_now=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("updated"), auto_now=True)
 
     class Meta:
         abstract = True
@@ -25,7 +26,7 @@ class TenantOwnedModel(TimeStampedModel):
         "tenants.Organization",
         on_delete=models.CASCADE,
         related_name="+",
-        verbose_name="organisasi",
+        verbose_name=_("organization"),
     )
 
     objects = TenantQuerySet.as_manager()

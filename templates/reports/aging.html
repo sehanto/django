@@ -1,16 +1,15 @@
-{% extends "base.html" %}
-{% load money %}
+{% extends "base.html" %}{% load i18n money %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">Laporan {{ title }}</h1>
-<p class="text-secondary">{{ current_organization.name }} · per {{ report.as_of|date:"d F Y" }}</p>
+<h1 class="h4 mb-1">{{ title }}</h1>
+<p class="text-secondary">{{ current_organization.name }} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}</p>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0">
-  <thead><tr><th>Kontak</th>{% for key, label in report.bucket_labels %}<th class="num">{{ label }}</th>{% endfor %}<th class="num">Total</th></tr></thead>
+  <thead><tr><th>{% translate "Contact" %}</th>{% for key, label in report.bucket_labels %}<th class="num">{{ label }}</th>{% endfor %}<th class="num">{% translate "Total" %}</th></tr></thead>
   <tbody>{% for row in report.rows %}
     <tr><td><a href="{% url 'invoicing:list' kind %}?q={{ row.contact_name|urlencode }}">{{ row.contact_name }}</a></td>
       {% for key, amount in row.buckets.items %}<td class="num">{% if amount %}{{ amount|rupiah }}{% else %}-{% endif %}</td>{% endfor %}
       <td class="num fw-semibold">{{ row.total|rupiah }}</td></tr>
-  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">Tidak ada saldo terbuka.</td></tr>{% endfor %}</tbody>
-  <tfoot><tr class="fw-bold"><td>Total</td>{% for key, amount in report.totals.items %}<td class="num">{{ amount|rupiah }}</td>{% endfor %}<td class="num">{{ report.grand_total|rupiah }}</td></tr></tfoot>
+  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No open balances." %}</td></tr>{% endfor %}</tbody>
+  <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td>{% for key, amount in report.totals.items %}<td class="num">{{ amount|rupiah }}</td>{% endfor %}<td class="num">{{ report.grand_total|rupiah }}</td></tr></tfoot>
 </table></div></div>
 {% endblock %}

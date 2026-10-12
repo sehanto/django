@@ -47,10 +47,14 @@ PAGES = [
 ]
 
 
+@pytest.mark.parametrize("language", ["id", "en"])
 @pytest.mark.parametrize(("name", "kwargs"), PAGES)
-def test_pages_render(auth_client, name, kwargs):
+def test_pages_render_in_both_languages(auth_client, user, name, kwargs, language):
+    user.language = language
+    user.save(update_fields=["language"])
     response = auth_client.get(reverse(name, kwargs=kwargs))
     assert response.status_code == 200
+    assert f'<html lang="{language}">' in response.content.decode()
 
 
 def test_anonymous_redirected_to_login(client, db):

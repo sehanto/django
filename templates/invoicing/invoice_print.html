@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load i18n %}
 {% block title %}{{ invoice.number }}{% endblock %}
 {% block body %}
 <main class="container py-4" style="max-width: 860px;">
@@ -6,16 +6,16 @@
     <div>
       <h2 class="h4 fw-bold mb-1">{{ invoice.organization.name }}</h2>
       <div class="small">{{ invoice.organization.address|linebreaksbr }}{% if invoice.organization.city %}, {{ invoice.organization.city }}{% endif %}</div>
-      {% if invoice.organization.npwp %}<div class="small">NPWP: {{ invoice.organization.npwp }}</div>{% endif %}
-      {% if invoice.organization.phone %}<div class="small">Telp: {{ invoice.organization.phone }}</div>{% endif %}
+      {% if invoice.organization.npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.organization.npwp }}</div>{% endif %}
+      {% if invoice.organization.phone %}<div class="small">{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
     </div>
     <div class="text-end">
-      <h1 class="h3 text-uppercase mb-1">{% if invoice.is_sales %}Faktur{% else %}Tagihan{% endif %}</h1>
+      <h1 class="h3 text-uppercase mb-1">{% if invoice.is_sales %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</h1>
       <div class="fw-semibold">{{ invoice.number }}</div>
-      {% if invoice.status == 'void' %}<div class="text-danger fw-bold">DIBATALKAN</div>{% elif invoice.status == 'paid' %}<div class="text-success fw-bold">LUNAS</div>{% endif %}
+      {% if invoice.status == 'void' %}<div class="text-danger fw-bold">{% translate "VOID" %}</div>{% elif invoice.status == 'paid' %}<div class="text-success fw-bold">{% translate "PAID" %}</div>{% endif %}
     </div>
   </div>
   {% include "invoicing/_invoice_body.html" %}
-  <div class="no-print text-center mt-4"><button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Cetak</button></div>
+  <div class="no-print text-center mt-4"><button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> {% translate "Print" %}</button></div>
 </main>
 {% endblock %}

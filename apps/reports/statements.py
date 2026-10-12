@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 
+from django.utils.translation import gettext_lazy as _
+
 from apps.core.money import ZERO
 from apps.ledger.domain import AccountCategory as C
 from apps.ledger.domain import AccountType, NormalBalance
@@ -75,14 +77,14 @@ class IncomeStatement:
         return self.profit_before_tax - self.income_tax.total
 
     def csv_rows(self):
-        yield ["Laporan Laba Rugi", f"{self.date_from:%d-%m-%Y} s.d. {self.date_to:%d-%m-%Y}", ""]
+        yield [_("Income statement"), _("%(start)s to %(end)s") % {"start": f"{self.date_from:%d-%m-%Y}", "end": f"{self.date_to:%d-%m-%Y}"}, ""]
         for section, subtotal in [
             (self.revenue, None),
-            (self.cost_of_sales, ("Laba Kotor", self.gross_profit)),
-            (self.operating_expenses, ("Laba Usaha", self.operating_profit)),
+            (self.cost_of_sales, (_("Gross profit"), self.gross_profit)),
+            (self.operating_expenses, (_("Operating profit"), self.operating_profit)),
             (self.other_income, None),
-            (self.other_expenses, ("Laba Sebelum Pajak", self.profit_before_tax)),
-            (self.income_tax, ("Laba Bersih", self.net_profit)),
+            (self.other_expenses, (_("Profit before tax"), self.profit_before_tax)),
+            (self.income_tax, (_("Net profit"), self.net_profit)),
         ]:
             yield from _section_csv(section)
             if subtotal:
@@ -94,12 +96,12 @@ def build_income_statement(balances: list[AccountBalance], date_from: date, date
     return IncomeStatement(
         date_from=date_from,
         date_to=date_to,
-        revenue=_section("Pendapatan Usaha", balances, {C.REVENUE}, rev),
-        cost_of_sales=_section("Beban Pokok Penjualan", balances, {C.COST_OF_SALES}, exp),
-        operating_expenses=_section("Beban Usaha", balances, {C.OPERATING_EXPENSE}, exp),
-        other_income=_section("Pendapatan Lain-lain", balances, {C.OTHER_INCOME}, rev),
-        other_expenses=_section("Beban Lain-lain", balances, {C.OTHER_EXPENSE}, exp),
-        income_tax=_section("Beban Pajak Penghasilan", balances, {C.INCOME_TAX}, exp),
+        revenue=_section(_("Operating revenue"), balances, {C.REVENUE}, rev),
+        cost_of_sales=_section(_("Cost of sales"), balances, {C.COST_OF_SALES}, exp),
+        operating_expenses=_section(_("Operating expenses"), balances, {C.OPERATING_EXPENSE}, exp),
+        other_income=_section(_("Other income"), balances, {C.OTHER_INCOME}, rev),
+        other_expenses=_section(_("Other expenses"), balances, {C.OTHER_EXPENSE}, exp),
+        income_tax=_section(_("Income tax expense"), balances, {C.INCOME_TAX}, exp),
     )
 
 
@@ -146,17 +148,17 @@ class BalanceSheet:
         return self.total_assets == self.total_liabilities_and_equity
 
     def csv_rows(self):
-        yield ["Laporan Posisi Keuangan", f"per {self.as_of:%d-%m-%Y}", ""]
+        yield [_("Statement of financial position"), _("as of %(date)s") % {"date": f"{self.as_of:%d-%m-%Y}"}, ""]
         yield from _section_csv(self.current_assets)
         yield from _section_csv(self.fixed_assets)
-        yield ["", "TOTAL ASET", self.total_assets]
+        yield ["", _("TOTAL ASSETS"), self.total_assets]
         yield from _section_csv(self.current_liabilities)
         yield from _section_csv(self.long_term_liabilities)
-        yield ["", "Total Liabilitas", self.total_liabilities]
+        yield ["", _("Total liabilities"), self.total_liabilities]
         yield from _section_csv(self.equity)
-        yield ["", "Saldo laba periode lalu (belum ditutup)", self.prior_years_earnings]
-        yield ["", "Laba tahun berjalan", self.current_year_earnings]
-        yield ["", "TOTAL LIABILITAS DAN EKUITAS", self.total_liabilities_and_equity]
+        yield ["", _("Prior years' retained earnings (not yet closed)"), self.prior_years_earnings]
+        yield ["", _("Current year profit"), self.current_year_earnings]
+        yield ["", _("TOTAL LIABILITIES AND EQUITY"), self.total_liabilities_and_equity]
 
 
 CURRENT_ASSET_CATEGORIES = {C.CASH_BANK, C.RECEIVABLE, C.INVENTORY, C.OTHER_CURRENT_ASSET}
@@ -170,11 +172,11 @@ def build_balance_sheet(
     prior = net_income(balances_before_year)
     return BalanceSheet(
         as_of=as_of,
-        current_assets=_section("Aset Lancar", balances_to_date, CURRENT_ASSET_CATEGORIES, asset),
-        fixed_assets=_section("Aset Tetap", balances_to_date, {C.FIXED_ASSET}, asset),
-        current_liabilities=_section("Liabilitas Jangka Pendek", balances_to_date, {C.CURRENT_LIABILITY}, liability),
-        long_term_liabilities=_section("Liabilitas Jangka Panjang", balances_to_date, {C.LONG_TERM_LIABILITY}, liability),
-        equity=_section("Modal", balances_to_date, {C.EQUITY}, equity),
+        current_assets=_section(_("Current assets"), balances_to_date, CURRENT_ASSET_CATEGORIES, asset),
+        fixed_assets=_section(_("Fixed assets"), balances_to_date, {C.FIXED_ASSET}, asset),
+        current_liabilities=_section(_("Current liabilities"), balances_to_date, {C.CURRENT_LIABILITY}, liability),
+        long_term_liabilities=_section(_("Long-term liabilities"), balances_to_date, {C.LONG_TERM_LIABILITY}, liability),
+        equity=_section(_("Capital"), balances_to_date, {C.EQUITY}, equity),
         prior_years_earnings=prior,
         current_year_earnings=net_income(balances_to_date) - prior,
     )
@@ -209,10 +211,10 @@ class TrialBalance:
         return self.total_debit == self.total_credit
 
     def csv_rows(self):
-        yield ["Kode", "Akun", "Debit", "Kredit"]
+        yield [_("Code"), _("Account"), _("Debit"), _("Credit")]
         for r in self.rows:
             yield [r.code, r.name, r.debit, r.credit]
-        yield ["", "TOTAL", self.total_debit, self.total_credit]
+        yield ["", _("TOTAL"), self.total_debit, self.total_credit]
 
 
 def build_trial_balance(balances: list[AccountBalance], as_of: date) -> TrialBalance:
@@ -228,4 +230,4 @@ def _section_csv(section: Section):
     yield [section.title, "", ""]
     for row in section.rows:
         yield [row.code, row.name, row.amount]
-    yield ["", f"Total {section.title}", section.total]
+    yield ["", _("Total %(section)s") % {"section": section.title}, section.total]

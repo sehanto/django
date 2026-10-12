@@ -8,6 +8,7 @@ accepted for historical data.
 import re
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 _NON_DIGITS = re.compile(r"\D")
 
@@ -19,7 +20,7 @@ def normalize_npwp(value: str) -> str:
 def validate_npwp(value: str) -> str:
     digits = normalize_npwp(value)
     if len(digits) not in (15, 16):
-        raise ValidationError("NPWP harus terdiri dari 15 atau 16 digit.")
+        raise ValidationError(_("NPWP must have 15 or 16 digits."))
     return digits
 
 

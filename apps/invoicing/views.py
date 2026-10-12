@@ -3,6 +3,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
@@ -15,9 +16,28 @@ from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, VoidF
 from .models import Invoice, InvoiceKind
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for
 
+# Complete phrases rather than fragments, so each language can word them naturally.
 KIND_LABELS = {
-    InvoiceKind.SALES: {"title": "Faktur Penjualan", "contact": "Pelanggan", "short": "Penjualan"},
-    InvoiceKind.PURCHASE: {"title": "Tagihan Pembelian", "contact": "Pemasok", "short": "Pembelian"},
+    InvoiceKind.SALES: {
+        "title": _("Sales invoice"),
+        "plural": _("Sales invoices"),
+        "contact": _("Customer"),
+        "new": _("New sales invoice"),
+        "edit": _("Edit draft sales invoice"),
+        "create": _("New sale"),
+        "outstanding": _("Unpaid receivables"),
+        "aging": _("View receivables aging report"),
+    },
+    InvoiceKind.PURCHASE: {
+        "title": _("Purchase bill"),
+        "plural": _("Purchase bills"),
+        "contact": _("Supplier"),
+        "new": _("New purchase bill"),
+        "edit": _("Edit draft purchase bill"),
+        "create": _("New purchase"),
+        "outstanding": _("Unpaid payables"),
+        "aging": _("View payables aging report"),
+    },
 }
 
 
@@ -103,9 +123,12 @@ class InvoiceFormView(InvoiceKindMixin, WriteMixin, TemplateView):
                     if issue:
                         saved = services.issue_invoice(invoice=saved, issued_by=request.user)
                 if issue:
-                    messages.success(request, f"{KIND_LABELS[self.kind]['title']} {saved.number} diterbitkan.")
+                    messages.success(
+                        request,
+                        _("%(document)s %(number)s issued.") % {"document": KIND_LABELS[self.kind]["title"], "number": saved.number},
+                    )
                 else:
-                    messages.success(request, "Draf disimpan.")
+                    messages.success(request, _("Draft saved."))
                 return redirect("invoicing:detail", kind=self.kind, pk=saved.pk)
             except DomainError as exc:
                 form.add_error(None, exc.message)
@@ -166,7 +189,7 @@ class InvoiceActionView(InvoiceKindMixin, WriteMixin, View):
 class InvoiceIssueView(InvoiceActionView):
     def act(self, invoice):
         invoice = services.issue_invoice(invoice=invoice, issued_by=self.request.user)
-        messages.success(self.request, f"Faktur {invoice.number} diterbitkan dan dijurnal.")
+        messages.success(self.request, _("Invoice %(number)s issued and posted to the ledger.") % {"number": invoice.number})
         return self.detail_url(invoice)
 
 
@@ -175,14 +198,14 @@ class InvoiceVoidView(InvoiceActionView):
         form = VoidForm(self.request.POST)
         on = form.cleaned_data["date"] if form.is_valid() else timezone.localdate()
         services.void_invoice(invoice=invoice, on=on, voided_by=self.request.user)
-        messages.success(self.request, f"Faktur {invoice.number} dibatalkan; jurnal telah dibalik.")
+        messages.success(self.request, _("Invoice %(number)s voided; its journal entry was reversed.") % {"number": invoice.number})
         return self.detail_url(invoice)
 
 
 class InvoiceDeleteView(InvoiceActionView):
     def act(self, invoice):
         services.delete_draft_invoice(invoice=invoice)
-        messages.success(self.request, "Draf dihapus.")
+        messages.success(self.request, _("Draft deleted."))
         return reverse("invoicing:list", kwargs={"kind": self.kind})
 
 
@@ -191,9 +214,9 @@ class PaymentCreateView(InvoiceActionView):
         form = PaymentForm(self.request.POST, organization=self.organization)
         if not form.is_valid():
             errors = "; ".join(e for errs in form.errors.values() for e in errs)
-            raise DomainError(f"Data pembayaran tidak valid: {errors}")
+            raise DomainError(_("Invalid payment data: %(errors)s") % {"errors": errors})
         payment = services.record_payment(invoice=invoice, created_by=self.request.user, **form.cleaned_data)
-        messages.success(self.request, f"Pembayaran {payment.number} dicatat.")
+        messages.success(self.request, _("Payment %(number)s recorded.") % {"number": payment.number})
         return self.detail_url(invoice)
 
 
@@ -216,7 +239,7 @@ class PaymentVoidView(WriteMixin, View):
         payment = get_object_or_404(payments_for(self.organization), pk=pk)
         try:
             services.void_payment(payment=payment, on=timezone.localdate(), voided_by=request.user)
-            messages.success(request, f"Pembayaran {payment.number} dibatalkan.")
+            messages.success(request, _("Payment %(number)s voided.") % {"number": payment.number})
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("invoicing:detail", kind=payment.invoice.kind, pk=payment.invoice_id)
@@ -243,7 +266,7 @@ class ItemFormMixin(WriteMixin):
 
     def form_valid(self, form):
         form.instance.organization = self.organization
-        messages.success(self.request, "Barang/jasa disimpan.")
+        messages.success(self.request, _("Item saved."))
         return super().form_valid(form)
 
 

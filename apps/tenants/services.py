@@ -2,6 +2,7 @@
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils.translation import gettext as _
 
 from apps.core.exceptions import PlanLimitExceeded, ValidationFailed
 from apps.ledger.services import seed_chart_of_accounts
@@ -40,9 +41,10 @@ def create_organization(*, owner, name: str, legal_form: str, **profile) -> Orga
 
 @transaction.atomic
 def register_owner_with_organization(
-    *, email: str, password: str, full_name: str, organization_name: str, legal_form: str
+    *, email: str, password: str, full_name: str, organization_name: str, legal_form: str, language: str | None = None
 ):
-    user = User.objects.create_user(email=email, password=password, full_name=full_name)
+    extra = {"language": language} if language else {}
+    user = User.objects.create_user(email=email, password=password, full_name=full_name, **extra)
     organization = create_organization(owner=user, name=organization_name, legal_form=legal_form)
     return user, organization
 
@@ -51,7 +53,8 @@ def _ensure_user_capacity(organization: Organization, plan: Plan | None = None) 
     plan = plan or organization.plan
     if plan.max_users is not None and organization.memberships.count() >= plan.max_users:
         raise PlanLimitExceeded(
-            f"Paket {plan.name} hanya mengizinkan {plan.max_users} pengguna. Silakan tingkatkan paket Anda."
+            _("The %(plan)s plan allows only %(limit)s users. Please upgrade your plan.")
+            % {"plan": plan.name, "limit": plan.max_users}
         )
 
 
@@ -59,11 +62,11 @@ def _ensure_user_capacity(organization: Organization, plan: Plan | None = None) 
 def add_member(*, organization: Organization, email: str, role: str) -> Membership:
     user = User.objects.filter(email__iexact=email).first()
     if user is None:
-        raise ValidationFailed("Pengguna dengan email tersebut belum terdaftar. Minta mereka mendaftar terlebih dahulu.")
+        raise ValidationFailed(_("No user with that email is registered yet. Ask them to sign up first."))
     if Membership.objects.filter(organization=organization, user=user).exists():
-        raise ValidationFailed("Pengguna sudah menjadi anggota organisasi ini.")
+        raise ValidationFailed(_("This user is already a member of the organization."))
     if role == Role.OWNER:
-        raise ValidationFailed("Peran pemilik tidak dapat diberikan melalui undangan.")
+        raise ValidationFailed(_("The owner role cannot be given to a new member."))
     _ensure_user_capacity(organization)
     return Membership.objects.create(organization=organization, user=user, role=role)
 
@@ -72,9 +75,9 @@ def add_member(*, organization: Organization, email: str, role: str) -> Membersh
 def remove_member(*, organization: Organization, membership_id: int, acting_user) -> None:
     membership = Membership.objects.select_for_update().get(organization=organization, pk=membership_id)
     if membership.role == Role.OWNER:
-        raise ValidationFailed("Pemilik organisasi tidak dapat dihapus.")
+        raise ValidationFailed(_("The organization owner cannot be removed."))
     if membership.user_id == acting_user.pk:
-        raise ValidationFailed("Anda tidak dapat menghapus diri sendiri.")
+        raise ValidationFailed(_("You cannot remove yourself."))
     membership.delete()
 
 
@@ -88,7 +91,8 @@ def change_plan(*, organization: Organization, plan: Plan) -> Organization:
     member_count = organization.memberships.count()
     if plan.max_users is not None and member_count > plan.max_users:
         raise PlanLimitExceeded(
-            f"Organisasi memiliki {member_count} pengguna, melebihi batas paket {plan.name} ({plan.max_users})."
+            _("The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s).")
+            % {"count": member_count, "plan": plan.name, "limit": plan.max_users}
         )
     organization.plan = plan
     organization.save(update_fields=["plan", "updated_at"])

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
 from apps.core.forms import DateInput, OrganizationFormMixin
@@ -24,8 +25,8 @@ def default_line_account(organization, kind):
 
 class InvoiceForm(OrganizationFormMixin, forms.ModelForm):
     due_date = forms.DateField(
-        label="Jatuh tempo", required=False, widget=DateInput(),
-        help_text="Kosongkan untuk memakai termin pembayaran kontak.",
+        label=_("Due date"), required=False, widget=DateInput(),
+        help_text=_("Leave empty to use the contact's payment terms."),
     )
 
     class Meta:
@@ -38,24 +39,24 @@ class InvoiceForm(OrganizationFormMixin, forms.ModelForm):
         self.kind = kind
         if kind == InvoiceKind.SALES:
             self.fields["contact"].queryset = customers_for(self.organization)
-            self.fields["contact"].label = "Pelanggan"
+            self.fields["contact"].label = _("Customer")
         else:
             self.fields["contact"].queryset = suppliers_for(self.organization)
-            self.fields["contact"].label = "Pemasok"
+            self.fields["contact"].label = _("Supplier")
         if kind == InvoiceKind.PURCHASE or not self.organization.is_pkp:
             del self.fields["tax_invoice_number"]
 
 
 class InvoiceLineForm(OrganizationFormMixin, forms.Form):
-    item = forms.ModelChoiceField(label="Barang/Jasa", queryset=Item.objects.none(), required=False)
-    description = forms.CharField(label="Deskripsi", max_length=255)
-    account = forms.ModelChoiceField(label="Akun", queryset=Account.objects.none())
-    quantity = forms.DecimalField(label="Qty", max_digits=14, decimal_places=3, min_value=0.001, initial=1)
-    unit_price = forms.DecimalField(label="Harga", max_digits=18, decimal_places=2, min_value=0)
+    item = forms.ModelChoiceField(label=_("Item"), queryset=Item.objects.none(), required=False)
+    description = forms.CharField(label=_("Item description"), max_length=255)
+    account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())
+    quantity = forms.DecimalField(label=_("Qty"), max_digits=14, decimal_places=3, min_value=0.001, initial=1)
+    unit_price = forms.DecimalField(label=_("Price"), max_digits=18, decimal_places=2, min_value=0)
     discount_percent = forms.DecimalField(
-        label="Disc %", max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False
+        label=_("Disc. %"), max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False
     )
-    tax_rate = forms.ModelChoiceField(label="Pajak", queryset=TaxRate.objects.none(), required=False)
+    tax_rate = forms.ModelChoiceField(label=_("Tax"), queryset=TaxRate.objects.none(), required=False)
 
     def __init__(self, *args, kind, **kwargs):
         super().__init__(*args, **kwargs)
@@ -98,7 +99,7 @@ class PaymentForm(OrganizationFormMixin, forms.ModelForm):
 
 
 class VoidForm(forms.Form):
-    date = forms.DateField(label="Tanggal pembatalan", widget=DateInput())
+    date = forms.DateField(label=_("Void date"), widget=DateInput())
 
 
 class ItemForm(OrganizationFormMixin, forms.ModelForm):

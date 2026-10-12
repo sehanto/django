@@ -12,6 +12,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.money import ZERO, quantize
@@ -63,7 +64,9 @@ def seed_chart_of_accounts(organization) -> None:
 def get_system_account(organization, role: SystemRole) -> Account:
     account = Account.objects.for_organization(organization).filter(system_role=role).first()
     if account is None:
-        raise ValidationFailed(f"Akun sistem '{SystemRole(role).label}' belum ditetapkan di bagan akun.")
+        raise ValidationFailed(
+            _("The system account '%(role)s' is not set in the chart of accounts.") % {"role": SystemRole(role).label}
+        )
     return account
 
 
@@ -74,7 +77,7 @@ def _has_postings(account: Account) -> bool:
 @transaction.atomic
 def create_account(*, organization, **fields) -> Account:
     if Account.objects.for_organization(organization).filter(code=fields["code"]).exists():
-        raise ValidationFailed(f"Kode akun {fields['code']} sudah digunakan.")
+        raise ValidationFailed(_("Account code %(code)s is already in use.") % {"code": fields["code"]})
     return Account.objects.create(organization=organization, **fields)
 
 
@@ -85,16 +88,16 @@ def update_account(*, account: Account, **fields) -> Account:
         and fields["category"] != account.category
         and _has_postings(account)
     ):
-        raise ValidationFailed("Kategori akun yang sudah memiliki transaksi tidak dapat diubah.")
+        raise ValidationFailed(_("The category of an account with transactions cannot be changed."))
     if account.system_role and fields.get("is_active") is False:
-        raise ValidationFailed("Akun sistem tidak dapat dinonaktifkan.")
+        raise ValidationFailed(_("System accounts cannot be deactivated."))
     duplicate = (
         Account.objects.for_organization(account.organization)
         .filter(code=fields.get("code", account.code))
         .exclude(pk=account.pk)
     )
     if duplicate.exists():
-        raise ValidationFailed("Kode akun sudah digunakan.")
+        raise ValidationFailed(_("This account code is already in use."))
     for name, value in fields.items():
         setattr(account, name, value)
     account.save()
@@ -104,9 +107,9 @@ def update_account(*, account: Account, **fields) -> Account:
 @transaction.atomic
 def delete_account(*, account: Account) -> None:
     if account.system_role:
-        raise ValidationFailed("Akun sistem tidak dapat dihapus.")
+        raise ValidationFailed(_("System accounts cannot be deleted."))
     if _has_postings(account):
-        raise ValidationFailed("Akun yang sudah memiliki transaksi tidak dapat dihapus; nonaktifkan saja.")
+        raise ValidationFailed(_("Accounts with transactions cannot be deleted; deactivate them instead."))
     account.delete()
 
 
@@ -117,9 +120,9 @@ def _validate(organization, entry_date: date, lines: Sequence[JournalLineInput],
     validate_lines(LineAmount(line.debit, line.credit) for line in lines)
     for line in lines:
         if line.account.organization_id != organization.pk:
-            raise ValidationFailed("Akun tidak ditemukan pada organisasi ini.")
+            raise ValidationFailed(_("Account not found in this organization."))
         if not line.account.is_active:
-            raise ValidationFailed(f"Akun {line.account} tidak aktif.")
+            raise ValidationFailed(_("Account %(account)s is inactive.") % {"account": line.account})
     if posting:
         ensure_period_open(entry_date, organization.lock_date)
 
@@ -169,9 +172,9 @@ def create_journal_entry(
 
 def _ensure_editable_manual_draft(entry: JournalEntry) -> None:
     if entry.status != JournalEntry.Status.DRAFT:
-        raise InvalidStateTransition("Hanya jurnal berstatus draf yang dapat diubah.")
+        raise InvalidStateTransition(_("Only draft journal entries can be changed."))
     if entry.source != Source.MANUAL:
-        raise InvalidStateTransition("Jurnal otomatis hanya dapat diubah melalui dokumen sumbernya.")
+        raise InvalidStateTransition(_("Automatic journal entries can only be changed through their source document."))
 
 
 @transaction.atomic
@@ -191,7 +194,7 @@ def update_draft_journal_entry(
 def post_journal_entry(*, entry: JournalEntry) -> JournalEntry:
     entry = JournalEntry.objects.select_for_update().get(pk=entry.pk)
     if entry.status != JournalEntry.Status.DRAFT:
-        raise InvalidStateTransition("Jurnal sudah diposting.")
+        raise InvalidStateTransition(_("The journal entry is already posted."))
     lines = [JournalLineInput(l.account, l.debit, l.credit, l.description) for l in entry.lines.select_related("account")]
     _validate(entry.organization, entry.date, lines, posting=True)
     entry.status = JournalEntry.Status.POSTED
@@ -211,11 +214,11 @@ def reverse_journal_entry(*, entry: JournalEntry, date: date, created_by=None, d
     """Cancel a posted entry by recording its mirror image (never deleting)."""
     entry = JournalEntry.objects.select_for_update().get(pk=entry.pk)
     if not entry.is_posted:
-        raise InvalidStateTransition("Hanya jurnal yang sudah diposting yang dapat dibalik.")
+        raise InvalidStateTransition(_("Only posted journal entries can be reversed."))
     if entry.is_reversed:
-        raise InvalidStateTransition("Jurnal ini sudah pernah dibalik.")
+        raise InvalidStateTransition(_("This journal entry has already been reversed."))
     if entry.source == Source.REVERSAL:
-        raise InvalidStateTransition("Jurnal pembalik tidak dapat dibalik lagi.")
+        raise InvalidStateTransition(_("A reversing entry cannot itself be reversed."))
     mirrored = [
         JournalLineInput(line.account, debit=line.credit, credit=line.debit, description=line.description)
         for line in entry.lines.select_related("account")
@@ -236,5 +239,5 @@ def reverse_journal_entry(*, entry: JournalEntry, date: date, created_by=None, d
 
 def reverse_manual_journal_entry(*, entry: JournalEntry, date: date, created_by=None) -> JournalEntry:
     if entry.source != Source.MANUAL:
-        raise InvalidStateTransition("Jurnal otomatis dibatalkan melalui dokumen sumbernya (faktur/pembayaran).")
+        raise InvalidStateTransition(_("Automatic journal entries are cancelled through their source document (invoice or payment)."))
     return reverse_journal_entry(entry=entry, date=date, created_by=created_by)

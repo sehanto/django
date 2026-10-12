@@ -1,11 +1,11 @@
-{% load ui %}
+{% load i18n ui %}
 <form method="get" class="row g-2 align-items-end mb-3 no-print">
   {% for field in form %}
-    <div class="col-sm-auto"><label class="form-label small mb-1">{{ field.label }}</label>
+    <div class="col-sm-auto"><label class="form-label small mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}</div>
   {% endfor %}
-  <div class="col-sm-auto"><button class="btn btn-primary">Tampilkan</button></div>
+  <div class="col-sm-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>
   {% if csv and report %}<div class="col-sm-auto"><button name="unduh" value="csv" class="btn btn-outline-secondary"><i class="bi bi-download"></i> CSV</button></div>{% endif %}
-  <div class="col-sm-auto"><button type="button" onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i></button></div>
+  <div class="col-sm-auto"><button type="button" onclick="window.print()" class="btn btn-outline-secondary" aria-label="{% translate 'Print' %}"><i class="bi bi-printer"></i></button></div>
   {% for e in form.non_field_errors %}<div class="col-12 text-danger small">{{ e }}</div>{% endfor %}
 </form>

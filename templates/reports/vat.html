@@ -1,18 +1,17 @@
-{% extends "base.html" %}
-{% load money %}
-{% block title %}Rekap PPN{% endblock %}
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{% translate "PPN summary" %}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">Rekap PPN {{ year }}</h1>
-  <form method="get"><select name="tahun" class="form-select" onchange="this.form.submit()">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
+  <h1 class="h4 mb-0">{% blocktranslate trimmed %}PPN summary {{ year }}{% endblocktranslate %}</h1>
+  <form method="get"><select name="tahun" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0">
-  <thead><tr><th>Masa</th><th class="num">Nilai Penjualan</th><th class="num">PPN Keluaran</th><th class="num">Nilai Pembelian</th><th class="num">PPN Masukan</th><th class="num">Kurang/(Lebih) Bayar</th></tr></thead>
+  <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Sales value" %}</th><th class="num">{% translate "Output PPN" %}</th><th class="num">{% translate "Purchase value" %}</th><th class="num">{% translate "Input PPN" %}</th><th class="num">{% translate "Payable/(overpaid)" %}</th></tr></thead>
   <tbody>{% for r in rows %}
     <tr><td>{{ r.month|stringformat:"02d" }}/{{ year }}</td><td class="num">{{ r.output_base|rupiah }}</td><td class="num">{{ r.output|rupiah }}</td>
       <td class="num">{{ r.input_base|rupiah }}</td><td class="num">{{ r.input|rupiah }}</td><td class="num fw-semibold {% if r.net < 0 %}text-success{% endif %}">{{ r.net|rupiah }}</td></tr>
   {% endfor %}</tbody>
-  <tfoot><tr class="fw-bold"><td>Total</td><td class="num">{{ totals.output_base|rupiah }}</td><td class="num">{{ totals.output|rupiah }}</td><td class="num">{{ totals.input_base|rupiah }}</td><td class="num">{{ totals.input|rupiah }}</td><td class="num">{{ totals.net|rupiah }}</td></tr></tfoot>
+  <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td><td class="num">{{ totals.output_base|rupiah }}</td><td class="num">{{ totals.output|rupiah }}</td><td class="num">{{ totals.input_base|rupiah }}</td><td class="num">{{ totals.input|rupiah }}</td><td class="num">{{ totals.net|rupiah }}</td></tr></tfoot>
 </table></div></div>
-<p class="small text-secondary mt-2">Dihitung dari faktur yang telah diterbitkan (tidak termasuk yang dibatalkan). PPN Masukan hanya dapat dikreditkan oleh PKP.{% if not current_organization.is_pkp %} Organisasi ini belum PKP.{% endif %}</p>
+<p class="small text-secondary mt-2">{% translate "Calculated from issued invoices (excluding voided ones). Only a PKP can credit input PPN." %}{% if not current_organization.is_pkp %} {% translate "This organization is not a PKP yet." %}{% endif %}</p>
 {% endblock %}

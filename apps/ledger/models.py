@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 
@@ -10,22 +11,22 @@ from .domain import AccountCategory, AccountType, NormalBalance, SystemRole, nor
 class Account(TenantOwnedModel):
     """An entry in the organization's chart of accounts (Bagan Akun)."""
 
-    code = models.CharField("kode", max_length=20)
-    name = models.CharField("nama akun", max_length=150)
-    category = models.CharField("kategori", max_length=30, choices=AccountCategory.choices)
+    code = models.CharField(_("code"), max_length=20)
+    name = models.CharField(_("account name"), max_length=150)
+    category = models.CharField(_("category"), max_length=30, choices=AccountCategory.choices)
     is_contra = models.BooleanField(
-        "akun kontra", default=False, help_text="Mis. Akumulasi Penyusutan, Prive, Retur Penjualan."
+        _("contra account"), default=False, help_text=_("E.g. accumulated depreciation, owner's drawings, sales returns.")
     )
     system_role = models.CharField(
-        "peran sistem", max_length=30, choices=SystemRole.choices, null=True, blank=True
+        _("system role"), max_length=30, choices=SystemRole.choices, null=True, blank=True
     )
-    description = models.CharField("keterangan", max_length=255, blank=True)
-    is_active = models.BooleanField("aktif", default=True)
+    description = models.CharField(_("description"), max_length=255, blank=True)
+    is_active = models.BooleanField(_("active"), default=True)
 
     class Meta:
         ordering = ["code"]
-        verbose_name = "akun"
-        verbose_name_plural = "bagan akun"
+        verbose_name = _("account")
+        verbose_name_plural = _("chart of accounts")
         constraints = [
             models.UniqueConstraint(fields=["organization", "code"], name="unique_account_code"),
             models.UniqueConstraint(
@@ -53,36 +54,36 @@ class Account(TenantOwnedModel):
 
 class JournalEntry(TenantOwnedModel):
     class Status(models.TextChoices):
-        DRAFT = "draft", "Draf"
-        POSTED = "posted", "Diposting"
+        DRAFT = "draft", _("Draft")
+        POSTED = "posted", _("Posted")
 
     class Source(models.TextChoices):
-        MANUAL = "manual", "Jurnal Umum"
-        SALES_INVOICE = "sales_invoice", "Faktur Penjualan"
-        PURCHASE_INVOICE = "purchase_invoice", "Tagihan Pembelian"
-        PAYMENT = "payment", "Pembayaran"
-        TAX = "tax", "Pajak"
-        REVERSAL = "reversal", "Pembalikan"
+        MANUAL = "manual", _("General journal")
+        SALES_INVOICE = "sales_invoice", _("Sales invoice")
+        PURCHASE_INVOICE = "purchase_invoice", _("Purchase bill")
+        PAYMENT = "payment", _("Payment")
+        TAX = "tax", _("Tax")
+        REVERSAL = "reversal", _("Reversal")
 
-    number = models.CharField("nomor", max_length=30)
-    date = models.DateField("tanggal")
-    description = models.CharField("keterangan", max_length=255)
-    reference = models.CharField("referensi", max_length=100, blank=True)
-    status = models.CharField("status", max_length=10, choices=Status.choices, default=Status.DRAFT)
-    source = models.CharField("sumber", max_length=20, choices=Source.choices, default=Source.MANUAL)
+    number = models.CharField(_("number"), max_length=30)
+    date = models.DateField(_("date"))
+    description = models.CharField(_("description"), max_length=255)
+    reference = models.CharField(_("reference"), max_length=100, blank=True)
+    status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.DRAFT)
+    source = models.CharField(_("source"), max_length=20, choices=Source.choices, default=Source.MANUAL)
     reversal_of = models.OneToOneField(
         "self", null=True, blank=True, on_delete=models.PROTECT, related_name="reversed_by",
-        verbose_name="membalik jurnal",
+        verbose_name=_("reverses entry"),
     )
-    posted_at = models.DateTimeField("waktu posting", null=True, blank=True)
+    posted_at = models.DateTimeField(_("posted at"), null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
 
     class Meta:
         ordering = ["-date", "-id"]
-        verbose_name = "jurnal"
-        verbose_name_plural = "jurnal"
+        verbose_name = _("journal entry")
+        verbose_name_plural = _("journal entries")
         constraints = [
             models.UniqueConstraint(fields=["organization", "number"], name="unique_journal_number"),
         ]
@@ -106,10 +107,10 @@ class JournalEntry(TenantOwnedModel):
 
 class JournalLine(TimeStampedModel):
     entry = models.ForeignKey(JournalEntry, on_delete=models.CASCADE, related_name="lines")
-    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="lines", verbose_name="akun")
-    description = models.CharField("keterangan", max_length=255, blank=True)
-    debit = money_field("debit")
-    credit = money_field("kredit")
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, related_name="lines", verbose_name=_("account"))
+    description = models.CharField(_("description"), max_length=255, blank=True)
+    debit = money_field(_("debit"))
+    credit = money_field(_("credit"))
 
     class Meta:
         ordering = ["id"]

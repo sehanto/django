@@ -1,14 +1,14 @@
-{% extends "base.html" %}
-{% block title %}Profil{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Profile" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Profil Saya</h1>
+<h1 class="h4 mb-3">{% translate "My profile" %}</h1>
 <div class="card"><div class="card-body">
-  <p class="text-secondary">Email: <strong>{{ request.user.email }}</strong></p>
+  <p class="text-secondary">{% translate "Email" %}: <strong>{{ request.user.email }}</strong></p>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" %}
     <div class="mt-4 d-flex gap-2">
-      <button class="btn btn-primary">Simpan</button>
-      <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">Ubah kata sandi</a>
+      <button class="btn btn-primary">{% translate "Save" %}</button>
+      <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">{% translate "Change password" %}</a>
     </div>
   </form>
 </div></div>

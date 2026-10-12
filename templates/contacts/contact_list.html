@@ -1,30 +1,30 @@
-{% extends "base.html" %}
-{% block title %}Kontak{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Contacts" %}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">Kontak</h1>
-  {% if can_write %}<a href="{% url 'contacts:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Kontak Baru</a>{% endif %}
+  <h1 class="h4 mb-0">{% translate "Contacts" %}</h1>
+  {% if can_write %}<a href="{% url 'contacts:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New contact" %}</a>{% endif %}
 </div>
 <form class="row g-2 mb-3" method="get">
-  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Cari nama, email, NPWP"></div>
-  <div class="col-md-4"><select name="kind" class="form-select"><option value="">Semua jenis</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search name, email, NPWP' %}"></div>
+  <div class="col-md-4"><select name="kind" class="form-select"><option value="">{% translate "All types" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>Nama</th><th>Jenis</th><th>NPWP</th><th>Telepon</th><th>Kota</th><th></th></tr></thead>
+  <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "NPWP" %}</th><th>{% translate "Phone" %}</th><th>{% translate "City" %}</th><th></th></tr></thead>
   <tbody>
   {% for c in object_list %}
     <tr class="{% if not c.is_active %}text-secondary{% endif %}">
-      <td>{{ c.name }}{% if not c.is_active %} <span class="badge text-bg-secondary">nonaktif</span>{% endif %}</td>
+      <td>{{ c.name }}{% if not c.is_active %} <span class="badge text-bg-secondary">{% translate "inactive" %}</span>{% endif %}</td>
       <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.city }}</td>
       <td class="text-end text-nowrap">
-        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'sales' %}?q={{ c.name|urlencode }}" title="Faktur penjualan"><i class="bi bi-receipt"></i></a>{% endif %}
-        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'purchase' %}?q={{ c.name|urlencode }}" title="Tagihan pembelian"><i class="bi bi-bag"></i></a>{% endif %}
-        {% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'contacts:update' c.pk %}"><i class="bi bi-pencil"></i></a>
-        <form method="post" action="{% url 'contacts:delete' c.pk %}" class="d-inline" onsubmit="return confirm('Hapus kontak?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>{% endif %}
+        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'sales' %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}"><i class="bi bi-receipt"></i></a>{% endif %}
+        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' 'purchase' %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}"><i class="bi bi-bag"></i></a>{% endif %}
+        {% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'contacts:update' c.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil"></i></a>
+        <form method="post" action="{% url 'contacts:delete' c.pk %}" class="d-inline" data-confirm="{% translate 'Delete this contact?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash"></i></button></form>{% endif %}
       </td>
     </tr>
-  {% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">Belum ada kontak.</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">{% translate "No contacts yet." %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

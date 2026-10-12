@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TimeStampedModel, money_field
 
@@ -9,18 +10,18 @@ from .roles import Role
 class Plan(TimeStampedModel):
     """Subscription tier. ``None`` limits mean unlimited."""
 
-    code = models.SlugField("kode", unique=True)
-    name = models.CharField("nama", max_length=50)
-    monthly_price = money_field("harga per bulan")
-    max_users = models.PositiveIntegerField("maks. pengguna", null=True, blank=True)
-    max_invoices_per_month = models.PositiveIntegerField("maks. faktur/bulan", null=True, blank=True)
-    is_default = models.BooleanField("paket default", default=False)
+    code = models.SlugField(_("code"), unique=True)
+    name = models.CharField(_("name"), max_length=50)
+    monthly_price = money_field(_("monthly price"))
+    max_users = models.PositiveIntegerField(_("max. users"), null=True, blank=True)
+    max_invoices_per_month = models.PositiveIntegerField(_("max. invoices per month"), null=True, blank=True)
+    is_default = models.BooleanField(_("default plan"), default=False)
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ["sort_order"]
-        verbose_name = "paket langganan"
-        verbose_name_plural = "paket langganan"
+        verbose_name = _("subscription plan")
+        verbose_name_plural = _("subscription plans")
 
     def __str__(self):
         return self.name
@@ -28,46 +29,47 @@ class Plan(TimeStampedModel):
 
 class Organization(TimeStampedModel):
     class LegalForm(models.TextChoices):
-        PERORANGAN = "perorangan", "Usaha Perorangan / UD"
-        PT_PERORANGAN = "pt_perorangan", "PT Perorangan"
-        CV = "cv", "CV (Persekutuan Komanditer)"
-        FIRMA = "firma", "Firma"
-        KOPERASI = "koperasi", "Koperasi"
-        PT = "pt", "PT (Perseroan Terbatas)"
+        PERORANGAN = "perorangan", _("Sole proprietorship / UD")
+        PT_PERORANGAN = "pt_perorangan", _("Individual limited company (PT Perorangan)")
+        CV = "cv", _("CV (limited partnership)")
+        FIRMA = "firma", _("General partnership (Firma)")
+        KOPERASI = "koperasi", _("Cooperative (Koperasi)")
+        PT = "pt", _("PT (limited liability company)")
 
-    name = models.CharField("nama usaha", max_length=200)
-    legal_form = models.CharField("bentuk usaha", max_length=20, choices=LegalForm.choices)
-    npwp = models.CharField("NPWP", max_length=16, blank=True, help_text="15 atau 16 digit tanpa tanda baca.")
-    nib = models.CharField("NIB", max_length=13, blank=True, help_text="Nomor Induk Berusaha (OSS).")
-    address = models.TextField("alamat", blank=True)
-    city = models.CharField("kota/kabupaten", max_length=100, blank=True)
-    phone = models.CharField("telepon", max_length=30, blank=True)
-    email = models.EmailField("email", blank=True)
+    name = models.CharField(_("business name"), max_length=200)
+    legal_form = models.CharField(_("legal form"), max_length=20, choices=LegalForm.choices)
+    npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True, help_text=_("15 or 16 digits without punctuation."))
+    nib = models.CharField(_("business ID (NIB)"), max_length=13, blank=True, help_text=_("Nomor Induk Berusaha, issued through OSS."))
+    address = models.TextField(_("address"), blank=True)
+    city = models.CharField(_("city/regency"), max_length=100, blank=True)
+    phone = models.CharField(_("phone"), max_length=30, blank=True)
+    email = models.EmailField(_("email"), blank=True)
 
     is_pkp = models.BooleanField(
-        "Pengusaha Kena Pajak (PKP)",
+        _("VAT-registered business (PKP)"),
         default=False,
-        help_text="Aktifkan jika usaha telah dikukuhkan sebagai PKP dan wajib memungut PPN.",
+        help_text=_("Enable if the business is registered as a PKP and must charge PPN (VAT)."),
     )
     uses_pph_final = models.BooleanField(
-        "menggunakan PPh Final UMKM",
+        _("uses MSME final income tax (PPh Final)"),
         default=True,
-        help_text="PP 55/2022: PPh final 0,5% dari peredaran bruto.",
+        # xgettext:no-python-format
+        help_text=_("PP 55/2022: 0.5% final income tax on gross turnover."),
     )
     lock_date = models.DateField(
-        "tanggal kunci periode",
+        _("period lock date"),
         null=True,
         blank=True,
-        help_text="Transaksi pada atau sebelum tanggal ini tidak dapat diubah.",
+        help_text=_("Transactions on or before this date cannot be changed."),
     )
 
-    plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name="organizations", verbose_name="paket")
+    plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name="organizations", verbose_name=_("plan"))
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through="Membership", related_name="organizations")
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "organisasi"
-        verbose_name_plural = "organisasi"
+        verbose_name = _("organization")
+        verbose_name_plural = _("organizations")
 
     def __str__(self):
         return self.name
@@ -81,14 +83,14 @@ class Organization(TimeStampedModel):
 class Membership(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="memberships")
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="memberships")
-    role = models.CharField("peran", max_length=20, choices=Role.choices, default=Role.VIEWER)
+    role = models.CharField(_("role"), max_length=20, choices=Role.choices, default=Role.VIEWER)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "organization"], name="unique_membership"),
         ]
-        verbose_name = "anggota"
-        verbose_name_plural = "anggota"
+        verbose_name = _("member")
+        verbose_name_plural = _("members")
 
     def __str__(self):
         return f"{self.user} @ {self.organization} ({self.get_role_display()})"

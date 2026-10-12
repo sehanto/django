@@ -1,5 +1,7 @@
 """Create a demo tenant with realistic MSME transactions.
 
+The demo business data (names, journal descriptions) is Indonesian on purpose.
+
 Usage: python manage.py seed_demo [--email demo@bukuumkm.id] [--password demo12345]
 """
 
@@ -24,7 +26,7 @@ D = Decimal
 
 
 class Command(BaseCommand):
-    help = "Buat organisasi demo beserta transaksi contoh."
+    help = "Create a demo organization with sample transactions."
 
     def add_arguments(self, parser):
         parser.add_argument("--email", default="demo@bukuumkm.id")
@@ -34,7 +36,7 @@ class Command(BaseCommand):
     def handle(self, *args, email, password, **options):
         User = get_user_model()
         if User.objects.filter(email=email).exists():
-            raise CommandError(f"Pengguna {email} sudah ada.")
+            raise CommandError(f"User {email} already exists.")
         user = User.objects.create_user(email=email, password=password, full_name="Rina Wulandari")
         org = create_organization(
             owner=user, name="Kopi Nusantara Rina", legal_form="perorangan", is_pkp=True,
@@ -115,4 +117,4 @@ class Command(BaseCommand):
                         lines=[JournalLineInput(acc(code), debit=D(amount)), JournalLineInput(acc("1-1100"), credit=D(amount))],
                     )
 
-        self.stdout.write(self.style.SUCCESS(f"Demo siap. Masuk dengan {email} / {password}"))
+        self.stdout.write(self.style.SUCCESS(f"Demo ready. Sign in with {email} / {password}"))

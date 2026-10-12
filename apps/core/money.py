@@ -23,7 +23,7 @@ def to_decimal(value) -> Decimal:
     try:
         return Decimal(str(value))
     except InvalidOperation as exc:
-        raise ValueError(f"Nilai uang tidak valid: {value!r}") from exc
+        raise ValueError(f"Invalid money amount: {value!r}") from exc
 
 
 def quantize(value) -> Decimal:

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
-{% block title %}Akses ditolak{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Access denied" %}{% endblock %}
 {% block content %}
-<div class="text-center py-5"><h1 class="display-6">Akses ditolak</h1><p class="text-secondary">Peran Anda tidak memiliki izin untuk tindakan ini.</p>
-<a href="{% url 'dashboard:home' %}" class="btn btn-primary">Kembali ke dasbor</a></div>
+<div class="text-center py-5"><h1 class="display-6">{% translate "Access denied" %}</h1><p class="text-secondary">{% translate "Your role does not have permission for this action." %}</p>
+<a href="{% url 'dashboard:home' %}" class="btn btn-primary">{% translate "Back to dashboard" %}</a></div>
 {% endblock %}

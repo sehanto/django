@@ -1,10 +1,10 @@
-{% extends "accounts/_auth_layout.html" %}
-{% block title %}Daftar{% endblock %}
+{% extends "accounts/_auth_layout.html" %}{% load i18n %}
+{% block title %}{% translate "Sign up" %}{% endblock %}
 {% block auth_content %}
-<h2 class="h5 mb-3">Daftar & buat usaha Anda</h2>
+<h2 class="h5 mb-3">{% translate "Sign up and create your business" %}</h2>
 <form method="post">{% csrf_token %}
   {% include "partials/form_fields.html" with col="col-12" %}
-  <button class="btn btn-primary w-100 mt-4">Daftar</button>
+  <button class="btn btn-primary w-100 mt-4">{% translate "Sign up" %}</button>
 </form>
-<p class="text-center small mt-3 mb-0">Sudah punya akun? <a href="{% url 'accounts:login' %}">Masuk</a></p>
+<p class="text-center small mt-3 mb-0">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a></p>
 {% endblock %}

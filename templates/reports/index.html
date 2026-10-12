@@ -1,19 +1,19 @@
-{% extends "base.html" %}
-{% block title %}Laporan{% endblock %}
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Reports" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Laporan</h1>
+<h1 class="h4 mb-3">{% translate "Reports" %}</h1>
 <div class="row g-3">
-  {% include "reports/_card.html" with href="reports:income_statement" icon="graph-up" title="Laporan Laba Rugi" desc="Pendapatan, beban, dan laba bersih untuk suatu periode." %}
-  {% include "reports/_card.html" with href="reports:balance_sheet" icon="bank" title="Laporan Posisi Keuangan" desc="Aset, liabilitas, dan ekuitas per tanggal tertentu (neraca)." %}
-  {% include "reports/_card.html" with href="reports:trial_balance" icon="list-columns" title="Neraca Saldo" desc="Saldo debit dan kredit seluruh akun." %}
-  {% include "reports/_card.html" with href="reports:general_ledger" icon="journal-richtext" title="Buku Besar" desc="Mutasi dan saldo berjalan per akun." %}
-  {% include "reports/_card.html" with href="reports:vat" icon="percent" title="Rekap PPN" desc="PPN Keluaran dan PPN Masukan per masa pajak." %}
-  {% include "reports/_card.html" with href="taxes:pph_final" icon="calculator" title="PPh Final UMKM" desc="Perhitungan PPh Final 0,5% dari peredaran bruto bulanan." %}
+  {% include "reports/_card.html" with href="reports:income_statement" icon="graph-up" title=_("Income statement") desc=_("Revenue, expenses and net profit for a period.") %}
+  {% include "reports/_card.html" with href="reports:balance_sheet" icon="bank" title=_("Statement of financial position") desc=_("Assets, liabilities and equity at a given date (balance sheet).") %}
+  {% include "reports/_card.html" with href="reports:trial_balance" icon="list-columns" title=_("Trial balance") desc=_("Debit and credit balances of all accounts.") %}
+  {% include "reports/_card.html" with href="reports:general_ledger" icon="journal-richtext" title=_("General ledger") desc=_("Movements and running balance per account.") %}
+  {% include "reports/_card.html" with href="reports:vat" icon="percent" title=_("PPN summary") desc=_("Output and input PPN per tax period.") %}
+  {% include "reports/_card.html" with href="taxes:pph_final" icon="calculator" title=_("MSME PPh Final") desc=_("0.5% PPh Final calculated from monthly gross turnover.") %}
   <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary"></i>Umur Piutang & Utang</h2>
-    <p class="small text-secondary">Saldo terbuka berdasarkan lama jatuh tempo.</p>
-    <a href="{% url 'reports:aging' 'sales' %}" class="btn btn-sm btn-outline-primary">Piutang</a>
-    <a href="{% url 'reports:aging' 'purchase' %}" class="btn btn-sm btn-outline-primary">Utang</a>
+    <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary"></i>{% translate "Receivables & payables aging" %}</h2>
+    <p class="small text-secondary">{% translate "Open balances by days past due." %}</p>
+    <a href="{% url 'reports:aging' 'sales' %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
+    <a href="{% url 'reports:aging' 'purchase' %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>
   </div></div></div>
 </div>
 {% endblock %}

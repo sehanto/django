@@ -1,17 +1,16 @@
-{% extends "base.html" %}
-{% load money ui %}
-{% block title %}Pembayaran{% endblock %}
+{% extends "base.html" %}{% load i18n money ui %}
+{% block title %}{% translate "Payments" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Pembayaran</h1>
+<h1 class="h4 mb-3">{% translate "Payments" %}</h1>
 <form class="row g-2 mb-3" method="get">
-  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Cari nomor, faktur, kontak"></div>
-  <div class="col-md-4"><select name="kind" class="form-select"><option value="">Penerimaan & pengeluaran</option>
-    <option value="sales" {% if request.GET.kind == 'sales' %}selected{% endif %}>Penerimaan (penjualan)</option>
-    <option value="purchase" {% if request.GET.kind == 'purchase' %}selected{% endif %}>Pengeluaran (pembelian)</option></select></div>
-  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">Filter</button></div>
+  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, invoice, contact' %}"></div>
+  <div class="col-md-4"><select name="kind" class="form-select"><option value="">{% translate "Receipts & disbursements" %}</option>
+    <option value="sales" {% if request.GET.kind == 'sales' %}selected{% endif %}>{% translate "Receipts (sales)" %}</option>
+    <option value="purchase" {% if request.GET.kind == 'purchase' %}selected{% endif %}>{% translate "Disbursements (purchases)" %}</option></select></div>
+  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>Nomor</th><th>Tanggal</th><th>Kontak</th><th>Faktur</th><th>Akun</th><th>Metode</th><th class="num">Jumlah</th><th>Status</th></tr></thead>
+  <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Contact" %}</th><th>{% translate "Invoice" %}</th><th>{% translate "Account" %}</th><th>{% translate "Method" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for p in object_list %}
     <tr class="{% if p.status == 'void' %}text-secondary{% endif %}">
@@ -21,7 +20,7 @@
       <td class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>
       <td><span class="badge text-bg-{% if p.status == 'void' %}dark{% else %}success{% endif %}">{{ p.get_status_display }}</span></td>
     </tr>
-  {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">Belum ada pembayaran.</td></tr>
+  {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No payments yet." %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

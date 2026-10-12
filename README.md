@@ -1,8 +1,8 @@
 # BukuUMKM: Akuntansi SaaS untuk UMKM Indonesia
 
 Multi-tenant accounting SaaS for Indonesian micro, small and medium enterprises,
-built with **Django 5.2 LTS** and **PostgreSQL 18**. The UI is in Bahasa Indonesia;
-code, comments and docs are in English.
+built with **Django 5.2 LTS** and **PostgreSQL 18**. The interface is in Bahasa
+Indonesia by default, with English available per user. Code, comments and docs are in English.
 
 ## Features
 
@@ -17,6 +17,7 @@ code, comments and docs are in English.
 | **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Deposits are recorded with an NTPN and journaled automatically. Warns when turnover passes Rp4,8 miliar. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
+| **Bahasa** | Bahasa Indonesia (default) or English. Each user's choice is saved on their account, and an ID/EN switch sits in the sidebar and on the sign-in pages. |
 
 ## Architecture
 
@@ -111,8 +112,36 @@ The tests cover:
 - tenant isolation and role permissions
 - full HTTP flows (create → issue → pay)
 - statement integrity (trial balance and balance sheet always balance)
+- both interface languages, on every page, and a complete, compiled Indonesian catalog
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
+
+## Translations
+
+All interface text is written in English and marked for translation: `gettext` / `gettext_lazy`
+in Python, `{% translate %}` / `{% blocktranslate trimmed %}` in templates. The Indonesian text
+lives in `locale/id/LC_MESSAGES/django.po`.
+
+After adding or changing interface text:
+
+```bash
+.venv/bin/python manage.py makemessages -l id --ignore=.venv --no-obsolete
+```
+
+Fill in the new `msgstr` entries in `django.po` (and remove any `#, fuzzy` flags), then compile:
+
+```bash
+.venv/bin/python manage.py compilemessages -l id --ignore=.venv
+```
+
+Commit both `django.po` and `django.mo`, so servers don't need gettext to run the app.
+These two commands do need GNU gettext on your machine (`sudo apt install gettext`). The test
+suite fails if a message is untranslated, fuzzy, or missing from the compiled `.mo`.
+
+Business records are deliberately **not** translated: the seeded chart of accounts, default
+tax-rate names, plan names and automatic journal descriptions are stored data in the
+organization's books, so they stay in Indonesian whichever interface language is active.
+Money is always formatted the Indonesian way (`Rp 1.234.567`).
 
 ## Production
 

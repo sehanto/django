@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.db.models import ProtectedError
+from django.utils.translation import gettext as _
 
 from apps.core.exceptions import ValidationFailed
 
@@ -24,4 +25,4 @@ def delete_contact(*, contact: Contact) -> None:
     try:
         contact.delete()
     except ProtectedError as exc:
-        raise ValidationFailed("Kontak sudah dipakai pada transaksi; nonaktifkan saja.") from exc
+        raise ValidationFailed(_("This contact is used in transactions; deactivate it instead.")) from exc

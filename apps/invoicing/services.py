@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, ValidationFailed
 from apps.core.money import ZERO
@@ -59,23 +60,23 @@ def _belongs(obj, organization) -> bool:
 
 def _validate_header(organization, kind: str, contact, invoice_date: date, due_date: date) -> None:
     if not _belongs(contact, organization):
-        raise ValidationFailed("Kontak tidak ditemukan.")
+        raise ValidationFailed(_("Contact not found."))
     if kind == InvoiceKind.SALES and not contact.is_customer:
-        raise ValidationFailed("Kontak bukan pelanggan.")
+        raise ValidationFailed(_("This contact is not a customer."))
     if kind == InvoiceKind.PURCHASE and not contact.is_supplier:
-        raise ValidationFailed("Kontak bukan pemasok.")
+        raise ValidationFailed(_("This contact is not a supplier."))
     if due_date < invoice_date:
-        raise ValidationFailed("Tanggal jatuh tempo tidak boleh sebelum tanggal faktur.")
+        raise ValidationFailed(_("The due date cannot be before the invoice date."))
 
 
 def _validate_lines(organization, kind: str, lines: Sequence[InvoiceLineInput]) -> InvoiceTotals:
     for line in lines:
         if not all(_belongs(obj, organization) for obj in (line.account, line.tax_rate, line.item)):
-            raise ValidationFailed("Data baris faktur tidak valid untuk organisasi ini.")
+            raise ValidationFailed(_("Invoice line data is not valid for this organization."))
         if not line.account.is_active:
-            raise ValidationFailed(f"Akun {line.account} tidak aktif.")
+            raise ValidationFailed(_("Account %(account)s is inactive.") % {"account": line.account})
         if line.tax_rate is not None and kind == InvoiceKind.SALES and not organization.is_pkp:
-            raise ValidationFailed("Hanya Pengusaha Kena Pajak (PKP) yang dapat memungut PPN. Ubah status PKP di pengaturan.")
+            raise ValidationFailed(_("Only a VAT-registered business (PKP) can charge PPN. Change the PKP status in the settings."))
     return compute_invoice_totals([line.to_spec() for line in lines])
 
 
@@ -83,7 +84,8 @@ def _ensure_plan_allows_new_invoice(organization) -> None:
     limit = organization.plan.max_invoices_per_month
     if limit is not None and invoices_created_this_month(organization) >= limit:
         raise PlanLimitExceeded(
-            f"Batas {limit} faktur per bulan untuk paket {organization.plan.name} telah tercapai. Tingkatkan paket Anda."
+            _("The %(plan)s plan's limit of %(limit)s invoices per month has been reached. Please upgrade your plan.")
+            % {"plan": organization.plan.name, "limit": limit}
         )
 
 
@@ -152,7 +154,7 @@ def create_invoice(
 
 def _ensure_draft(invoice: Invoice) -> None:
     if invoice.status != Invoice.Status.DRAFT:
-        raise InvalidStateTransition("Hanya faktur berstatus draf yang dapat diubah atau dihapus.")
+        raise InvalidStateTransition(_("Only draft invoices can be changed or deleted."))
 
 
 @transaction.atomic
@@ -240,9 +242,10 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
         [InvoiceLineInput(l.description, l.account, l.quantity, l.unit_price, l.discount_percent, l.tax_rate, l.item) for l in lines],
     )
     if totals.total <= 0:
-        raise ValidationFailed("Total faktur harus lebih dari nol.")
+        raise ValidationFailed(_("The invoice total must be greater than zero."))
 
     invoice.number = next_document_number(invoice.organization, INVOICE_PREFIX[invoice.kind], invoice.date)
+    # Journal descriptions are stored business records and stay in Indonesian.
     label = "Penjualan kepada" if invoice.is_sales else "Pembelian dari"
     invoice.journal_entry = create_journal_entry(
         organization=invoice.organization,
@@ -264,9 +267,9 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
 def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     if invoice.status in (Invoice.Status.PARTIAL, Invoice.Status.PAID):
-        raise InvalidStateTransition("Batalkan seluruh pembayaran faktur ini terlebih dahulu.")
+        raise InvalidStateTransition(_("Void all payments on this invoice first."))
     if invoice.status != Invoice.Status.ISSUED:
-        raise InvalidStateTransition("Hanya faktur yang sudah diterbitkan yang dapat dibatalkan.")
+        raise InvalidStateTransition(_("Only issued invoices can be voided."))
     reverse_journal_entry(
         entry=invoice.journal_entry, date=max(on, invoice.date), created_by=voided_by,
         description=f"Pembatalan faktur {invoice.number}",
@@ -292,15 +295,17 @@ def record_payment(
     invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
     organization = invoice.organization
     if not invoice.is_open:
-        raise InvalidStateTransition("Faktur tidak dalam status menunggu pembayaran.")
+        raise InvalidStateTransition(_("This invoice is not awaiting payment."))
     if amount <= 0:
-        raise ValidationFailed("Jumlah pembayaran harus lebih dari nol.")
+        raise ValidationFailed(_("The payment amount must be greater than zero."))
     if amount > invoice.balance_due:
-        raise ValidationFailed(f"Jumlah pembayaran melebihi sisa tagihan ({invoice.balance_due}).")
+        raise ValidationFailed(
+            _("The payment amount exceeds the balance due (%(balance)s).") % {"balance": invoice.balance_due}
+        )
     if date < invoice.date:
-        raise ValidationFailed("Tanggal pembayaran tidak boleh sebelum tanggal faktur.")
+        raise ValidationFailed(_("The payment date cannot be before the invoice date."))
     if not _belongs(cash_account, organization) or not cash_account.is_cash:
-        raise ValidationFailed("Pilih akun kas/bank yang valid.")
+        raise ValidationFailed(_("Choose a valid cash or bank account."))
 
     number = next_document_number(organization, PAYMENT_PREFIX[invoice.kind], date)
     if invoice.is_sales:
@@ -332,7 +337,7 @@ def record_payment(
 def void_payment(*, payment: Payment, on: date, voided_by=None) -> Payment:
     payment = Payment.objects.select_for_update().get(pk=payment.pk)
     if payment.status == Payment.Status.VOID:
-        raise InvalidStateTransition("Pembayaran sudah dibatalkan.")
+        raise InvalidStateTransition(_("The payment is already voided."))
     invoice = Invoice.objects.select_for_update().get(pk=payment.invoice_id)
     reverse_journal_entry(
         entry=payment.journal_entry, date=max(on, payment.date), created_by=voided_by,

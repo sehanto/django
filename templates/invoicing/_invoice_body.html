@@ -1,20 +1,20 @@
-{% load money %}
+{% load i18n money %}
 <div class="row mb-4">
   <div class="col-sm-6">
-    <div class="small text-secondary">{% if invoice.is_sales %}Ditagihkan kepada{% else %}Dari pemasok{% endif %}</div>
+    <div class="small text-secondary">{% if invoice.is_sales %}{% translate "Bill to" %}{% else %}{% translate "From supplier" %}{% endif %}</div>
     <div class="fw-semibold">{{ invoice.contact.name }}</div>
     {% if invoice.contact.address %}<div class="small">{{ invoice.contact.address|linebreaksbr }}{% if invoice.contact.city %}, {{ invoice.contact.city }}{% endif %}</div>{% endif %}
-    {% if invoice.contact.npwp %}<div class="small">NPWP: {{ invoice.contact.formatted_npwp }}</div>{% endif %}
+    {% if invoice.contact.npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.contact.formatted_npwp }}</div>{% endif %}
   </div>
   <div class="col-sm-6 text-sm-end small">
-    <div>Tanggal: <strong>{{ invoice.date|date:"d F Y" }}</strong></div>
-    <div>Jatuh tempo: <strong>{{ invoice.due_date|date:"d F Y" }}</strong></div>
-    {% if invoice.reference %}<div>Referensi: {{ invoice.reference }}</div>{% endif %}
-    {% if invoice.tax_invoice_number %}<div>No. Faktur Pajak: {{ invoice.tax_invoice_number }}</div>{% endif %}
+    <div>{% translate "Date" %}: <strong>{{ invoice.date|date:"d F Y" }}</strong></div>
+    <div>{% translate "Due date" %}: <strong>{{ invoice.due_date|date:"d F Y" }}</strong></div>
+    {% if invoice.reference %}<div>{% translate "Reference" %}: {{ invoice.reference }}</div>{% endif %}
+    {% if invoice.tax_invoice_number %}<div>{% translate "Tax invoice no." %}: {{ invoice.tax_invoice_number }}</div>{% endif %}
   </div>
 </div>
 <div class="table-responsive"><table class="table">
-  <thead><tr><th>Deskripsi</th><th class="num">Qty</th><th class="num">Harga</th><th class="num">Disc</th><th>Pajak</th><th class="num">Jumlah</th></tr></thead>
+  <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Qty" %}</th><th class="num">{% translate "Price" %}</th><th class="num">{% translate "Disc." %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
   <tbody>{% for line in invoice.lines.all %}
     <tr><td>{{ line.description }}<div class="small text-secondary no-print">{{ line.account }}</div></td>
       <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}</td>
@@ -22,13 +22,13 @@
       <td class="small">{{ line.tax_rate|default:"" }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
   {% endfor %}</tbody>
   <tfoot>
-    <tr><td colspan="5" class="text-end">Subtotal</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
-    {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end">PPN</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
-    <tr class="fw-bold"><td colspan="5" class="text-end">Total</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
+    <tr><td colspan="5" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
+    {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPN" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
+    <tr class="fw-bold"><td colspan="5" class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
     {% if invoice.amount_paid %}
-      <tr><td colspan="5" class="text-end">Telah dibayar</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>
-      <tr class="fw-semibold"><td colspan="5" class="text-end">Sisa tagihan</td><td class="num">{{ invoice.balance_due|rupiah }}</td></tr>
+      <tr><td colspan="5" class="text-end">{% translate "Amount paid" %}</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>
+      <tr class="fw-semibold"><td colspan="5" class="text-end">{% translate "Balance due" %}</td><td class="num">{{ invoice.balance_due|rupiah }}</td></tr>
     {% endif %}
   </tfoot>
 </table></div>
-{% if invoice.notes %}<p class="small"><strong>Catatan:</strong> {{ invoice.notes|linebreaksbr }}</p>{% endif %}
+{% if invoice.notes %}<p class="small"><strong>{% translate "Notes" %}:</strong> {{ invoice.notes|linebreaksbr }}</p>{% endif %}

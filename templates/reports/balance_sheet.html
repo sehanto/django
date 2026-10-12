@@ -1,28 +1,27 @@
-{% extends "base.html" %}
-{% load money %}
-{% block title %}Laporan Posisi Keuangan{% endblock %}
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{% translate "Statement of financial position" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">Laporan Posisi Keuangan</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · per {{ report.as_of|date:"d F Y" }}{% endif %}</p>
+<h1 class="h4 mb-1">{% translate "Statement of financial position" %}</h1>
+<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
-{% if not report.is_balanced %}<div class="alert alert-danger">Laporan tidak seimbang. Periksa data jurnal.</div>{% endif %}
+{% if not report.is_balanced %}<div class="alert alert-danger">{% translate "The report does not balance. Check the journal data." %}</div>{% endif %}
 <div class="row g-3">
   <div class="col-xl-6"><div class="card"><table class="table table-statement mb-0">
     {% include "reports/_section.html" with section=report.current_assets %}
     {% include "reports/_section.html" with section=report.fixed_assets %}
-    <tr class="grand-total"><td></td><td>TOTAL ASET</td><td class="num">{{ report.total_assets|rupiah }}</td></tr>
+    <tr class="grand-total"><td></td><td>{% translate "TOTAL ASSETS" %}</td><td class="num">{{ report.total_assets|rupiah }}</td></tr>
   </table></div></div>
   <div class="col-xl-6"><div class="card"><table class="table table-statement mb-0">
     {% include "reports/_section.html" with section=report.current_liabilities %}
     {% include "reports/_section.html" with section=report.long_term_liabilities %}
-    <tr class="subtotal"><td></td><td>Total Liabilitas</td><td class="num">{{ report.total_liabilities|rupiah }}</td></tr>
-    <tr class="section-title"><td colspan="3">Ekuitas</td></tr>
+    <tr class="subtotal"><td></td><td>{% translate "Total liabilities" %}</td><td class="num">{{ report.total_liabilities|rupiah }}</td></tr>
+    <tr class="section-title"><td colspan="3">{% translate "Equity" %}</td></tr>
     {% include "reports/_section.html" with section=report.equity %}
-    <tr><td></td><td>Saldo laba periode lalu (belum ditutup)</td><td class="num">{{ report.prior_years_earnings|rupiah }}</td></tr>
-    <tr><td></td><td>Laba tahun berjalan</td><td class="num">{{ report.current_year_earnings|rupiah }}</td></tr>
-    <tr class="subtotal"><td></td><td>Total Ekuitas</td><td class="num">{{ report.total_equity|rupiah }}</td></tr>
-    <tr class="grand-total"><td></td><td>TOTAL LIABILITAS DAN EKUITAS</td><td class="num">{{ report.total_liabilities_and_equity|rupiah }}</td></tr>
+    <tr><td></td><td>{% translate "Prior years' retained earnings (not yet closed)" %}</td><td class="num">{{ report.prior_years_earnings|rupiah }}</td></tr>
+    <tr><td></td><td>{% translate "Current year profit" %}</td><td class="num">{{ report.current_year_earnings|rupiah }}</td></tr>
+    <tr class="subtotal"><td></td><td>{% translate "Total equity" %}</td><td class="num">{{ report.total_equity|rupiah }}</td></tr>
+    <tr class="grand-total"><td></td><td>{% translate "TOTAL LIABILITIES AND EQUITY" %}</td><td class="num">{{ report.total_liabilities_and_equity|rupiah }}</td></tr>
   </table></div></div>
 </div>
 {% endif %}

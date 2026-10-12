@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import DateInput, OrganizationFormMixin
 from apps.core.money import ZERO
@@ -22,10 +23,10 @@ class JournalEntryForm(OrganizationFormMixin, forms.ModelForm):
 
 
 class JournalLineForm(OrganizationFormMixin, forms.Form):
-    account = forms.ModelChoiceField(label="Akun", queryset=Account.objects.none())
-    description = forms.CharField(label="Keterangan", max_length=255, required=False)
-    debit = forms.DecimalField(label="Debit", max_digits=18, decimal_places=2, min_value=0, required=False)
-    credit = forms.DecimalField(label="Kredit", max_digits=18, decimal_places=2, min_value=0, required=False)
+    account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())
+    description = forms.CharField(label=_("Description"), max_length=255, required=False)
+    debit = forms.DecimalField(label=_("Debit"), max_digits=18, decimal_places=2, min_value=0, required=False)
+    credit = forms.DecimalField(label=_("Credit"), max_digits=18, decimal_places=2, min_value=0, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,4 +50,4 @@ def line_inputs(formset) -> list[JournalLineInput]:
 
 
 class ReverseForm(forms.Form):
-    date = forms.DateField(label="Tanggal pembalikan", widget=DateInput())
+    date = forms.DateField(label=_("Reversal date"), widget=DateInput())

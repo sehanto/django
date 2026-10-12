@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
@@ -47,7 +48,7 @@ class AccountFormMixin(WriteMixin):
         except DomainError as exc:
             form.add_error(None, exc.message)
             return self.form_invalid(form)
-        messages.success(self.request, "Akun disimpan.")
+        messages.success(self.request, _("Account saved."))
         return redirect(self.success_url)
 
 
@@ -72,7 +73,7 @@ class AccountDeleteView(WriteMixin, View):
         account = get_object_or_404(accounts_for(self.organization), pk=pk)
         try:
             services.delete_account(account=account)
-            messages.success(request, "Akun dihapus.")
+            messages.success(request, _("Account deleted."))
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("ledger:accounts")
@@ -144,7 +145,7 @@ class JournalFormView(WriteMixin, TemplateView):
         if form.is_valid() and formset.is_valid():
             try:
                 saved = self.save(entry, form.cleaned_data, line_inputs(formset), post="post" in request.POST)
-                messages.success(request, f"Jurnal {saved.number} disimpan.")
+                messages.success(request, _("Journal entry %(number)s saved.") % {"number": saved.number})
                 return redirect("ledger:journal_detail", pk=saved.pk)
             except DomainError as exc:
                 form.add_error(None, exc.message)
@@ -188,14 +189,14 @@ class JournalActionView(WriteMixin, View):
 class JournalPostView(JournalActionView):
     def act(self, entry):
         services.post_journal_entry(entry=entry)
-        messages.success(self.request, f"Jurnal {entry.number} diposting.")
+        messages.success(self.request, _("Journal entry %(number)s posted.") % {"number": entry.number})
         return reverse("ledger:journal_detail", args=[entry.pk])
 
 
 class JournalDeleteView(JournalActionView):
     def act(self, entry):
         services.delete_draft_journal_entry(entry=entry)
-        messages.success(self.request, "Draf jurnal dihapus.")
+        messages.success(self.request, _("Draft journal entry deleted."))
         return reverse("ledger:journals")
 
 
@@ -203,9 +204,9 @@ class JournalReverseView(JournalActionView):
     def act(self, entry):
         form = ReverseForm(self.request.POST)
         if not form.is_valid():
-            raise DomainError("Tanggal pembalikan tidak valid.")
+            raise DomainError(_("Invalid reversal date."))
         reversal = services.reverse_manual_journal_entry(
             entry=entry, date=form.cleaned_data["date"], created_by=self.request.user
         )
-        messages.success(self.request, f"Jurnal dibalik dengan {reversal.number}.")
+        messages.success(self.request, _("Journal entry reversed by %(number)s.") % {"number": reversal.number})
         return reverse("ledger:journal_detail", args=[reversal.pk])

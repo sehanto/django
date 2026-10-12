@@ -6,22 +6,23 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.exceptions import PeriodLocked, ValidationFailed
 from apps.core.money import ZERO, quantize
 
 
 class NormalBalance(models.TextChoices):
-    DEBIT = "debit", "Debit"
-    CREDIT = "credit", "Kredit"
+    DEBIT = "debit", _("Debit")
+    CREDIT = "credit", _("Credit")
 
 
 class AccountType(models.TextChoices):
-    ASSET = "asset", "Aset"
-    LIABILITY = "liability", "Liabilitas"
-    EQUITY = "equity", "Ekuitas"
-    REVENUE = "revenue", "Pendapatan"
-    EXPENSE = "expense", "Beban"
+    ASSET = "asset", _("Asset")
+    LIABILITY = "liability", _("Liability")
+    EQUITY = "equity", _("Equity")
+    REVENUE = "revenue", _("Revenue")
+    EXPENSE = "expense", _("Expense")
 
     @property
     def normal_balance(self) -> NormalBalance:
@@ -37,20 +38,20 @@ class AccountType(models.TextChoices):
 class AccountCategory(models.TextChoices):
     """Statement line groups following the SAK EMKM presentation."""
 
-    CASH_BANK = "cash_bank", "Kas dan Setara Kas"
-    RECEIVABLE = "receivable", "Piutang"
-    INVENTORY = "inventory", "Persediaan"
-    OTHER_CURRENT_ASSET = "other_current_asset", "Aset Lancar Lainnya"
-    FIXED_ASSET = "fixed_asset", "Aset Tetap"
-    CURRENT_LIABILITY = "current_liability", "Liabilitas Jangka Pendek"
-    LONG_TERM_LIABILITY = "long_term_liability", "Liabilitas Jangka Panjang"
-    EQUITY = "equity", "Ekuitas"
-    REVENUE = "revenue", "Pendapatan Usaha"
-    OTHER_INCOME = "other_income", "Pendapatan Lain-lain"
-    COST_OF_SALES = "cost_of_sales", "Beban Pokok Penjualan"
-    OPERATING_EXPENSE = "operating_expense", "Beban Usaha"
-    OTHER_EXPENSE = "other_expense", "Beban Lain-lain"
-    INCOME_TAX = "income_tax", "Beban Pajak Penghasilan"
+    CASH_BANK = "cash_bank", _("Cash and cash equivalents")
+    RECEIVABLE = "receivable", _("Receivables")
+    INVENTORY = "inventory", _("Inventory")
+    OTHER_CURRENT_ASSET = "other_current_asset", _("Other current assets")
+    FIXED_ASSET = "fixed_asset", _("Fixed assets")
+    CURRENT_LIABILITY = "current_liability", _("Current liabilities")
+    LONG_TERM_LIABILITY = "long_term_liability", _("Long-term liabilities")
+    EQUITY = "equity", _("Equity")
+    REVENUE = "revenue", _("Operating revenue")
+    OTHER_INCOME = "other_income", _("Other income")
+    COST_OF_SALES = "cost_of_sales", _("Cost of sales")
+    OPERATING_EXPENSE = "operating_expense", _("Operating expenses")
+    OTHER_EXPENSE = "other_expense", _("Other expenses")
+    INCOME_TAX = "income_tax", _("Income tax expense")
 
     @property
     def account_type(self) -> AccountType:
@@ -82,15 +83,15 @@ def categories_of(account_type: AccountType) -> list[str]:
 class SystemRole(models.TextChoices):
     """Accounts that automated postings (invoices, payments, taxes) rely on."""
 
-    RECEIVABLE = "receivable", "Piutang Usaha"
-    PAYABLE = "payable", "Utang Usaha"
-    OUTPUT_VAT = "output_vat", "PPN Keluaran"
-    INPUT_VAT = "input_vat", "PPN Masukan"
-    SALES_REVENUE = "sales_revenue", "Pendapatan Penjualan"
-    PURCHASE_EXPENSE = "purchase_expense", "Pembelian / Beban Pokok"
-    RETAINED_EARNINGS = "retained_earnings", "Saldo Laba"
-    PPH_FINAL_EXPENSE = "pph_final_expense", "Beban PPh Final"
-    PPH_FINAL_PAYABLE = "pph_final_payable", "Utang PPh Final"
+    RECEIVABLE = "receivable", _("Accounts receivable")
+    PAYABLE = "payable", _("Accounts payable")
+    OUTPUT_VAT = "output_vat", _("Output VAT (PPN Keluaran)")
+    INPUT_VAT = "input_vat", _("Input VAT (PPN Masukan)")
+    SALES_REVENUE = "sales_revenue", _("Sales revenue")
+    PURCHASE_EXPENSE = "purchase_expense", _("Purchases / cost of sales")
+    RETAINED_EARNINGS = "retained_earnings", _("Retained earnings")
+    PPH_FINAL_EXPENSE = "pph_final_expense", _("Final income tax expense")
+    PPH_FINAL_PAYABLE = "pph_final_payable", _("Final income tax payable")
 
 
 def normal_balance_for(category: str, is_contra: bool) -> NormalBalance:
@@ -115,19 +116,20 @@ def validate_lines(lines: Iterable[LineAmount]) -> tuple[Decimal, Decimal]:
     """Enforce the double-entry invariants; return (total_debit, total_credit)."""
     lines = list(lines)
     if len(lines) < 2:
-        raise ValidationFailed("Jurnal minimal terdiri dari dua baris.")
+        raise ValidationFailed(_("A journal entry needs at least two lines."))
     total_debit = total_credit = ZERO
     for line in lines:
         debit, credit = quantize(line.debit), quantize(line.credit)
         if debit < 0 or credit < 0:
-            raise ValidationFailed("Nilai debit/kredit tidak boleh negatif.")
+            raise ValidationFailed(_("Debit and credit amounts cannot be negative."))
         if (debit > 0) == (credit > 0):
-            raise ValidationFailed("Setiap baris jurnal harus berisi debit atau kredit saja.")
+            raise ValidationFailed(_("Each journal line must have either a debit or a credit, not both."))
         total_debit += debit
         total_credit += credit
     if total_debit != total_credit:
         raise ValidationFailed(
-            f"Jurnal tidak seimbang: total debit {total_debit} ≠ total kredit {total_credit}."
+            _("The entry is not balanced: total debit %(debit)s ≠ total credit %(credit)s.")
+            % {"debit": total_debit, "credit": total_credit}
         )
     return total_debit, total_credit
 
@@ -135,5 +137,5 @@ def validate_lines(lines: Iterable[LineAmount]) -> tuple[Decimal, Decimal]:
 def ensure_period_open(entry_date: date, lock_date: date | None) -> None:
     if lock_date is not None and entry_date <= lock_date:
         raise PeriodLocked(
-            f"Periode sampai {lock_date:%d-%m-%Y} sudah dikunci. Gunakan tanggal setelahnya."
+            _("The period up to %(date)s is locked. Use a later date.") % {"date": f"{lock_date:%d-%m-%Y}"}
         )

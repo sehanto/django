@@ -2,6 +2,7 @@ from datetime import date
 
 from django import forms
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import DateInput, OrganizationFormMixin
 from apps.ledger.models import Account
@@ -13,8 +14,8 @@ def start_of_year(on: date) -> date:
 
 
 class PeriodForm(forms.Form):
-    date_from = forms.DateField(label="Dari", widget=DateInput())
-    date_to = forms.DateField(label="Sampai", widget=DateInput())
+    date_from = forms.DateField(label=_("From"), widget=DateInput())
+    date_to = forms.DateField(label=_("To"), widget=DateInput())
 
     def __init__(self, data=None, **kwargs):
         today = timezone.localdate()
@@ -25,12 +26,12 @@ class PeriodForm(forms.Form):
     def clean(self):
         cleaned = super().clean()
         if cleaned.get("date_from") and cleaned.get("date_to") and cleaned["date_from"] > cleaned["date_to"]:
-            raise forms.ValidationError("Tanggal awal harus sebelum tanggal akhir.")
+            raise forms.ValidationError(_("The start date must be before the end date."))
         return cleaned
 
 
 class AsOfForm(forms.Form):
-    as_of = forms.DateField(label="Per tanggal", widget=DateInput())
+    as_of = forms.DateField(label=_("As of"), widget=DateInput())
 
     def __init__(self, data=None, **kwargs):
         merged = {"as_of": timezone.localdate().isoformat(), **{k: v for k, v in (data or {}).items() if v}}
@@ -38,7 +39,7 @@ class AsOfForm(forms.Form):
 
 
 class LedgerForm(OrganizationFormMixin, PeriodForm):
-    account = forms.ModelChoiceField(label="Akun", queryset=Account.objects.none(), required=False)
+    account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none(), required=False)
 
     def __init__(self, data=None, organization=None, **kwargs):
         super().__init__(data, organization=organization, **kwargs)

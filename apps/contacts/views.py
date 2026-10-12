@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView
 
@@ -35,7 +36,7 @@ class ContactFormMixin(WriteMixin):
 
     def form_valid(self, form):
         self.save(form.cleaned_data)
-        messages.success(self.request, "Kontak disimpan.")
+        messages.success(self.request, _("Contact saved."))
         return redirect(self.success_url)
 
 
@@ -57,7 +58,7 @@ class ContactDeleteView(WriteMixin, View):
         contact = get_object_or_404(contacts_for(self.organization), pk=pk)
         try:
             services.delete_contact(contact=contact)
-            messages.success(request, "Kontak dihapus.")
+            messages.success(request, _("Contact deleted."))
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("contacts:list")

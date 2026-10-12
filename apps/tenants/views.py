@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
@@ -25,7 +26,7 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
         return self.organization
 
     def form_valid(self, form):
-        messages.success(self.request, "Pengaturan organisasi disimpan.")
+        messages.success(self.request, _("Organization settings saved."))
         return super().form_valid(form)
 
 
@@ -36,7 +37,7 @@ class OrganizationCreateView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         organization = services.create_organization(owner=self.request.user, **form.cleaned_data)
         set_current_organization(self.request, organization)
-        messages.success(self.request, f"Organisasi {organization.name} berhasil dibuat.")
+        messages.success(self.request, _("Organization %(name)s created.") % {"name": organization.name})
         return redirect("tenants:settings")
 
 
@@ -57,7 +58,7 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
 
     def perform(self, form):
         services.add_member(organization=self.organization, **form.cleaned_data)
-        messages.success(self.request, "Anggota berhasil ditambahkan.")
+        messages.success(self.request, _("Member added."))
         return redirect(self.success_url)
 
 
@@ -65,7 +66,7 @@ class RemoveMemberView(ManageMixin, View):
     def post(self, request, pk):
         try:
             services.remove_member(organization=self.organization, membership_id=pk, acting_user=request.user)
-            messages.success(request, "Anggota dihapus.")
+            messages.success(request, _("Member removed."))
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("tenants:members")
@@ -81,7 +82,7 @@ class PlanView(ManageMixin, TemplateView):
         plan = get_object_or_404(Plan, pk=request.POST.get("plan"))
         try:
             services.change_plan(organization=self.organization, plan=plan)
-            messages.success(request, f"Paket berhasil diubah ke {plan.name}.")
+            messages.success(request, _("Plan changed to %(plan)s.") % {"plan": plan.name})
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("tenants:plans")
