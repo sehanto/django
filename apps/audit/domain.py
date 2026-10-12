@@ -65,9 +65,10 @@ ACTION_CATEGORY = {
 }
 
 
-# Kept for ORGANIZATION_LOG_RETENTION_DAYS (they document changes to the books, which are
-# kept 10 years); every other category for SECURITY_LOG_RETENTION_DAYS.
-KEPT_LONGER = frozenset({AuditCategory.ORGANIZATION, AuditCategory.BILLING})
+# Kept for ORGANIZATION_LOG_RETENTION_DAYS: they document changes to the books (kept 10
+# years) or to how their data is protected (key rotation). Account security events follow
+# SECURITY_LOG_RETENTION_DAYS.
+KEPT_LONGER = frozenset({AuditCategory.ORGANIZATION, AuditCategory.BILLING, AuditCategory.SYSTEM})
 
 
 def actions_in(category: AuditCategory) -> list[AuditAction]:

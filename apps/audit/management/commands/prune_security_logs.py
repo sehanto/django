@@ -13,8 +13,8 @@ from apps.core.db_roles import connected_role_can_alter_schema, use_owner_connec
 
 class Command(BaseCommand):
     help = (
-        "Delete sign-in/account-security audit events and django-axes sign-in records older than "
-        "SECURITY_LOG_RETENTION_DAYS, and organization/subscription audit events older than "
+        "Delete account-security audit events and django-axes sign-in records older than "
+        "SECURITY_LOG_RETENTION_DAYS, and organization/subscription/system audit events older than "
         "ORGANIZATION_LOG_RETENTION_DAYS; blank the IP address and browser of the kept events after "
         "SECURITY_LOG_RETENTION_DAYS. Runs as the schema owner (DATABASE_OWNER_URL), the only role allowed "
         "to delete audit events or blank those details."
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         parser.add_argument("--days", type=int, default=settings.SECURITY_LOG_RETENTION_DAYS,
                             help="Retention for sign-in and account-security records.")
         parser.add_argument("--organization-days", type=int, default=settings.ORGANIZATION_LOG_RETENTION_DAYS,
-                            help="Retention for organization and subscription events.")
+                            help="Retention for organization, subscription and system events.")
 
     def handle(self, *args, days, organization_days, **options):
         if days < 1 or organization_days < 1:
@@ -50,6 +50,6 @@ class Command(BaseCommand):
             sign_in_records = AxesProxyHandler.reset_logs(age_days=days)
         self.stdout.write(
             f"Deleted {security} security event(s) and {sign_in_records} sign-in record(s) older than {days} days, "
-            f"and {organization} organization/subscription event(s) older than {organization_days} days; "
-            f"blanked the IP address and browser of {blanked} older organization/subscription event(s)."
+            f"and {organization} organization/subscription/system event(s) older than {organization_days} days; "
+            f"blanked the IP address and browser of {blanked} older kept event(s)."
         )

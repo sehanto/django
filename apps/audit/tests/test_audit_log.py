@@ -70,10 +70,10 @@ def test_retention_keeps_organization_history_longer(user, organization):
     def event(action, days):
         return AuditEvent.objects.create(action=action, actor=user, organization=organization, created_at=days_ago(days)).pk
 
-    expired = {event(A.LOGIN_SUCCEEDED, 91), event(A.ENCRYPTION_KEYS_ROTATED, 91), event(A.MEMBER_ADDED, 3651),
-               event(A.PLAN_CHANGED, 3651)}
+    expired = {event(A.LOGIN_SUCCEEDED, 91), event(A.TWO_FACTOR_DISABLED, 91), event(A.MEMBER_ADDED, 3651),
+               event(A.PLAN_CHANGED, 3651), event(A.ENCRYPTION_KEYS_ROTATED, 3651)}
     kept = {event(A.LOGIN_SUCCEEDED, 89), event(A.MEMBER_ADDED, 91), event(A.ORGANIZATION_SETTINGS_CHANGED, 3649),
-            event(A.PAYMENT_CONFIRMED_MANUALLY, 400)}
+            event(A.PAYMENT_CONFIRMED_MANUALLY, 400), event(A.ENCRYPTION_KEYS_ROTATED, 91)}
     old_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.5", user_agent="x")
     kept_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.6", user_agent="x")
     AccessLog.objects.filter(pk=old_sign_in.pk).update(attempt_time=days_ago(91))

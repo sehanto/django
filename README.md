@@ -191,8 +191,8 @@ author. Passwords, codes and keys are never recorded.
 
   | Records | Kept for | Setting |
   |---|---|---|
-  | Account-security and system events, and django-axes sign-in records (IP address, browser) | 90 days | `SECURITY_LOG_RETENTION_DAYS` |
-  | Organization and subscription events (settings such as the lock date, members, exports, deletion, plan changes, manual payments) | 10 years | `ORGANIZATION_LOG_RETENTION_DAYS` (3650) |
+  | Account-security events and django-axes sign-in records (IP address, browser) | 90 days | `SECURITY_LOG_RETENTION_DAYS` |
+  | Organization, subscription and system events (settings such as the lock date, members, exports, deletion, plan changes, manual payments, encryption key rotation) | 10 years | `ORGANIZATION_LOG_RETENTION_DAYS` (3650) |
 
   Organization events document changes to the books, which taxpayers keep for 10 years
   (UU KUP Art. 28(11)). Sign-in history is personal data with no such need. The kept
@@ -534,7 +534,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
-| `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
+| `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's
 crontab with:
