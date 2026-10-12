@@ -39,7 +39,7 @@ class ReportView(OrganizationMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         form = self.get_form()
         report = self.build(form.cleaned_data) if form.is_valid() else None
-        if report is not None and self.csv_name and request.GET.get("unduh") == "csv":
+        if report is not None and self.csv_name and request.GET.get("download") == "csv":
             return csv_response(self.csv_name, report.csv_rows())
         return self.render_to_response(self.get_context_data(form=form, report=report))
 
@@ -51,7 +51,7 @@ class ReportIndexView(OrganizationMixin, TemplateView):
 class TrialBalanceView(ReportView):
     template_name = "reports/trial_balance.html"
     form_class = AsOfForm
-    csv_name = "neraca-saldo.csv"
+    csv_name = "trial-balance.csv"
 
     def build(self, data):
         return build_trial_balance(account_balances(self.organization, date_to=data["as_of"]), data["as_of"])
@@ -60,7 +60,7 @@ class TrialBalanceView(ReportView):
 class IncomeStatementView(ReportView):
     template_name = "reports/income_statement.html"
     form_class = PeriodForm
-    csv_name = "laba-rugi.csv"
+    csv_name = "income-statement.csv"
 
     def build(self, data):
         balances = account_balances(self.organization, date_from=data["date_from"], date_to=data["date_to"])
@@ -70,7 +70,7 @@ class IncomeStatementView(ReportView):
 class BalanceSheetView(ReportView):
     template_name = "reports/balance_sheet.html"
     form_class = AsOfForm
-    csv_name = "posisi-keuangan.csv"
+    csv_name = "balance-sheet.csv"
 
     def build(self, data):
         as_of = data["as_of"]
@@ -111,7 +111,7 @@ class VatReportView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         try:
-            year = int(self.request.GET.get("tahun", ""))
+            year = int(self.request.GET.get("year", ""))
         except ValueError:
             year = timezone.localdate().year
         rows = vat_summary(self.organization, year)

@@ -48,7 +48,7 @@ class TaxRateUpdateView(TaxRateFormMixin, UpdateView):
 
 def _selected_year(request) -> int:
     try:
-        return int(request.GET.get("tahun") or request.POST.get("tahun"))
+        return int(request.GET.get("year") or request.POST.get("year"))
     except (TypeError, ValueError):
         return timezone.localdate().year
 
@@ -89,7 +89,7 @@ class PphFinalPayView(WriteMixin, View):
                 messages.success(request, _("PPh Final payment recorded and posted to the ledger."))
             except DomainError as exc:
                 flash_domain_error(request, exc)
-        return redirect(f"{reverse('taxes:pph_final')}?tahun={year}")
+        return redirect(f"{reverse('taxes:pph_final')}?year={year}")
 
 
 class PphFinalCancelView(WriteMixin, View):
@@ -101,4 +101,4 @@ class PphFinalCancelView(WriteMixin, View):
             messages.success(request, _("PPh Final payment cancelled (journal entry reversed)."))
         except DomainError as exc:
             flash_domain_error(request, exc)
-        return redirect(f"{reverse('taxes:pph_final')}?tahun={year}")
+        return redirect(f"{reverse('taxes:pph_final')}?year={year}")

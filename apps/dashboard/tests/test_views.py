@@ -161,8 +161,9 @@ def test_reports_render_with_data_and_export_csv(auth_client, organization, cust
     assert response.context["report"].is_balanced
     assert "Rp 750.000" in response.content.decode()
 
-    csv = auth_client.get(reverse("reports:income_statement"), {"date_from": "2026-01-01", "date_to": "2026-12-31", "unduh": "csv"})
+    csv = auth_client.get(reverse("reports:income_statement"), {"date_from": "2026-01-01", "date_to": "2026-12-31", "download": "csv"})
     assert csv["Content-Type"].startswith("text/csv")
+    assert 'filename="income-statement.csv"' in csv["Content-Disposition"]
     assert "Jasa" in csv.content.decode("utf-8-sig") or "Pendapatan" in csv.content.decode("utf-8-sig")
 
     ledger = auth_client.get(reverse("reports:general_ledger"), {"account": account("1-1200").pk, "date_from": "2026-01-01", "date_to": "2026-12-31"})

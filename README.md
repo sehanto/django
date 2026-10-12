@@ -96,7 +96,7 @@ Then:
 ```
 
 Open http://127.0.0.1:8000 and sign in with `demo@bukuumkm.id` / `demo12345`, or
-register a new business at `/akun/daftar/`. For the Django admin, run
+register a new business at `/account/signup/`. For the Django admin, run
 `manage.py createsuperuser`.
 
 ## Tests

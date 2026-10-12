@@ -3,12 +3,13 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("akun/", include("apps.accounts.urls")),
-    path("organisasi/", include("apps.tenants.urls")),
-    path("buku-besar/", include("apps.ledger.urls")),
-    path("kontak/", include("apps.contacts.urls")),
-    path("pajak/", include("apps.taxes.urls")),
-    path("transaksi/", include("apps.invoicing.urls")),
-    path("laporan/", include("apps.reports.urls")),
+    path("account/", include("apps.accounts.urls")),
+    path("organization/", include("apps.tenants.urls")),
+    path("ledger/", include("apps.ledger.urls")),
+    path("contacts/", include("apps.contacts.urls")),
+    path("taxes/", include("apps.taxes.urls")),
+    path("reports/", include("apps.reports.urls")),
+    # Invoicing lives at the root: /sales/, /purchases/, /payments/, /items/.
+    path("", include("apps.invoicing.urls")),
     path("", include("apps.dashboard.urls")),
 ]

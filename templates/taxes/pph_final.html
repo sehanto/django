@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}MSME PPh Final {{ year }}{% endblocktranslate %}</h1>
-  <form method="get" class="d-flex gap-2"><select name="tahun" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">
+  <form method="get" class="d-flex gap-2"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">
     {% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 {% if not current_organization.uses_pph_final %}{% url 'tenants:settings' as settings_url %}
@@ -46,7 +46,7 @@
 <p class="small text-secondary mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month. Gross turnover is calculated from posted operating revenue accounts." %}</p>
 
 <div class="modal fade" id="payModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'taxes:pph_final_pay' %}" class="modal-content">{% csrf_token %}
-  <input type="hidden" name="tahun" value="{{ year }}">
+  <input type="hidden" name="year" value="{{ year }}">
   <div class="modal-header"><h5 class="modal-title">{% translate "Record PPh Final payment" %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
   <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>

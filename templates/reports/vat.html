@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}PPN summary {{ year }}{% endblocktranslate %}</h1>
-  <form method="get"><select name="tahun" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
+  <form method="get"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0">
   <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Sales value" %}</th><th class="num">{% translate "Output PPN" %}</th><th class="num">{% translate "Purchase value" %}</th><th class="num">{% translate "Input PPN" %}</th><th class="num">{% translate "Payable/(overpaid)" %}</th></tr></thead>

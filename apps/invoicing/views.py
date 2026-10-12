@@ -87,7 +87,7 @@ class InvoiceFormView(InvoiceKindMixin, WriteMixin, TemplateView):
             ]
         form = InvoiceForm(
             data, instance=invoice, kind=self.kind, organization=self.organization,
-            initial=None if invoice else {"date": timezone.localdate(), "contact": self.request.GET.get("kontak")},
+            initial=None if invoice else {"date": timezone.localdate(), "contact": self.request.GET.get("contact")},
         )
         formset = InvoiceLineFormSet(
             data, initial=initial_lines, form_kwargs={"organization": self.organization, "kind": self.kind}

@@ -1,13 +1,13 @@
 from .models import InvoiceKind
 
-SLUG_TO_KIND = {"penjualan": InvoiceKind.SALES, "pembelian": InvoiceKind.PURCHASE}
+SLUG_TO_KIND = {"sales": InvoiceKind.SALES, "purchases": InvoiceKind.PURCHASE}
 KIND_TO_SLUG = {kind: slug for slug, kind in SLUG_TO_KIND.items()}
 
 
 class InvoiceKindConverter:
-    """Map Indonesian URL segments to ``InvoiceKind`` values and back."""
+    """Map URL segments to ``InvoiceKind`` values and back."""
 
-    regex = "penjualan|pembelian"
+    regex = "sales|purchases"
 
     def to_python(self, value: str) -> str:
         return SLUG_TO_KIND[value]
