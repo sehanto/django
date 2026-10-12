@@ -65,5 +65,10 @@ ACTION_CATEGORY = {
 }
 
 
+# Kept for ORGANIZATION_LOG_RETENTION_DAYS (they document changes to the books, which are
+# kept 10 years); every other category for SECURITY_LOG_RETENTION_DAYS.
+KEPT_LONGER = frozenset({AuditCategory.ORGANIZATION, AuditCategory.BILLING})
+
+
 def actions_in(category: AuditCategory) -> list[AuditAction]:
     return [action for action, action_category in ACTION_CATEGORY.items() if action_category == category]

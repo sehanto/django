@@ -185,9 +185,12 @@ CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 # Books export (ZIP of CSVs) per organization; each one reads the whole ledger.
 BOOKS_EXPORTS_PER_HOUR = env.int("BOOKS_EXPORTS_PER_HOUR", default=10)
 
-# One retention period for the audit log and django-axes sign-in records (IP, browser):
-# manage.py prune_security_logs deletes older entries daily (deploy/cron/crontab).
+# Retention, applied daily by manage.py prune_security_logs (deploy/cron/crontab):
+# sign-in and account-security audit events and django-axes sign-in records (IP, browser)...
 SECURITY_LOG_RETENTION_DAYS = env.int("SECURITY_LOG_RETENTION_DAYS", default=90)
+# ...and organization/subscription audit events, which document changes to the books
+# (lock date, members, plan, deletion): 10 years, like the books (UU KUP Art. 28(11)).
+ORGANIZATION_LOG_RETENTION_DAYS = env.int("ORGANIZATION_LOG_RETENTION_DAYS", default=3650)
 
 # Email verification after sign-up: links are valid for 3 days; resends are throttled.
 EMAIL_VERIFICATION_TIMEOUT = env.int("EMAIL_VERIFICATION_TIMEOUT", default=60 * 60 * 24 * 3)

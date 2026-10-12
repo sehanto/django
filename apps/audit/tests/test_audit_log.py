@@ -63,19 +63,26 @@ def test_organization_deletion_is_logged_and_survives(organization):
     assert events(A.ORGANIZATION_CREATED, organization_name=organization.name).exists()
 
 
-def test_audit_events_and_sign_in_records_share_one_retention_period(user):
-    assert settings.SECURITY_LOG_RETENTION_DAYS == 90
+def test_retention_keeps_organization_history_longer(user, organization):
+    assert (settings.SECURITY_LOG_RETENTION_DAYS, settings.ORGANIZATION_LOG_RETENTION_DAYS) == (90, 3650)
     days_ago = lambda days: timezone.now() - timedelta(days=days)  # noqa: E731
-    AuditEvent.objects.create(action=A.LOGIN_SUCCEEDED, actor=user, created_at=days_ago(91))
-    kept_event = AuditEvent.objects.create(action=A.LOGIN_SUCCEEDED, actor=user, created_at=days_ago(89))
+
+    def event(action, days):
+        return AuditEvent.objects.create(action=action, actor=user, organization=organization, created_at=days_ago(days)).pk
+
+    expired = {event(A.LOGIN_SUCCEEDED, 91), event(A.ENCRYPTION_KEYS_ROTATED, 91), event(A.MEMBER_ADDED, 3651),
+               event(A.PLAN_CHANGED, 3651)}
+    kept = {event(A.LOGIN_SUCCEEDED, 89), event(A.MEMBER_ADDED, 91), event(A.ORGANIZATION_SETTINGS_CHANGED, 3649),
+            event(A.PAYMENT_CONFIRMED_MANUALLY, 400)}
     old_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.5", user_agent="x")
     kept_sign_in = AccessLog.objects.create(username=user.email, ip_address="203.0.113.6", user_agent="x")
     AccessLog.objects.filter(pk=old_sign_in.pk).update(attempt_time=days_ago(91))
     AccessLog.objects.filter(pk=kept_sign_in.pk).update(attempt_time=days_ago(89))
 
-    call_command("prune_security_logs")  # default period; tests connect as the owner, who may prune
+    call_command("prune_security_logs")  # default periods; tests connect as the owner, who may prune
 
-    assert set(AuditEvent.objects.values_list("pk", flat=True)) == {kept_event.pk}
+    remaining = set(AuditEvent.objects.filter(pk__in=expired | kept).values_list("pk", flat=True))
+    assert remaining == kept
     assert set(AccessLog.objects.values_list("pk", flat=True)) == {kept_sign_in.pk}
 
 

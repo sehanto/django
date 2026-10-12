@@ -186,9 +186,16 @@ author. Passwords, codes and keys are never recorded.
   deletes for every role. It only allows clearing the user/organization link when that
   row is deleted (email and organization name are snapshotted, so deleted
   organizations stay traceable). The table owner may also delete, for retention.
-- **Retention:** `manage.py prune_security_logs` runs daily as the owner. It deletes audit
-  events *and* django-axes sign-in records older than `SECURITY_LOG_RETENTION_DAYS`
-  (default 90), so both keep personal data (IP address, browser) for the same period.
+- **Retention:** `manage.py prune_security_logs` runs daily as the owner:
+
+  | Records | Kept for | Setting |
+  |---|---|---|
+  | Account-security and system events, and django-axes sign-in records (IP address, browser) | 90 days | `SECURITY_LOG_RETENTION_DAYS` |
+  | Organization and subscription events (settings such as the lock date, members, exports, deletion, plan changes, manual payments) | 10 years | `ORGANIZATION_LOG_RETENTION_DAYS` (3650) |
+
+  Organization events document changes to the books, which taxpayers keep for 10 years
+  (UU KUP Art. 28(11)). Sign-in history is personal data with no such need. Which
+  categories are kept longer is `KEPT_LONGER` in `apps/audit/domain.py`.
 
 To record a new sensitive action, add an `AuditAction` (with its category) and call
 `apps.audit.services.record(action, request=..., organization=..., target=..., **details)`
@@ -440,9 +447,9 @@ Support tasks:
 ```
 
 Attempts are also visible, and can be deleted, in the Django admin under **Axes**. Old access
-logs (sign-in records with IP address and browser) are deleted daily together with the audit
-log, after `SECURITY_LOG_RETENTION_DAYS` (default 90) by `prune_security_logs` (see
-[Scheduled jobs](#scheduled-jobs)).
+logs (sign-in records with IP address and browser) are deleted daily together with the
+sign-in audit events, after `SECURITY_LOG_RETENTION_DAYS` (default 90), by
+`prune_security_logs` (see [Scheduled jobs](#scheduled-jobs)).
 
 This limit stops guessing many passwords for one account. It doesn't stop slow
 "credential stuffing" spread across many accounts and addresses; for that, add a CAPTCHA or
@@ -524,7 +531,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
-| `prune_security_logs` | Daily 03:30 | Delete audit events and django-axes sign-in records older than `SECURITY_LOG_RETENTION_DAYS` (default 90; needs `DATABASE_OWNER_URL`) |
+| `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days and organization/subscription events after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's
 crontab with:

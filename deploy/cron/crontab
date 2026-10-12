@@ -6,6 +6,7 @@
 # Daily: close expired payment links, send renewal reminders, downgrade lapsed plans.
 15 1 * * * @PROJECT_DIR@/deploy/cron/run.sh process_billing
 
-# Daily: delete audit events and django-axes sign-in records older than
-# SECURITY_LOG_RETENTION_DAYS (default 90; needs DATABASE_OWNER_URL).
+# Daily: delete sign-in/security records after SECURITY_LOG_RETENTION_DAYS (90) and
+# organization/subscription audit events after ORGANIZATION_LOG_RETENTION_DAYS (3650).
+# Needs DATABASE_OWNER_URL.
 30 3 * * * @PROJECT_DIR@/deploy/cron/run.sh prune_security_logs
