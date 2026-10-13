@@ -244,3 +244,30 @@ def test_production_always_redirects_to_https(monkeypatch, value):
 def test_production_redirect_accepts_true_values(monkeypatch, value):
     prod = load_production_settings(monkeypatch, DJANGO_SECURE_SSL_REDIRECT=value)
     assert prod.SECURE_SSL_REDIRECT is True and prod.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
+
+
+ONE_YEAR = 365 * 24 * 60 * 60
+
+
+@pytest.mark.parametrize(("name", "value"), [
+    ("DJANGO_SECURE_HSTS_SECONDS", "0"),  # HSTS off
+    ("DJANGO_SECURE_HSTS_SECONDS", str(30 * 24 * 60 * 60)),  # 30 days: below one year
+    ("DJANGO_SECURE_HSTS_SECONDS", "1y"),
+    ("DJANGO_SECURE_HSTS_SECONDS", "-31536000"),
+    ("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "false"),
+    ("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "ture"),  # a typo is an error, not False
+    ("DJANGO_SECURE_HSTS_PRELOAD", "maybe"),
+])
+def test_production_requires_real_hsts(monkeypatch, name, value):
+    with pytest.raises(ImproperlyConfigured, match=name):
+        load_production_settings(monkeypatch, **{name: value})
+
+
+@pytest.mark.parametrize(("overrides", "seconds", "preload"), [
+    ({}, ONE_YEAR, False),
+    ({"DJANGO_SECURE_HSTS_SECONDS": str(2 * ONE_YEAR), "DJANGO_SECURE_HSTS_PRELOAD": "true"}, 2 * ONE_YEAR, True),
+    ({"DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS": "1", "DJANGO_SECURE_HSTS_PRELOAD": "false"}, ONE_YEAR, False),
+])
+def test_production_hsts_settings(monkeypatch, overrides, seconds, preload):
+    prod = load_production_settings(monkeypatch, **overrides)
+    assert (prod.SECURE_HSTS_SECONDS, prod.SECURE_HSTS_INCLUDE_SUBDOMAINS, prod.SECURE_HSTS_PRELOAD) == (seconds, True, preload)

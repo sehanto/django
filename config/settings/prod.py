@@ -84,8 +84,34 @@ if _ssl_redirect not in environ.Env.BOOLEAN_TRUE_STRINGS:
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+# HSTS: browsers refuse plain HTTP to the site for this long. At least one year (what the
+# browser preload list and security scanners expect); longer may be set. Subdomains are
+# always included; preload is opt-in (it needs the bare domain to serve this header, and
+# is hard to undo).
+_HSTS_MIN_SECONDS = 365 * 24 * 60 * 60
+
+
+def _strict_bool(name: str, default: bool) -> bool:
+    """A true/false setting where a typo is an error, not a silent False."""
+    value = env.str(name, default="true" if default else "false").strip().lower()  # noqa: F405
+    if value in environ.Env.BOOLEAN_TRUE_STRINGS:
+        return True
+    if value in ("false", "off", "no", "n", "0"):
+        return False
+    raise ImproperlyConfigured(f"{name} is {value!r}; use true or false.")
+
+
+_hsts_seconds = env.str("DJANGO_SECURE_HSTS_SECONDS", default=str(_HSTS_MIN_SECONDS)).strip()  # noqa: F405
+if not _hsts_seconds.isdigit() or int(_hsts_seconds) < _HSTS_MIN_SECONDS:
+    raise ImproperlyConfigured(
+        f"DJANGO_SECURE_HSTS_SECONDS is {_hsts_seconds!r}; production needs at least {_HSTS_MIN_SECONDS} (one year). "
+        "Remove it to use one year."
+    )
+SECURE_HSTS_SECONDS = int(_hsts_seconds)
+if not _strict_bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True):
+    raise ImproperlyConfigured("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS must stay true in production.")
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = _strict_bool("DJANGO_SECURE_HSTS_PRELOAD", default=False)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 LOGGING = {
     "version": 1,
