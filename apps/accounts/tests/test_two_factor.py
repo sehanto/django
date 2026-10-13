@@ -58,16 +58,16 @@ def test_setup_flow(auth_client, user):
     device = AuthenticatorDevice.objects.get(user=user, confirmed=False)
     assert page.context["manual_key"].replace(" ", "")  # typed-in fallback
 
-    bad_password = auth_client.post(reverse("accounts:two_factor_setup"), {"password": "nope", "code": code_for(device)})
+    bad_password = auth_client.post(reverse("accounts:two_factor_setup"), {"password": "nope", "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert "password" in bad_password.context["form"].errors
-    bad_code = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": "000000"})
+    bad_code = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": "000000", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert "code" in bad_code.context["form"].errors
     assert not two_factor.is_enabled(user)
 
-    retyped_at_once = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device)})
+    retyped_at_once = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert "Tunggu" in str(retyped_at_once.context["form"].errors["code"])  # back-off: told to wait, not "invalid"
     with later():
-        done = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device)}, follow=True)
+        done = auth_client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN}, follow=True)
     assert two_factor.is_enabled(user)
     codes = done.context["new_codes"]
     assert len(codes) == settings.TWO_FACTOR_BACKUP_CODES and len(set(codes)) == len(codes)

@@ -33,6 +33,7 @@ from .forms import (
     ChangeEmailForm,
     ChangePasswordForm,
     DisableTwoFactorForm,
+    EnableTwoFactorForm,
     LoginForm,
     NewPasswordForm,
     ProfileForm,
@@ -40,7 +41,6 @@ from .forms import (
     ResetPasswordForm,
     SignUpForm,
     TwoFactorCodeForm,
-    TwoFactorConfirmForm,
     TwoFactorLoginForm,
 )
 from .middleware import SUPPORTED_LANGUAGES
@@ -459,7 +459,7 @@ class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
 
 class TwoFactorSetupView(LoginRequiredMixin, FormView):
     template_name = "accounts/two_factor_setup.html"
-    form_class = TwoFactorConfirmForm
+    form_class = EnableTwoFactorForm
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and two_factor.is_enabled(request.user):
@@ -467,11 +467,12 @@ class TwoFactorSetupView(LoginRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "user": self.request.user}
+        return {**super().get_form_kwargs(), "user": self.request.user, "request": self.request}
 
     def get_context_data(self, **kwargs):
         device = two_factor.start_setup(self.request.user)
         return super().get_context_data(
+            captcha=captcha.widget(captcha.CaptchaAction.ENABLE_TWO_FACTOR),
             qr_code=two_factor.qr_code_data_uri(device), manual_key=two_factor.manual_entry_key(device), **kwargs
         )
 

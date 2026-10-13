@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 07:36+0700\n"
+"POT-Creation-Date: 2026-10-13 07:43+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -262,7 +262,7 @@ msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
 #: apps/accounts/views.py:363 apps/accounts/views.py:454
-#: apps/accounts/views.py:556
+#: apps/accounts/views.py:557
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr ""
 "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba lagi."
@@ -290,22 +290,22 @@ msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi "
 "saat masuk berikutnya."
 
-#: apps/accounts/views.py:486
+#: apps/accounts/views.py:487
 msgid ""
 "That code is not valid. Check that the time on your phone is correct and try "
 "again."
 msgstr ""
 "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:492
+#: apps/accounts/views.py:493
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:522
+#: apps/accounts/views.py:523
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:548 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:549 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid ""
 "You can't turn off two-factor authentication while %(organizations)s "
@@ -314,7 +314,7 @@ msgstr ""
 "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s "
 "mewajibkannya."
 
-#: apps/accounts/views.py:562
+#: apps/accounts/views.py:563
 msgid ""
 "Two-factor authentication is off. Your account is protected by your password "
 "only."
@@ -2880,7 +2880,7 @@ msgstr ""
 "cadangan Anda tidak akan berlaku lagi."
 
 #: templates/accounts/two_factor_disable.html:15
-#: templates/accounts/two_factor_setup.html:16
+#: templates/accounts/two_factor_setup.html:17
 #: templates/contacts/contact_form.html:9
 #: templates/invoicing/invoice_form.html:27
 #: templates/invoicing/item_form.html:9 templates/ledger/account_form.html:9
@@ -2914,7 +2914,7 @@ msgstr ""
 "Masukkan kode 6 digit yang muncul di aplikasi, dan kata sandi Anda untuk "
 "konfirmasi."
 
-#: templates/accounts/two_factor_setup.html:17
+#: templates/accounts/two_factor_setup.html:18
 msgid "Turn on"
 msgstr "Aktifkan"
 

@@ -83,7 +83,7 @@ def test_member_without_2fa_is_sent_to_setup(client, organization, make_member):
     assert client.get(reverse("accounts:two_factor_setup")).status_code == 200
 
     device = two_factor.start_setup(member)
-    client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device)})
+    client.post(reverse("accounts:two_factor_setup"), {"password": PASSWORD, "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert client.get(DASHBOARD).status_code == 200  # setting it up also verifies this session
 
 

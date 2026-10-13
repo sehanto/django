@@ -192,6 +192,20 @@ def two_factor_on(user):
     return two_factor
 
 
+def test_turning_on_two_factor_needs_a_solved_captcha_before_the_code_is_tried(auth_client, user):
+    url = reverse("accounts:two_factor_setup")
+    assert 'data-action="enable_two_factor"' in auth_client.get(url).content.decode()
+    device = two_factor.start_setup(user)
+    with mock.patch.object(two_factor, "confirm_setup", wraps=two_factor.confirm_setup) as confirm:
+        response = auth_client.post(url, {"password": PASSWORD, "code": code_for(device)})
+    assert list(response.context["form"].errors) == ["__all__"]
+    confirm.assert_not_called()
+    assert not two_factor.is_enabled(user)
+
+    auth_client.post(url, {"password": PASSWORD, "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert two_factor.is_enabled(user)
+
+
 def test_creating_backup_codes_needs_a_solved_captcha(auth_client, user, two_factor_on):
     url = reverse("accounts:two_factor_backup_codes")
     assert 'data-action="backup_codes"' in auth_client.get(url).content.decode()

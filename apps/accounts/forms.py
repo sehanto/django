@@ -180,6 +180,13 @@ class RegenerateBackupCodesForm(CaptchaFirstFormMixin, PasswordConfirmationForm)
     captcha_action = captcha.CaptchaAction.BACKUP_CODES
 
 
+class EnableTwoFactorForm(CaptchaFirstFormMixin, TwoFactorConfirmForm):
+    """Password and the first code from the app; the CAPTCHA first, so neither is checked
+    for a script using a hijacked session."""
+
+    captcha_action = captcha.CaptchaAction.ENABLE_TWO_FACTOR
+
+
 class DisableTwoFactorForm(CaptchaFirstFormMixin, TwoFactorConfirmForm):
     """Password and code before 2FA goes off; the CAPTCHA first, so neither is checked (nor a
     code attempt counted) for a script using a hijacked session."""

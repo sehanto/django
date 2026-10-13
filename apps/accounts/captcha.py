@@ -8,8 +8,8 @@
 - Sign-up and password reset: always required, checked before any other field (so bots
   can't probe which emails are registered, send reset emails or use up the reset limits).
 - Resending the email confirmation link, correcting the address (which emails the new
-  one), changing the password, turning off 2FA and creating new backup codes: always
-  required before anything is checked or sent.
+  one), changing the password, turning 2FA on or off and creating new backup codes:
+  always required before anything is checked or sent.
 
 Tokens are verified server-side with ``siteverify`` and bound to their form's action.
 """
@@ -49,6 +49,7 @@ class CaptchaAction(StrEnum):
     RESEND_VERIFICATION = "resend_verification"
     CHANGE_EMAIL = "change_email"
     CHANGE_PASSWORD = "change_password"
+    ENABLE_TWO_FACTOR = "enable_two_factor"
     DISABLE_TWO_FACTOR = "disable_two_factor"
     BACKUP_CODES = "backup_codes"
 

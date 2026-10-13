@@ -12,6 +12,7 @@
   <ol start="3"><li>{% translate "Enter the 6-digit code shown in the app, and your password to confirm." %}</li></ol>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-md-6" %}
+    {% include "accounts/_captcha.html" %}
     <div class="d-flex gap-2 justify-content-end mt-4">
       <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
       <button class="btn btn-primary">{% translate "Turn on" %}</button>
@@ -19,3 +20,4 @@
   </form>
 </div></div>
 {% endblock %}
+{% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}
