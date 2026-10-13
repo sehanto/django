@@ -12,6 +12,10 @@ from .domain import AccountCategory, AccountType, JournalSource, JournalStatus, 
 class Account(TenantOwnedModel):
     """An entry in the organization's chart of accounts (Bagan Akun)."""
 
+    # Decide where history lands in the reports and which way it counts: fixed once the
+    # account has transactions (ledger migration 0008 enforces this for posted ones).
+    FIXED_ONCE_USED = ("category", "is_contra")
+
     code = models.CharField(_("code"), max_length=20, validators=[code_validator])
     name = models.CharField(_("account name"), max_length=150)
     category = models.CharField(_("category"), max_length=30, choices=AccountCategory.choices)

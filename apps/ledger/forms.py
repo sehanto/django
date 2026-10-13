@@ -14,6 +14,20 @@ class AccountForm(OrganizationFormMixin, BaseModelForm):
         model = Account
         fields = ["code", "name", "category", "is_contra", "description", "is_active"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        account = self.instance
+        if account.pk and account.lines.exists():  # the database refuses these changes; say so up front
+            for name in Account.FIXED_ONCE_USED:
+                self.fields[name].disabled = True
+            self.fields["category"].help_text = _(
+                "This account has transactions, so its category and contra setting are fixed. "
+                "Its code and name can still change."
+            )
+        if account.pk and account.system_role:
+            self.fields["is_active"].disabled = True
+            self.fields["is_active"].help_text = _("System accounts are always active.")
+
 
 class JournalEntryForm(OrganizationFormMixin, BaseModelForm):
     class Meta:

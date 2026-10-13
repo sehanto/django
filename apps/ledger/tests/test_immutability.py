@@ -16,6 +16,8 @@ from django.test import RequestFactory
 from django.utils import timezone
 
 from apps.ledger import services
+from apps.ledger.domain import AccountCategory, SystemRole
+from apps.ledger.forms import AccountForm
 from apps.ledger.models import Account, JournalEntry, JournalLine
 from apps.ledger.services import JournalLineInput
 
@@ -158,3 +160,42 @@ def test_admin_cannot_delete_journal_entries(posted, user):
     request = RequestFactory().get("/")
     request.user = user
     assert site._registry[JournalEntry].has_delete_permission(request, posted) is False
+
+
+# --- Chart of accounts (ledger migration 0008) -----------------------------------------
+
+
+def test_used_accounts_keep_their_meaning_but_can_be_renamed(posted, account):
+    cash = account("1-1100")  # has a posted line
+    for change in ({"category": AccountCategory.OTHER_CURRENT_ASSET}, {"is_contra": True}):
+        with rejected_by_database():
+            Account.objects.filter(pk=cash.pk).update(**change)
+    Account.objects.filter(pk=cash.pk).update(name="Bank BCA", code="1-1101", description="Rekening utama")
+    Account.objects.filter(pk=cash.pk).update(is_active=False)
+
+
+def test_unused_accounts_stay_fully_editable(organization):
+    spare = Account.objects.create(organization=organization, code="6-9999", name="Cadangan", category=AccountCategory.OTHER_EXPENSE)
+    Account.objects.filter(pk=spare.pk).update(category=AccountCategory.OPERATING_EXPENSE, is_contra=True)
+    spare.delete()
+
+
+def test_system_accounts_are_permanent(organization, other_organization):
+    receivable = Account.objects.get(organization=organization, system_role=SystemRole.RECEIVABLE)
+    for change in ({"is_active": False}, {"system_role": None}, {"organization": other_organization}):
+        with rejected_by_database():
+            Account.objects.filter(pk=receivable.pk).update(**change)
+    with rejected_by_database():
+        receivable.delete()
+
+
+def test_accounts_with_lines_cannot_be_deleted(posted, account):
+    with rejected_by_database():
+        account("1-1100").delete()
+
+
+def test_account_form_explains_the_locks(posted, organization, account):
+    used = AccountForm(instance=account("1-1100"), organization=organization)
+    assert used.fields["category"].disabled and used.fields["is_contra"].disabled and not used.fields["name"].disabled
+    system = AccountForm(instance=Account.objects.get(organization=organization, system_role=SystemRole.RECEIVABLE), organization=organization)
+    assert system.fields["is_active"].disabled

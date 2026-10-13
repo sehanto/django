@@ -92,12 +92,11 @@ def create_account(*, organization, **fields) -> Account:
 
 @transaction.atomic
 def update_account(*, account: Account, **fields) -> Account:
-    if (
-        "category" in fields
-        and fields["category"] != account.category
-        and _has_postings(account)
-    ):
-        raise ValidationFailed(_("The category of an account with transactions cannot be changed."))
+    changes_meaning = any(
+        name in fields and fields[name] != getattr(account, name) for name in Account.FIXED_ONCE_USED
+    )
+    if changes_meaning and _has_postings(account):
+        raise ValidationFailed(_("The category and contra setting of an account with transactions cannot be changed."))
     if account.system_role and fields.get("is_active") is False:
         raise ValidationFailed(_("System accounts cannot be deactivated."))
     duplicate = (

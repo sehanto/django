@@ -86,7 +86,12 @@ Key design decisions:
   keeps it as a void record. Only the owner's organization purge removes them.
 
   Reference data stays editable for future documents but can't rewrite history
-  (migrations `invoicing/0005`, `taxes/0007`):
+  (migrations `invoicing/0005`, `taxes/0007`, `ledger/0008`):
+  - an account with posted entries keeps its category, contra flag and system role
+    (they decide where history lands in the reports and which way it counts); its code,
+    name and description can change (recorded in the audit log). System accounts are
+    never deleted, deactivated or stripped of their role, and no account changes
+    organization;
   - issuing an invoice snapshots the buyer's and your own name, NPWP, address and city
     onto it. Issued invoices, prints and the export show those snapshots, so editing a
     contact or the organization never changes an issued invoice, and the database refuses
