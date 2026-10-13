@@ -13,4 +13,9 @@ urlpatterns = [
     path("pph-final/expenses/<int:pk>/cancel/", views.PphFinalAccrualCancelView.as_view(), name="pph_final_accrual_cancel"),
     path("pph-final/pay/", views.PphFinalPayView.as_view(), name="pph_final_pay"),
     path("pph-final/<int:pk>/cancel/", views.PphFinalCancelView.as_view(), name="pph_final_cancel"),
+    path("withholding/", views.WithholdingView.as_view(), name="withholding"),
+    path("withholding/deposit/", views.WithholdingDepositView.as_view(), name="withholding_deposit"),
+    path("withholding/deposits/<int:pk>/cancel/", views.WithholdingDepositCancelView.as_view(), name="withholding_deposit_cancel"),
+    path("withholding/<int:year>/<int:month>/", views.WithholdingMonthView.as_view(), name="withholding_month"),
+    path("withholding/<int:year>/<int:month>.csv", views.WithholdingMonthView.as_view(), {"csv": True}, name="withholding_month_csv"),
 ]

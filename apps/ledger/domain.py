@@ -94,6 +94,8 @@ class SystemRole(models.TextChoices):
     RETAINED_EARNINGS = "retained_earnings", _("Retained earnings")
     PPH_FINAL_EXPENSE = "pph_final_expense", _("Final income tax expense")
     PPH_FINAL_PAYABLE = "pph_final_payable", _("Final income tax payable")
+    PPH_23_PAYABLE = "pph23_payable", _("Withheld PPh 23 payable")
+    PPH_4_2_PAYABLE = "pph4_2_payable", _("Withheld PPh 4(2) payable")
 
 
 class JournalStatus(models.TextChoices):

@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, money_field
 from apps.core.validators import ntpn_validator
 
-from .domain import Month, VatResult, compute_vat
+from .domain import Month, PayerWithholding, VatResult, compute_vat
 
 
 class TaxRate(TenantOwnedModel):
@@ -141,3 +141,38 @@ class PphFinalPayment(TenantOwnedModel):
     @property
     def deposited(self) -> Decimal:
         return self.tax_amount - self.withheld
+
+
+class WithholdingDeposit(TenantOwnedModel):
+    """The monthly deposit (setoran) of the income tax withheld from suppliers (PPh 23 or 4(2)):
+    it settles the withheld tax payable. Cancelling voids it (its journal entry is reversed);
+    never deleted (taxes migration 0012)."""
+
+    Status = PphFinalStatus
+    Kind = PayerWithholding
+
+    kind = models.CharField(_("income tax"), max_length=10, choices=PayerWithholding.choices)
+    year = models.PositiveSmallIntegerField(_("year"))
+    month = models.PositiveSmallIntegerField(_("month"), choices=Month.choices)
+    amount = money_field(_("amount"))
+    paid_on = models.DateField(_("payment date"))
+    ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator])
+    cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
+    journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    status = models.CharField(_("status"), max_length=10, choices=PphFinalStatus.choices, default=PphFinalStatus.POSTED)
+
+    class Meta:
+        ordering = ["-year", "-month", "kind"]
+        verbose_name = _("withholding tax deposit")
+        verbose_name_plural = _("withholding tax deposits")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "kind", "year", "month"], condition=models.Q(status=PphFinalStatus.POSTED),
+                name="unique_withholding_deposit_period",
+            ),
+            models.CheckConstraint(name="withholding_deposit_positive", condition=models.Q(amount__gt=0)),
+        ]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} {Month(self.month).tax_period(self.year)}"

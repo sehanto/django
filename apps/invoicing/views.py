@@ -280,6 +280,19 @@ class PaymentVoidView(WriteMixin, View):
         return redirect("invoicing:detail", kind=payment.invoice.kind, pk=payment.invoice_id)
 
 
+class WithholdingSlipView(WriteMixin, View):
+    def post(self, request, pk):
+        payment = get_object_or_404(payments_for(self.organization), pk=pk)
+        try:
+            services.record_withholding_slip(payment=payment, number=text_param(request.POST, "number"))
+            messages.success(request, _("Bukti potong number recorded."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        if choice_param(request.POST, "next", ["withholding"]):
+            return redirect("taxes:withholding_month", payment.date.year, payment.date.month)
+        return redirect("invoicing:detail", kind=payment.invoice.kind, pk=payment.invoice_id)
+
+
 # --- Items --------------------------------------------------------------------
 
 

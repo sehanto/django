@@ -7,6 +7,7 @@ app_name = "invoicing"
 urlpatterns = [
     path("payments/", views.PaymentListView.as_view(), name="payments"),
     path("payments/<int:pk>/void/", views.PaymentVoidView.as_view(), name="payment_void"),
+    path("payments/<int:pk>/bukti-potong/", views.WithholdingSlipView.as_view(), name="payment_slip"),
     path("returns/<int:pk>/", views.ReturnDetailView.as_view(), name="return_detail"),
     path("returns/<int:pk>/void/", views.ReturnVoidView.as_view(), name="return_void"),
     path("returns/<int:pk>/coretax.xml", views.ReturnCoretaxView.as_view(), name="return_coretax"),

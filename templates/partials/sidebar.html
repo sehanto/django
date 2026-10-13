@@ -39,6 +39,7 @@
     <li><a class="nav-link {% if url.url_name == 'accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}"><i class="bi bi-diagram-3 me-2"></i>{% translate "Chart of accounts" %}</a></li>
     <li class="nav-heading">{% translate "Taxes & reports" %}</li>
     <li><a class="nav-link {% if url.url_name == 'pph_final' %}active{% endif %}" href="{% url 'taxes:pph_final' %}"><i class="bi bi-percent me-2"></i>{% translate "MSME PPh Final" %}</a></li>
+    <li><a class="nav-link {% if url.url_name == 'withholding' or url.url_name == 'withholding_month' %}active{% endif %}" href="{% url 'taxes:withholding' %}"><i class="bi bi-receipt-cutoff me-2"></i>{% translate "PPh 23 & 4(2)" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'rates' %}active{% endif %}" href="{% url 'taxes:rates' %}"><i class="bi bi-sliders me-2"></i>{% translate "PPN rates" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'reports' %}active{% endif %}" href="{% url 'reports:index' %}"><i class="bi bi-bar-chart-line me-2"></i>{% translate "Financial reports" %}</a></li>
     {% if can_manage %}

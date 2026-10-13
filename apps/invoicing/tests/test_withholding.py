@@ -193,7 +193,7 @@ def test_a_month_covered_by_withholding_has_nothing_to_deposit(cv, cv_invoice):
     assert not PphFinalPayment.objects.filter(organization=cv).exists()
 
 
-def test_only_receipts_record_income_tax_withheld(cv, cv_invoice, account, organization, supplier):
+def test_each_side_withholds_its_own_income_taxes(cv, cv_invoice, account, organization, supplier):
     acc = cv_invoice.acc
     cv.uses_pph_final = False
     cv.save(update_fields=["uses_pph_final"])
@@ -206,10 +206,10 @@ def test_only_receipts_record_income_tax_withheld(cv, cv_invoice, account, organ
         organization=organization, kind=InvoiceKind.PURCHASE, contact=supplier, date=date(2026, 3, 5),
         lines=[InvoiceLineInput("Sewa", account("6-1100"), D("1"), D("1000000"))],
     ))
-    with pytest.raises(ValidationFailed, match="receipts from customers"):
+    with pytest.raises(ValidationFailed, match="PPh 23 or PPh 4"):  # PPh 22 is withheld by buyers, not from suppliers
         services.record_payment(
             invoice=bill, date=date(2026, 3, 20), amount=D("1000000"), cash_account=account("1-1100"),
-            income_tax=IncomeTaxInput(IncomeTaxWithheld.PPH_23, D("20000"), account("1-1500")),
+            income_tax=IncomeTaxInput(IncomeTaxWithheld.PPH_22, base=D("1000000"), rate=D("1.5")),
         )
     entry = create_journal_entry(
         organization=organization, date=date(2026, 3, 20), description="x",
@@ -218,7 +218,7 @@ def test_only_receipts_record_income_tax_withheld(cv, cv_invoice, account, organ
     with pytest.raises(IntegrityError), transaction.atomic():  # the database agrees
         Payment.objects.create(
             organization=organization, number="X-1", invoice=bill, date=date(2026, 3, 20), amount=D("10"),
-            income_tax_kind=IncomeTaxWithheld.PPH_23, income_tax_withheld=D("2"), income_tax_account=account("1-1500"),
+            income_tax_kind=IncomeTaxWithheld.PPH_FINAL, income_tax_withheld=D("2"),
             cash_account=account("1-1100"), journal_entry=entry,
         )
 

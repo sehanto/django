@@ -18,7 +18,7 @@ from django.utils.translation import ngettext
 
 from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, ValidationFailed
 from apps.core.formatting import localized_rupiah
-from apps.core.money import ZERO, quantize
+from apps.core.money import ZERO, quantize, round_down_rupiah
 from apps.core.sequences import next_document_number
 from apps.core.validators import ensure_business_date
 from apps.inventory import services as inventory
@@ -32,7 +32,7 @@ from apps.contacts.countries import INDONESIA
 from apps.contacts.models import BuyerIdType
 
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
+from .models import PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from .selectors import invoices_created_this_month
 
 INVOICE_PREFIX = {InvoiceKind.SALES: "INV", InvoiceKind.PURCHASE: "BILL"}
@@ -410,15 +410,21 @@ def _refresh_payment_status(invoice: Invoice) -> None:
 
 @dataclass(frozen=True)
 class IncomeTaxInput:
-    """Income tax the buyer withheld from a receipt (it gives a bukti potong)."""
+    """Income tax withheld from a payment, with its bukti potong: by the customer from a receipt
+    (``amount``), or by us from a payment to a supplier (``base`` x ``rate``, rounded down)."""
 
     kind: str = IncomeTaxWithheld.NONE
     amount: Decimal = ZERO
-    account: Account | None = None  # prepaid tax, for PPh 22/23
+    account: Account | None = None  # prepaid tax, for PPh 22/23 withheld by a customer
     slip: str = ""
+    base: Decimal = ZERO  # when we withhold: the gross amount the tax is on
+    rate: Decimal | None = None  # and its rate (%)
 
 
 NO_INCOME_TAX = IncomeTaxInput()
+
+# The liability for income tax we withheld from suppliers, until the monthly deposit.
+PAYER_ROLES = {IncomeTaxWithheld.PPH_23: SystemRole.PPH_23_PAYABLE, IncomeTaxWithheld.PPH_4_2: SystemRole.PPH_4_2_PAYABLE}
 
 
 def _deposited_pph_final(organization, on: date) -> bool:
@@ -429,37 +435,75 @@ def _deposited_pph_final(organization, on: date) -> bool:
     ).exists()
 
 
-def _income_tax_debit(invoice: Invoice, on: date, income_tax: IncomeTaxInput, amount: Decimal) -> JournalLineInput | None:
-    """The debit for income tax the buyer withheld: prepaid tax (PPh 22/23), or the PPh Final
-    payable it settles (the buyer deposits that part of the month's PPh Final for us)."""
+def _deposited_withholding(organization, kind: str, on: date) -> bool:
+    from apps.taxes.models import WithholdingDeposit  # taxes doesn't depend on invoicing
+
+    return WithholdingDeposit.objects.for_organization(organization).filter(
+        kind=kind, year=on.year, month=on.month, status=WithholdingDeposit.Status.POSTED,
+    ).exists()
+
+
+def ensure_period_open(invoice: Invoice, kind: str, on: date) -> None:
+    """Withheld tax of a month whose deposit is recorded can't change any more."""
     organization = invoice.organization
-    if not income_tax.kind and not income_tax.amount:
+    if kind == IncomeTaxWithheld.PPH_FINAL and invoice.is_sales and _deposited_pph_final(organization, on):
+        raise ValidationFailed(
+            _("The PPh Final for %(period)s has already been deposited. Cancel that deposit first, so that it can take this withholding into account.")
+            % {"period": f"{on:%m/%Y}"}
+        )
+    if kind in PAYER_ROLES and not invoice.is_sales and _deposited_withholding(organization, kind, on):
+        raise ValidationFailed(
+            _("The %(tax)s withheld in %(period)s has already been deposited. Cancel that deposit first.")
+            % {"tax": IncomeTaxWithheld(kind).label, "period": f"{on:%m/%Y}"}
+        )
+
+
+def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, amount: Decimal) -> JournalLineInput | None:
+    """The journal line for income tax withheld from a payment of ``amount`` (cash before it).
+
+    On a receipt the customer withheld it: a debit to prepaid tax (PPh 22/23), or to the PPh
+    Final payable it settles (the customer deposits that part of the month's PPh Final for us).
+    On a payment to a supplier we withheld it: a credit to the withheld tax payable, which the
+    monthly deposit settles."""
+    organization = invoice.organization
+    if not income_tax.kind and not income_tax.amount and not income_tax.base:
         return None
-    if income_tax.kind not in IncomeTaxWithheld.values or not income_tax.kind:
-        raise ValidationFailed(_("Choose which income tax the buyer withheld."))
-    if not invoice.is_sales:
-        raise ValidationFailed(_("Income tax withheld by the buyer is recorded on receipts from customers."))
-    if income_tax.amount <= 0 or income_tax.amount > amount:
+    allowed = RECEIPT_WITHHOLDING if invoice.is_sales else PAYER_WITHHOLDING
+    if income_tax.kind not in allowed:
+        if invoice.is_sales:
+            raise ValidationFailed(_("Choose which income tax the buyer withheld."))
+        raise ValidationFailed(_("Choose PPh 23 or PPh 4(2) for income tax withheld from a supplier."))
+    if invoice.is_sales:
+        withheld = income_tax.amount
+    else:
+        if income_tax.base <= 0 or income_tax.base > invoice.subtotal:
+            raise ValidationFailed(
+                _("The base of the withholding must be more than zero and at most the bill's subtotal (%(amount)s).")
+                % {"amount": localized_rupiah(invoice.subtotal)}
+            )
+        if income_tax.rate is None or not ZERO < income_tax.rate <= Decimal("100"):
+            raise ValidationFailed(_("Enter the withholding rate (%)."))
+        withheld = round_down_rupiah(income_tax.base * income_tax.rate / Decimal("100"))
+    if withheld <= 0 or withheld > amount:
         raise ValidationFailed(_("The income tax withheld must be more than zero and at most %(amount)s.") % {"amount": localized_rupiah(amount)})
-    if income_tax.kind == IncomeTaxWithheld.PPH_FINAL:
+    ensure_period_open(invoice, income_tax.kind, on)
+    if not invoice.is_sales:
+        line = JournalLineInput(get_system_account(organization, PAYER_ROLES[income_tax.kind]), credit=withheld)
+    elif income_tax.kind == IncomeTaxWithheld.PPH_FINAL:
         if not organization.uses_pph_final:
             raise ValidationFailed(_("This organization does not use the MSME PPh Final scheme."))
-        if _deposited_pph_final(organization, on):
-            raise ValidationFailed(
-                _("The PPh Final for %(period)s has already been deposited. Cancel that deposit first, so that it can take this withholding into account.")
-                % {"period": f"{on:%m/%Y}"}
-            )
-        line = JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=income_tax.amount)
+        line = JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=withheld)
     else:
         account = income_tax.account
         if account is None or not prepaid_tax_accounts(organization).filter(pk=account.pk).exists():
             raise ValidationFailed(_("Choose the prepaid tax account for the income tax withheld."))
-        line = JournalLineInput(account, debit=income_tax.amount)
+        line = JournalLineInput(account, debit=withheld)
     # A refund gives back the income tax withheld on what it refunds (create_return), so one
-    # invoice's receipts withhold one kind of tax, into one account.
+    # invoice's payments withhold one kind of tax, into one account.
     earlier = {(p.income_tax_kind, p.income_tax_account_id) for p in invoice._posted_payments() if p.income_tax_withheld}
-    if earlier and earlier != {(income_tax.kind, line.account.pk if income_tax.kind != IncomeTaxWithheld.PPH_FINAL else None)}:
-        raise ValidationFailed(_("Earlier receipts of this invoice withheld another income tax or used another account. Record the same kind here."))
+    account_id = line.account.pk if invoice.is_sales and income_tax.kind != IncomeTaxWithheld.PPH_FINAL else None
+    if earlier and earlier != {(income_tax.kind, account_id)}:
+        raise ValidationFailed(_("Earlier payments of this invoice withheld another income tax or used another account. Record the same kind here."))
     return line
 
 
@@ -479,8 +523,9 @@ def record_payment(
     method: str = Payment.Method.TRANSFER, reference: str = "", vat_withheld: Decimal = ZERO,
     income_tax: IncomeTaxInput = NO_INCOME_TAX, created_by=None,
 ) -> Payment:
-    """``amount`` settles the invoice. What the buyer withheld is part of it: the PPN a VAT
-    collector deposits itself (``vat_withheld``) and income tax (``income_tax``); the rest is cash."""
+    """``amount`` settles the invoice. What was withheld is part of it: on a receipt, the PPN a
+    VAT collector deposits itself (``vat_withheld``) and income tax the customer withheld; on a
+    payment to a supplier, the income tax we withheld (PPh 23/4(2)). The rest is cash."""
     invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
     organization = invoice.organization
     if not invoice.is_open:
@@ -504,12 +549,12 @@ def record_payment(
             raise ValidationFailed(
                 _("The PPN withheld can be at most %(amount)s.") % {"amount": localized_rupiah(max(min(amount, remaining), ZERO))}
             )
-    income_tax_line = _income_tax_debit(invoice, date, income_tax, amount - vat_withheld)
+    income_tax_line = _withholding_line(invoice, date, income_tax, amount - vat_withheld)
+    withheld_income_tax = (income_tax_line.debit or income_tax_line.credit) if income_tax_line else ZERO
 
     number = next_document_number(organization, PAYMENT_PREFIX[invoice.kind], date)
     if invoice.is_sales:
         description = f"Penerimaan dari {invoice.contact.name} atas {invoice.number}"
-        withheld_income_tax = income_tax_line.debit if income_tax_line else ZERO
         lines = [
             JournalLineInput(cash_account, debit=amount - vat_withheld - withheld_income_tax),
             # The collector deposits this PPN (and PPnBM) itself: it settles the output tax, not the seller.
@@ -517,23 +562,26 @@ def record_payment(
             *([income_tax_line] if income_tax_line else []),
             JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=amount),
         ]
-        lines = [line for line in lines if line.debit or line.credit]
     else:
         description = f"Pembayaran kepada {invoice.contact.name} atas {invoice.number}"
         lines = [
             JournalLineInput(get_system_account(organization, SystemRole.PAYABLE), debit=amount),
-            JournalLineInput(cash_account, credit=amount),
+            JournalLineInput(cash_account, credit=amount - withheld_income_tax),
+            *([income_tax_line] if income_tax_line else []),  # we deposit it for the supplier
         ]
+    lines = [line for line in lines if line.debit or line.credit]
     entry = create_journal_entry(
         organization=organization, date=date, description=description, reference=number,
         source=JournalEntry.Source.PAYMENT, lines=lines, created_by=created_by,
     )
+    payer = income_tax_line is not None and not invoice.is_sales
     payment = Payment.objects.create(
         organization=organization, number=number, invoice=invoice, date=date, amount=amount,
         cash_account=cash_account, method=method, reference=reference, vat_withheld=vat_withheld, journal_entry=entry,
         income_tax_kind=income_tax.kind if income_tax_line else IncomeTaxWithheld.NONE,
-        income_tax_withheld=income_tax_line.debit if income_tax_line else ZERO,
-        income_tax_account=income_tax_line.account if income_tax_line else None,
+        income_tax_withheld=withheld_income_tax,
+        income_tax_account=income_tax_line.account if income_tax_line and invoice.is_sales else None,
+        income_tax_base=income_tax.base if payer else ZERO, income_tax_rate=income_tax.rate if payer else None,
         withholding_slip=income_tax.slip if income_tax_line else "", created_by=created_by,
     )
     invoice.amount_paid += amount
@@ -555,6 +603,11 @@ def void_payment(*, payment: Payment, on: date, voided_by=None) -> Payment:
         raise InvalidStateTransition(
             _("The PPh Final for %(period)s, which counts this withholding, has been deposited. Cancel that deposit first.")
             % {"period": f"{payment.date:%m/%Y}"}
+        )
+    if payment.income_tax_kind in PAYER_ROLES and not invoice.is_sales and _deposited_withholding(invoice.organization, payment.income_tax_kind, payment.date):
+        raise InvalidStateTransition(
+            _("The %(tax)s withheld in %(period)s, which counts this payment, has been deposited. Cancel that deposit first.")
+            % {"tax": payment.get_income_tax_kind_display(), "period": f"{payment.date:%m/%Y}"}
         )
     reverse_journal_entry(
         entry=payment.journal_entry, date=max(on, payment.date), created_by=voided_by,
@@ -684,8 +737,9 @@ def create_return(
 
 
 def _income_tax_refunded(invoice: Invoice, on: date, refund: Decimal) -> IncomeTaxInput:
-    """The income tax the buyer withheld on the part of its payments a return refunds."""
-    if not invoice.is_sales or refund <= 0:
+    """The income tax withheld on the part of the payments a return refunds: by the customer
+    (a sales return), or by us from the supplier (a purchase return the supplier refunds)."""
+    if refund <= 0:
         return NO_INCOME_TAX
     payments = [p for p in invoice._posted_payments()]
     withheld = [p for p in payments if p.income_tax_withheld]
@@ -700,6 +754,9 @@ def _income_tax_refunded(invoice: Invoice, on: date, refund: Decimal) -> IncomeT
             _("The PPh Final for %(period)s has already been deposited, and this refund gives back PPh Final the buyer withheld. Cancel that deposit first.")
             % {"period": f"{on:%m/%Y}"}
         )
+    if not invoice.is_sales:
+        ensure_period_open(invoice, kind, on)
+        account = get_system_account(invoice.organization, PAYER_ROLES[kind])
     return IncomeTaxInput(kind, share, account)
 
 
@@ -737,6 +794,8 @@ def _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withhe
         result.append(JournalLineInput(get_system_account(organization, SystemRole.PAYABLE), debit=credited))
     if refunded:
         result.append(JournalLineInput(cash_account, debit=refunded))
+    if income_tax.amount:  # what we withheld on the refunded part: no longer owed to the state
+        result.append(JournalLineInput(income_tax.account, debit=income_tax.amount))
     credits = []
     for line, cost in zip(lines, costs):
         planned = stock_cost.get(line.invoice_line.pk)
@@ -768,6 +827,11 @@ def void_return(*, note: ReturnNote, on: date, voided_by=None) -> ReturnNote:
             _("The PPh Final for %(period)s, which counts this return, has been deposited. Cancel that deposit first.")
             % {"period": f"{note.date:%m/%Y}"}
         )
+    if note.income_tax_kind in PAYER_ROLES and not invoice.is_sales and _deposited_withholding(invoice.organization, note.income_tax_kind, note.date):
+        raise InvalidStateTransition(
+            _("The %(tax)s withheld in %(period)s, which counts this return, has been deposited. Cancel that deposit first.")
+            % {"tax": note.get_income_tax_kind_display(), "period": f"{note.date:%m/%Y}"}
+        )
     stock = inventory.plan_return_void(note)
     reversal = reverse_journal_entry(
         entry=note.journal_entry, date=max(on, note.date), created_by=voided_by,
@@ -795,3 +859,19 @@ def record_tax_invoice_number(*, invoice: Invoice, number: str) -> Invoice:
     invoice.tax_invoice_number = digits
     invoice.save(update_fields=["tax_invoice_number", "updated_at"])
     return invoice
+
+
+@transaction.atomic
+def record_withholding_slip(*, payment: Payment, number: str) -> Payment:
+    """Record the bukti potong number Coretax gave the income tax we withheld from a supplier (once)."""
+    payment = Payment.objects.select_for_update().select_related("invoice").get(pk=payment.pk)
+    if payment.invoice.is_sales or not payment.income_tax_withheld or payment.status != Payment.Status.POSTED:
+        raise InvalidStateTransition(_("Only a payment to a supplier with income tax withheld takes a bukti potong number this way."))
+    if payment.withholding_slip:
+        raise InvalidStateTransition(_("This payment already has its bukti potong number."))
+    number = number.strip()
+    if not number or len(number) > 50:
+        raise ValidationFailed(_("Enter the bukti potong number."))
+    payment.withholding_slip = number
+    payment.save(update_fields=["withholding_slip", "updated_at"])
+    return payment

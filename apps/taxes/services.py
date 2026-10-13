@@ -12,9 +12,9 @@ from apps.ledger.domain import SystemRole
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
-from .domain import Month
-from .models import PphFinalAccrual, PphFinalPayment, TaxRate
-from .selectors import pph_final_schedule, pph_final_withheld
+from .domain import Month, PayerWithholding
+from .models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
+from .selectors import pph_final_schedule, pph_final_withheld, withholding_due
 
 DEFAULT_TAX_RATES = [
     # (name, rate, dpp_numerator, dpp_denominator)
@@ -173,3 +173,50 @@ def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=N
     payment.status = PphFinalPayment.Status.VOID  # kept as history: never deleted
     payment.save(update_fields=["status", "updated_at"])
     return payment
+
+
+PAYER_ROLES = {PayerWithholding.PPH_23: SystemRole.PPH_23_PAYABLE, PayerWithholding.PPH_4_2: SystemRole.PPH_4_2_PAYABLE}
+
+
+@transaction.atomic
+def record_withholding_deposit(
+    *, organization, kind: str, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None,
+) -> WithholdingDeposit:
+    """Deposit (setoran) of the PPh 23 or 4(2) withheld from suppliers in a month: it settles
+    the withheld tax payable. Due by the 15th of the next month."""
+    month = Month(month)
+    kind = PayerWithholding(kind)
+    if not cash_account.is_cash or cash_account.organization_id != organization.pk:
+        raise ValidationFailed(_("Choose a valid cash or bank account."))
+    if WithholdingDeposit.objects.for_organization(organization).filter(kind=kind, year=year, month=month, status=WithholdingDeposit.Status.POSTED).exists():
+        raise ValidationFailed(_("The %(tax)s for %(period)s has already been deposited.") % {"tax": kind.label, **_period(month, year)})
+    amount = withholding_due(organization, year).get((kind, month), ZERO)
+    if amount <= 0:
+        raise ValidationFailed(_("No %(tax)s was withheld in %(period)s.") % {"tax": kind.label, **_period(month, year)})
+    tax = "PPh 23" if kind == PayerWithholding.PPH_23 else "PPh Pasal 4 ayat (2)"
+    entry = create_journal_entry(
+        organization=organization, date=paid_on, description=f"Setoran {tax} masa {month.tax_period(year)}", reference=ntpn,
+        source=JournalEntry.Source.TAX, created_by=created_by,
+        lines=[
+            JournalLineInput(get_system_account(organization, PAYER_ROLES[kind]), debit=amount),
+            JournalLineInput(cash_account, credit=amount),
+        ],
+    )
+    return WithholdingDeposit.objects.create(
+        organization=organization, kind=kind, year=year, month=month, amount=amount, paid_on=paid_on, ntpn=ntpn,
+        cash_account=cash_account, journal_entry=entry, created_by=created_by,
+    )
+
+
+@transaction.atomic
+def cancel_withholding_deposit(*, deposit: WithholdingDeposit, on: date, created_by=None) -> WithholdingDeposit:
+    deposit = WithholdingDeposit.objects.select_for_update().get(pk=deposit.pk)
+    if deposit.status != WithholdingDeposit.Status.POSTED:
+        raise InvalidStateTransition(_("This deposit has already been cancelled."))
+    reverse_journal_entry(
+        entry=deposit.journal_entry, date=max(on, deposit.paid_on), created_by=created_by,
+        description=f"Pembatalan setoran {deposit.get_kind_display()} masa {Month(deposit.month).tax_period(deposit.year)}"[:255],
+    )
+    deposit.status = WithholdingDeposit.Status.VOID  # kept as history: never deleted
+    deposit.save(update_fields=["status", "updated_at"])
+    return deposit

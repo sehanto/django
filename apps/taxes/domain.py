@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 
 from apps.core.money import ZERO, quantize, round_down_rupiah
@@ -38,6 +39,20 @@ class Month(models.IntegerChoices):
     def tax_period(self, year: int) -> str:
         """The masa pajak as written on tax forms and journal entries, e.g. ``03/2026``."""
         return f"{self.value:02d}/{year}"
+
+
+class PayerWithholding(models.TextChoices):
+    """Income tax the business withholds from what it pays suppliers (as the payer), and
+    deposits monthly. The values match ``invoicing.IncomeTaxWithheld``."""
+
+    # xgettext:no-python-format
+    PPH_23 = "pph23", _("PPh 23 (e.g. 2% on services)")
+    # xgettext:no-python-format
+    PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
+
+
+# The usual rate of each, suggested on the payment form.
+PAYER_WITHHOLDING_RATES = {PayerWithholding.PPH_23: Decimal("2"), PayerWithholding.PPH_4_2: Decimal("10")}
 
 
 @dataclass(frozen=True)

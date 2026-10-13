@@ -27,7 +27,7 @@ from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
-from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate
+from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
 from apps.tenants.models import BusinessPlace, Organization
 
 from .statements import build_trial_balance
@@ -196,8 +196,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("invoice__number", gettext_lazy("Invoice number")), C("invoice__contact__name", gettext_lazy("Contact")),
             C("amount"), C("method"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
             C("vat_withheld"), C("income_tax_kind"), C("income_tax_withheld"),
-            C("income_tax_account__code", gettext_lazy("Prepaid tax account code")), C("withholding_slip"),
-            C("reference"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
+            C("income_tax_account__code", gettext_lazy("Prepaid tax account code")), C("income_tax_base"), C("income_tax_rate"),
+            C("withholding_slip"), C("reference"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         Payment, "organization", ("date", "id"),
     ),
@@ -254,6 +254,14 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
         )),
         PphFinalPayment, "organization", ("year", "month"),
+    ),
+    (
+        Table("withholding_deposits.csv", gettext_lazy("Deposits of PPh 23 and 4(2) withheld from suppliers."), (
+            C("kind"), C("year"), C("month"), C("amount"), C("paid_on"), C("ntpn"),
+            C("cash_account__code", gettext_lazy("Cash/bank account code")),
+            C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
+        )),
+        WithholdingDeposit, "organization", ("year", "month", "kind"),
     ),
 )
 ORGANIZATION_FIELDS = (

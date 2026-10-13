@@ -8,11 +8,12 @@ from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts, prepaid_tax_accounts, purchase_accounts, revenue_accounts
 from apps.taxes.models import TaxRate
+from apps.taxes.domain import PAYER_WITHHOLDING_RATES, PayerWithholding
 from apps.taxes.selectors import tax_rates_for
 from apps.tenants.models import BusinessPlace
 
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
+from .models import PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
 from .selectors import items_for
 from .services import Facility, IncomeTaxInput, InvoiceLineInput, ReturnLineInput, returnable_quantity
 
@@ -173,13 +174,18 @@ def line_inputs(formset) -> list[InvoiceLineInput]:
 
 
 class PaymentForm(OrganizationFormMixin, BaseModelForm):
-    INCOME_TAX_FIELDS = ("income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip")
+    """A receipt may record income tax the customer withheld; a payment to a supplier the
+    income tax we withhold (PPh 23 or 4(2), as base x rate)."""
+
+    RECEIPT_FIELDS = ("income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip")
+    PAYER_FIELDS = ("income_tax_kind", "income_tax_base", "income_tax_rate", "withholding_slip")
+    INCOME_TAX_FIELDS = tuple(dict.fromkeys(RECEIPT_FIELDS + PAYER_FIELDS))
 
     class Meta:
         model = Payment
         fields = [
             "date", "amount", "vat_withheld", "cash_account", "method", "reference",
-            "income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip",
+            "income_tax_kind", "income_tax_withheld", "income_tax_account", "income_tax_base", "income_tax_rate", "withholding_slip",
         ]
         field_classes = {"date": BusinessDateField}
 
@@ -192,14 +198,28 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
             self.fields["vat_withheld"].required = False
         else:
             del self.fields["vat_withheld"]
-        if invoice is None or not invoice.is_sales:
+        if invoice is None:
             for name in self.INCOME_TAX_FIELDS:
                 del self.fields[name]
             return
+        keep = self.RECEIPT_FIELDS if invoice.is_sales else self.PAYER_FIELDS
+        for name in self.INCOME_TAX_FIELDS:
+            if name not in keep:
+                del self.fields[name]
         kinds = self.fields["income_tax_kind"]
+        if not invoice.is_sales:
+            kinds.choices = [("", IncomeTaxWithheld.NONE.label)] + [(k.value, k.label) for k in PAYER_WITHHOLDING]
+            kinds.help_text = _("If you withhold income tax from this supplier: you deposit it and give them a bukti potong.")
+            self.fields["income_tax_base"].required = False
+            self.fields["income_tax_base"].help_text = _("The gross amount the tax is on (the services or rent, without PPN).")
+            self.fields["income_tax_rate"].help_text = _("Usually 2% for PPh 23 on services, 10% for PPh 4(2) on rent of land or buildings.")
+            self.initial.setdefault("income_tax_base", invoice.subtotal)
+            self.initial.setdefault("income_tax_rate", PAYER_WITHHOLDING_RATES[PayerWithholding.PPH_23])
+            self.fields["withholding_slip"].help_text = _("The bukti potong number, if Coretax has issued it already; it can be added later.")
+            return
         kinds.choices = [
             (value, label) for value, label in IncomeTaxWithheld.choices
-            if value != IncomeTaxWithheld.PPH_FINAL or self.organization.uses_pph_final
+            if value in ("", *RECEIPT_WITHHOLDING) and (value != IncomeTaxWithheld.PPH_FINAL or self.organization.uses_pph_final)
         ]
         kinds.help_text = _("If the buyer withheld income tax and gave you a bukti potong.")
         self.fields["income_tax_withheld"].required = False
@@ -220,7 +240,14 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
         cleaned = super().clean()
         if "income_tax_kind" not in self.fields:
             return cleaned
-        kind, amount = cleaned.get("income_tax_kind"), cleaned.get("income_tax_withheld")
+        kind = cleaned.get("income_tax_kind")
+        if "income_tax_base" in self.fields:  # we withhold from a supplier
+            if kind and not cleaned.get("income_tax_base"):
+                self.add_error("income_tax_base", _("Enter the amount the tax is withheld on."))
+            if kind and not cleaned.get("income_tax_rate"):
+                self.add_error("income_tax_rate", _("Enter the withholding rate (%)."))
+            return cleaned
+        amount = cleaned.get("income_tax_withheld")
         if kind and not amount:
             self.add_error("income_tax_withheld", _("Enter the income tax withheld."))
         elif amount and not kind:
@@ -232,15 +259,19 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
     def service_kwargs(self) -> dict:
         """What ``services.record_payment`` takes."""
         data = dict(self.cleaned_data)
-        if "income_tax_kind" in data:
-            kind = data.pop("income_tax_kind")
-            income_tax = IncomeTaxInput(
-                kind=kind, amount=data.pop("income_tax_withheld") or 0,
-                account=data.pop("income_tax_account") if kind != IncomeTaxWithheld.PPH_FINAL else None,
-                slip=data.pop("withholding_slip"),
-            )
-            data.pop("income_tax_account", None)
-            data["income_tax"] = income_tax
+        if "income_tax_kind" not in data:
+            return data
+        kind = data.pop("income_tax_kind")
+        slip = data.pop("withholding_slip")
+        if "income_tax_base" in data:
+            base, rate = data.pop("income_tax_base"), data.pop("income_tax_rate")
+            data["income_tax"] = IncomeTaxInput(kind=kind, base=base or 0, rate=rate, slip=slip) if kind else IncomeTaxInput()
+            return data
+        account = data.pop("income_tax_account")
+        data["income_tax"] = IncomeTaxInput(
+            kind=kind, amount=data.pop("income_tax_withheld") or 0,
+            account=account if kind != IncomeTaxWithheld.PPH_FINAL else None, slip=slip,
+        )
         return data
 
 

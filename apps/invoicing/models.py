@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 from django.utils import timezone
@@ -423,6 +423,13 @@ class IncomeTaxWithheld(models.TextChoices):
     # xgettext:no-python-format
     PPH_23 = "pph23", _("PPh 23 (2% on services)")
     PPH_FINAL = "pph_final", _("PPh Final 0.5% (PP 55/2022, with a Surat Keterangan)")
+    # xgettext:no-python-format
+    PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
+
+
+# Which the customer withholds from us (receipts), and which we withhold from suppliers (disbursements).
+RECEIPT_WITHHOLDING = (IncomeTaxWithheld.PPH_22, IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_FINAL)
+PAYER_WITHHOLDING = (IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_4_2)
 
 
 class Payment(TenantOwnedModel):
@@ -460,6 +467,12 @@ class Payment(TenantOwnedModel):
     )
     withholding_slip = models.CharField(
         _("withholding slip no."), max_length=50, blank=True, help_text=_("The bukti potong number from the buyer."),
+    )
+    # When we withhold from a supplier: the gross amount the tax is on and its rate (the bukti potong).
+    income_tax_base = money_field(_("income tax base"), validators=[MinValueValidator(0)])
+    income_tax_rate = models.DecimalField(
+        _("income tax rate (%)"), max_digits=5, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal("0.01")), MaxValueValidator(100)],
     )
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="payment")

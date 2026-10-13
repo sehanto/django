@@ -8,8 +8,8 @@ from apps.core.money import ZERO
 from apps.ledger.domain import AccountCategory
 from apps.ledger.selectors import posted_lines
 
-from .domain import PphFinalMonth, compute_pph_final
-from .models import PphFinalAccrual, PphFinalPayment, TaxRate
+from .domain import PayerWithholding, PphFinalMonth, compute_pph_final
+from .models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
 
 
 def tax_rate_is_used(rate: TaxRate) -> bool:
@@ -77,4 +77,43 @@ def pph_final_accruals(organization, year: int) -> dict[int, PphFinalAccrual]:
         for a in PphFinalAccrual.objects.for_organization(organization)
         .filter(year=year, status=PphFinalAccrual.Status.POSTED)
         .select_related("journal_entry")
+    }
+
+
+def withholding_due(organization, year: int) -> dict[tuple[str, int], Decimal]:
+    """Income tax withheld from suppliers per (kind, month) of the payment, less what refunds
+    of the month gave back: the deposit due for that month."""
+    from apps.invoicing.models import InvoiceKind, Payment, ReturnNote  # invoicing depends on taxes
+
+    due: dict[tuple[str, int], Decimal] = {}
+    for model, sign in ((Payment, 1), (ReturnNote, -1)):
+        kind_filter = {"invoice__kind": InvoiceKind.PURCHASE} if model is Payment else {"kind": InvoiceKind.PURCHASE}
+        rows = (
+            model.objects.for_organization(organization)
+            .filter(status=model.Status.POSTED, income_tax_kind__in=PayerWithholding.values, date__year=year, **kind_filter)
+            .annotate(month=ExtractMonth("date")).values("income_tax_kind", "month").annotate(amount=Sum("income_tax_withheld"))
+        )
+        for row in rows:
+            key = (row["income_tax_kind"], row["month"])
+            due[key] = due.get(key, ZERO) + sign * row["amount"]
+    return due
+
+
+def withholdings(organization, year: int, month: int):
+    """Payments to suppliers with income tax withheld in a month: one bukti potong each."""
+    from apps.invoicing.models import InvoiceKind, Payment
+
+    return (
+        Payment.objects.for_organization(organization)
+        .filter(status=Payment.Status.POSTED, invoice__kind=InvoiceKind.PURCHASE, income_tax_kind__in=PayerWithholding.values,
+                date__year=year, date__month=month)
+        .select_related("invoice", "invoice__contact").order_by("date", "id")
+    )
+
+
+def withholding_deposits(organization, year: int) -> dict[tuple[str, int], WithholdingDeposit]:
+    return {
+        (d.kind, d.month): d
+        for d in WithholdingDeposit.objects.for_organization(organization)
+        .filter(year=year, status=WithholdingDeposit.Status.POSTED).select_related("journal_entry")
     }
