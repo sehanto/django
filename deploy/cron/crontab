@@ -3,8 +3,12 @@
 # Uncomment MAILTO to receive failures by email (needs a working local mailer).
 # MAILTO=ops@example.com
 
-# Daily: close expired payment links, send renewal reminders, downgrade lapsed plans.
+# Daily: charge automatic renewals, close expired payment links, send renewal reminders,
+# downgrade lapsed plans.
 15 1 * * * @PROJECT_DIR@/deploy/cron/run.sh process_billing
+
+# Every 2 hours: check fakturs sent to Coretax and record the numbers issued.
+40 */2 * * * @PROJECT_DIR@/deploy/cron/run.sh sync_coretax
 
 # Daily: post the fixed asset depreciation of months that have ended (each month once).
 0 2 * * * @PROJECT_DIR@/deploy/cron/run.sh post_depreciation

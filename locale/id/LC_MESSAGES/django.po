@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 20:59+0700\n"
+"POT-Creation-Date: 2026-10-13 23:53+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -121,8 +121,8 @@ msgid "interface language"
 msgstr "bahasa antarmuka"
 
 #: apps/accounts/models.py:48 apps/contacts/models.py:85
-#: apps/invoicing/models.py:66 apps/ledger/models.py:29
-#: apps/taxes/models.py:38 apps/tenants/models.py:171
+#: apps/invoicing/models.py:67 apps/invoicing/models.py:602
+#: apps/ledger/models.py:29 apps/taxes/models.py:38 apps/tenants/models.py:171
 msgid "active"
 msgstr "aktif"
 
@@ -336,7 +336,7 @@ msgid "created by"
 msgstr "dibuat oleh"
 
 #: apps/api/models.py:17 apps/assets/models.py:30 apps/contacts/models.py:47
-#: apps/invoicing/models.py:39 apps/taxes/models.py:18
+#: apps/invoicing/models.py:40 apps/taxes/models.py:18
 #: apps/tenants/models.py:20 apps/tenants/models.py:164
 msgid "name"
 msgstr "nama"
@@ -493,7 +493,7 @@ msgstr ""
 "Saldo menurun dilanjutkan dengan tarif dua kali tarif sisa umur manfaat."
 
 #: apps/assets/forms.py:110 apps/inventory/forms.py:27
-#: apps/inventory/forms.py:46 apps/invoicing/forms.py:325
+#: apps/inventory/forms.py:46 apps/invoicing/forms.py:326
 #: templates/assets/asset_detail.html:39
 #: templates/invoicing/return_detail.html:25 templates/reports/notes.html:62
 msgid "Reason"
@@ -504,8 +504,8 @@ msgid "E.g. the machine will be used two years longer than expected."
 msgstr "Misalnya mesin akan dipakai dua tahun lebih lama dari perkiraan."
 
 #: apps/assets/models.py:29 apps/billing/models.py:27
-#: apps/invoicing/models.py:103 apps/invoicing/models.py:449
-#: apps/invoicing/models.py:525 apps/ledger/models.py:64
+#: apps/invoicing/models.py:104 apps/invoicing/models.py:450
+#: apps/invoicing/models.py:526 apps/ledger/models.py:64
 msgid "number"
 msgstr "nomor"
 
@@ -592,10 +592,10 @@ msgstr ""
 "sudah ada di saldo awal dan tidak dijurnal lagi."
 
 #: apps/assets/models.py:57 apps/billing/models.py:54
-#: apps/billing/models.py:111 apps/invoicing/models.py:132
-#: apps/invoicing/models.py:477 apps/invoicing/models.py:524
-#: apps/ledger/models.py:68 apps/taxes/models.py:81 apps/taxes/models.py:122
-#: apps/taxes/models.py:163
+#: apps/billing/models.py:113 apps/invoicing/models.py:133
+#: apps/invoicing/models.py:478 apps/invoicing/models.py:525
+#: apps/invoicing/models.py:624 apps/ledger/models.py:68
+#: apps/taxes/models.py:81 apps/taxes/models.py:122 apps/taxes/models.py:163
 msgid "status"
 msgstr "status"
 
@@ -641,7 +641,7 @@ msgid "previous depreciation method"
 msgstr "metode penyusutan sebelumnya"
 
 #: apps/assets/models.py:151 apps/inventory/models.py:30
-#: apps/invoicing/models.py:528
+#: apps/invoicing/models.py:529
 msgid "reason"
 msgstr "alasan"
 
@@ -663,8 +663,8 @@ msgstr "tahun"
 msgid "month"
 msgstr "bulan"
 
-#: apps/assets/models.py:176 apps/invoicing/models.py:365
-#: apps/invoicing/models.py:452 apps/invoicing/models.py:582
+#: apps/assets/models.py:176 apps/invoicing/models.py:366
+#: apps/invoicing/models.py:453 apps/invoicing/models.py:583
 #: apps/taxes/models.py:157
 msgid "amount"
 msgstr "jumlah"
@@ -941,34 +941,38 @@ msgid "API key revoked"
 msgstr "Kunci API dicabut"
 
 #: apps/audit/domain.py:42
+msgid "Coretax connection changed"
+msgstr "Koneksi Coretax diubah"
+
+#: apps/audit/domain.py:43
 msgid "Books exported"
 msgstr "Pembukuan diekspor"
 
-#: apps/audit/domain.py:43
+#: apps/audit/domain.py:44
 msgid "Account added to the chart of accounts"
 msgstr "Akun ditambahkan ke bagan akun"
 
-#: apps/audit/domain.py:44
+#: apps/audit/domain.py:45
 msgid "Chart of accounts entry changed"
 msgstr "Akun di bagan akun diubah"
 
-#: apps/audit/domain.py:45
+#: apps/audit/domain.py:46
 msgid "Account removed from the chart of accounts"
 msgstr "Akun dihapus dari bagan akun"
 
-#: apps/audit/domain.py:46
+#: apps/audit/domain.py:47
 msgid "Organization deleted"
 msgstr "Organisasi dihapus"
 
-#: apps/audit/domain.py:48
+#: apps/audit/domain.py:49
 msgid "Subscription plan changed"
 msgstr "Paket langganan diubah"
 
-#: apps/audit/domain.py:49
+#: apps/audit/domain.py:50
 msgid "Payment confirmed manually"
 msgstr "Pembayaran dikonfirmasi manual"
 
-#: apps/audit/domain.py:51
+#: apps/audit/domain.py:52
 msgid "Encryption keys rotated"
 msgstr "Kunci enkripsi dirotasi"
 
@@ -985,7 +989,7 @@ msgid "user email"
 msgstr "email pengguna"
 
 #: apps/audit/models.py:23 apps/billing/models.py:30
-#: apps/billing/models.py:108 apps/core/models.py:29
+#: apps/billing/models.py:110 apps/core/models.py:29
 #: apps/tenants/models.py:114
 msgid "organization"
 msgstr "organisasi"
@@ -1065,8 +1069,8 @@ msgstr "Tahunan"
 msgid "Free plan"
 msgstr "Paket gratis"
 
-#: apps/billing/domain.py:35 apps/billing/models.py:104
-#: templates/taxes/taxrate_list.html:16
+#: apps/billing/domain.py:35 apps/billing/models.py:106
+#: apps/invoicing/forms.py:377 templates/taxes/taxrate_list.html:16
 msgid "Active"
 msgstr "Aktif"
 
@@ -1082,7 +1086,7 @@ msgstr "Berakhir (masa tenggang)"
 msgid "Lapsed"
 msgstr "Tidak aktif"
 
-#: apps/billing/gateways/base.py:19
+#: apps/billing/gateways/base.py:19 apps/invoicing/coretax_api.py:40
 msgid "Simulated (development)"
 msgstr "Simulasi (pengembangan)"
 
@@ -1135,7 +1139,7 @@ msgstr "Gagal"
 msgid "plan"
 msgstr "paket"
 
-#: apps/billing/models.py:33 apps/billing/models.py:110
+#: apps/billing/models.py:33 apps/billing/models.py:112
 msgid "billing period"
 msgstr "periode tagihan"
 
@@ -1155,8 +1159,8 @@ msgstr "alamat pembeli"
 msgid "buyer email"
 msgstr "email pembeli"
 
-#: apps/billing/models.py:40 apps/invoicing/models.py:134
-#: apps/invoicing/models.py:529
+#: apps/billing/models.py:40 apps/invoicing/models.py:135
+#: apps/invoicing/models.py:530
 msgid "subtotal"
 msgstr "subtotal"
 
@@ -1189,12 +1193,12 @@ msgstr "dasar pengenaan pajak (DPP)"
 msgid "PPN"
 msgstr "PPN"
 
-#: apps/billing/models.py:52 apps/invoicing/models.py:138
-#: apps/invoicing/models.py:531
+#: apps/billing/models.py:52 apps/invoicing/models.py:139
+#: apps/invoicing/models.py:532
 msgid "total"
 msgstr "total"
 
-#: apps/billing/models.py:55 apps/billing/models.py:112
+#: apps/billing/models.py:55 apps/billing/models.py:114
 msgid "payment gateway"
 msgstr "payment gateway"
 
@@ -1230,39 +1234,44 @@ msgstr "berlaku sampai"
 msgid "ended early on"
 msgstr "diakhiri lebih awal pada"
 
-#: apps/billing/models.py:70
+#: apps/billing/models.py:67 apps/invoicing/models.py:110
+#: templates/invoicing/return_detail.html:24
+msgid "tax invoice no."
+msgstr "no. faktur pajak"
+
+#: apps/billing/models.py:72
 msgid "subscription invoice"
 msgstr "tagihan langganan"
 
-#: apps/billing/models.py:71
+#: apps/billing/models.py:73
 msgid "subscription invoices"
 msgstr "tagihan langganan"
 
-#: apps/billing/models.py:103
+#: apps/billing/models.py:105
 msgid "Waiting for the payment method"
 msgstr "Menunggu metode pembayaran"
 
-#: apps/billing/models.py:105
+#: apps/billing/models.py:107
 msgid "Turned off"
 msgstr "Nonaktif"
 
-#: apps/billing/models.py:116
+#: apps/billing/models.py:118
 msgid "failed attempts"
 msgstr "percobaan gagal"
 
-#: apps/billing/models.py:117
+#: apps/billing/models.py:119
 msgid "last error"
 msgstr "kesalahan terakhir"
 
-#: apps/billing/models.py:118
+#: apps/billing/models.py:120
 msgid "activated"
 msgstr "diaktifkan"
 
-#: apps/billing/models.py:126
+#: apps/billing/models.py:128
 msgid "automatic renewal"
 msgstr "perpanjangan otomatis"
 
-#: apps/billing/models.py:127
+#: apps/billing/models.py:129
 msgid "automatic renewals"
 msgstr "perpanjangan otomatis"
 
@@ -1432,13 +1441,13 @@ msgstr "Dokumen identitas lain"
 msgid "Enter a three-letter country code, e.g. IDN, SGP or MYS."
 msgstr "Masukkan kode negara tiga huruf, mis. IDN, SGP atau MYS."
 
-#: apps/contacts/models.py:42 apps/invoicing/forms.py:69
-#: apps/invoicing/views.py:27 templates/invoicing/return_detail.html:23
+#: apps/contacts/models.py:42 apps/invoicing/forms.py:70
+#: apps/invoicing/views.py:32 templates/invoicing/return_detail.html:23
 msgid "Customer"
 msgstr "Pelanggan"
 
-#: apps/contacts/models.py:43 apps/invoicing/forms.py:72
-#: apps/invoicing/views.py:37 apps/taxes/views.py:231
+#: apps/contacts/models.py:43 apps/invoicing/forms.py:73
+#: apps/invoicing/views.py:42 apps/taxes/views.py:231
 #: templates/invoicing/return_detail.html:23
 #: templates/taxes/withholding_month.html:10
 msgid "Supplier"
@@ -1449,8 +1458,8 @@ msgid "Customer & supplier"
 msgstr "Pelanggan & Pemasok"
 
 #: apps/contacts/models.py:46 apps/inventory/models.py:22
-#: apps/invoicing/models.py:40 apps/invoicing/models.py:102
-#: apps/invoicing/models.py:523
+#: apps/invoicing/models.py:41 apps/invoicing/models.py:103
+#: apps/invoicing/models.py:524
 msgid "type"
 msgstr "jenis"
 
@@ -1528,11 +1537,11 @@ msgstr ""
 "Untuk pelanggan yang ditunjuk sebagai pemungut PPN: mereka membayar tanpa "
 "PPN dan menyetorkan PPN-nya sendiri."
 
-#: apps/contacts/models.py:84 apps/invoicing/models.py:111
+#: apps/contacts/models.py:84 apps/invoicing/models.py:112
 msgid "notes"
 msgstr "catatan"
 
-#: apps/contacts/models.py:89 apps/invoicing/models.py:104
+#: apps/contacts/models.py:89 apps/invoicing/models.py:105
 msgid "contact"
 msgstr "kontak"
 
@@ -1645,7 +1654,7 @@ msgstr "Masuk pertama, keluar pertama (FIFO)"
 msgid "Weighted average"
 msgstr "Rata-rata tertimbang"
 
-#: apps/inventory/domain.py:40 apps/invoicing/models.py:23
+#: apps/inventory/domain.py:40 apps/invoicing/models.py:24
 msgid "Purchase"
 msgstr "Pembelian"
 
@@ -1686,7 +1695,7 @@ msgid "Write-down to net realisable value"
 msgstr "Penurunan ke nilai realisasi neto"
 
 #: apps/inventory/forms.py:13 apps/inventory/forms.py:36
-#: apps/invoicing/forms.py:133 apps/reports/exports.py:141
+#: apps/invoicing/forms.py:134 apps/reports/exports.py:141
 #: templates/inventory/stock_list.html:10
 #: templates/invoicing/invoice_form.html:19
 msgid "Item"
@@ -1696,6 +1705,7 @@ msgstr "Barang/Jasa"
 #: apps/taxes/views.py:231 templates/billing/overview.html:93
 #: templates/inventory/stock_card.html:14
 #: templates/invoicing/_invoice_body.html:12
+#: templates/invoicing/coretax_connection.html:18
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:15
@@ -1765,19 +1775,19 @@ msgstr "Mis. Beban Pokok Penjualan, atau beban lain-lain."
 msgid "E.g. damaged, expired, out of fashion."
 msgstr "Mis. rusak, kedaluwarsa, ketinggalan zaman."
 
-#: apps/inventory/models.py:20 apps/invoicing/models.py:80
-#: apps/invoicing/models.py:358
+#: apps/inventory/models.py:20 apps/invoicing/models.py:81
+#: apps/invoicing/models.py:359
 msgid "item"
 msgstr "barang/jasa"
 
-#: apps/inventory/models.py:21 apps/invoicing/models.py:105
-#: apps/invoicing/models.py:451 apps/invoicing/models.py:527
+#: apps/inventory/models.py:21 apps/invoicing/models.py:106
+#: apps/invoicing/models.py:452 apps/invoicing/models.py:528
 #: apps/ledger/models.py:65
 msgid "date"
 msgstr "tanggal"
 
-#: apps/inventory/models.py:23 apps/invoicing/models.py:361
-#: apps/invoicing/models.py:581
+#: apps/inventory/models.py:23 apps/invoicing/models.py:362
+#: apps/invoicing/models.py:582
 msgid "quantity"
 msgstr "kuantitas"
 
@@ -1979,6 +1989,82 @@ msgstr ""
 "Faktur ini mencampur PPN besaran tertentu atau tarif selain 12% dengan PPN "
 "lain; Coretax memerlukan faktur terpisah untuk masing-masing."
 
+#: apps/invoicing/coretax_api.py:41
+msgid "PJAP / bridge (HTTP API)"
+msgstr "PJAP / penghubung (HTTP API)"
+
+#: apps/invoicing/coretax_api.py:45
+msgid "Faktur Pajak Keluaran"
+msgstr "Faktur Pajak Keluaran"
+
+#: apps/invoicing/coretax_api.py:46
+msgid "Nota retur (Retur Pajak Masukan)"
+msgstr "Nota retur (Retur Pajak Masukan)"
+
+#: apps/invoicing/coretax_api.py:50
+msgid "Being processed"
+msgstr "Sedang diproses"
+
+#: apps/invoicing/coretax_api.py:51
+msgid "Accepted"
+msgstr "Diterima"
+
+#: apps/invoicing/coretax_api.py:52
+msgid "Partly accepted"
+msgstr "Diterima sebagian"
+
+#: apps/invoicing/coretax_api.py:53
+msgid "Rejected"
+msgstr "Ditolak"
+
+#: apps/invoicing/coretax_api.py:117 apps/invoicing/coretax_sync.py:29
+msgid "The Coretax connection needs an HTTPS address and an access token."
+msgstr "Koneksi Coretax memerlukan alamat HTTPS dan token akses."
+
+#: apps/invoicing/coretax_api.py:127
+msgid "The Coretax provider is not reachable right now. Please try again."
+msgstr "Penyedia Coretax tidak dapat dihubungi saat ini. Silakan coba lagi."
+
+#: apps/invoicing/coretax_api.py:130
+#, python-format
+msgid "The Coretax provider refused the request (HTTP %(status)s)."
+msgstr "Penyedia Coretax menolak permintaan (HTTP %(status)s)."
+
+#: apps/invoicing/coretax_api.py:133 apps/invoicing/coretax_api.py:149
+msgid "The Coretax provider sent an unexpected answer."
+msgstr "Penyedia Coretax mengirim jawaban yang tidak terduga."
+
+#: apps/invoicing/coretax_api.py:141
+msgid "The Coretax provider sent an unknown status."
+msgstr "Penyedia Coretax mengirim status yang tidak dikenal."
+
+#: apps/invoicing/coretax_api.py:167
+msgid "Unknown Coretax connection."
+msgstr "Koneksi Coretax tidak dikenal."
+
+#: apps/invoicing/coretax_sync.py:23
+msgid "Choose a connection."
+msgstr "Pilih koneksi."
+
+#: apps/invoicing/coretax_sync.py:45
+msgid ""
+"Connect the organization to Coretax first (Settings → Coretax connection)."
+msgstr ""
+"Hubungkan organisasi ke Coretax terlebih dahulu (Pengaturan → Koneksi "
+"Coretax)."
+
+#: apps/invoicing/coretax_sync.py:64
+msgid ""
+"None of these invoices can be sent: they have their Faktur Pajak number "
+"already, or can't be reported."
+msgstr ""
+"Tidak ada faktur yang dapat dikirim: semuanya sudah bernomor Faktur Pajak, "
+"atau tidak dapat dilaporkan."
+
+#: apps/invoicing/coretax_sync.py:79
+msgid "None of these returns can be sent to Coretax."
+msgstr "Tidak ada retur yang dapat dikirim ke Coretax."
+
 #: apps/invoicing/domain.py:19 apps/ledger/domain.py:102
 msgid "Draft"
 msgstr "Draf"
@@ -1991,8 +2077,8 @@ msgstr "Belum Dibayar"
 msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
-#: apps/invoicing/domain.py:23 apps/invoicing/models.py:447
-#: apps/invoicing/models.py:521 apps/taxes/models.py:64
+#: apps/invoicing/domain.py:23 apps/invoicing/models.py:448
+#: apps/invoicing/models.py:522 apps/taxes/models.py:64
 msgid "Void"
 msgstr "Dibatalkan"
 
@@ -2044,20 +2130,20 @@ msgstr "PPN tidak dipungut atau ditanggung pemerintah (kode 07)"
 msgid "PPN exempt (code 08)"
 msgstr "PPN dibebaskan (kode 08)"
 
-#: apps/invoicing/forms.py:43 templates/invoicing/_invoice_body.html:13
+#: apps/invoicing/forms.py:44 templates/invoicing/_invoice_body.html:13
 #: templates/invoicing/invoice_list.html:19
 msgid "Due date"
 msgstr "Jatuh tempo"
 
-#: apps/invoicing/forms.py:43
+#: apps/invoicing/forms.py:44
 msgid "Leave empty to use the contact's payment terms."
 msgstr "Kosongkan untuk memakai termin pembayaran kontak."
 
-#: apps/invoicing/forms.py:47 apps/invoicing/models.py:115
+#: apps/invoicing/forms.py:48 apps/invoicing/models.py:116
 msgid "PPN facility"
 msgstr "Fasilitas PPN"
 
-#: apps/invoicing/forms.py:48
+#: apps/invoicing/forms.py:49
 msgid ""
 "Only for deliveries whose PPN isn't collected (code 07) or is exempt (code "
 "08). Keep the PPN rate on the lines: the faktur shows the PPN, the buyer "
@@ -2067,23 +2153,23 @@ msgstr ""
 " (kode 08). Tetap pilih tarif PPN pada baris: faktur menampilkan PPN-nya, "
 "pembeli tidak membayarnya."
 
-#: apps/invoicing/forms.py:50
+#: apps/invoicing/forms.py:51
 msgid "Facility stamp (cap fasilitas)"
 msgstr "Cap fasilitas"
 
-#: apps/invoicing/forms.py:52 templates/invoicing/_invoice_body.html:41
+#: apps/invoicing/forms.py:53 templates/invoicing/_invoice_body.html:41
 msgid "Supporting document"
 msgstr "Dokumen pendukung"
 
-#: apps/invoicing/forms.py:55
+#: apps/invoicing/forms.py:56
 msgid "Supporting document date"
 msgstr "Tanggal dokumen pendukung"
 
-#: apps/invoicing/forms.py:76
+#: apps/invoicing/forms.py:77
 msgid "Head office"
 msgstr "Kantor pusat"
 
-#: apps/invoicing/forms.py:77
+#: apps/invoicing/forms.py:78
 msgid ""
 "Where the sale is made from: its NITKU and address go on the invoice and the"
 " faktur."
@@ -2091,7 +2177,7 @@ msgstr ""
 "Tempat penjualan dilakukan: NITKU dan alamatnya dicantumkan pada faktur "
 "penjualan dan Faktur Pajak."
 
-#: apps/invoicing/forms.py:85
+#: apps/invoicing/forms.py:86
 msgid ""
 "A tourist's VAT refund (the customer identified by a foreign passport) or "
 "the sale of an asset not originally for sale."
@@ -2099,16 +2185,16 @@ msgstr ""
 "VAT refund turis (pelanggan dengan paspor luar negeri) atau penjualan aktiva"
 " yang semula tidak untuk diperjualbelikan."
 
-#: apps/invoicing/forms.py:121
+#: apps/invoicing/forms.py:122
 msgid "Choose a stamp listed under the same transaction code as the facility."
 msgstr ""
 "Pilih cap yang tercantum pada kode transaksi yang sama dengan fasilitasnya."
 
-#: apps/invoicing/forms.py:123
+#: apps/invoicing/forms.py:124
 msgid "A delivery with a PPN facility needs its stamp (cap fasilitas)."
 msgstr "Penyerahan dengan fasilitas PPN memerlukan cap fasilitas."
 
-#: apps/invoicing/forms.py:134 apps/reports/exports.py:188
+#: apps/invoicing/forms.py:135 apps/reports/exports.py:188
 #: templates/billing/invoice_detail.html:48
 #: templates/invoicing/_invoice_body.html:20
 #: templates/invoicing/invoice_form.html:19
@@ -2117,7 +2203,7 @@ msgstr "Penyerahan dengan fasilitas PPN memerlukan cap fasilitas."
 msgid "Item description"
 msgstr "Deskripsi"
 
-#: apps/invoicing/forms.py:135 apps/ledger/forms.py:40
+#: apps/invoicing/forms.py:136 apps/ledger/forms.py:40
 #: apps/reports/forms.py:51 apps/reports/statements.py:327
 #: templates/assets/asset_list.html:23 templates/assets/asset_list.html:45
 #: templates/inventory/stock_list.html:29
@@ -2130,21 +2216,21 @@ msgstr "Deskripsi"
 msgid "Account"
 msgstr "Akun"
 
-#: apps/invoicing/forms.py:136 templates/invoicing/_invoice_body.html:20
+#: apps/invoicing/forms.py:137 templates/invoicing/_invoice_body.html:20
 #: templates/invoicing/invoice_form.html:19
 msgid "Qty"
 msgstr "Qty"
 
-#: apps/invoicing/forms.py:137 templates/invoicing/_invoice_body.html:20
+#: apps/invoicing/forms.py:138 templates/invoicing/_invoice_body.html:20
 #: templates/invoicing/invoice_form.html:19
 msgid "Price"
 msgstr "Harga"
 
-#: apps/invoicing/forms.py:139
+#: apps/invoicing/forms.py:140
 msgid "Disc. %"
 msgstr "Disc %"
 
-#: apps/invoicing/forms.py:141 apps/ledger/domain.py:111
+#: apps/invoicing/forms.py:142 apps/ledger/domain.py:111
 #: apps/reports/exports.py:168 templates/invoicing/_invoice_body.html:20
 #: templates/invoicing/invoice_form.html:19
 #: templates/invoicing/item_list.html:10
@@ -2152,11 +2238,11 @@ msgstr "Disc %"
 msgid "Tax"
 msgstr "Pajak"
 
-#: apps/invoicing/forms.py:196
+#: apps/invoicing/forms.py:197
 msgid "What this settles, including what the buyer withheld."
 msgstr "Jumlah yang dilunasi, termasuk yang dipotong/dipungut pembeli."
 
-#: apps/invoicing/forms.py:197
+#: apps/invoicing/forms.py:198
 msgid ""
 "The buyer is a VAT collector: it pays without the PPN and deposits the PPN "
 "itself."
@@ -2164,7 +2250,7 @@ msgstr ""
 "Pembeli adalah pemungut PPN: membayar tanpa PPN dan menyetorkan PPN-nya "
 "sendiri."
 
-#: apps/invoicing/forms.py:212
+#: apps/invoicing/forms.py:213
 msgid ""
 "If you withhold income tax from this supplier: you deposit it and give them "
 "a bukti potong."
@@ -2172,12 +2258,12 @@ msgstr ""
 "Jika Anda memotong PPh dari pemasok ini: Anda menyetorkannya dan memberikan "
 "bukti potong."
 
-#: apps/invoicing/forms.py:214
+#: apps/invoicing/forms.py:215
 msgid "The gross amount the tax is on (the services or rent, without PPN)."
 msgstr ""
 "Jumlah bruto yang menjadi dasar pemotongan (jasa atau sewa, tanpa PPN)."
 
-#: apps/invoicing/forms.py:215
+#: apps/invoicing/forms.py:216
 #, python-format
 msgid ""
 "Usually 2% for PPh 23 on services, 10% for PPh 4(2) on rent of land or "
@@ -2186,18 +2272,18 @@ msgstr ""
 "Umumnya 2% untuk PPh 23 atas jasa, 10% untuk PPh 4(2) atas sewa tanah atau "
 "bangunan."
 
-#: apps/invoicing/forms.py:218
+#: apps/invoicing/forms.py:219
 msgid ""
 "The bukti potong number, if Coretax has issued it already; it can be added "
 "later."
 msgstr ""
 "Nomor bukti potong, jika sudah diterbitkan Coretax; dapat diisi kemudian."
 
-#: apps/invoicing/forms.py:224
+#: apps/invoicing/forms.py:225
 msgid "If the buyer withheld income tax and gave you a bukti potong."
 msgstr "Jika pembeli memotong pajak penghasilan dan memberikan bukti potong."
 
-#: apps/invoicing/forms.py:229
+#: apps/invoicing/forms.py:230
 msgid ""
 "For PPh 22 or 23: the tax prepaid, credited in your annual income tax "
 "return."
@@ -2205,35 +2291,35 @@ msgstr ""
 "Untuk PPh 22 atau 23: pajak dibayar di muka, dikreditkan dalam SPT Tahunan "
 "PPh."
 
-#: apps/invoicing/forms.py:246
+#: apps/invoicing/forms.py:247
 msgid "Enter the amount the tax is withheld on."
 msgstr "Masukkan jumlah yang menjadi dasar pemotongan."
 
-#: apps/invoicing/forms.py:248 apps/invoicing/services.py:485
+#: apps/invoicing/forms.py:249 apps/invoicing/services.py:485
 msgid "Enter the withholding rate (%)."
 msgstr "Masukkan tarif pemotongan (%)."
 
-#: apps/invoicing/forms.py:252
+#: apps/invoicing/forms.py:253
 msgid "Enter the income tax withheld."
 msgstr "Masukkan pajak penghasilan yang dipotong."
 
-#: apps/invoicing/forms.py:254 apps/invoicing/services.py:474
+#: apps/invoicing/forms.py:255 apps/invoicing/services.py:474
 msgid "Choose which income tax the buyer withheld."
 msgstr "Pilih pajak penghasilan yang dipotong pembeli."
 
-#: apps/invoicing/forms.py:256
+#: apps/invoicing/forms.py:257
 msgid "Choose the prepaid tax account."
 msgstr "Pilih akun pajak dibayar di muka."
 
-#: apps/invoicing/forms.py:279
+#: apps/invoicing/forms.py:280
 msgid "Void date"
 msgstr "Tanggal pembatalan"
 
-#: apps/invoicing/forms.py:296
+#: apps/invoicing/forms.py:297
 msgid "For goods whose stock isn't tracked, and for services."
 msgstr "Untuk barang yang stoknya tidak dicatat, dan untuk jasa."
 
-#: apps/invoicing/forms.py:308
+#: apps/invoicing/forms.py:309
 msgid ""
 "This item has stock movements, so its type, stock tracking and accounts are "
 "fixed."
@@ -2241,101 +2327,123 @@ msgstr ""
 "Barang ini sudah memiliki mutasi stok, sehingga jenis, pencatatan stok, dan "
 "akunnya tetap."
 
-#: apps/invoicing/forms.py:314
+#: apps/invoicing/forms.py:315
 msgid "Only goods have stock."
 msgstr "Hanya barang yang memiliki stok."
 
-#: apps/invoicing/forms.py:317
+#: apps/invoicing/forms.py:318
 msgid "Required for an item whose stock is tracked."
 msgstr "Wajib untuk barang yang stoknya dicatat."
 
-#: apps/invoicing/forms.py:324
+#: apps/invoicing/forms.py:325
 msgid "Return date"
 msgstr "Tanggal retur"
 
-#: apps/invoicing/forms.py:325
+#: apps/invoicing/forms.py:326
 msgid "E.g. damaged goods, wrong item delivered."
 msgstr "Misalnya barang rusak, barang yang dikirim salah."
 
-#: apps/invoicing/forms.py:327
+#: apps/invoicing/forms.py:328
 msgid "Refund through"
 msgstr "Dikembalikan melalui"
 
-#: apps/invoicing/forms.py:328
+#: apps/invoicing/forms.py:329
 msgid ""
 "Only needed when the return is more than what is still owed on the invoice."
 msgstr "Hanya diperlukan bila retur melebihi sisa tagihan faktur."
 
-#: apps/invoicing/forms.py:343
+#: apps/invoicing/forms.py:344
 #, python-format
 msgid "Up to %(quantity)s"
 msgstr "Paling banyak %(quantity)s"
 
-#: apps/invoicing/forms.py:354 apps/invoicing/services.py:685
+#: apps/invoicing/forms.py:355 apps/invoicing/services.py:685
 msgid "Enter the quantity returned for at least one line."
 msgstr "Isi kuantitas yang diretur untuk paling sedikit satu baris."
 
-#: apps/invoicing/forms.py:366 templates/invoicing/invoice_detail.html:31
+#: apps/invoicing/forms.py:367 templates/invoicing/invoice_detail.html:32
 msgid "Faktur Pajak number"
 msgstr "Nomor Faktur Pajak"
 
-#: apps/invoicing/forms.py:366
+#: apps/invoicing/forms.py:367
 msgid "As issued by Coretax, e.g. 04002600000012345."
 msgstr "Sesuai yang diterbitkan Coretax, misalnya 04002600000012345."
 
-#: apps/invoicing/models.py:22 templates/partials/sidebar.html:30
+#: apps/invoicing/forms.py:371
+msgid "Connection"
+msgstr "Koneksi"
+
+#: apps/invoicing/forms.py:372 apps/invoicing/models.py:600
+msgid "API address"
+msgstr "Alamat API"
+
+#: apps/invoicing/forms.py:372 apps/invoicing/models.py:600
+msgid "The HTTPS address your provider gave you."
+msgstr "Alamat HTTPS dari penyedia Anda."
+
+#: apps/invoicing/forms.py:374
+msgid "Access token"
+msgstr "Token akses"
+
+#: apps/invoicing/forms.py:375
+msgid "Leave empty to keep the stored token. It is stored encrypted."
+msgstr ""
+"Kosongkan untuk tetap memakai token yang tersimpan. Token disimpan "
+"terenkripsi."
+
+#: apps/invoicing/models.py:23 templates/partials/sidebar.html:30
 msgid "Sales"
 msgstr "Penjualan"
 
-#: apps/invoicing/models.py:28
+#: apps/invoicing/models.py:29
 msgid "Receipts (sales)"
 msgstr "Penerimaan (penjualan)"
 
-#: apps/invoicing/models.py:28
+#: apps/invoicing/models.py:29
 msgid "Disbursements (purchases)"
 msgstr "Pengeluaran (pembelian)"
 
-#: apps/invoicing/models.py:35
+#: apps/invoicing/models.py:36
 msgid "Goods"
 msgstr "Barang"
 
-#: apps/invoicing/models.py:36
+#: apps/invoicing/models.py:37
 msgid "Service"
 msgstr "Jasa"
 
-#: apps/invoicing/models.py:38
+#: apps/invoicing/models.py:39
 msgid "code/SKU"
 msgstr "kode/SKU"
 
-#: apps/invoicing/models.py:41
+#: apps/invoicing/models.py:42
 msgid "unit"
 msgstr "satuan"
 
-#: apps/invoicing/models.py:42
+#: apps/invoicing/models.py:43
 msgid "sale price"
 msgstr "harga jual"
 
-#: apps/invoicing/models.py:43
+#: apps/invoicing/models.py:44
 msgid "purchase price"
 msgstr "harga beli"
 
-#: apps/invoicing/models.py:45
+#: apps/invoicing/models.py:46
 msgid "revenue account"
 msgstr "akun pendapatan"
 
-#: apps/invoicing/models.py:48
+#: apps/invoicing/models.py:49
 msgid "purchase/expense account"
 msgstr "akun pembelian/beban"
 
-#: apps/invoicing/models.py:51
+#: apps/invoicing/models.py:52
 msgid "default tax"
 msgstr "pajak default"
 
-#: apps/invoicing/models.py:57
+#: apps/invoicing/models.py:58
 msgid "track stock"
 msgstr "catat stok"
 
-#: apps/invoicing/models.py:58
+#: apps/invoicing/models.py:59
 msgid ""
 "Keep stock quantities and value: purchases add to inventory, and each sale "
 "posts its cost of goods sold."
@@ -2343,63 +2451,59 @@ msgstr ""
 "Catat kuantitas dan nilai stok: pembelian menambah persediaan, dan setiap "
 "penjualan menjurnal harga pokok penjualannya."
 
-#: apps/invoicing/models.py:61
+#: apps/invoicing/models.py:62
 msgid "inventory account"
 msgstr "akun persediaan"
 
-#: apps/invoicing/models.py:64
+#: apps/invoicing/models.py:65
 msgid "cost of goods sold account"
 msgstr "akun harga pokok penjualan"
 
-#: apps/invoicing/models.py:81
+#: apps/invoicing/models.py:82
 msgid "items"
 msgstr "barang/jasa"
 
-#: apps/invoicing/models.py:90
+#: apps/invoicing/models.py:91
 msgid "Normal delivery"
 msgstr "Penyerahan biasa"
 
-#: apps/invoicing/models.py:91
+#: apps/invoicing/models.py:92
 msgid "VAT refund for a tourist (code 06)"
 msgstr "VAT refund turis asing (kode 06)"
 
-#: apps/invoicing/models.py:92
+#: apps/invoicing/models.py:93
 msgid "Asset not originally for sale, Art. 16D (code 09)"
 msgstr "Aktiva yang semula tidak untuk diperjualbelikan, Pasal 16D (kode 09)"
 
-#: apps/invoicing/models.py:106
+#: apps/invoicing/models.py:107
 msgid "due date"
 msgstr "jatuh tempo"
 
-#: apps/invoicing/models.py:107
+#: apps/invoicing/models.py:108
 msgid "reference no."
 msgstr "no. referensi"
 
-#: apps/invoicing/models.py:107
+#: apps/invoicing/models.py:108
 msgid "PO number or supplier invoice number."
 msgstr "No. PO / no. faktur pemasok."
 
-#: apps/invoicing/models.py:109 templates/invoicing/return_detail.html:24
-msgid "tax invoice no."
-msgstr "no. faktur pajak"
-
-#: apps/invoicing/models.py:109
+#: apps/invoicing/models.py:110
 msgid "Faktur Pajak serial number (e-Faktur/Coretax)."
 msgstr "Nomor seri Faktur Pajak (e-Faktur/Coretax)."
 
-#: apps/invoicing/models.py:117
+#: apps/invoicing/models.py:118
 msgid "facility (keterangan tambahan)"
 msgstr "fasilitas (keterangan tambahan)"
 
-#: apps/invoicing/models.py:118
+#: apps/invoicing/models.py:119
 msgid "facility stamp (cap fasilitas)"
 msgstr "cap fasilitas"
 
-#: apps/invoicing/models.py:120
+#: apps/invoicing/models.py:121
 msgid "supporting document"
 msgstr "dokumen pendukung"
 
-#: apps/invoicing/models.py:121
+#: apps/invoicing/models.py:122
 msgid ""
 "For a facility, if any: e.g. the SPPB submission number, or PJKEK#number for"
 " a special economic zone."
@@ -2407,315 +2511,349 @@ msgstr ""
 "Untuk fasilitas, jika ada: mis. nomor aju SPPB, atau PJKEK#nomor untuk "
 "kawasan ekonomi khusus."
 
-#: apps/invoicing/models.py:123
+#: apps/invoicing/models.py:124
 msgid "supporting document date"
 msgstr "tanggal dokumen pendukung"
 
-#: apps/invoicing/models.py:125
+#: apps/invoicing/models.py:126
 msgid "type of delivery"
 msgstr "jenis penyerahan"
 
-#: apps/invoicing/models.py:130 apps/tenants/models.py:175
+#: apps/invoicing/models.py:131 apps/tenants/models.py:175
 msgid "place of business"
 msgstr "tempat kegiatan usaha"
 
-#: apps/invoicing/models.py:135 apps/invoicing/models.py:530
+#: apps/invoicing/models.py:136 apps/invoicing/models.py:531
 msgid "PPN (VAT)"
 msgstr "PPN"
 
-#: apps/invoicing/models.py:136 apps/invoicing/models.py:537
+#: apps/invoicing/models.py:137 apps/invoicing/models.py:538
 #: templates/invoicing/return_detail.html:42
 msgid "PPN not collected (facility)"
 msgstr "PPN tidak dipungut (fasilitas)"
 
-#: apps/invoicing/models.py:137 apps/invoicing/models.py:538
+#: apps/invoicing/models.py:138 apps/invoicing/models.py:539
 #: templates/invoicing/_invoice_body.html:30
 #: templates/invoicing/return_detail.html:36 templates/reports/vat.html:9
 #: templates/taxes/taxrate_list.html:12
 msgid "PPnBM"
 msgstr "PPnBM"
 
-#: apps/invoicing/models.py:139
+#: apps/invoicing/models.py:140
 msgid "amount paid"
 msgstr "telah dibayar"
 
-#: apps/invoicing/models.py:142
+#: apps/invoicing/models.py:143
 msgid "returns credited"
 msgstr "retur yang mengurangi tagihan"
 
-#: apps/invoicing/models.py:150
+#: apps/invoicing/models.py:151
 msgid "contact name"
 msgstr "nama kontak"
 
-#: apps/invoicing/models.py:153
+#: apps/invoicing/models.py:154
 msgid "buyer collects the PPN"
 msgstr "pembeli memungut PPN"
 
-#: apps/invoicing/models.py:155
+#: apps/invoicing/models.py:156
 msgid "contact NPWP"
 msgstr "NPWP kontak"
 
-#: apps/invoicing/models.py:156
+#: apps/invoicing/models.py:157
 msgid "contact NITKU"
 msgstr "NITKU kontak"
 
-#: apps/invoicing/models.py:158
+#: apps/invoicing/models.py:159
 msgid "contact identity document"
 msgstr "dokumen identitas kontak"
 
-#: apps/invoicing/models.py:160
+#: apps/invoicing/models.py:161
 msgid "contact identity document number"
 msgstr "nomor dokumen identitas kontak"
 
-#: apps/invoicing/models.py:161
+#: apps/invoicing/models.py:162
 msgid "contact country"
 msgstr "negara kontak"
 
-#: apps/invoicing/models.py:162
+#: apps/invoicing/models.py:163
 msgid "contact address"
 msgstr "alamat kontak"
 
-#: apps/invoicing/models.py:163
+#: apps/invoicing/models.py:164
 msgid "contact city"
 msgstr "kota kontak"
 
-#: apps/invoicing/models.py:164
+#: apps/invoicing/models.py:165
 msgid "seller name"
 msgstr "nama penjual"
 
-#: apps/invoicing/models.py:165
+#: apps/invoicing/models.py:166
 msgid "seller NPWP"
 msgstr "NPWP penjual"
 
-#: apps/invoicing/models.py:166
+#: apps/invoicing/models.py:167
 msgid "seller NITKU"
 msgstr "NITKU penjual"
 
-#: apps/invoicing/models.py:167
+#: apps/invoicing/models.py:168
 msgid "seller address"
 msgstr "alamat penjual"
 
-#: apps/invoicing/models.py:168
+#: apps/invoicing/models.py:169
 msgid "seller city"
 msgstr "kota penjual"
 
-#: apps/invoicing/models.py:173 apps/invoicing/models.py:450
-#: apps/invoicing/models.py:526
+#: apps/invoicing/models.py:174 apps/invoicing/models.py:451
+#: apps/invoicing/models.py:527
 msgid "invoice"
 msgstr "faktur"
 
-#: apps/invoicing/models.py:174
+#: apps/invoicing/models.py:175
 msgid "invoices"
 msgstr "faktur"
 
-#: apps/invoicing/models.py:187
+#: apps/invoicing/models.py:188
 #, python-format
 msgid "DRAFT-%(id)s"
 msgstr "DRAF-%(id)s"
 
-#: apps/invoicing/models.py:293
+#: apps/invoicing/models.py:294
 msgid "Returned"
 msgstr "Diretur"
 
-#: apps/invoicing/models.py:295
+#: apps/invoicing/models.py:296
 msgid "Partly returned"
 msgstr "Sebagian diretur"
 
-#: apps/invoicing/models.py:359
+#: apps/invoicing/models.py:360
 msgid "item description"
 msgstr "deskripsi"
 
-#: apps/invoicing/models.py:360 apps/ledger/models.py:33
+#: apps/invoicing/models.py:361 apps/ledger/models.py:33
 #: apps/ledger/models.py:133
 msgid "account"
 msgstr "akun"
 
-#: apps/invoicing/models.py:362
+#: apps/invoicing/models.py:363
 msgid "unit price"
 msgstr "harga satuan"
 
-#: apps/invoicing/models.py:363
+#: apps/invoicing/models.py:364
 msgid "discount (%)"
 msgstr "diskon (%)"
 
-#: apps/invoicing/models.py:364
+#: apps/invoicing/models.py:365
 msgid "tax"
 msgstr "pajak"
 
-#: apps/invoicing/models.py:368
+#: apps/invoicing/models.py:369
 msgid "account code when issued"
 msgstr "kode akun saat diterbitkan"
 
-#: apps/invoicing/models.py:369
+#: apps/invoicing/models.py:370
 msgid "account name when issued"
 msgstr "nama akun saat diterbitkan"
 
-#: apps/invoicing/models.py:371
+#: apps/invoicing/models.py:372
 msgid "tax name when issued"
 msgstr "nama pajak saat diterbitkan"
 
-#: apps/invoicing/models.py:372
+#: apps/invoicing/models.py:373
 msgid "tax rate when issued (%)"
 msgstr "tarif pajak saat diterbitkan (%)"
 
-#: apps/invoicing/models.py:373
+#: apps/invoicing/models.py:374
 msgid "DPP numerator when issued"
 msgstr "pembilang DPP saat diterbitkan"
 
-#: apps/invoicing/models.py:374
+#: apps/invoicing/models.py:375
 msgid "DPP denominator when issued"
 msgstr "penyebut DPP saat diterbitkan"
 
-#: apps/invoicing/models.py:375
+#: apps/invoicing/models.py:376
 msgid "PPN besaran tertentu when issued"
 msgstr "PPN besaran tertentu saat diterbitkan"
 
-#: apps/invoicing/models.py:376
+#: apps/invoicing/models.py:377
 msgid "PPnBM rate when issued (%)"
 msgstr "tarif PPnBM saat diterbitkan (%)"
 
-#: apps/invoicing/models.py:377
+#: apps/invoicing/models.py:378
 msgid "item code when issued"
 msgstr "kode barang/jasa saat diterbitkan"
 
-#: apps/invoicing/models.py:414 templates/invoicing/invoice_list.html:29
+#: apps/invoicing/models.py:415 templates/invoicing/invoice_list.html:29
 msgid "Overdue"
 msgstr "Jatuh tempo"
 
-#: apps/invoicing/models.py:421
+#: apps/invoicing/models.py:422
 msgid "None"
 msgstr "Tidak ada"
 
-#: apps/invoicing/models.py:422
+#: apps/invoicing/models.py:423
 msgid "PPh 22 (e.g. 1.5% by a government treasurer)"
 msgstr "PPh 22 (mis. 1,5% oleh bendahara pemerintah)"
 
-#: apps/invoicing/models.py:424
+#: apps/invoicing/models.py:425
 #, no-python-format
 msgid "PPh 23 (2% on services)"
 msgstr "PPh 23 (2% atas jasa)"
 
-#: apps/invoicing/models.py:425
+#: apps/invoicing/models.py:426
 msgid "PPh Final 0.5% (PP 55/2022, with a Surat Keterangan)"
 msgstr "PPh Final 0,5% (PP 55/2022, dengan Surat Keterangan)"
 
-#: apps/invoicing/models.py:427 apps/taxes/domain.py:51
+#: apps/invoicing/models.py:428 apps/taxes/domain.py:51
 #, no-python-format
 msgid "PPh 4(2) final (e.g. 10% on rent of land or buildings)"
 msgstr "PPh 4(2) final (mis. 10% atas sewa tanah atau bangunan)"
 
-#: apps/invoicing/models.py:439
+#: apps/invoicing/models.py:440
 msgid "Cash"
 msgstr "Tunai"
 
-#: apps/invoicing/models.py:440
+#: apps/invoicing/models.py:441
 msgid "Bank transfer"
 msgstr "Transfer Bank"
 
-#: apps/invoicing/models.py:441
+#: apps/invoicing/models.py:442
 msgid "QRIS"
 msgstr "QRIS"
 
-#: apps/invoicing/models.py:442
+#: apps/invoicing/models.py:443
 msgid "E-wallet"
 msgstr "E-Wallet"
 
-#: apps/invoicing/models.py:443
+#: apps/invoicing/models.py:444
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:446 apps/invoicing/models.py:520
+#: apps/invoicing/models.py:447 apps/invoicing/models.py:521
 #: apps/taxes/models.py:63 templates/taxes/pph_final.html:35
 msgid "Recorded"
 msgstr "Tercatat"
 
-#: apps/invoicing/models.py:453
+#: apps/invoicing/models.py:454
 msgid "cash/bank account"
 msgstr "akun kas/bank"
 
-#: apps/invoicing/models.py:454
+#: apps/invoicing/models.py:455
 msgid "method"
 msgstr "metode"
 
-#: apps/invoicing/models.py:455 apps/ledger/models.py:67
+#: apps/invoicing/models.py:456 apps/ledger/models.py:67
 msgid "reference"
 msgstr "referensi"
 
-#: apps/invoicing/models.py:458 apps/invoicing/models.py:536
+#: apps/invoicing/models.py:459 apps/invoicing/models.py:537
 msgid "PPN withheld by the buyer"
 msgstr "PPN dipungut pembeli"
 
-#: apps/invoicing/models.py:462 apps/invoicing/models.py:542
+#: apps/invoicing/models.py:463 apps/invoicing/models.py:543
 msgid "income tax withheld"
 msgstr "PPh yang dipotong"
 
-#: apps/invoicing/models.py:464
+#: apps/invoicing/models.py:465
 msgid "income tax withheld by the buyer"
 msgstr "PPh yang dipotong pembeli"
 
-#: apps/invoicing/models.py:466 apps/invoicing/models.py:546
+#: apps/invoicing/models.py:467 apps/invoicing/models.py:547
 msgid "prepaid tax account"
 msgstr "akun pajak dibayar di muka"
 
-#: apps/invoicing/models.py:469
+#: apps/invoicing/models.py:470
 msgid "withholding slip no."
 msgstr "no. bukti potong"
 
-#: apps/invoicing/models.py:469
+#: apps/invoicing/models.py:470
 msgid "The bukti potong number from the buyer."
 msgstr "Nomor bukti potong dari pembeli."
 
-#: apps/invoicing/models.py:472
+#: apps/invoicing/models.py:473
 msgid "income tax base"
 msgstr "dasar pemotongan PPh"
 
-#: apps/invoicing/models.py:474
+#: apps/invoicing/models.py:475
 msgid "income tax rate (%)"
 msgstr "tarif PPh (%)"
 
-#: apps/invoicing/models.py:483
+#: apps/invoicing/models.py:484
 msgid "payment"
 msgstr "pembayaran"
 
-#: apps/invoicing/models.py:484
+#: apps/invoicing/models.py:485
 msgid "payments"
 msgstr "pembayaran"
 
-#: apps/invoicing/models.py:532
+#: apps/invoicing/models.py:533
 msgid "credited to the invoice"
 msgstr "mengurangi tagihan faktur"
 
-#: apps/invoicing/models.py:533
+#: apps/invoicing/models.py:534
 msgid "refunded"
 msgstr "dikembalikan"
 
-#: apps/invoicing/models.py:544
+#: apps/invoicing/models.py:545
 msgid "income tax the buyer withheld"
 msgstr "PPh yang dipotong pembeli"
 
-#: apps/invoicing/models.py:549
+#: apps/invoicing/models.py:550
 msgid "refund cash/bank account"
 msgstr "akun kas/bank pengembalian"
 
-#: apps/invoicing/models.py:556
+#: apps/invoicing/models.py:557
 msgid "return"
 msgstr "retur"
 
-#: apps/invoicing/models.py:557
+#: apps/invoicing/models.py:558
 msgid "returns"
 msgstr "retur"
 
-#: apps/invoicing/models.py:580
+#: apps/invoicing/models.py:581
 msgid "invoice line"
 msgstr "baris faktur"
 
-#: apps/invoicing/models.py:586
+#: apps/invoicing/models.py:587
 msgid "return line"
 msgstr "baris retur"
 
-#: apps/invoicing/models.py:587
+#: apps/invoicing/models.py:588
 msgid "return lines"
 msgstr "baris retur"
+
+#: apps/invoicing/models.py:599 apps/invoicing/models.py:622
+msgid "connection"
+msgstr "koneksi"
+
+#: apps/invoicing/models.py:605 templates/invoicing/coretax_connection.html:2
+#: templates/invoicing/coretax_connection.html:5
+#: templates/tenants/settings.html:33
+msgid "Coretax connection"
+msgstr "Koneksi Coretax"
+
+#: apps/invoicing/models.py:606
+msgid "Coretax connections"
+msgstr "Koneksi Coretax"
+
+#: apps/invoicing/models.py:620
+msgid "document"
+msgstr "dokumen"
+
+#: apps/invoicing/models.py:621
+msgid "contents"
+msgstr "isi"
+
+#: apps/invoicing/models.py:623
+msgid "provider reference"
+msgstr "referensi penyedia"
+
+#: apps/invoicing/models.py:632
+msgid "Coretax submission"
+msgstr "Pengiriman Coretax"
+
+#: apps/invoicing/models.py:633
+msgid "Coretax submissions"
+msgstr "Pengiriman Coretax"
 
 #: apps/invoicing/services.py:76
 msgid "Contact not found."
@@ -3082,141 +3220,150 @@ msgstr "Pembayaran ini sudah memiliki nomor bukti potong."
 msgid "Enter the bukti potong number."
 msgstr "Isi nomor bukti potong."
 
-#: apps/invoicing/views.py:25 apps/ledger/domain.py:108
+#: apps/invoicing/views.py:30 apps/ledger/domain.py:108
 #: templates/dashboard/home.html:7
 msgid "Sales invoice"
 msgstr "Faktur Penjualan"
 
-#: apps/invoicing/views.py:26 templates/contacts/contact_list.html:21
+#: apps/invoicing/views.py:31 templates/contacts/contact_list.html:21
 msgid "Sales invoices"
 msgstr "Faktur Penjualan"
 
-#: apps/invoicing/views.py:28
+#: apps/invoicing/views.py:33
 msgid "New sales invoice"
 msgstr "Faktur Penjualan Baru"
 
-#: apps/invoicing/views.py:29
+#: apps/invoicing/views.py:34
 msgid "Edit draft sales invoice"
 msgstr "Ubah Draf Faktur Penjualan"
 
-#: apps/invoicing/views.py:30
+#: apps/invoicing/views.py:35
 msgid "New sale"
 msgstr "Buat Penjualan"
 
-#: apps/invoicing/views.py:31
+#: apps/invoicing/views.py:36
 msgid "Unpaid receivables"
 msgstr "Piutang belum dibayar"
 
-#: apps/invoicing/views.py:32
+#: apps/invoicing/views.py:37
 msgid "View receivables aging report"
 msgstr "Lihat laporan umur piutang"
 
-#: apps/invoicing/views.py:35 apps/ledger/domain.py:109
+#: apps/invoicing/views.py:40 apps/ledger/domain.py:109
 msgid "Purchase bill"
 msgstr "Tagihan Pembelian"
 
-#: apps/invoicing/views.py:36 templates/contacts/contact_list.html:22
+#: apps/invoicing/views.py:41 templates/contacts/contact_list.html:22
 msgid "Purchase bills"
 msgstr "Tagihan Pembelian"
 
-#: apps/invoicing/views.py:38
+#: apps/invoicing/views.py:43
 msgid "New purchase bill"
 msgstr "Tagihan Pembelian Baru"
 
-#: apps/invoicing/views.py:39
+#: apps/invoicing/views.py:44
 msgid "Edit draft purchase bill"
 msgstr "Ubah Draf Tagihan Pembelian"
 
-#: apps/invoicing/views.py:40
+#: apps/invoicing/views.py:45
 msgid "New purchase"
 msgstr "Buat Pembelian"
 
-#: apps/invoicing/views.py:41
+#: apps/invoicing/views.py:46
 msgid "Unpaid payables"
 msgstr "Utang belum dibayar"
 
-#: apps/invoicing/views.py:42
+#: apps/invoicing/views.py:47
 msgid "View payables aging report"
 msgstr "Lihat laporan umur utang"
 
-#: apps/invoicing/views.py:138
+#: apps/invoicing/views.py:143
 #, python-format
 msgid "%(document)s %(number)s issued."
 msgstr "%(document)s %(number)s diterbitkan."
 
-#: apps/invoicing/views.py:141
+#: apps/invoicing/views.py:146
 msgid "Draft saved."
 msgstr "Draf disimpan."
 
-#: apps/invoicing/views.py:224
+#: apps/invoicing/views.py:231
 #, python-format
 msgid "Invoice %(number)s issued and posted to the ledger."
 msgstr "Faktur %(number)s diterbitkan dan dijurnal."
 
-#: apps/invoicing/views.py:233
+#: apps/invoicing/views.py:240
 #, python-format
 msgid "Invoice %(number)s voided; its journal entry was reversed."
 msgstr "Faktur %(number)s dibatalkan; jurnal telah dibalik."
 
-#: apps/invoicing/views.py:240
+#: apps/invoicing/views.py:247
 msgid "Draft deleted."
 msgstr "Draf dihapus."
 
-#: apps/invoicing/views.py:249
+#: apps/invoicing/views.py:256
 #, python-format
 msgid "Invalid payment data: %(errors)s"
 msgstr "Data pembayaran tidak valid: %(errors)s"
 
-#: apps/invoicing/views.py:251
+#: apps/invoicing/views.py:258
 #, python-format
 msgid "Payment %(number)s recorded."
 msgstr "Pembayaran %(number)s dicatat."
 
-#: apps/invoicing/views.py:277
+#: apps/invoicing/views.py:284
 #, python-format
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:288
+#: apps/invoicing/views.py:295
 msgid "Bukti potong number recorded."
 msgstr "Nomor bukti potong dicatat."
 
-#: apps/invoicing/views.py:317
+#: apps/invoicing/views.py:324
 msgid "Item saved."
 msgstr "Barang/jasa disimpan."
 
-#: apps/invoicing/views.py:361
+#: apps/invoicing/views.py:368
 #, python-format
 msgid "Return %(number)s recorded and posted to the ledger."
 msgstr "Retur %(number)s dicatat dan dijurnal."
 
-#: apps/invoicing/views.py:383
+#: apps/invoicing/views.py:390
 msgid "Invalid void date."
 msgstr "Tanggal pembatalan tidak valid."
 
-#: apps/invoicing/views.py:387
+#: apps/invoicing/views.py:394
 msgid "Return voided: its journal entry and stock were reversed."
 msgstr "Retur dibatalkan: jurnal dan stoknya dibalik."
 
-#: apps/invoicing/views.py:419
+#: apps/invoicing/views.py:426
 #, python-format
 msgid "No purchase return of %(period)s can be reported to Coretax."
 msgstr ""
 "Tidak ada retur pembelian masa %(period)s yang dapat dilaporkan ke Coretax."
 
-#: apps/invoicing/views.py:445
+#: apps/invoicing/views.py:452
 #, python-format
 msgid "No sales invoice of %(period)s can be reported to Coretax."
 msgstr ""
 "Tidak ada faktur penjualan masa %(period)s yang dapat dilaporkan ke Coretax."
 
-#: apps/invoicing/views.py:458
+#: apps/invoicing/views.py:465
 msgid "Faktur Pajak number recorded."
 msgstr "Nomor Faktur Pajak dicatat."
 
-#: apps/invoicing/views.py:462
+#: apps/invoicing/views.py:469
 msgid "Enter the Faktur Pajak number."
 msgstr "Isi nomor Faktur Pajak."
+
+#: apps/invoicing/views.py:503
+msgid "Coretax connection saved."
+msgstr "Koneksi Coretax disimpan."
+
+#: apps/invoicing/views.py:530 templates/invoicing/invoice_detail.html:29
+#, python-format
+msgid "Sent to Coretax: %(status)s."
+msgstr "Dikirim ke Coretax: %(status)s."
 
 #: apps/ledger/apps.py:7
 msgid "General Ledger"
@@ -3691,7 +3838,7 @@ msgstr "Faktur"
 #: apps/reports/exports.py:239 apps/reports/exports.py:246
 #: apps/reports/exports.py:254 apps/reports/exports.py:262
 #: templates/assets/asset_detail.html:50
-#: templates/invoicing/invoice_detail.html:36
+#: templates/invoicing/invoice_detail.html:37
 #: templates/invoicing/return_detail.html:46
 msgid "Journal entry"
 msgstr "Jurnal"
@@ -3991,15 +4138,15 @@ msgstr "TOTAL"
 msgid "Total %(section)s"
 msgstr "Total %(section)s"
 
-#: apps/reports/views.py:154
+#: apps/reports/views.py:155
 msgid "Receivables aging"
 msgstr "Umur Piutang"
 
-#: apps/reports/views.py:154
+#: apps/reports/views.py:155
 msgid "Payables aging"
 msgstr "Umur Utang"
 
-#: apps/reports/views.py:193
+#: apps/reports/views.py:195
 msgid "Too many exports in the last hour. Please try again later."
 msgstr ""
 "Terlalu banyak ekspor dalam satu jam terakhir. Silakan coba lagi nanti."
@@ -4335,7 +4482,7 @@ msgstr "Tarif (%)"
 msgid "Tax withheld"
 msgstr "PPh dipotong"
 
-#: apps/taxes/views.py:232 templates/invoicing/invoice_detail.html:60
+#: apps/taxes/views.py:232 templates/invoicing/invoice_detail.html:61
 #: templates/taxes/withholding_month.html:10
 #: templates/taxes/withholding_month.html:18
 msgid "Bukti potong no."
@@ -4938,6 +5085,7 @@ msgstr "Ubah kata sandi"
 #: templates/accounts/password_change.html:10
 #: templates/accounts/profile.html:10 templates/assets/asset_detail.html:69
 #: templates/assets/asset_form.html:12 templates/contacts/contact_form.html:9
+#: templates/invoicing/coretax_connection.html:13
 #: templates/invoicing/item_form.html:9 templates/ledger/account_form.html:9
 #: templates/taxes/taxrate_form.html:9 templates/tenants/place_form.html:10
 msgid "Save"
@@ -5351,7 +5499,7 @@ msgstr "Buat kunci"
 
 #: templates/assets/asset_detail.html:9
 #: templates/contacts/contact_list.html:23
-#: templates/invoicing/invoice_detail.html:15
+#: templates/invoicing/invoice_detail.html:16
 #: templates/invoicing/item_list.html:14 templates/ledger/account_list.html:20
 #: templates/ledger/journal_detail.html:11
 #: templates/taxes/taxrate_list.html:17 templates/tenants/settings.html:28
@@ -5372,7 +5520,7 @@ msgstr "Hapus aset ini dari daftar?"
 
 #: templates/assets/asset_detail.html:12
 #: templates/contacts/contact_list.html:24
-#: templates/invoicing/invoice_detail.html:16
+#: templates/invoicing/invoice_detail.html:17
 #: templates/ledger/account_list.html:21
 #: templates/ledger/journal_detail.html:12
 msgid "Delete"
@@ -5458,7 +5606,7 @@ msgid "Scheduled"
 msgstr "Terjadwal"
 
 #: templates/assets/asset_detail.html:64 templates/assets/asset_detail.html:74
-#: templates/invoicing/invoice_detail.html:83
+#: templates/invoicing/invoice_detail.html:84
 #: templates/invoicing/return_detail.html:50
 #: templates/partials/messages.html:5 templates/taxes/pph_final.html:67
 #: templates/taxes/withholding.html:27
@@ -5549,6 +5697,7 @@ msgid "Acquired"
 msgstr "Diperoleh"
 
 #: templates/assets/asset_list.html:23 templates/billing/overview.html:93
+#: templates/invoicing/coretax_connection.html:18
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:15 templates/taxes/taxrate_list.html:12
@@ -6126,6 +6275,7 @@ msgid "Write down"
 msgstr "Turunkan nilai"
 
 #: templates/inventory/stock_card.html:14
+#: templates/invoicing/coretax_connection.html:18
 msgid "Document"
 msgstr "Dokumen"
 
@@ -6249,6 +6399,46 @@ msgstr "Catatan"
 msgid "Remove line"
 msgstr "Hapus baris"
 
+#: templates/invoicing/coretax_connection.html:4
+#: templates/tenants/place_form.html:4 templates/tenants/settings.html:2
+#: templates/tenants/settings.html:4
+msgid "Organization settings"
+msgstr "Pengaturan Organisasi"
+
+#: templates/invoicing/coretax_connection.html:9
+msgid ""
+"DJP has no public Coretax API: fakturs are sent through a licensed tax "
+"application provider (PJAP). Enter the address and access token your "
+"provider gave you; invoices can then be sent to Coretax from the app, and "
+"the Faktur Pajak numbers Coretax issues are recorded on them. Without a "
+"connection, download the XML files and import them in Coretax."
+msgstr ""
+"DJP tidak menyediakan API Coretax publik: faktur dikirim melalui Penyedia "
+"Jasa Aplikasi Perpajakan (PJAP) berizin. Isi alamat dan token akses dari "
+"penyedia Anda; faktur kemudian dapat dikirim ke Coretax dari aplikasi, dan "
+"nomor Faktur Pajak yang diterbitkan Coretax dicatat padanya. Tanpa koneksi, "
+"unduh berkas XML dan impor di Coretax."
+
+#: templates/invoicing/coretax_connection.html:11
+msgid "A token is stored."
+msgstr "Token sudah tersimpan."
+
+#: templates/invoicing/coretax_connection.html:16
+msgid "Sent to Coretax"
+msgstr "Dikirim ke Coretax"
+
+#: templates/invoicing/coretax_connection.html:18
+msgid "Contents"
+msgstr "Isi"
+
+#: templates/invoicing/coretax_connection.html:22
+msgid "Check"
+msgstr "Periksa"
+
+#: templates/invoicing/coretax_connection.html:23
+msgid "Nothing sent yet."
+msgstr "Belum ada yang dikirim."
+
 #: templates/invoicing/invoice_detail.html:8
 #, python-format
 msgid "Overdue %(days)s day"
@@ -6256,46 +6446,50 @@ msgid_plural "Overdue %(days)s days"
 msgstr[0] "Jatuh tempo %(days)s hari"
 
 #: templates/invoicing/invoice_detail.html:12
+msgid "Send to Coretax"
+msgstr "Kirim ke Coretax"
+
+#: templates/invoicing/invoice_detail.html:13
 msgid "Import under e-Faktur > Pajak Keluaran > Impor Data in Coretax"
 msgstr "Impor di Coretax: e-Faktur > Pajak Keluaran > Impor Data"
 
-#: templates/invoicing/invoice_detail.html:12
+#: templates/invoicing/invoice_detail.html:13
 #: templates/invoicing/return_detail.html:9
 msgid "Coretax XML"
 msgstr "XML Coretax"
 
-#: templates/invoicing/invoice_detail.html:16
+#: templates/invoicing/invoice_detail.html:17
 #: templates/ledger/journal_detail.html:12
 msgid "Delete this draft?"
 msgstr "Hapus draf?"
 
-#: templates/invoicing/invoice_detail.html:17
+#: templates/invoicing/invoice_detail.html:18
 msgid "Issue"
 msgstr "Terbitkan"
 
-#: templates/invoicing/invoice_detail.html:19
+#: templates/invoicing/invoice_detail.html:20
 #: templates/invoicing/return_detail.html:15
 #: templates/invoicing/return_form.html:2
 msgid "Sales return"
 msgstr "Retur penjualan"
 
-#: templates/invoicing/invoice_detail.html:19
+#: templates/invoicing/invoice_detail.html:20
 #: templates/invoicing/return_detail.html:15
 #: templates/invoicing/return_form.html:2
 msgid "Purchase return"
 msgstr "Retur pembelian"
 
-#: templates/invoicing/invoice_detail.html:20
-#: templates/invoicing/invoice_detail.html:86
+#: templates/invoicing/invoice_detail.html:21
+#: templates/invoicing/invoice_detail.html:87
 msgid "Void invoice"
 msgstr "Batalkan Faktur"
 
-#: templates/invoicing/invoice_detail.html:28
+#: templates/invoicing/invoice_detail.html:29
 #, python-format
 msgid "Faktur Pajak %(number)s."
 msgstr "Faktur Pajak %(number)s."
 
-#: templates/invoicing/invoice_detail.html:28
+#: templates/invoicing/invoice_detail.html:29
 msgid ""
 "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue "
 "the faktur there, then record its number below."
@@ -6303,78 +6497,78 @@ msgstr ""
 "Impor XML Coretax di e-Faktur > Pajak Keluaran > Impor Data, terbitkan "
 "fakturnya di sana, lalu catat nomornya di bawah."
 
-#: templates/invoicing/invoice_detail.html:32
+#: templates/invoicing/invoice_detail.html:33
 msgid "Record number"
 msgstr "Catat nomor"
 
-#: templates/invoicing/invoice_detail.html:41
+#: templates/invoicing/invoice_detail.html:42
 msgid "Receive payment"
 msgstr "Terima Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:41
+#: templates/invoicing/invoice_detail.html:42
 msgid "Pay bill"
 msgstr "Bayar Tagihan"
 
-#: templates/invoicing/invoice_detail.html:45
+#: templates/invoicing/invoice_detail.html:46
 msgid "The buyer withheld income tax"
 msgstr "Pembeli memotong pajak penghasilan"
 
-#: templates/invoicing/invoice_detail.html:45
+#: templates/invoicing/invoice_detail.html:46
 msgid "Withhold income tax (PPh 23 or 4(2))"
 msgstr "Potong PPh (PPh 23 atau 4(2))"
 
-#: templates/invoicing/invoice_detail.html:49
+#: templates/invoicing/invoice_detail.html:50
 msgid "Record payment"
 msgstr "Catat Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:54
+#: templates/invoicing/invoice_detail.html:55
 msgid "Payment history"
 msgstr "Riwayat Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:57
+#: templates/invoicing/invoice_detail.html:58
 #, python-format
 msgid "incl. %(amount)s PPN withheld by the buyer"
 msgstr "termasuk %(amount)s PPN dipungut pembeli"
 
-#: templates/invoicing/invoice_detail.html:57
+#: templates/invoicing/invoice_detail.html:58
 #, python-format
 msgid "incl. %(amount)s withheld as %(tax)s"
 msgstr "termasuk %(amount)s dipotong sebagai %(tax)s"
 
-#: templates/invoicing/invoice_detail.html:61
+#: templates/invoicing/invoice_detail.html:62
 #: templates/taxes/withholding_month.html:18
 msgid "Record"
 msgstr "Catat"
 
-#: templates/invoicing/invoice_detail.html:63
+#: templates/invoicing/invoice_detail.html:64
 msgid "Void this payment?"
 msgstr "Batalkan pembayaran?"
 
-#: templates/invoicing/invoice_detail.html:63
+#: templates/invoicing/invoice_detail.html:64
 msgid "void"
 msgstr "batalkan"
 
-#: templates/invoicing/invoice_detail.html:66
+#: templates/invoicing/invoice_detail.html:67
 #: templates/invoicing/payment_list.html:21
 msgid "No payments yet."
 msgstr "Belum ada pembayaran."
 
-#: templates/invoicing/invoice_detail.html:70
+#: templates/invoicing/invoice_detail.html:71
 msgid "Returns"
 msgstr "Retur"
 
-#: templates/invoicing/invoice_detail.html:74
+#: templates/invoicing/invoice_detail.html:75
 #, python-format
 msgid "%(amount)s refunded"
 msgstr "%(amount)s dikembalikan"
 
-#: templates/invoicing/invoice_detail.html:83
+#: templates/invoicing/invoice_detail.html:84
 #: templates/invoicing/return_detail.html:50
 #, python-format
 msgid "Void %(number)s"
 msgstr "Batalkan %(number)s"
 
-#: templates/invoicing/invoice_detail.html:84
+#: templates/invoicing/invoice_detail.html:85
 msgid ""
 "The invoice's journal entry will be reversed on the void date. This cannot "
 "be undone."
@@ -6867,8 +7061,8 @@ msgstr ""
 "keuangan</a> merupakan bagian yang tidak terpisahkan dari laporan ini."
 
 #: templates/reports/export_books.html:2 templates/reports/export_books.html:4
-#: templates/reports/index.html:19 templates/tenants/settings.html:32
-#: templates/tenants/settings.html:34
+#: templates/reports/index.html:19 templates/tenants/settings.html:39
+#: templates/tenants/settings.html:41
 msgid "Export books"
 msgstr "Ekspor pembukuan"
 
@@ -7299,12 +7493,20 @@ msgid "Faktur PK"
 msgstr "Faktur PK"
 
 #: templates/reports/vat.html:13
+msgid "Send the month's sales invoices to Coretax"
+msgstr "Kirim faktur penjualan bulan ini ke Coretax"
+
+#: templates/reports/vat.html:13
 msgid "Purchase returns of the month as a Coretax import file"
 msgstr "Retur pembelian bulan ini sebagai file impor Coretax"
 
 #: templates/reports/vat.html:13
 msgid "Retur PM"
 msgstr "Retur PM"
+
+#: templates/reports/vat.html:13
+msgid "Send the month's purchase returns to Coretax"
+msgstr "Kirim retur pembelian bulan ini ke Coretax"
 
 #: templates/reports/vat.html:18
 msgid "Retail sales reported in total (digunggung)"
@@ -7782,11 +7984,6 @@ msgstr "Tambahkan"
 msgid "Place of business"
 msgstr "Tempat kegiatan usaha"
 
-#: templates/tenants/place_form.html:4 templates/tenants/settings.html:2
-#: templates/tenants/settings.html:4
-msgid "Organization settings"
-msgstr "Pengaturan Organisasi"
-
 #: templates/tenants/place_form.html:5
 msgid "New place of business"
 msgstr "Tempat kegiatan usaha baru"
@@ -7829,7 +8026,19 @@ msgstr "Tambah tempat"
 msgid "City/regency"
 msgstr "Kota/kabupaten"
 
-#: templates/tenants/settings.html:33
+#: templates/tenants/settings.html:34
+msgid ""
+"Send fakturs to Coretax through your tax application provider (PJAP) instead"
+" of importing files."
+msgstr ""
+"Kirim faktur ke Coretax melalui penyedia aplikasi perpajakan (PJAP) Anda, "
+"tanpa impor berkas."
+
+#: templates/tenants/settings.html:35
+msgid "Set up"
+msgstr "Atur"
+
+#: templates/tenants/settings.html:40
 msgid ""
 "Download all journals, invoices, payments and contacts as a ZIP of CSV "
 "files."

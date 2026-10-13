@@ -28,6 +28,13 @@
       <td class="text-end"><a href="{% url 'tenants:place_update' place.pk %}" class="small">{% translate "Edit" %}</a></td></tr>{% endfor %}</tbody>
   </table></div>{% endif %}
 </div></div>
+{% if current_organization.is_pkp %}
+<div class="card mt-4"><div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+  <div><h2 class="h6 mb-1">{% translate "Coretax connection" %}</h2>
+    <p class="small text-secondary mb-0">{% translate "Send fakturs to Coretax through your tax application provider (PJAP) instead of importing files." %}</p></div>
+  <a href="{% url 'invoicing:coretax_connection' %}" class="btn btn-outline-primary">{% translate "Set up" %}</a>
+</div></div>
+{% endif %}
 <div class="card mt-4"><div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
   <div><h2 class="h6 mb-1">{% translate "Export books" %}</h2>
     <p class="small text-secondary mb-0">{% translate "Download all journals, invoices, payments and contacts as a ZIP of CSV files." %}</p></div>

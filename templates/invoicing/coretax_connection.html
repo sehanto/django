@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Coretax connection" %}{% endblock %}
+{% block content %}
+<a href="{% url 'tenants:settings' %}" class="small text-decoration-none">&larr; {% translate "Organization settings" %}</a>
+<h1 class="h4 mb-3">{% translate "Coretax connection" %}</h1>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <form method="post" class="card"><div class="card-body">{% csrf_token %}
+      <p class="small text-secondary">{% blocktranslate trimmed %}DJP has no public Coretax API: fakturs are sent through a licensed tax application provider (PJAP). Enter the address and access token your provider gave you; invoices can then be sent to Coretax from the app, and the Faktur Pajak numbers Coretax issues are recorded on them. Without a connection, download the XML files and import them in Coretax.{% endblocktranslate %}</p>
+      {% include "partials/form_fields.html" with col="col-12" %}
+      {% if connection.token %}<p class="small text-success mt-2 mb-0"><i class="bi bi-lock me-1"></i>{% translate "A token is stored." %}</p>{% endif %}
+    </div>
+    <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
+  </div>
+  <div class="col-lg-7">
+    <h2 class="h6">{% translate "Sent to Coretax" %}</h2>
+    <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+      <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Document" %}</th><th>{% translate "Contents" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
+      <tbody>{% for s in submissions %}<tr>
+        <td class="small text-nowrap">{{ s.created_at|date:"d/m/Y H:i" }}</td><td class="small">{{ s.get_document_type_display }}</td><td>{{ s.label }}</td>
+        <td>{{ s.get_status_display }}{% for e in s.errors %}<div class="small text-danger">{{ e.reference }}: {{ e.error }}</div>{% endfor %}</td>
+        <td class="text-end">{% if s.status == s.Status.PENDING %}<form method="post" action="{% url 'invoicing:coretax_refresh' s.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">{% translate "Check" %}</button></form>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "Nothing sent yet." %}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+  </div>
+</div>
+{% endblock %}

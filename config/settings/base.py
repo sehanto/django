@@ -149,6 +149,11 @@ XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN", default="")
 XENDIT_API_URL = env("XENDIT_API_URL", default="https://api.xendit.co")
 # Charges of saved payment methods (automatic renewal) use Payment Requests v3, versioned by header.
 XENDIT_PAYMENT_REQUEST_API_VERSION = env("XENDIT_PAYMENT_REQUEST_API_VERSION", default="2024-11-11")
+# The platform's own Coretax connection, for the Faktur Pajak of subscription invoices
+# (apps.invoicing.coretax_api): "" = files only, "fake" (development) or "http" (a PJAP bridge).
+CORETAX_CONNECTOR = env("CORETAX_CONNECTOR", default="")
+CORETAX_API_URL = env("CORETAX_API_URL", default="")
+CORETAX_API_TOKEN = env("CORETAX_API_TOKEN", default="")
 # REST API (apps.api): requests per key per hour.
 API_REQUESTS_PER_HOUR = env.int("API_REQUESTS_PER_HOUR", default=1000)
 # Automatic renewals are charged this many days before the paid period ends.

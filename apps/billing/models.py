@@ -63,6 +63,8 @@ class SubscriptionInvoice(TimeStampedModel):
     # Set when a switch to another plan ends this coverage early; its unused time
     # was credited (or forfeited) then and must never be credited again.
     superseded_on = models.DateField(_("ended early on"), null=True, blank=True)
+    # The Faktur Pajak Coretax issued for it (set once, after it is paid; billing 0008).
+    tax_invoice_number = models.CharField(_("tax invoice no."), max_length=17, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:

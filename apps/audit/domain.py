@@ -39,6 +39,7 @@ class AuditAction(models.TextChoices):
     INVITATION_REVOKED = "invitation_revoked", _("Invitation revoked")
     API_KEY_CREATED = "api_key_created", _("API key created")
     API_KEY_REVOKED = "api_key_revoked", _("API key revoked")
+    CORETAX_CONNECTION_CHANGED = "coretax_connection_changed", _("Coretax connection changed")
     BOOKS_EXPORTED = "books_exported", _("Books exported")
     ACCOUNT_CREATED = "account_created", _("Account added to the chart of accounts")
     ACCOUNT_CHANGED = "account_changed", _("Chart of accounts entry changed")
@@ -64,7 +65,7 @@ ACTION_CATEGORY = {
         AuditCategory.ACCOUNT,
     ),
     **dict.fromkeys(
-        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.BUSINESS_PLACE_SAVED, A.MEMBER_ADDED, A.MEMBER_REMOVED, A.MEMBER_INVITED, A.INVITATION_REVOKED, A.API_KEY_CREATED, A.API_KEY_REVOKED,
+        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.BUSINESS_PLACE_SAVED, A.MEMBER_ADDED, A.MEMBER_REMOVED, A.MEMBER_INVITED, A.INVITATION_REVOKED, A.API_KEY_CREATED, A.API_KEY_REVOKED, A.CORETAX_CONNECTION_CHANGED,
          A.BOOKS_EXPORTED, A.ORGANIZATION_DELETED, A.ACCOUNT_CREATED, A.ACCOUNT_CHANGED, A.ACCOUNT_DELETED],
         AuditCategory.ORGANIZATION,
     ),

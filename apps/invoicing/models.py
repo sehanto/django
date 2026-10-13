@@ -14,6 +14,7 @@ from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.money import ZERO
 from apps.core.validators import code_validator, tax_invoice_number_validator
 
+from .coretax_api import ConnectorName, DocumentType, SubmissionStatus
 from .domain import InvoiceStatus, LineSpec, TaxSpec
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility, describe, stamp_text
 
@@ -588,3 +589,52 @@ class ReturnLine(TimeStampedModel):
 
     def __str__(self):
         return f"{self.return_note.number}: {self.quantity} x {self.invoice_line.description}"
+
+
+class CoretaxConnection(TimeStampedModel):
+    """How an organization reaches Coretax DJP through its tax application provider (PJAP).
+    The access token is stored encrypted (``apps.core.crypto``)."""
+
+    organization = models.OneToOneField("tenants.Organization", on_delete=models.CASCADE, related_name="coretax_connection")
+    connector = models.CharField(_("connection"), max_length=10, choices=ConnectorName.choices)
+    api_url = models.URLField(_("API address"), blank=True, help_text=_("The HTTPS address your provider gave you."))
+    token = models.TextField(blank=True, editable=False)  # encrypted
+    is_active = models.BooleanField(_("active"), default=True)
+
+    class Meta:
+        verbose_name = _("Coretax connection")
+        verbose_name_plural = _("Coretax connections")
+
+    def __str__(self):
+        return f"{self.organization} ({self.get_connector_display()})"
+
+
+class CoretaxSubmission(TimeStampedModel):
+    """One import file sent to Coretax: its provider reference, status and per-faktur results.
+    ``organization`` is empty for the platform's own fakturs (subscription invoices)."""
+
+    Status = SubmissionStatus
+    DocumentType = DocumentType
+
+    organization = models.ForeignKey("tenants.Organization", null=True, blank=True, on_delete=models.CASCADE, related_name="+")
+    document_type = models.CharField(_("document"), max_length=10, choices=DocumentType.choices)
+    label = models.CharField(_("contents"), max_length=100)
+    connector = models.CharField(_("connection"), max_length=10, choices=ConnectorName.choices)
+    reference = models.CharField(_("provider reference"), max_length=64)
+    status = models.CharField(_("status"), max_length=10, choices=SubmissionStatus.choices, default=SubmissionStatus.PENDING)
+    results = models.JSONField(default=list, blank=True)
+    invoices = models.ManyToManyField(Invoice, blank=True, related_name="coretax_submissions")
+    returns = models.ManyToManyField(ReturnNote, blank=True, related_name="coretax_submissions")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("Coretax submission")
+        verbose_name_plural = _("Coretax submissions")
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} {self.label} ({self.get_status_display()})"
+
+    @property
+    def errors(self) -> list[dict]:
+        return [item for item in self.results if item.get("error")]

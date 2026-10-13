@@ -12,6 +12,7 @@ from apps.taxes.domain import PAYER_WITHHOLDING_RATES, PayerWithholding
 from apps.taxes.selectors import tax_rates_for
 from apps.tenants.models import BusinessPlace
 
+from .coretax_api import ConnectorName
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
 from .models import PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
 from .selectors import items_for
@@ -364,3 +365,13 @@ class ReturnForm(OrganizationFormMixin, BaseForm):
 
 class TaxInvoiceNumberForm(BaseForm):
     number = forms.CharField(label=_("Faktur Pajak number"), max_length=30, help_text=_("As issued by Coretax, e.g. 04002600000012345."))
+
+
+class CoretaxConnectionForm(BaseForm):
+    connector = forms.ChoiceField(label=_("Connection"), choices=ConnectorName.choices)
+    api_url = forms.URLField(label=_("API address"), required=False, assume_scheme="https", help_text=_("The HTTPS address your provider gave you."))
+    token = forms.CharField(
+        label=_("Access token"), required=False, strip=True, widget=forms.PasswordInput(render_value=False),
+        help_text=_("Leave empty to keep the stored token. It is stored encrypted."),
+    )
+    is_active = forms.BooleanField(label=_("Active"), required=False, initial=True)

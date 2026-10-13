@@ -1,3 +1,5 @@
+from functools import partial
+
 from django.contrib import messages
 from django.db import transaction
 from django.http import Http404, HttpResponse
@@ -12,11 +14,14 @@ from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
 from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
-from apps.tenants.mixins import OrganizationMixin, WriteMixin
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
+from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
-from . import coretax, services
-from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, TaxInvoiceNumberForm, VoidForm, line_inputs
-from .models import Invoice, InvoiceKind, InvoiceStatusFilter
+from . import coretax, coretax_sync, services
+from .coretax_api import ConnectorName
+from .forms import CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, TaxInvoiceNumberForm, VoidForm, line_inputs
+from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
 # Complete phrases rather than fragments, so each language can word them naturally.
@@ -177,6 +182,8 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
         return super().get_context_data(
             coretax_problem=coretax.invoice_problem(invoice) if show_coretax else None,
             show_coretax=show_coretax,
+            coretax_connected=show_coretax and CoretaxConnection.objects.filter(organization=self.organization, is_active=True).exists(),
+            coretax_submission=invoice.coretax_submissions.first() if show_coretax else None,
             payment_form=PaymentForm(
                 organization=self.organization, invoice=invoice,
                 initial={
@@ -461,3 +468,74 @@ class TaxInvoiceNumberView(InvoiceKindMixin, WriteMixin, View):
         else:
             messages.error(request, _("Enter the Faktur Pajak number."))
         return redirect("invoicing:detail", self.kind, invoice.pk)
+
+
+# --- Coretax connection (PJAP) -------------------------------------------------------
+
+
+class CoretaxConnectionView(ManageMixin, FormView):
+    template_name = "invoicing/coretax_connection.html"
+    form_class = CoretaxConnectionForm
+
+    def get_form_kwargs(self):
+        return {key: value for key, value in super().get_form_kwargs().items() if key != "organization"}
+
+    def get_initial(self):
+        connection = CoretaxConnection.objects.filter(organization=self.organization).first()
+        if connection is None:
+            return {"connector": ConnectorName.HTTP, "is_active": True}
+        return {"connector": connection.connector, "api_url": connection.api_url, "is_active": connection.is_active}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            connection=CoretaxConnection.objects.filter(organization=self.organization).first(),
+            submissions=CoretaxSubmission.objects.filter(organization=self.organization)[:30], **kwargs,
+        )
+
+    def form_valid(self, form):
+        try:
+            coretax_sync.save_connection(organization=self.organization, **form.cleaned_data)
+        except DomainError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        audit.record(AuditAction.CORETAX_CONNECTION_CHANGED, request=self.request, organization=self.organization,
+                     connector=form.cleaned_data["connector"], active=form.cleaned_data["is_active"])
+        messages.success(self.request, _("Coretax connection saved."))
+        return redirect("invoicing:coretax_connection")
+
+
+class CoretaxSendView(WriteMixin, View):
+    """Send one invoice, or a month's invoices or purchase returns, through the connection."""
+
+    def post(self, request, **kwargs):
+        organization = self.organization
+        if "pk" in kwargs:
+            invoice = get_object_or_404(invoice_detail(organization, kwargs["pk"]).filter(kind=InvoiceKind.SALES))
+            target = reverse("invoicing:detail", args=[InvoiceKind.SALES, invoice.pk])
+            send = partial(coretax_sync.submit_invoices, organization=organization, invoices=[invoice], label=invoice.number)
+        else:
+            year, month = kwargs["year"], kwargs["month"]
+            if not 1 <= month <= 12:
+                raise Http404
+            target, label = f"{reverse('reports:vat')}?year={year}", f"{year}-{month:02d}"
+            if kwargs.get("returns"):
+                send = partial(coretax_sync.submit_returns, organization=organization, notes=coretax.month_returns(organization, year, month), label=label)
+            else:
+                send = partial(coretax_sync.submit_invoices, organization=organization, invoices=coretax.month_invoices(organization, year, month), label=label)
+        try:
+            submission = send(created_by=request.user)
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+            return redirect(target)
+        messages.success(request, _("Sent to Coretax: %(status)s.") % {"status": submission.get_status_display()})
+        return redirect(target)
+
+
+class CoretaxRefreshView(WriteMixin, View):
+    def post(self, request, pk):
+        submission = get_object_or_404(CoretaxSubmission, organization=self.organization, pk=pk)
+        try:
+            coretax_sync.refresh_submission(submission)
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("invoicing:coretax_connection")

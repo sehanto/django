@@ -15,6 +15,7 @@ from django.views.generic import TemplateView
 from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceKind, ReturnNote
+from apps.invoicing.models import CoretaxConnection
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
 from apps.accounts.throttle import ThrottleScope, allow
@@ -177,7 +178,8 @@ class VatReportView(OrganizationMixin, TemplateView):
             .values_list("date__month", flat=True)
         ) if self.organization.is_pkp else set()
         return super().get_context_data(
-            year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, sales_months=sales_months, **kwargs
+            year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, sales_months=sales_months,
+            coretax_connected=CoretaxConnection.objects.filter(organization=self.organization, is_active=True).exists(), **kwargs
         )
 
 

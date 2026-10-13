@@ -324,6 +324,33 @@ consistent snapshot (`REPEATABLE READ`) and is limited to `BOOKS_EXPORTS_PER_HOU
 .venv/bin/python manage.py export_books <organization id> books.zip --language id
 ```
 
+## Sending fakturs to Coretax
+
+DJP has no public Coretax API: a taxpayer sends fakturs through a licensed tax application provider
+(PJAP). Under **Settings → Coretax connection** an organization enters its provider's HTTPS address
+and access token (stored encrypted). It can then send an invoice, or a month's sales invoices or
+purchase returns (from the PPN summary), straight to Coretax instead of downloading and importing the
+XML file. The file sent is the same one offered for download. The Faktur Pajak numbers Coretax issues
+are recorded on the invoices once, as if typed in, matched by invoice number (`RefDesc`). Pending
+submissions are checked every two hours (`sync_coretax`, cron).
+
+The app speaks a small adapter contract (`apps/invoicing/coretax_api.py`): `POST {url}/submissions`
+with `{"document_type", "tin", "file_name", "xml"}` (base64) returning `{"id", "status"}`, and
+`GET {url}/submissions/{id}` returning `{"status", "items": [{"reference", "number", "error"}]}`.
+Providers' APIs differ, so adapt `HttpConnector` (or put a small bridge in front of your provider).
+A simulated connection (`fake`) is available for development.
+
+The platform's own fakturs for paid subscription invoices are built the same way (code 04, a
+service with DPP 11/12, seller `BILLING_SELLER_*`):
+
+```bash
+.venv/bin/python manage.py coretax_subscriptions 2026 10 --output faktur-langganan-2026-10.xml
+```
+
+With `CORETAX_CONNECTOR` (`fake` or `http`, plus `CORETAX_API_URL` and `CORETAX_API_TOKEN`) set,
+`--send` sends it instead and records the numbers on the subscription invoices (set once; billing 0008).
+Buyers without an NPWP are left out.
+
 ## REST API
 
 `/api/v1/` serves JSON for integrations (an online shop, a POS). Owners and admins create keys under
