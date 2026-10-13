@@ -18,8 +18,8 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
 from . import selectors, services
 from .domain import TaxScheme
-from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm
-from .models import Employee, PayrollRun, PayrollSettings, Payslip
+from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm, PriorIncomeForm
+from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 
 
 class EmployeeListView(OrganizationMixin, ListView):
@@ -48,7 +48,39 @@ class EmployeeCreateView(EmployeeFormMixin, CreateView):
 
 
 class EmployeeUpdateView(EmployeeFormMixin, UpdateView):
-    pass
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            prior_incomes=self.object.prior_incomes.all(),
+            prior_form=PriorIncomeForm(initial={"year": timezone.localdate().year}), **kwargs,
+        )
+
+
+class PriorIncomeCreateView(WriteMixin, View):
+    """An earlier employer's 1721-A1 of the year, handed in by the employee."""
+
+    def post(self, request, pk):
+        employee = get_object_or_404(Employee.objects.for_organization(self.organization), pk=pk)
+        form = PriorIncomeForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, " ".join(e for errors in form.errors.values() for e in errors))
+            return redirect("payroll:employee_update", employee.pk)
+        try:
+            services.add_prior_income(employee=employee, **form.cleaned_data)
+            messages.success(request, _("Income from the previous employer recorded."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("payroll:employee_update", employee.pk)
+
+
+class PriorIncomeDeleteView(WriteMixin, View):
+    def post(self, request, pk):
+        prior = get_object_or_404(PriorIncome.objects.for_organization(self.organization), pk=pk)
+        try:
+            services.remove_prior_income(prior=prior)
+            messages.success(request, _("Income from the previous employer removed."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("payroll:employee_update", prior.employee_id)
 
 
 class PayrollView(OrganizationMixin, TemplateView):
@@ -127,17 +159,18 @@ class PayrollRunView(OrganizationMixin, DetailView):
         writer = csv.writer(response, delimiter=";")
         writer.writerow([
             _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("TER category"), _("Tax computed as"),
-            _("Days worked"), _("Gross income"), _("Rate (%)"),
+            _("Days worked"), _("Tax allowance"), _("Benefits in kind"), _("Gross income"), _("Rate (%)"),
             # xgettext:no-python-format
             _("Without NPWP (20% higher)"),
-            _("Tax withheld"), _("Bukti potong no."),
+            _("Tax withheld"), _("Severance pay"), _("Final PPh 21 on severance"), _("Bukti potong no."),
         ])
         for p in context["payslips"]:
             e = p.employee
             writer.writerow([csv_safe(cell) for cell in (
                 e.name, e.nik, e.passport_number, e.nationality, e.npwp, p.ptkp_status, p.ter_category, p.get_tax_scheme_display(),
-                p.days_worked or "", p.taxable_gross, p.ter_rate if p.ter_rate is not None else "", _("yes") if p.without_tin else "",
-                p.pph21, p.withholding_slip,
+                p.days_worked or "", p.tax_allowance, p.benefits_in_kind, p.taxable_gross,
+                p.ter_rate if p.ter_rate is not None else (p.pph26_rate if p.pph26_rate is not None else ""), _("yes") if p.without_tin else "",
+                p.pph21, p.severance or "", p.severance_tax or "", p.withholding_slip,
             )])
         return response
 
@@ -165,8 +198,9 @@ class AnnualView(OrganizationMixin, TemplateView):
         writer = csv.writer(response, delimiter=";")
         writer.writerow([
             _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("First month"), _("Last month"),
-            _("Gross income"), _("Occupational costs"), _("Pension contributions"), _("Net income"), _("Net income for the year (annualised)"),
-            _("PTKP"), _("Taxable income"), _("PPh 21 for the year"), _("PPh 21 withheld"), _("Bukti potong no."),
+            _("Gross income"), _("Occupational costs"), _("Pension contributions"), _("Zakat"), _("Net income"),
+            _("Net income from earlier periods"), _("Net income for the year (annualised)"), _("PTKP"), _("Taxable income"),
+            _("PPh 21 for the year"), _("PPh 21 withheld in earlier periods"), _("PPh 21 due"), _("PPh 21 withheld"), _("Bukti potong no."),
         ])
         for st in context["statements"]:
             if not st.is_final:
@@ -174,7 +208,8 @@ class AnnualView(OrganizationMixin, TemplateView):
             e, a = st.employee, st.annual
             writer.writerow([csv_safe(cell) for cell in (
                 e.name, e.nik, e.passport_number, e.nationality, e.npwp, st.final_slip.ptkp_status, st.first_month, st.last_month,
-                st.gross, a.occupational_costs, a.contributions, a.net, a.annual_net, a.ptkp, a.taxable, st.tax, st.withheld,
+                st.gross, a.occupational_costs, a.contributions, a.zakat, a.net, a.prior_net, a.annual_net, a.ptkp, a.taxable, st.tax,
+                st.prior_tax, st.due, st.withheld,
                 st.final_slip.withholding_slip,
             )])
         return response

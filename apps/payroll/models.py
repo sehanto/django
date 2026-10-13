@@ -28,6 +28,10 @@ class PayrollSettings(TimeStampedModel):
         _("JKK rate (%)"), max_digits=4, decimal_places=2, default=BpjsRates.jkk,
         validators=[MinValueValidator(0), MaxValueValidator(10)], help_text=_("Work accident insurance, by risk group: 0.24 to 1.74."),
     )
+    zakat_payable_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("zakat payable account"),
+        help_text=_("Zakat or religious donations deducted from pay, until you pass them on."),
+    )
     jp_wage_cap = money_field(_("JP wage cap"), default=BpjsRates.jp_wage_cap, help_text=_("Set by BPJS Ketenagakerjaan every year."))
     health_wage_cap = money_field(_("BPJS Kesehatan wage cap"), default=BpjsRates.health_wage_cap)
 
@@ -73,6 +77,20 @@ class Employee(TenantOwnedModel):
         _("leaves Indonesia for good at the end date"), default=False,
         help_text=_("Their last month's PPh 21 is then computed on annualised income."),
     )
+    tax_borne_by_employer = models.BooleanField(
+        _("the employer pays the PPh 21"), default=False,
+        help_text=_("A tax allowance equal to the tax is added to the pay (gross-up), so the take-home pay is unchanged."),
+    )
+    zakat = money_field(
+        _("zakat per month"), validators=[MinValueValidator(0)],
+        help_text=_("Zakat or a compulsory religious donation deducted from pay for an official body; it lowers the year's taxable income."),
+    )
+    treaty_rate = models.DecimalField(
+        _("tax treaty rate for PPh 26 (%)"), max_digits=4, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(20)],
+        help_text=_("Only with the employee's certificate of residence (DGT form); empty for the standard 20%."),
+    )
+    treaty_document = models.CharField(_("certificate of residence no."), max_length=50, blank=True)
     gender = models.CharField(_("gender"), max_length=1, choices=Gender.choices, blank=True, default=Gender.UNSPECIFIED)
     address = models.CharField(_("address"), max_length=255, blank=True)
     email = models.EmailField(_("email"), blank=True)
@@ -108,6 +126,8 @@ class Employee(TenantOwnedModel):
             errors["end_date"] = _("The end date can't be before the start date.")
         if self.leaves_indonesia and not self.end_date:
             errors["end_date"] = _("Enter the date they stop working here.")
+        if self.treaty_rate is not None and not self.treaty_document:
+            errors["treaty_document"] = _("A treaty rate needs the certificate of residence.")
         if errors:
             raise ValidationError(errors)
 
@@ -145,6 +165,7 @@ class PayrollRun(TenantOwnedModel):
     employee_contributions = money_field(_("employee BPJS"))
     pph21 = money_field(_("PPh 21"))
     pph26 = money_field(_("PPh 26"))
+    zakat = money_field(_("zakat deducted"))
     net_pay = money_field(_("net pay"))
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
     paid_on = models.DateField(_("salaries paid on"), null=True, blank=True)
@@ -183,6 +204,11 @@ class Payslip(TimeStampedModel):
     base_salary = money_field(_("base salary"))
     allowances = money_field(_("allowances"))
     bonus = money_field(_("bonus / THR"))
+    tax_allowance = money_field(_("tax allowance"))
+    benefits_in_kind = money_field(_("benefits in kind"), help_text=_("Taxable, but not paid in cash."))
+    severance = money_field(_("severance pay"))
+    severance_tax = money_field(_("final PPh 21 on severance"))
+    zakat = money_field(_("zakat deducted"))
     jkk = money_field("JKK")
     jkm = money_field("JKM")
     jht_employer = money_field(_("JHT (employer)"))
@@ -198,6 +224,7 @@ class Payslip(TimeStampedModel):
     tax_scheme = models.CharField(_("tax computed as"), max_length=15, choices=TaxScheme.choices, default=TaxScheme.TER_MONTHLY)
     days_worked = models.PositiveSmallIntegerField(_("days worked"), null=True, blank=True)
     annualized = models.BooleanField(_("annualised"), default=False)
+    pph26_rate = models.DecimalField(_("PPh 26 rate (%)"), max_digits=4, decimal_places=2, null=True, blank=True)
     # xgettext:no-python-format
     without_tin = models.BooleanField(_("without NPWP (20% higher)"), default=False)
     pph21 = money_field(_("PPh 21"), help_text=_("PPh 26 when the scheme says so."))
@@ -218,7 +245,12 @@ class Payslip(TimeStampedModel):
 
     @property
     def pay(self):
-        return self.base_salary + self.allowances + self.bonus
+        """What the employee is paid in cash before deductions."""
+        return self.base_salary + self.allowances + self.bonus + self.tax_allowance + self.severance
+
+    @property
+    def tax_withheld(self):
+        return self.pph21 + self.severance_tax
 
     @property
     def employee_contributions(self):
@@ -227,3 +259,27 @@ class Payslip(TimeStampedModel):
     @property
     def employer_contributions(self):
         return self.jkk + self.jkm + self.jht_employer + self.jp_employer + self.health_employer
+
+
+class PriorIncome(TenantOwnedModel):
+    """An earlier employer's 1721-A1 for the year, handed in by an employee who joined mid-year:
+    its net income and PPh 21 count in this employer's year-end calculation (lines 14 and 19).
+    Fixed once the year's last payroll of the employee is posted (``services``)."""
+
+    employee = models.ForeignKey(Employee, on_delete=models.PROTECT, related_name="prior_incomes")
+    year = models.PositiveSmallIntegerField(_("year"))
+    employer_name = models.CharField(_("previous employer"), max_length=200)
+    employer_npwp = models.CharField(_("previous employer's NPWP"), max_length=16, blank=True, validators=[npwp_format_validator])
+    slip_number = models.CharField(_("their 1721-A1 no."), max_length=50, blank=True)
+    first_month = models.PositiveSmallIntegerField(_("from month"), validators=[MinValueValidator(1), MaxValueValidator(12)])
+    last_month = models.PositiveSmallIntegerField(_("to month"), validators=[MinValueValidator(1), MaxValueValidator(12)])
+    net_income = money_field(_("net income"), validators=[MinValueValidator(0)], help_text=_("Line 13 of their 1721-A1."))
+    pph21 = money_field(_("PPh 21 withheld"), validators=[MinValueValidator(0)], help_text=_("Line 21 of their 1721-A1."))
+
+    class Meta:
+        ordering = ["year", "first_month"]
+        verbose_name = _("income from a previous employer")
+        verbose_name_plural = _("income from previous employers")
+
+    def __str__(self):
+        return f"{self.employer_name} {self.year}"

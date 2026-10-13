@@ -10,13 +10,18 @@
     <tr><td>{% translate "Base salary" %}</td><td class="num">{{ slip.base_salary|rupiah }}</td></tr>
     <tr><td>{% translate "Allowances" %}</td><td class="num">{{ slip.allowances|rupiah }}</td></tr>
     {% if slip.bonus %}<tr><td>{% translate "Bonus / THR" %}</td><td class="num">{{ slip.bonus|rupiah }}</td></tr>{% endif %}
+    {% if slip.tax_allowance %}<tr><td>{% translate "Tax allowance" %}</td><td class="num">{{ slip.tax_allowance|rupiah }}</td></tr>{% endif %}
+    {% if slip.severance %}<tr><td>{% translate "Severance pay" %}</td><td class="num">{{ slip.severance|rupiah }}</td></tr>{% endif %}
     <tr class="fw-semibold"><td>{% translate "Pay" context "salary" %}</td><td class="num">{{ slip.pay|rupiah }}</td></tr>
     {% if slip.jht_employee %}<tr><td>{% translate "JHT (employee)" %}</td><td class="num">−{{ slip.jht_employee|rupiah }}</td></tr>{% endif %}
     {% if slip.jp_employee %}<tr><td>{% translate "JP (employee)" %}</td><td class="num">−{{ slip.jp_employee|rupiah }}</td></tr>{% endif %}
     {% if slip.health_employee %}<tr><td>{% translate "BPJS Kesehatan (employee)" %}</td><td class="num">−{{ slip.health_employee|rupiah }}</td></tr>{% endif %}
-    <tr><td>{% if slip.is_pph26 %}PPh 26{% else %}PPh 21{% endif %} ({{ slip.get_tax_scheme_display }}{% if slip.ter_rate is not None %}: {{ slip.ter_rate|floatformat:"-2" }}% × {{ slip.taxable_gross|rupiah }}{% endif %}{% if slip.annualized %}, {% translate "annualised" %}{% endif %}{% if slip.without_tin %}, {% translate "20% higher without an NPWP" %}{% endif %})</td><td class="num">−{{ slip.pph21|rupiah }}</td></tr>
+    <tr><td>{% if slip.is_pph26 %}PPh 26{% else %}PPh 21{% endif %} ({{ slip.get_tax_scheme_display }}{% if slip.ter_rate is not None %}: {{ slip.ter_rate|floatformat:"-2" }}% × {{ slip.taxable_gross|rupiah }}{% elif slip.pph26_rate is not None %}: {{ slip.pph26_rate|floatformat:"-2" }}%{% endif %}{% if slip.annualized %}, {% translate "annualised" %}{% endif %}{% if slip.without_tin %}, {% translate "20% higher without an NPWP" %}{% endif %})</td><td class="num">−{{ slip.pph21|rupiah }}</td></tr>
+    {% if slip.severance_tax %}<tr><td>{% translate "Final PPh 21 on severance" %}</td><td class="num">−{{ slip.severance_tax|rupiah }}</td></tr>{% endif %}
+    {% if slip.zakat %}<tr><td>{% translate "Zakat" %}</td><td class="num">−{{ slip.zakat|rupiah }}</td></tr>{% endif %}
     <tr class="fw-bold"><td>{% translate "Net pay" %}</td><td class="num">{{ slip.net_pay|rupiah }}</td></tr>
   </table>
+  {% if slip.benefits_in_kind %}<p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
   <p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
 </div></div>
 {% endblock %}

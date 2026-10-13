@@ -17,27 +17,27 @@
   </div>
   <table class="table table-sm mt-3 mb-0">
     <tr><td>1</td><td>{% translate "Salary" %}</td><td class="num">{{ st.salary|rupiah }}</td></tr>
-    <tr><td>2</td><td>{% translate "Tax allowance" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
+    <tr><td>2</td><td>{% translate "Tax allowance" %}</td><td class="num">{{ st.tax_allowance|rupiah }}</td></tr>
     <tr><td>3</td><td>{% translate "Other allowances, overtime and the like" %}</td><td class="num">{{ st.allowances|rupiah }}</td></tr>
     <tr><td>4</td><td>{% translate "Honoraria and similar fees" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
     <tr><td>5</td><td>{% translate "Insurance premiums paid by the employer" %}</td><td class="num">{{ st.premiums|rupiah }}</td></tr>
-    <tr><td>6</td><td>{% translate "Benefits in kind" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
+    <tr><td>6</td><td>{% translate "Benefits in kind" %}</td><td class="num">{{ st.benefits_in_kind|rupiah }}</td></tr>
     <tr><td>7</td><td>{% translate "Bonuses, THR and similar" %}</td><td class="num">{{ st.bonus|rupiah }}</td></tr>
     <tr class="fw-semibold"><td>8</td><td>{% translate "Gross income (1 to 7)" %}</td><td class="num">{{ st.gross|rupiah }}</td></tr>
     <tr><td>9</td><td>{% translate "Occupational costs (biaya jabatan)" %}</td><td class="num">{{ st.annual.occupational_costs|rupiah }}</td></tr>
     <tr><td>10</td><td>{% translate "Pension and old-age contributions (JHT, JP)" %}</td><td class="num">{{ st.annual.contributions|rupiah }}</td></tr>
-    <tr><td>11</td><td>{% translate "Zakat or compulsory religious donations through the employer" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
+    <tr><td>11</td><td>{% translate "Zakat or compulsory religious donations through the employer" %}</td><td class="num">{{ st.annual.zakat|rupiah }}</td></tr>
     <tr class="fw-semibold"><td>12</td><td>{% translate "Deductions (9 to 11)" %}</td><td class="num">{{ st.deductions|rupiah }}</td></tr>
     <tr class="fw-semibold"><td>13</td><td>{% translate "Net income (8 − 12)" %}</td><td class="num">{{ st.annual.net|rupiah }}</td></tr>
-    <tr><td>14</td><td>{% translate "Net income from earlier periods" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
+    <tr><td>14</td><td>{% translate "Net income from earlier periods" %}</td><td class="num">{{ st.annual.prior_net|rupiah }}</td></tr>
     <tr><td>15</td><td>{% if st.annual.annualized %}{% translate "Net income annualised" %}{% else %}{% translate "Net income for the year" %}{% endif %}</td><td class="num">{{ st.annual.annual_net|rupiah }}</td></tr>
     <tr><td>16</td><td>{% translate "Non-taxable income (PTKP)" %}</td><td class="num">{{ st.annual.ptkp|rupiah }}</td></tr>
     <tr><td>17</td><td>{% translate "Taxable income (PKP)" %}</td><td class="num">{{ st.annual.taxable|rupiah }}</td></tr>
     <tr><td>18</td><td>{% translate "PPh 21 on the taxable income" %}{% if st.annual.annualized %} <span class="small text-secondary">({% blocktranslate trimmed with tax=st.annual.annual_tax|rupiah months=st.annual.months %}{{ tax }} × {{ months }}/12{% endblocktranslate %})</span>{% endif %}{% if st.surcharged %} <span class="small text-secondary">({% translate "20% higher without an NPWP" %})</span>{% endif %}</td><td class="num">{{ st.tax|rupiah }}</td></tr>
-    <tr><td>19</td><td>{% translate "PPh 21 withheld in earlier periods" %}</td><td class="num">{{ 0|rupiah }}</td></tr>
-    <tr class="fw-semibold"><td>20</td><td>{% translate "PPh 21 due" %}</td><td class="num">{{ st.tax|rupiah }}</td></tr>
+    <tr><td>19</td><td>{% translate "PPh 21 withheld in earlier periods" %}</td><td class="num">{{ st.prior_tax|rupiah }}</td></tr>
+    <tr class="fw-semibold"><td>20</td><td>{% translate "PPh 21 due" %}</td><td class="num">{{ st.due|rupiah }}</td></tr>
     <tr class="fw-bold"><td>21</td><td>{% translate "PPh 21 withheld and paid" %}</td><td class="num">{{ st.withheld|rupiah }}</td></tr>
   </table>
-  <p class="small text-secondary mt-3 mb-0">{% translate "Lines 14 and 19 cover income and tax from another employer earlier in the year; this app doesn't record them." %}</p>
+  {% for prior in st.employee.prior_incomes.all %}{% if prior.year == st.year %}<p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with name=prior.employer_name number=prior.slip_number|default:"—" first=prior.first_month|stringformat:"02d" last=prior.last_month|stringformat:"02d" %}Lines 14 and 19: {{ name }}, 1721-A1 no. {{ number }}, period {{ first }}–{{ last }}.{% endblocktranslate %}</p>{% endif %}{% endfor %}
 </div></div>
 {% endblock %}

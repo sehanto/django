@@ -6,15 +6,15 @@
 <form method="post">{% csrf_token %}
 {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
-  <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Base salary" %}</th><th>{% translate "Allowances" %}</th><th>{% translate "Bonus / THR" %}</th><th>{% translate "Days worked" %}</th></tr></thead>
-  <tbody>{% for employee, base, allowance, bonus, days in form.rows %}<tr>
-    <td>{{ employee.name }}<div class="small text-secondary">{{ employee.ptkp_status }} · {{ employee.get_kind_display }}{% if employee.is_daily %} · {% blocktranslate trimmed with wage=employee.base_salary|rupiah %}{{ wage }} a day{% endblocktranslate %}{% endif %}{% if not employee.is_resident %} · {% translate "non-resident (PPh 26)" %}{% endif %}</div></td>
-    <td>{{ base }}{% for e in base.errors %}<div class="small text-danger">{{ e }}</div>{% endfor %}</td><td>{{ allowance }}</td><td>{{ bonus }}</td>
+  <thead><tr><th style="min-width: 12rem">{% translate "Employee" %}</th><th>{% translate "Base salary" %}</th><th>{% translate "Allowances" %}</th><th>{% translate "Bonus / THR" %}</th><th>{% translate "Natura" context "benefits in kind" %}</th><th>{% translate "Severance" context "column" %}</th><th>{% translate "Days" context "worked" %}</th></tr></thead>
+  <tbody>{% for employee, base, allowance, bonus, natura, severance, days in form.rows %}<tr>
+    <td>{{ employee.name }}<div class="small text-secondary">{{ employee.ptkp_status }} · {{ employee.get_kind_display }}{% if employee.is_daily %} · {% blocktranslate trimmed with wage=employee.base_salary|rupiah %}{{ wage }} a day{% endblocktranslate %}{% endif %}{% if not employee.is_resident %} · {% translate "non-resident (PPh 26)" %}{% endif %}{% if employee.tax_borne_by_employer %} · {% translate "tax paid by employer" %}{% endif %}</div></td>
+    <td>{{ base }}{% for e in base.errors %}<div class="small text-danger">{{ e }}</div>{% endfor %}</td><td>{{ allowance }}</td><td>{{ bonus }}</td><td>{{ natura }}</td><td>{{ severance }}</td>
     <td>{% if days %}{{ days }}{% else %}<span class="text-secondary">—</span>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "No employee works here in this month." %}</td></tr>{% endfor %}</tbody>
+  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No employee works here in this month." %}</td></tr>{% endfor %}</tbody>
 </table></div>
 <div class="card-footer d-flex justify-content-between align-items-center gap-2">
-  <span class="small text-secondary">{% translate "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances, PPh 21 on everything paid. For daily workers enter the days worked; leave their base salary empty to pay the days at their daily wage." %}</span>
-  <button class="btn btn-primary">{% translate "Calculate & post" %}</button></div></div>
+  <span class="small text-secondary">{% translate "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances, PPh 21 on everything paid. For daily workers enter the days worked; leave their base salary empty to pay the days at their daily wage. Benefits in kind are the taxable value of goods or facilities given (not paid out here); severance bears final PPh 21." %}</span>
+  <button class="btn btn-primary text-nowrap">{% translate "Calculate & post" %}</button></div></div>
 </form>
 {% endblock %}

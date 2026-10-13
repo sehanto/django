@@ -17,8 +17,14 @@ PPh 21 (PP 58/2023, PMK 168/2023):
   per payment (not cumulative).
 * Without an NPWP (or a NIK that serves as one) the PPh 21 is 20% higher (Art. 21(5a) UU PPh).
 
-PPh 26: 20% of the gross pay of an employee who is not an Indonesian tax resident (final;
-a tax treaty may lower it, which this doesn't handle).
+PPh 26: 20% of the gross pay of an employee who is not an Indonesian tax resident (final),
+or the lower rate of a tax treaty when the employee has given a certificate of residence.
+
+Severance (uang pesangon) bears final PPh 21 (PP 68/2009, PMK 16/2010): 0% up to Rp50 juta,
+5% to Rp100 juta, 15% to Rp500 juta, 25% above, on the cumulative amount paid.
+
+When the employer bears the tax, it pays a tax allowance (tunjangan PPh) equal to the tax on
+the pay including that allowance (``gross_up``).
 """
 
 from dataclasses import dataclass
@@ -126,6 +132,12 @@ NON_EMPLOYEE_BASE = Decimal("50")  # % of gross: the base of PPh 21 for non-empl
 NO_TIN_SURCHARGE = Decimal("120")  # % of the tax, without an NPWP
 PPH_26_RATE = Decimal("20")
 
+# PP 68/2009: final PPh 21 on severance, by layers of the cumulative amount paid.
+SEVERANCE_LAYERS = [
+    (Decimal("50000000"), Decimal("0")), (Decimal("100000000"), Decimal("5")), (Decimal("500000000"), Decimal("15")),
+    (None, Decimal("25")),
+]
+
 # Art. 17(1)(a) UU PPh as amended by UU HPP: layers of taxable income (PKP) per year.
 ARTICLE_17 = [
     (Decimal("60000000"), Decimal("5")), (Decimal("250000000"), Decimal("15")), (Decimal("500000000"), Decimal("25")),
@@ -152,17 +164,39 @@ def monthly_pph21(status: str, gross: Decimal) -> tuple[Decimal, Decimal]:
     return rate, _whole(gross * rate / HUNDRED)
 
 
-def article_17(taxable: Decimal) -> Decimal:
+def _layered(amount: Decimal, layers) -> Decimal:
     tax, lower = ZERO, ZERO
-    for upper, rate in ARTICLE_17:
-        if taxable <= lower:
+    for upper, rate in layers:
+        if amount <= lower:
             break
-        layer = (min(taxable, upper) if upper is not None else taxable) - lower
+        layer = (min(amount, upper) if upper is not None else amount) - lower
         tax += layer * rate / HUNDRED
         if upper is None:
             break
         lower = upper
     return _whole(tax)
+
+
+def severance_tax(amount: Decimal, *, paid_before: Decimal = ZERO) -> Decimal:
+    """Final PPh 21 on a severance payment, after ``paid_before`` of the same severance."""
+    return _layered(paid_before + amount, SEVERANCE_LAYERS) - _layered(paid_before, SEVERANCE_LAYERS)
+
+
+def gross_up(tax_on) -> Decimal:
+    """The tax allowance A with A = tax_on(A): the tax on pay that includes the allowance.
+    ``tax_on`` is non-decreasing and below the pay, so iterating from 0 settles on the least
+    such allowance."""
+    allowance = ZERO
+    for _ in range(200):
+        tax = max(tax_on(allowance), ZERO)
+        if tax == allowance:
+            return allowance
+        allowance = tax
+    raise AssertionError("the tax allowance did not settle")
+
+
+def article_17(taxable: Decimal) -> Decimal:
+    return _layered(taxable, ARTICLE_17)
 
 
 def with_surcharge(tax: Decimal, has_tin: bool) -> Decimal:
@@ -184,8 +218,8 @@ def non_employee_pph21(gross: Decimal, *, has_tin: bool = True) -> Decimal:
     return with_surcharge(article_17(gross * NON_EMPLOYEE_BASE / HUNDRED), has_tin)
 
 
-def pph26(gross: Decimal) -> Decimal:
-    return _whole(gross * PPH_26_RATE / HUNDRED)
+def pph26(gross: Decimal, rate: Decimal = PPH_26_RATE) -> Decimal:
+    return _whole(gross * rate / HUNDRED)
 
 
 @dataclass(frozen=True)
@@ -193,8 +227,10 @@ class AnnualTax:
     gross: Decimal
     occupational_costs: Decimal
     contributions: Decimal  # the employee's own JHT and JP
-    net: Decimal  # of the months worked
-    annual_net: Decimal  # the same, or annualised
+    zakat: Decimal  # compulsory religious donations through the employer
+    net: Decimal  # of the months worked here
+    prior_net: Decimal  # from an earlier employer of the year (its bukti potong)
+    annual_net: Decimal  # both, or annualised
     ptkp: Decimal
     taxable: Decimal  # PKP, rounded down to a thousand rupiah
     annual_tax: Decimal  # Art. 17 on the PKP
@@ -203,19 +239,23 @@ class AnnualTax:
     annualized: bool
 
 
-def annual_pph21(status: str, gross: Decimal, contributions: Decimal, months: int, *, annualize: bool = False) -> AnnualTax:
+def annual_pph21(
+    status: str, gross: Decimal, contributions: Decimal, months: int, *, annualize: bool = False, zakat: Decimal = ZERO,
+    prior_net: Decimal = ZERO,
+) -> AnnualTax:
     """The year's PPh 21 of a permanent employee who worked ``months`` months of it. With
     ``annualize`` (tax residence began or ended during the year) the net income is annualised
-    and the tax prorated to the months."""
+    and the tax prorated to the months. ``prior_net`` is the net income from an earlier
+    employer of the year that the employee handed in."""
     occupational = min(quantize(gross * OCCUPATIONAL_RATE / HUNDRED), OCCUPATIONAL_MONTHLY_CAP * months)
-    net = max(gross - occupational - contributions, ZERO)
+    net = max(gross - occupational - contributions - zakat, ZERO)
     annualize = annualize and months < 12
-    annual_net = quantize(net * 12 / months) if annualize else net
+    annual_net = quantize((net + prior_net) * 12 / months) if annualize else net + prior_net
     ptkp = PTKP[PtkpStatus(status)]
     taxable = (max(annual_net - ptkp, ZERO) / THOUSAND).quantize(Decimal("1"), rounding=ROUND_FLOOR) * THOUSAND
     annual_tax = article_17(taxable)
     tax = _whole(annual_tax * months / 12) if annualize else annual_tax
-    return AnnualTax(gross, occupational, contributions, net, annual_net, ptkp, taxable, annual_tax, tax, months, annualize)
+    return AnnualTax(gross, occupational, contributions, zakat, net, prior_net, annual_net, ptkp, taxable, annual_tax, tax, months, annualize)
 
 
 @dataclass(frozen=True)
