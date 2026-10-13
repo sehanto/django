@@ -1,6 +1,7 @@
 """2FA secrets at rest: authenticator keys encrypted, backup codes as keyed hashes."""
 
 import hashlib
+import hmac
 import importlib
 import time
 from base64 import b32encode
@@ -17,7 +18,8 @@ from django_otp.plugins.otp_static.models import StaticDevice, StaticToken
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
 from apps.accounts import two_factor
-from apps.accounts.models import AuthenticatorDevice, BackupCode
+from apps.core import crypto
+from apps.accounts.models import AuthenticatorDevice, BackupCode, BackupCodeDevice
 
 OLD_KEY, NEW_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()
 
@@ -55,6 +57,17 @@ def test_backup_codes_are_stored_as_keyed_hashes(enrolled):
     for code in enrolled["codes"]:
         assert code not in stored
         assert hashlib.sha256(code.encode()).hexdigest() not in stored  # not brute-forceable without the key
+
+
+def test_backup_codes_hashed_under_the_former_label_still_work(enrolled, user):
+    device = BackupCodeDevice.objects.get(user=user)
+    code = enrolled["codes"][0]
+    key = crypto._keys()[0]
+    legacy = hmac.new(hashlib.sha256(crypto.LEGACY_HASH_LABELS[0] + key).digest(), code.encode(), hashlib.sha256).hexdigest()
+    assert legacy != crypto.keyed_hash(code)  # new codes use the current label
+    BackupCode.objects.filter(device=device).delete()
+    BackupCode.objects.create(device=device, code_hash=legacy)  # as stored before the rename
+    assert two_factor.verify(user, code) is not None
 
 
 def test_legacy_plaintext_tables_stay_empty(user, enrolled):

@@ -36,11 +36,18 @@ def _fernet() -> MultiFernet:
     return MultiFernet([Fernet(key) for key in _keys()])
 
 
+HASH_LABEL = b"ea-system/keyed-hash/v1:"
+# Hashes stored before the rename from BukuUMKM still verify. Backup codes are one-way,
+# so they can't be re-hashed; drop this once no code made before the rename is left.
+LEGACY_HASH_LABELS = (b"bukuumkm/keyed-hash/v1:",)
+
+
 @lru_cache(maxsize=1)
 def _hash_keys() -> tuple[bytes, ...]:
-    # Domain-separated HMAC keys derived from each encryption key.
-    # The label keeps the project's former name: changing it would invalidate every stored hash.
-    return tuple(hashlib.sha256(b"bukuumkm/keyed-hash/v1:" + key).digest() for key in _keys())
+    # Domain-separated HMAC keys derived from each encryption key; the newest key under the
+    # current label comes first (for storing), the rest are only for verifying.
+    labels = (HASH_LABEL, *LEGACY_HASH_LABELS)
+    return tuple(hashlib.sha256(label + key).digest() for key in _keys() for label in labels)
 
 
 @receiver(setting_changed)

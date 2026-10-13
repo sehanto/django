@@ -405,6 +405,10 @@ To rotate it:
 3. Keep the old key while backup codes made under it are still in use, since one-way hashes can't be
    re-hashed. Remove it once users have regenerated their codes, or accept that their old codes stop working.
 
+Backup codes are hashed under the label `ea-system/keyed-hash/v1`. Codes stored before the rename from
+BukuUMKM used `bukuumkm/keyed-hash/v1` and still work (`LEGACY_HASH_LABELS` in `apps/core/crypto.py`);
+remove that entry once no code made before the rename is left.
+
 Outside production, a development key is derived from `SECRET_KEY` automatically.
 
 Devices are built on django-otp's device API (`AuthenticatorDevice`, `BackupCodeDevice`), so
