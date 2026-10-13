@@ -290,3 +290,14 @@ def test_issued_lines_keep_the_item_code_as_it_was(organization, customer, accou
     assert line.item_code == line.item_label == "KOPI-1KG"  # ...issued lines don't change
     with refused():
         InvoiceLine.objects.filter(pk=line.pk).update(item_code="X")
+
+
+def test_printed_lines_show_the_item_code(auth_client, organization, customer, account, item):
+    from django.urls import reverse
+
+    Item.objects.filter(pk=item.pk).update(code="KOPI-1KG")
+    invoice = services.issue_invoice(invoice=draft(organization, customer, account, item=item))
+    Item.objects.filter(pk=item.pk).update(code="KOPI-BARU")
+    url = reverse("invoicing:print", args=[InvoiceKind.SALES, invoice.pk])
+    page = auth_client.get(url).content.decode()
+    assert "KOPI-1KG" in page and "KOPI-BARU" not in page  # the code as issued
