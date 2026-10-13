@@ -139,6 +139,12 @@ class TwoFactorCodeForm(BaseForm):
     code = two_factor_code_field(autofocus=True)
 
 
+class VerifySessionForm(CaptchaFirstFormMixin, TwoFactorCodeForm):
+    """Step-up for a signed-in session; the CAPTCHA first, so a script can't try codes."""
+
+    captcha_action = captcha.CaptchaAction.VERIFY_SESSION
+
+
 class TwoFactorLoginForm(TwoFactorCodeForm):
     """Sign-in code step, with the optional "remember this device"."""
 

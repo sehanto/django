@@ -206,6 +206,16 @@ def test_turning_on_two_factor_needs_a_solved_captcha_before_the_code_is_tried(a
     assert two_factor.is_enabled(user)
 
 
+def test_proving_two_factor_for_a_session_needs_a_solved_captcha(auth_client, user, two_factor_on):
+    url = reverse("accounts:two_factor_verify_session")
+    assert 'data-action="verify_session"' in auth_client.get(url).content.decode()
+    with mock.patch.object(two_factor, "verify", wraps=two_factor.verify) as verify:
+        response = auth_client.post(url, {"code": "123456"})
+    assert list(response.context["form"].errors) == ["__all__"]
+    verify.assert_not_called()  # no code attempt counted against the user
+    assert not auth_client.session.get("otp_device_id")
+
+
 def test_creating_backup_codes_needs_a_solved_captcha(auth_client, user, two_factor_on):
     url = reverse("accounts:two_factor_backup_codes")
     assert 'data-action="backup_codes"' in auth_client.get(url).content.decode()

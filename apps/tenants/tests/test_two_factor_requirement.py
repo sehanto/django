@@ -96,10 +96,10 @@ def test_older_session_must_prove_the_second_factor(client, organization, make_m
     step_up = reverse("accounts:two_factor_verify_session")
     assert response["Location"].startswith(step_up) and "next=%2Fcontacts%2F%3Fq%3Dkopi" in response["Location"]
 
-    wrong = client.post(step_up, {"code": "000000", "next": "/contacts/?q=kopi"})
+    wrong = client.post(step_up, {"code": "000000", "next": "/contacts/?q=kopi", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert wrong.status_code == 200
     with mock.patch("django_otp.models.timezone.now", return_value=timezone.now() + timedelta(minutes=1)):
-        ok = client.post(step_up, {"code": code_for(device, steps_ahead=1), "next": "/contacts/?q=kopi"})
+        ok = client.post(step_up, {"code": code_for(device, steps_ahead=1), "next": "/contacts/?q=kopi", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert ok["Location"] == "/contacts/?q=kopi"
     assert client.get(reverse("contacts:list")).status_code == 200
 
@@ -109,7 +109,7 @@ def test_step_up_ignores_foreign_next_urls(client, organization, make_member):
     member = make_member(Role.ACCOUNTANT)
     device = enable_2fa(member)
     client.force_login(member)
-    response = client.post(reverse("accounts:two_factor_verify_session"), {"code": code_for(device, steps_ahead=1), "next": "https://evil.example/"})
+    response = client.post(reverse("accounts:two_factor_verify_session"), {"code": code_for(device, steps_ahead=1), "next": "https://evil.example/", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert response["Location"] == DASHBOARD
 
 

@@ -40,8 +40,8 @@ from .forms import (
     RegenerateBackupCodesForm,
     ResetPasswordForm,
     SignUpForm,
-    TwoFactorCodeForm,
     TwoFactorLoginForm,
+    VerifySessionForm,
 )
 from .middleware import SUPPORTED_LANGUAGES
 from .models import BackupCodeDevice
@@ -426,7 +426,7 @@ class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
     before the user turned 2FA on, and an organization now requires it)."""
 
     template_name = "accounts/two_factor_verify_session.html"
-    form_class = TwoFactorCodeForm
+    form_class = VerifySessionForm
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not two_factor.is_enabled(request.user):
@@ -441,8 +441,13 @@ class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
             return next_url
         return reverse("dashboard:home")
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "request": self.request}
+
     def get_context_data(self, **kwargs):
-        return super().get_context_data(next=self.request.GET.get("next", ""), **kwargs)
+        return super().get_context_data(
+            captcha=captcha.widget(captcha.CaptchaAction.VERIFY_SESSION), next=self.request.GET.get("next", ""), **kwargs
+        )
 
     def form_valid(self, form):
         user = self.request.user
