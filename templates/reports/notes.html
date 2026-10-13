@@ -1,0 +1,61 @@
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{% translate "Notes to the financial statements" %}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-1">{% translate "Notes to the financial statements" %}</h1>
+<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.income_statement.date_from|date:"d M Y" end=report.income_statement.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
+{% include "reports/_filter.html" %}
+{% if report %}{% with org=report.organization bs=report.balance_sheet pl=report.income_statement %}
+<div class="card" style="max-width: 1000px;"><div class="card-body">
+
+<h2 class="h6 fw-bold">1. {% translate "General" %}</h2>
+<dl class="row small mb-4">
+  <dt class="col-sm-3">{% translate "Business name" %}</dt><dd class="col-sm-9">{{ org.name }}</dd>
+  <dt class="col-sm-3">{% translate "Legal form" %}</dt><dd class="col-sm-9">{{ org.get_legal_form_display }}</dd>
+  {% if org.npwp %}<dt class="col-sm-3">{% translate "Tax ID (NPWP)" %}</dt><dd class="col-sm-9">{{ org.npwp }}</dd>{% endif %}
+  {% if org.nib %}<dt class="col-sm-3">{% translate "Business ID (NIB)" %}</dt><dd class="col-sm-9">{{ org.nib }}</dd>{% endif %}
+  {% if org.address or org.city %}<dt class="col-sm-3">{% translate "Address" %}</dt><dd class="col-sm-9">{{ org.address }}{% if org.address and org.city %}, {% endif %}{{ org.city }}</dd>{% endif %}
+  <dt class="col-sm-3">{% translate "Reporting period" %}</dt><dd class="col-sm-9">{% blocktranslate trimmed with start=pl.date_from|date:"d F Y" end=pl.date_to|date:"d F Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</dd>
+</dl>
+
+<h2 class="h6 fw-bold">2. {% translate "Significant accounting policies" %}</h2>
+<ol type="a" class="small mb-4">
+  <li class="mb-2"><strong>{% translate "Statement of compliance" %}.</strong>
+    {% translate "These financial statements have been prepared in accordance with the Financial Accounting Standards for Micro, Small and Medium Entities (SAK EMKM)." %}</li>
+  <li class="mb-2"><strong>{% translate "Basis of preparation" %}.</strong>
+    {% blocktranslate trimmed %}The financial statements are prepared on the accrual basis and at historical cost, on the assumption that the business is a going concern. The business is accounted for separately from its owners: their personal transactions are not recorded, and amounts the owners withdraw reduce equity.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Presentation currency" %}.</strong>
+    {% translate "The financial statements are presented in Rupiah, the currency of the business's main economic environment." %}</li>
+  <li class="mb-2"><strong>{% translate "Revenue and expenses" %}.</strong>
+    {% blocktranslate trimmed %}Revenue from the sale of goods and services is recognised when the invoice is issued, that is when the goods have been delivered or the services rendered. Expenses are recognised when they are incurred, regardless of when they are paid.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Receivables" %}.</strong>
+    {% translate "Trade receivables are stated at the amount the business expects to receive." %}</li>
+  <li class="mb-2"><strong>{% translate "Inventory" %}.</strong>
+    {% blocktranslate trimmed with formula=org.get_inventory_cost_formula_display %}Inventory is measured at cost: the purchase price and the other costs of bringing it to its present location and condition. The cost of inventory sold is determined using the {{ formula }} formula.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Fixed assets" %}.</strong>
+    {% blocktranslate trimmed with method=org.get_depreciation_method_display %}Fixed assets are measured at cost less accumulated depreciation. Land is not depreciated; other fixed assets are depreciated over their useful lives using the {{ method }} method.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Liabilities" %}.</strong>
+    {% translate "Liabilities are stated at the amount needed to settle them." %}</li>
+  <li class="mb-2"><strong>{% translate "Income tax" %}.</strong>
+    {% if org.uses_pph_final %}{% blocktranslate trimmed %}Income tax is the final income tax for MSMEs under PP 55/2022, 0.5% of gross turnover. It is recognised as an expense in the month the turnover arises, and any amount not yet paid is presented as a liability. Because the tax is final, no deferred tax is recognised.{% endblocktranslate %}
+    {% else %}{% blocktranslate trimmed %}Income tax expense is the tax payable for the period under the tax regulations. As SAK EMKM provides, no deferred tax is recognised.{% endblocktranslate %}{% endif %}</li>
+  {% if org.is_pkp %}<li class="mb-2"><strong>{% translate "Value added tax (PPN)" %}.</strong>
+    {% blocktranslate trimmed %}As a VAT-registered business (PKP), PPN charged to customers and PPN paid to suppliers is not revenue or expense. The balances are presented as a liability (output VAT) and an asset (input VAT).{% endblocktranslate %}</li>{% endif %}
+</ol>
+
+{% blocktranslate trimmed with start=pl.date_from|date:"d/m/Y" end=pl.date_to|date:"d/m/Y" asvar period %}{{ start }} to {{ end }}{% endblocktranslate %}
+{% blocktranslate trimmed with start=pl.previous_from|date:"d/m/Y" end=pl.previous_to|date:"d/m/Y" asvar previous_period %}{{ start }} to {{ end }}{% endblocktranslate %}
+{% for note in report.item_notes %}{% with section=note.section %}
+<h2 class="h6 fw-bold">{{ forloop.counter|add:2 }}. {{ section.title }}</h2>
+<div class="table-responsive mb-4"><table class="table table-sm table-statement mb-0 small">
+  {% if note.is_balance_sheet %}{% include "reports/_columns.html" with compare=True current=bs.as_of|date:"d/m/Y" previous=bs.previous_as_of|date:"d/m/Y" %}
+  {% else %}{% include "reports/_columns.html" with compare=True current=period previous=previous_period %}{% endif %}
+  {% for row in section.rows %}<tr><td class="text-secondary" style="width:110px">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-secondary">{{ row.previous|rupiah }}</td></tr>{% endfor %}
+  <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-secondary">{{ section.previous_total|rupiah }}</td></tr>
+</table></div>
+{% endwith %}{% endfor %}
+
+<h2 class="h6 fw-bold">{{ report.item_notes|length|add:3 }}. {% translate "Additional information" %}</h2>
+<p class="small mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-secondary">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
+</div></div>
+{% endwith %}{% endif %}
+{% endblock %}

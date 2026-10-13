@@ -21,9 +21,13 @@ class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
         model = Organization
         fields = [
             "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email",
-            "is_pkp", "uses_pph_final", "lock_date", "require_two_factor",
+            "is_pkp", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
+            "lock_date", "require_two_factor",
         ]
-        widgets = {"address": forms.Textarea(attrs={"rows": 2}), "lock_date": DateInput()}
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 2}), "additional_notes": forms.Textarea(attrs={"rows": 4}),
+            "lock_date": DateInput(),
+        }
 
     def __init__(self, *args, acting_user, **kwargs):
         self.acting_user = acting_user

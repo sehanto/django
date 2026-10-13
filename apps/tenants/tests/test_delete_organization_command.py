@@ -7,8 +7,10 @@ from django.contrib.admin.sites import site
 from django.core.management import CommandError, call_command
 from django.test import RequestFactory
 
-from apps.ledger.models import JournalEntry
+from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
+from apps.taxes.models import PphFinalAccrual, PphFinalPayment
+from apps.taxes.services import record_pph_final_payment
 from apps.tenants.models import Organization
 
 COMMAND = "apps.tenants.management.commands.delete_organization"
@@ -28,6 +30,22 @@ def test_deletes_with_yes(books, capsys):
     assert not Organization.objects.filter(pk=books.pk).exists()
     assert not JournalEntry.objects.filter(organization_id=books.pk).exists()
     assert "1 journal entr" in capsys.readouterr().out
+
+
+def test_deletes_tax_records_too(other_organization):
+    org = other_organization
+
+    def acc(code):
+        return Account.objects.get(organization=org, code=code)
+
+    create_journal_entry(
+        organization=org, date=date(2026, 1, 20), description="Penjualan tunai",
+        lines=[JournalLineInput(acc("1-1000"), debit=Decimal("2000000")), JournalLineInput(acc("4-1000"), credit=Decimal("2000000"))],
+    )
+    record_pph_final_payment(organization=org, year=2026, month=1, paid_on=date(2026, 2, 10), cash_account=acc("1-1000"))
+    call_command("delete_organization", str(org.pk), "--yes", "--skip-export")
+    assert not PphFinalAccrual.objects.filter(organization_id=org.pk).exists()
+    assert not PphFinalPayment.objects.filter(organization_id=org.pk).exists()
 
 
 def test_asks_for_the_organization_name(books):

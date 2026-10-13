@@ -13,6 +13,15 @@ def start_of_year(on: date) -> date:
     return on.replace(month=1, day=1)
 
 
+def end_of_previous_year(on: date) -> date:
+    return date(on.year - 1, 12, 31)
+
+
+def one_year_earlier(on: date) -> date:
+    """The same day a year before; 29 February becomes 28 February."""
+    return on.replace(year=on.year - 1, day=min(on.day, 28)) if (on.month, on.day) == (2, 29) else on.replace(year=on.year - 1)
+
+
 class PeriodForm(BaseForm):
     date_from = BusinessDateField(label=_("From"))
     date_to = BusinessDateField(label=_("To"))

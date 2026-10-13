@@ -168,6 +168,7 @@ def settings_form(organization, **changes):
     data = {
         "name": organization.name, "legal_form": organization.legal_form, "npwp": "", "nib": "", "address": "",
         "city": "", "phone": "", "email": "", "uses_pph_final": "on", "lock_date": "",
+        "inventory_cost_formula": organization.inventory_cost_formula, "depreciation_method": organization.depreciation_method,
     }
     return {**data, **changes}
 

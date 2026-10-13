@@ -51,6 +51,37 @@ class PphFinalStatus(models.TextChoices):
     VOID = "void", _("Void")
 
 
+class PphFinalAccrual(TenantOwnedModel):
+    """PPh Final expense of one month, recognised at the month's end (accrual basis, SAK EMKM):
+    Beban PPh Final against Utang PPh Final, which the deposit later settles. Cancelling voids
+    it (its journal entry is reversed); never deleted (taxes migration 0008)."""
+
+    Status = PphFinalStatus
+
+    year = models.PositiveSmallIntegerField(_("year"))
+    month = models.PositiveSmallIntegerField(_("month"), choices=Month.choices)
+    gross_turnover = money_field(_("gross turnover"))
+    taxable_turnover = money_field(_("taxable gross turnover"))
+    tax_amount = money_field(_("tax due"))
+    journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    status = models.CharField(_("status"), max_length=10, choices=PphFinalStatus.choices, default=PphFinalStatus.POSTED)
+
+    class Meta:
+        ordering = ["-year", "-month"]
+        verbose_name = _("PPh Final expense")
+        verbose_name_plural = _("PPh Final expenses")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "year", "month"], condition=models.Q(status=PphFinalStatus.POSTED),
+                name="unique_pph_final_accrual_period",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Beban PPh Final {Month(self.month).tax_period(self.year)}"
+
+
 class PphFinalPayment(TenantOwnedModel):
     """Monthly PPh Final UMKM deposit (setoran), linked to its journal. Cancelling voids it
     (its journal entry is reversed); the record is never deleted (taxes migration 0006)."""
@@ -66,6 +97,10 @@ class PphFinalPayment(TenantOwnedModel):
     ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator], help_text=_("State revenue transaction number (Nomor Transaksi Penerimaan Negara)."))
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
+    accrual = models.ForeignKey(
+        PphFinalAccrual, null=True, blank=True, on_delete=models.PROTECT, related_name="payments",
+        help_text="The expense this deposit settles; empty for deposits recorded before expenses were accrued.",
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     status = models.CharField(_("status"), max_length=10, choices=PphFinalStatus.choices, default=PphFinalStatus.POSTED)
 

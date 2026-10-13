@@ -25,7 +25,7 @@ from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
-from apps.taxes.models import PphFinalPayment, TaxRate
+from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate
 from apps.tenants.models import Organization
 
 from .statements import build_trial_balance
@@ -170,6 +170,13 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         TaxRate, "organization", ("name",),
     ),
     (
+        Table("pph_final_expenses.csv", gettext_lazy("MSME PPh Final expenses, recognised at the end of each month."), (
+            C("year"), C("month"), C("gross_turnover"), C("taxable_turnover"), C("tax_amount"),
+            C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
+        )),
+        PphFinalAccrual, "organization", ("year", "month"),
+    ),
+    (
         Table("pph_final_payments.csv", gettext_lazy("MSME PPh Final deposits."), (
             C("year"), C("month"), C("gross_turnover"), C("taxable_turnover"), C("tax_amount"), C("paid_on"),
             C("ntpn"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
@@ -179,7 +186,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
 )
 ORGANIZATION_FIELDS = (
-    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final", "lock_date",
+    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
+    "inventory_cost_formula", "depreciation_method", "additional_notes", "lock_date",
 )
 ORGANIZATION_FILE = "organization.csv"
 TRIAL_BALANCE_FILE = "trial_balance.csv"

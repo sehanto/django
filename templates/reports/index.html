@@ -5,6 +5,7 @@
 <div class="row g-3">
   {% include "reports/_card.html" with href="reports:income_statement" icon="graph-up" title=_("Income statement") desc=_("Revenue, expenses and net profit for a period.") %}
   {% include "reports/_card.html" with href="reports:balance_sheet" icon="bank" title=_("Statement of financial position") desc=_("Assets, liabilities and equity at a given date (balance sheet).") %}
+  {% include "reports/_card.html" with href="reports:notes" icon="card-text" title=_("Notes to the financial statements") desc=_("Accounting policies and details of each statement line, as SAK EMKM requires.") %}
   {% include "reports/_card.html" with href="reports:trial_balance" icon="list-columns" title=_("Trial balance") desc=_("Debit and credit balances of all accounts.") %}
   {% include "reports/_card.html" with href="reports:general_ledger" icon="journal-richtext" title=_("General ledger") desc=_("Movements and running balance per account.") %}
   {% include "reports/_card.html" with href="reports:vat" icon="percent" title=_("PPN summary") desc=_("Output and input PPN per tax period.") %}

@@ -36,7 +36,9 @@ def enable_2fa(user) -> AuthenticatorDevice:
 def settings_post(organization, **overrides):
     data = {
         "name": organization.name, "legal_form": organization.legal_form, "npwp": "", "nib": "", "address": "",
-        "city": "", "phone": "", "email": "", "uses_pph_final": "on", "lock_date": "", **overrides,
+        "city": "", "phone": "", "email": "", "uses_pph_final": "on", "lock_date": "",
+        "inventory_cost_formula": organization.inventory_cost_formula, "depreciation_method": organization.depreciation_method,
+        **overrides,
     }
     return {k: v for k, v in data.items() if v is not False}
 

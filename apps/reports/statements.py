@@ -22,6 +22,7 @@ class StatementRow:
     code: str
     name: str
     amount: Decimal
+    previous: Decimal = ZERO  # the comparative period (SAK EMKM presents the prior period alongside)
 
 
 @dataclass
@@ -33,17 +34,41 @@ class Section:
     def total(self) -> Decimal:
         return sum((r.amount for r in self.rows), ZERO)
 
+    @property
+    def previous_total(self) -> Decimal:
+        return sum((r.previous for r in self.rows), ZERO)
 
-def _section(title: str, balances: Iterable[AccountBalance], categories: set[str], sign_type: AccountType) -> Section:
-    """Rows are signed by the *section's* normal balance, so contra accounts reduce it."""
+
+def _signed(balance: AccountBalance, sign_type: AccountType) -> Decimal:
+    return balance.net_debit if sign_type.normal_balance == NormalBalance.DEBIT else -balance.net_debit
+
+
+def _section(
+    title: str, balances: Iterable[AccountBalance], categories: set[str], sign_type: AccountType,
+    previous: Iterable[AccountBalance] = (),
+) -> Section:
+    """Rows are signed by the *section's* normal balance, so contra accounts reduce it.
+
+    An account appears when it has a balance in either period.
+    """
+    current = {b.account.pk: b for b in balances if b.account.category in categories}
+    earlier = {b.account.pk: b for b in previous if b.account.category in categories}
+    accounts = {b.account.pk: b.account for b in (*earlier.values(), *current.values())}
     section = Section(title)
-    for b in balances:
-        if b.account.category not in categories:
-            continue
-        amount = b.net_debit if sign_type.normal_balance == NormalBalance.DEBIT else -b.net_debit
-        if amount:
-            section.rows.append(StatementRow(b.account.code, b.account.name, amount))
+    for pk, account in sorted(accounts.items(), key=lambda item: item[1].code):
+        amount = _signed(current[pk], sign_type) if pk in current else ZERO
+        before = _signed(earlier[pk], sign_type) if pk in earlier else ZERO
+        if amount or before:
+            section.rows.append(StatementRow(account.code, account.name, amount, before))
     return section
+
+
+def _total(section: Section, previous: bool) -> Decimal:
+    return section.previous_total if previous else section.total
+
+
+def _period_label(start: date, end: date) -> str:
+    return _("%(start)s to %(end)s") % {"start": f"{start:%d-%m-%Y}", "end": f"{end:%d-%m-%Y}"}
 
 
 # --- Income statement --------------------------------------------------------
@@ -59,49 +84,73 @@ class IncomeStatement:
     other_income: Section
     other_expenses: Section
     income_tax: Section
+    previous_from: date | None = None
+    previous_to: date | None = None
 
     @property
-    def gross_profit(self) -> Decimal:
-        return self.revenue.total - self.cost_of_sales.total
+    def has_comparative(self) -> bool:
+        return self.previous_from is not None
 
-    @property
-    def operating_profit(self) -> Decimal:
-        return self.gross_profit - self.operating_expenses.total
+    def _gross_profit(self, previous=False) -> Decimal:
+        return _total(self.revenue, previous) - _total(self.cost_of_sales, previous)
 
-    @property
-    def profit_before_tax(self) -> Decimal:
-        return self.operating_profit + self.other_income.total - self.other_expenses.total
+    def _operating_profit(self, previous=False) -> Decimal:
+        return self._gross_profit(previous) - _total(self.operating_expenses, previous)
 
-    @property
-    def net_profit(self) -> Decimal:
-        return self.profit_before_tax - self.income_tax.total
+    def _profit_before_tax(self, previous=False) -> Decimal:
+        return self._operating_profit(previous) + _total(self.other_income, previous) - _total(self.other_expenses, previous)
+
+    def _net_profit(self, previous=False) -> Decimal:
+        return self._profit_before_tax(previous) - _total(self.income_tax, previous)
+
+    gross_profit = property(_gross_profit)
+    operating_profit = property(_operating_profit)
+    profit_before_tax = property(_profit_before_tax)
+    net_profit = property(_net_profit)
+    previous_gross_profit = property(lambda self: self._gross_profit(True))
+    previous_operating_profit = property(lambda self: self._operating_profit(True))
+    previous_profit_before_tax = property(lambda self: self._profit_before_tax(True))
+    previous_net_profit = property(lambda self: self._net_profit(True))
 
     def csv_rows(self):
-        yield [_("Income statement"), _("%(start)s to %(end)s") % {"start": f"{self.date_from:%d-%m-%Y}", "end": f"{self.date_to:%d-%m-%Y}"}, ""]
-        for section, subtotal in [
-            (self.revenue, None),
-            (self.cost_of_sales, (_("Gross profit"), self.gross_profit)),
-            (self.operating_expenses, (_("Operating profit"), self.operating_profit)),
-            (self.other_income, None),
-            (self.other_expenses, (_("Profit before tax"), self.profit_before_tax)),
-            (self.income_tax, (_("Net profit"), self.net_profit)),
+        columns = [_period_label(self.date_from, self.date_to)]
+        if self.has_comparative:
+            columns.append(_period_label(self.previous_from, self.previous_to))
+        yield [_("Income statement"), _("Amounts in Rupiah"), *columns]
+        for section, subtotal, previous in [
+            (self.revenue, None, None),
+            (self.cost_of_sales, (_("Gross profit"), self.gross_profit), self.previous_gross_profit),
+            (self.operating_expenses, (_("Operating profit"), self.operating_profit), self.previous_operating_profit),
+            (self.other_income, None, None),
+            (self.other_expenses, (_("Profit before tax"), self.profit_before_tax), self.previous_profit_before_tax),
+            (self.income_tax, (_("Net profit"), self.net_profit), self.previous_net_profit),
         ]:
-            yield from _section_csv(section)
+            yield from _section_csv(section, self.has_comparative)
             if subtotal:
-                yield ["", subtotal[0], subtotal[1]]
+                yield ["", subtotal[0], subtotal[1], *([previous] if self.has_comparative else [])]
 
 
-def build_income_statement(balances: list[AccountBalance], date_from: date, date_to: date) -> IncomeStatement:
+def build_income_statement(
+    balances: list[AccountBalance], date_from: date, date_to: date, *,
+    previous_balances: list[AccountBalance] | None = None, previous_from: date | None = None, previous_to: date | None = None,
+) -> IncomeStatement:
     rev, exp = AccountType.REVENUE, AccountType.EXPENSE
+    earlier = previous_balances or ()
+
+    def section(title, category, sign_type):
+        return _section(title, balances, {category}, sign_type, earlier)
+
     return IncomeStatement(
         date_from=date_from,
         date_to=date_to,
-        revenue=_section(_("Operating revenue"), balances, {C.REVENUE}, rev),
-        cost_of_sales=_section(_("Cost of sales"), balances, {C.COST_OF_SALES}, exp),
-        operating_expenses=_section(_("Operating expenses"), balances, {C.OPERATING_EXPENSE}, exp),
-        other_income=_section(_("Other income"), balances, {C.OTHER_INCOME}, rev),
-        other_expenses=_section(_("Other expenses"), balances, {C.OTHER_EXPENSE}, exp),
-        income_tax=_section(_("Income tax expense"), balances, {C.INCOME_TAX}, exp),
+        revenue=section(_("Operating revenue"), C.REVENUE, rev),
+        cost_of_sales=section(_("Cost of sales"), C.COST_OF_SALES, exp),
+        operating_expenses=section(_("Operating expenses"), C.OPERATING_EXPENSE, exp),
+        other_income=section(_("Other income"), C.OTHER_INCOME, rev),
+        other_expenses=section(_("Other expenses"), C.OTHER_EXPENSE, exp),
+        income_tax=section(_("Income tax expense"), C.INCOME_TAX, exp),
+        previous_from=previous_from if previous_balances is not None else None,
+        previous_to=previous_to if previous_balances is not None else None,
     )
 
 
@@ -126,60 +175,123 @@ class BalanceSheet:
     equity: Section
     prior_years_earnings: Decimal
     current_year_earnings: Decimal
+    previous_as_of: date | None = None
+    previous_prior_years_earnings: Decimal = ZERO
+    previous_current_year_earnings: Decimal = ZERO
 
     @property
-    def total_assets(self) -> Decimal:
-        return self.current_assets.total + self.fixed_assets.total
+    def has_comparative(self) -> bool:
+        return self.previous_as_of is not None
 
-    @property
-    def total_liabilities(self) -> Decimal:
-        return self.current_liabilities.total + self.long_term_liabilities.total
+    def _total_assets(self, previous=False) -> Decimal:
+        return _total(self.current_assets, previous) + _total(self.fixed_assets, previous)
 
-    @property
-    def total_equity(self) -> Decimal:
+    def _total_liabilities(self, previous=False) -> Decimal:
+        return _total(self.current_liabilities, previous) + _total(self.long_term_liabilities, previous)
+
+    def _total_equity(self, previous=False) -> Decimal:
+        if previous:
+            return self.equity.previous_total + self.previous_prior_years_earnings + self.previous_current_year_earnings
         return self.equity.total + self.prior_years_earnings + self.current_year_earnings
 
-    @property
-    def total_liabilities_and_equity(self) -> Decimal:
-        return self.total_liabilities + self.total_equity
+    def _total_liabilities_and_equity(self, previous=False) -> Decimal:
+        return self._total_liabilities(previous) + self._total_equity(previous)
+
+    total_assets = property(_total_assets)
+    total_liabilities = property(_total_liabilities)
+    total_equity = property(_total_equity)
+    total_liabilities_and_equity = property(_total_liabilities_and_equity)
+    previous_total_assets = property(lambda self: self._total_assets(True))
+    previous_total_liabilities = property(lambda self: self._total_liabilities(True))
+    previous_total_equity = property(lambda self: self._total_equity(True))
+    previous_total_liabilities_and_equity = property(lambda self: self._total_liabilities_and_equity(True))
 
     @property
     def is_balanced(self) -> bool:
-        return self.total_assets == self.total_liabilities_and_equity
+        return all(self._total_assets(p) == self._total_liabilities_and_equity(p) for p in (False, True))
 
     def csv_rows(self):
-        yield [_("Statement of financial position"), _("as of %(date)s") % {"date": f"{self.as_of:%d-%m-%Y}"}, ""]
-        yield from _section_csv(self.current_assets)
-        yield from _section_csv(self.fixed_assets)
-        yield ["", _("TOTAL ASSETS"), self.total_assets]
-        yield from _section_csv(self.current_liabilities)
-        yield from _section_csv(self.long_term_liabilities)
-        yield ["", _("Total liabilities"), self.total_liabilities]
-        yield from _section_csv(self.equity)
-        yield ["", _("Prior years' retained earnings (not yet closed)"), self.prior_years_earnings]
-        yield ["", _("Current year profit"), self.current_year_earnings]
-        yield ["", _("TOTAL LIABILITIES AND EQUITY"), self.total_liabilities_and_equity]
+        compare = self.has_comparative
+        columns = [f"{self.as_of:%d-%m-%Y}", *([f"{self.previous_as_of:%d-%m-%Y}"] if compare else [])]
+
+        def row(label, current, previous):
+            return ["", label, current, *([previous] if compare else [])]
+
+        yield [_("Statement of financial position"), _("Amounts in Rupiah"), *columns]
+        yield from _section_csv(self.current_assets, compare)
+        yield from _section_csv(self.fixed_assets, compare)
+        yield row(_("TOTAL ASSETS"), self.total_assets, self.previous_total_assets)
+        yield from _section_csv(self.current_liabilities, compare)
+        yield from _section_csv(self.long_term_liabilities, compare)
+        yield row(_("Total liabilities"), self.total_liabilities, self.previous_total_liabilities)
+        yield from _section_csv(self.equity, compare)
+        yield row(_("Prior years' retained earnings (not yet closed)"), self.prior_years_earnings, self.previous_prior_years_earnings)
+        yield row(_("Current year profit"), self.current_year_earnings, self.previous_current_year_earnings)
+        yield row(_("TOTAL LIABILITIES AND EQUITY"), self.total_liabilities_and_equity, self.previous_total_liabilities_and_equity)
 
 
 CURRENT_ASSET_CATEGORIES = {C.CASH_BANK, C.RECEIVABLE, C.INVENTORY, C.OTHER_CURRENT_ASSET}
 
 
 def build_balance_sheet(
-    balances_to_date: list[AccountBalance], balances_before_year: list[AccountBalance], as_of: date
+    balances_to_date: list[AccountBalance], balances_before_year: list[AccountBalance], as_of: date, *,
+    previous_balances_to_date: list[AccountBalance] | None = None,
+    previous_balances_before_year: list[AccountBalance] | None = None,
+    previous_as_of: date | None = None,
 ) -> BalanceSheet:
-    """``balances_before_year`` are cumulative balances up to the day before the fiscal year starts."""
+    """``balances_before_year`` are cumulative balances up to the day before the fiscal year starts;
+    the ``previous_*`` arguments are the same for the comparative date."""
     asset, liability, equity = AccountType.ASSET, AccountType.LIABILITY, AccountType.EQUITY
+    compare = previous_balances_to_date is not None
+    earlier = previous_balances_to_date or ()
+
+    def section(title, categories, sign_type):
+        return _section(title, balances_to_date, categories, sign_type, earlier)
+
     prior = net_income(balances_before_year)
+    previous_prior = net_income(previous_balances_before_year or ())
     return BalanceSheet(
         as_of=as_of,
-        current_assets=_section(_("Current assets"), balances_to_date, CURRENT_ASSET_CATEGORIES, asset),
-        fixed_assets=_section(_("Fixed assets"), balances_to_date, {C.FIXED_ASSET}, asset),
-        current_liabilities=_section(_("Current liabilities"), balances_to_date, {C.CURRENT_LIABILITY}, liability),
-        long_term_liabilities=_section(_("Long-term liabilities"), balances_to_date, {C.LONG_TERM_LIABILITY}, liability),
-        equity=_section(_("Capital"), balances_to_date, {C.EQUITY}, equity),
+        current_assets=section(_("Current assets"), CURRENT_ASSET_CATEGORIES, asset),
+        fixed_assets=section(_("Fixed assets"), {C.FIXED_ASSET}, asset),
+        current_liabilities=section(_("Current liabilities"), {C.CURRENT_LIABILITY}, liability),
+        long_term_liabilities=section(_("Long-term liabilities"), {C.LONG_TERM_LIABILITY}, liability),
+        equity=section(_("Capital"), {C.EQUITY}, equity),
         prior_years_earnings=prior,
         current_year_earnings=net_income(balances_to_date) - prior,
+        previous_as_of=previous_as_of if compare else None,
+        previous_prior_years_earnings=previous_prior if compare else ZERO,
+        previous_current_year_earnings=net_income(earlier) - previous_prior if compare else ZERO,
     )
+
+
+# --- Notes to the financial statements ----------------------------------------
+
+
+@dataclass(frozen=True)
+class ItemNote:
+    section: Section
+    is_balance_sheet: bool  # compares two dates; otherwise two periods
+
+
+@dataclass
+class FinancialNotes:
+    """Catatan atas Laporan Keuangan: with the two statements, the minimum SAK EMKM set.
+
+    The policy wording lives in the template; this holds the figures the notes explain.
+    """
+
+    organization: object
+    balance_sheet: BalanceSheet
+    income_statement: IncomeStatement
+
+    @property
+    def item_notes(self) -> list[ItemNote]:
+        """One note per statement line group that has a balance in either period."""
+        bs, pl = self.balance_sheet, self.income_statement
+        notes = [ItemNote(s, True) for s in (bs.current_assets, bs.fixed_assets, bs.current_liabilities, bs.long_term_liabilities, bs.equity)]
+        notes += [ItemNote(s, False) for s in (pl.revenue, pl.cost_of_sales, pl.operating_expenses, pl.other_income, pl.other_expenses, pl.income_tax)]
+        return [note for note in notes if note.section.rows]
 
 
 # --- Trial balance -----------------------------------------------------------
@@ -226,8 +338,8 @@ def build_trial_balance(balances: list[AccountBalance], as_of: date) -> TrialBal
     return TrialBalance(as_of=as_of, rows=rows)
 
 
-def _section_csv(section: Section):
-    yield [section.title, "", ""]
+def _section_csv(section: Section, compare: bool = False):
+    yield [section.title, "", ""] + ([""] if compare else [])
     for row in section.rows:
-        yield [row.code, row.name, row.amount]
-    yield ["", _("Total %(section)s") % {"section": section.title}, section.total]
+        yield [row.code, row.name, row.amount, *([row.previous] if compare else [])]
+    yield ["", _("Total %(section)s") % {"section": section.title}, section.total, *([section.previous_total] if compare else [])]

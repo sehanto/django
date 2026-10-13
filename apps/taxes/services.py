@@ -1,6 +1,8 @@
+import calendar
 from datetime import date
 
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
@@ -9,7 +11,7 @@ from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
 from .domain import Month
-from .models import PphFinalPayment, TaxRate
+from .models import PphFinalAccrual, PphFinalPayment, TaxRate
 from .selectors import pph_final_schedule
 
 DEFAULT_TAX_RATES = [
@@ -28,22 +30,98 @@ def seed_tax_rates(organization) -> None:
     )
 
 
-@transaction.atomic
-def record_pph_final_payment(
-    *, organization, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None
-) -> PphFinalPayment:
-    month = Month(month)
+def _period(month: Month, year: int) -> dict:
+    return {"period": f"{month.label} {year}"}
+
+
+def month_end(year: int, month: Month) -> date:
+    return date(year, month, calendar.monthrange(year, month)[1])
+
+
+def _ensure_uses_pph_final(organization) -> None:
     if not organization.uses_pph_final:
         raise ValidationFailed(_("This organization does not use the MSME PPh Final scheme."))
-    if not cash_account.is_cash or cash_account.organization_id != organization.pk:
-        raise ValidationFailed(_("Choose a valid cash or bank account."))
+
+
+def posted_accrual(organization, year: int, month: Month) -> PphFinalAccrual | None:
+    return (
+        PphFinalAccrual.objects.for_organization(organization).select_for_update()
+        .filter(year=year, month=month, status=PphFinalAccrual.Status.POSTED).first()
+    )
+
+
+@transaction.atomic
+def accrue_pph_final(*, organization, year: int, month: Month, created_by=None) -> PphFinalAccrual:
+    """Recognise the month's PPh Final as an expense on its last day (accrual basis, SAK EMKM):
+    Beban PPh Final against Utang PPh Final, which the deposit settles."""
+    month = Month(month)
+    _ensure_uses_pph_final(organization)
+    if month_end(year, month) > timezone.localdate():
+        raise ValidationFailed(_("%(period)s has not ended yet. Record its PPh Final expense from the last day of the month.") % _period(month, year))
+    if posted_accrual(organization, year, month):
+        raise ValidationFailed(_("The PPh Final expense for %(period)s has already been recorded.") % _period(month, year))
     if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month, status=PphFinalPayment.Status.POSTED).exists():
-        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % {"period": f"{month.label} {year}"})
+        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % _period(month, year))
     period = pph_final_schedule(organization, year)[month - 1]
     if period.tax <= 0:
         raise ValidationFailed(_("No PPh Final is due for this period."))
 
     # Journal descriptions are stored business records and stay in Indonesian.
+    entry = create_journal_entry(
+        organization=organization,
+        date=month_end(year, month),
+        description=f"Beban PPh Final UMKM masa {month.tax_period(year)}",
+        source=JournalEntry.Source.TAX,
+        created_by=created_by,
+        lines=[
+            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_EXPENSE), debit=period.tax),
+            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), credit=period.tax),
+        ],
+    )
+    return PphFinalAccrual.objects.create(
+        organization=organization,
+        year=year,
+        month=month,
+        gross_turnover=period.gross_turnover,
+        taxable_turnover=period.taxable_turnover,
+        tax_amount=period.tax,
+        journal_entry=entry,
+        created_by=created_by,
+    )
+
+
+@transaction.atomic
+def cancel_pph_final_accrual(*, accrual: PphFinalAccrual, on: date, created_by=None) -> PphFinalAccrual:
+    accrual = PphFinalAccrual.objects.select_for_update().get(pk=accrual.pk)
+    if accrual.status != PphFinalAccrual.Status.POSTED:
+        raise InvalidStateTransition(_("This PPh Final expense has already been cancelled."))
+    if accrual.payments.filter(status=PphFinalPayment.Status.POSTED).exists():
+        raise InvalidStateTransition(_("Cancel the payment of this PPh Final first."))
+    reverse_journal_entry(
+        entry=accrual.journal_entry, date=on, created_by=created_by,
+        description=f"Pembatalan beban PPh Final masa {Month(accrual.month).tax_period(accrual.year)}",
+    )
+    accrual.status = PphFinalAccrual.Status.VOID  # kept as history: never deleted
+    accrual.save(update_fields=["status", "updated_at"])
+    return accrual
+
+
+@transaction.atomic
+def record_pph_final_payment(
+    *, organization, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None
+) -> PphFinalPayment:
+    """Deposit (setoran) of a month's PPh Final. It settles the month's recorded expense,
+    which is recorded first when it is missing, so the expense always falls in its own month."""
+    month = Month(month)
+    _ensure_uses_pph_final(organization)
+    if not cash_account.is_cash or cash_account.organization_id != organization.pk:
+        raise ValidationFailed(_("Choose a valid cash or bank account."))
+    if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month, status=PphFinalPayment.Status.POSTED).exists():
+        raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % _period(month, year))
+    accrual = posted_accrual(organization, year, month) or accrue_pph_final(
+        organization=organization, year=year, month=month, created_by=created_by
+    )
+
     entry = create_journal_entry(
         organization=organization,
         date=paid_on,
@@ -52,21 +130,22 @@ def record_pph_final_payment(
         source=JournalEntry.Source.TAX,
         created_by=created_by,
         lines=[
-            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_EXPENSE), debit=period.tax),
-            JournalLineInput(cash_account, credit=period.tax),
+            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=accrual.tax_amount),
+            JournalLineInput(cash_account, credit=accrual.tax_amount),
         ],
     )
     return PphFinalPayment.objects.create(
         organization=organization,
         year=year,
         month=month,
-        gross_turnover=period.gross_turnover,
-        taxable_turnover=period.taxable_turnover,
-        tax_amount=period.tax,
+        gross_turnover=accrual.gross_turnover,
+        taxable_turnover=accrual.taxable_turnover,
+        tax_amount=accrual.tax_amount,
         paid_on=paid_on,
         ntpn=ntpn,
         cash_account=cash_account,
         journal_entry=entry,
+        accrual=accrual,
         created_by=created_by,
     )
 

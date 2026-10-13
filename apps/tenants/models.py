@@ -31,7 +31,24 @@ class Plan(TimeStampedModel):
         return self.name
 
 
+class InventoryCostFormula(models.TextChoices):
+    """The cost formulas SAK EMKM allows for inventory."""
+
+    FIFO = "fifo", _("First in, first out (FIFO)")
+    WEIGHTED_AVERAGE = "weighted_average", _("Weighted average")
+
+
+class DepreciationMethod(models.TextChoices):
+    """The depreciation methods SAK EMKM allows for fixed assets."""
+
+    STRAIGHT_LINE = "straight_line", _("Straight line")
+    DECLINING_BALANCE = "declining_balance", _("Declining balance")
+
+
 class Organization(TimeStampedModel):
+    InventoryCostFormula = InventoryCostFormula
+    DepreciationMethod = DepreciationMethod
+
     class LegalForm(models.TextChoices):
         PERORANGAN = "perorangan", _("Sole proprietorship / UD")
         PT_PERORANGAN = "pt_perorangan", _("Individual limited company (PT Perorangan)")
@@ -70,6 +87,20 @@ class Organization(TimeStampedModel):
         _("require two-factor authentication"),
         default=False,
         help_text=_("Every member must use two-factor authentication to open this organization."),
+    )
+    inventory_cost_formula = models.CharField(
+        _("inventory cost formula"), max_length=20, choices=InventoryCostFormula.choices,
+        default=InventoryCostFormula.WEIGHTED_AVERAGE,
+        help_text=_("How the cost of inventory sold is determined (SAK EMKM). Stated in the notes to the financial statements."),
+    )
+    depreciation_method = models.CharField(
+        _("depreciation method"), max_length=20, choices=DepreciationMethod.choices,
+        default=DepreciationMethod.STRAIGHT_LINE,
+        help_text=_("How fixed assets other than land are depreciated (SAK EMKM). Stated in the notes to the financial statements."),
+    )
+    additional_notes = models.TextField(
+        _("additional information for the notes"), max_length=5000, blank=True,
+        help_text=_("Material matters the financial statements don't show, e.g. commitments, guarantees or events after the reporting date. Printed in the notes to the financial statements."),
     )
     lock_date = models.DateField(
         _("period lock date"),

@@ -9,7 +9,7 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.selectors import posted_lines
 
 from .domain import PphFinalMonth, compute_pph_final
-from .models import PphFinalPayment, TaxRate
+from .models import PphFinalAccrual, PphFinalPayment, TaxRate
 
 
 def tax_rate_is_used(rate: TaxRate) -> bool:
@@ -51,3 +51,12 @@ def pph_final_payments(organization, year: int) -> dict[int, PphFinalPayment]:
         .select_related("journal_entry")
     }
 
+
+
+def pph_final_accruals(organization, year: int) -> dict[int, PphFinalAccrual]:
+    return {
+        a.month: a
+        for a in PphFinalAccrual.objects.for_organization(organization)
+        .filter(year=year, status=PphFinalAccrual.Status.POSTED)
+        .select_related("journal_entry")
+    }

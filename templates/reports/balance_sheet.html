@@ -2,27 +2,32 @@
 {% block title %}{% translate "Statement of financial position" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-1">{% translate "Statement of financial position" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %}</p>
+<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
 {% if not report.is_balanced %}<div class="alert alert-danger">{% translate "The report does not balance. Check the journal data." %}</div>{% endif %}
+{% with compare=report.has_comparative current=report.as_of|date:"d/m/Y" previous=report.previous_as_of|date:"d/m/Y" %}
 <div class="row g-3">
-  <div class="col-xl-6"><div class="card"><table class="table table-statement mb-0">
+  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-statement mb-0">
+    {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_assets %}
     {% include "reports/_section.html" with section=report.fixed_assets %}
-    <tr class="grand-total"><td></td><td>{% translate "TOTAL ASSETS" %}</td><td class="num">{{ report.total_assets|rupiah }}</td></tr>
-  </table></div></div>
-  <div class="col-xl-6"><div class="card"><table class="table table-statement mb-0">
+    {% translate "TOTAL ASSETS" as label %}{% include "reports/_total.html" with current=report.total_assets previous=report.previous_total_assets %}
+  </table></div></div></div>
+  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-statement mb-0">
+    {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_liabilities %}
     {% include "reports/_section.html" with section=report.long_term_liabilities %}
-    <tr class="subtotal"><td></td><td>{% translate "Total liabilities" %}</td><td class="num">{{ report.total_liabilities|rupiah }}</td></tr>
-    <tr class="section-title"><td colspan="3">{% translate "Equity" %}</td></tr>
+    {% translate "Total liabilities" as label %}{% include "reports/_total.html" with class="subtotal" current=report.total_liabilities previous=report.previous_total_liabilities %}
+    <tr class="section-title"><td colspan="2">{% translate "Equity" %}</td><td></td>{% if compare %}<td></td>{% endif %}</tr>
     {% include "reports/_section.html" with section=report.equity %}
-    <tr><td></td><td>{% translate "Prior years' retained earnings (not yet closed)" %}</td><td class="num">{{ report.prior_years_earnings|rupiah }}</td></tr>
-    <tr><td></td><td>{% translate "Current year profit" %}</td><td class="num">{{ report.current_year_earnings|rupiah }}</td></tr>
-    <tr class="subtotal"><td></td><td>{% translate "Total equity" %}</td><td class="num">{{ report.total_equity|rupiah }}</td></tr>
-    <tr class="grand-total"><td></td><td>{% translate "TOTAL LIABILITIES AND EQUITY" %}</td><td class="num">{{ report.total_liabilities_and_equity|rupiah }}</td></tr>
-  </table></div></div>
+    {% translate "Prior years' retained earnings (not yet closed)" as label %}{% include "reports/_total.html" with class="" current=report.prior_years_earnings previous=report.previous_prior_years_earnings %}
+    {% translate "Current year profit" as label %}{% include "reports/_total.html" with class="" current=report.current_year_earnings previous=report.previous_current_year_earnings %}
+    {% translate "Total equity" as label %}{% include "reports/_total.html" with class="subtotal" current=report.total_equity previous=report.previous_total_equity %}
+    {% translate "TOTAL LIABILITIES AND EQUITY" as label %}{% include "reports/_total.html" with current=report.total_liabilities_and_equity previous=report.previous_total_liabilities_and_equity %}
+  </table></div></div></div>
 </div>
+{% endwith %}
+<p class="small text-secondary mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
 {% endif %}
 {% endblock %}

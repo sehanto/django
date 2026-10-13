@@ -2,20 +2,26 @@
 {% block title %}{% translate "Income statement" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-1">{% translate "Income statement" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.date_from|date:"d M Y" end=report.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %}</p>
+<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.date_from|date:"d M Y" end=report.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
-<div class="card" style="max-width: 900px;"><table class="table table-statement mb-0">
+{% with compare=report.has_comparative %}
+{% blocktranslate trimmed with start=report.date_from|date:"d/m/Y" end=report.date_to|date:"d/m/Y" asvar current %}{{ start }} to {{ end }}{% endblocktranslate %}
+{% blocktranslate trimmed with start=report.previous_from|date:"d/m/Y" end=report.previous_to|date:"d/m/Y" asvar previous %}{{ start }} to {{ end }}{% endblocktranslate %}
+<div class="card" style="max-width: 1000px;"><div class="table-responsive"><table class="table table-statement mb-0">
+  {% include "reports/_columns.html" %}
   {% include "reports/_section.html" with section=report.revenue %}
   {% include "reports/_section.html" with section=report.cost_of_sales %}
-  <tr class="grand-total"><td></td><td>{% translate "GROSS PROFIT" %}</td><td class="num">{{ report.gross_profit|rupiah }}</td></tr>
+  {% translate "GROSS PROFIT" as label %}{% include "reports/_total.html" with current=report.gross_profit previous=report.previous_gross_profit %}
   {% include "reports/_section.html" with section=report.operating_expenses %}
-  <tr class="grand-total"><td></td><td>{% translate "OPERATING PROFIT" %}</td><td class="num">{{ report.operating_profit|rupiah }}</td></tr>
+  {% translate "OPERATING PROFIT" as label %}{% include "reports/_total.html" with current=report.operating_profit previous=report.previous_operating_profit %}
   {% include "reports/_section.html" with section=report.other_income %}
   {% include "reports/_section.html" with section=report.other_expenses %}
-  <tr class="grand-total"><td></td><td>{% translate "PROFIT BEFORE TAX" %}</td><td class="num">{{ report.profit_before_tax|rupiah }}</td></tr>
+  {% translate "PROFIT BEFORE TAX" as label %}{% include "reports/_total.html" with current=report.profit_before_tax previous=report.previous_profit_before_tax %}
   {% include "reports/_section.html" with section=report.income_tax %}
-  <tr class="grand-total"><td></td><td>{% translate "NET PROFIT (LOSS)" %}</td><td class="num {% if report.net_profit < 0 %}text-danger{% endif %}">{{ report.net_profit|rupiah }}</td></tr>
-</table></div>
+  {% translate "NET PROFIT (LOSS)" as label %}{% include "reports/_total.html" with current=report.net_profit previous=report.previous_net_profit negative_red=True %}
+</table></div></div>
+{% endwith %}
+<p class="small text-secondary mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
 {% endif %}
 {% endblock %}

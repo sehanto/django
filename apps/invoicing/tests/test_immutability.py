@@ -17,8 +17,8 @@ from apps.invoicing.models import Invoice, InvoiceKind, InvoiceLine, Item, Payme
 from apps.invoicing.services import InvoiceLineInput
 from apps.ledger.models import Account
 from apps.ledger.services import JournalLineInput, create_journal_entry
-from apps.taxes.models import PphFinalPayment, TaxRate
-from apps.taxes.services import cancel_pph_final_payment, record_pph_final_payment
+from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate
+from apps.taxes.services import cancel_pph_final_accrual, cancel_pph_final_payment, record_pph_final_payment
 
 D = Decimal
 ON = date(2026, 3, 10)
@@ -180,6 +180,37 @@ def test_pph_final_payments_are_cancelled_not_deleted(pph_payment):
     )
     assert again.status == PphFinalPayment.Status.POSTED
     assert PphFinalPayment.objects.filter(organization=pph_payment.organization, year=2026, month=1).count() == 2
+
+
+def test_pph_final_expenses_are_cancelled_not_deleted(pph_payment):
+    accrual = pph_payment.accrual
+    with refused():
+        PphFinalAccrual.objects.filter(pk=accrual.pk).update(tax_amount=D("1"))
+    with refused():
+        accrual.delete()
+    with refused():  # a deposit still settles it
+        PphFinalAccrual.objects.filter(pk=accrual.pk).update(status=PphFinalAccrual.Status.VOID)
+    cancel_pph_final_payment(payment=pph_payment, on=date(2026, 2, 11))
+    with refused():  # its journal entry is not reversed yet
+        PphFinalAccrual.objects.filter(pk=accrual.pk).update(status=PphFinalAccrual.Status.VOID)
+    cancel_pph_final_accrual(accrual=accrual, on=date(2026, 2, 11))
+    accrual.refresh_from_db()
+    assert accrual.status == PphFinalAccrual.Status.VOID
+
+
+def test_a_deposit_must_settle_a_matching_expense(pph_payment):
+    org, accrual = pph_payment.organization, pph_payment.accrual
+    cancel_pph_final_payment(payment=pph_payment, on=date(2026, 2, 11))
+    entry = create_journal_entry(
+        organization=org, date=date(2026, 2, 12), description="x",
+        lines=[JournalLineInput(Account.objects.get(organization=org, code="2-1200"), debit=D("5")),
+               JournalLineInput(pph_payment.cash_account, credit=D("5"))],
+    )
+    with refused():
+        PphFinalPayment.objects.create(
+            organization=org, year=2026, month=1, gross_turnover=D("1000"), taxable_turnover=D("1000"), tax_amount=D("5"),
+            paid_on=date(2026, 2, 12), cash_account=pph_payment.cash_account, journal_entry=entry, accrual=accrual,
+        )
 
 
 # --- Reference data: snapshot + lock when used ----------------------------------------

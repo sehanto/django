@@ -14,8 +14,8 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **Penjualan & Pembelian** | Sales invoices and purchase bills: draft → issued → partially paid / paid, or void. Issuing posts the journal and voiding reverses it. Numbering is gap-free in the Indonesian style (`INV/2026/10/0001`). Items catalog and printable invoices are included. |
 | **Pembayaran** | Receipts and disbursements per invoice through cash/bank accounts (Tunai, Transfer, QRIS, E-Wallet, Giro). A payment can be voided, which reverses its journal. |
 | **PPN** | Configurable rates, with defaults for PMK 131/2024: 12% on DPP 11/12 (effectively 11%) and 12% for luxury goods. Tax is computed per rate on the aggregated base and rounded down to whole rupiah. Only a PKP can charge output VAT. For a non-PKP, input VAT on purchases is capitalized into cost. |
-| **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Deposits are recorded with an NTPN and journaled automatically. Warns when turnover passes Rp4,8 miliar. |
-| **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. |
+| **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Accrual basis: each month's tax is recorded as an expense on the month's last day (Beban PPh Final / Utang PPh Final), and the deposit (with its NTPN) settles the liability; recording a deposit records a missing expense first. Warns when turnover passes Rp4,8 miliar. |
+| **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Catatan atas Laporan Keuangan, Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. See "SAK EMKM" below. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
 | **Bahasa** | Bahasa Indonesia or English, per user, with an ID/EN switch everywhere. Invoices print in each customer's or supplier's own document language. See [Languages](#languages). |
 
@@ -81,8 +81,9 @@ Key design decisions:
   - voiding requires an unpaid invoice whose journal entry has been reversed, and a void
     invoice is final.
 
-  Payments and PPh Final payments are inserted as recorded and can only be voided, after
-  their journal entry is reversed. They are never deleted: cancelling a PPh Final payment
+  Payments, PPh Final expenses and PPh Final payments are inserted as recorded and can only be voided, after
+  their journal entry is reversed (an expense only once its deposit is cancelled; a deposit must settle
+  an expense of the same period and amount, `taxes/0009`). They are never deleted: cancelling a PPh Final payment
   keeps it as a void record. Only the owner's organization purge removes them.
 
   Reference data stays editable for future documents but can't rewrite history
@@ -252,6 +253,24 @@ To record a new sensitive action, add an `AuditAction` (with its category) and c
 `apps.audit.services.record(action, request=..., organization=..., target=..., **details)`
 after the action succeeds.
 
+### SAK EMKM
+
+The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan Menengah):
+
+| Requirement | How it is met |
+|---|---|
+| Minimum statements | Laporan Posisi Keuangan, Laporan Laba Rugi and Catatan atas Laporan Keuangan (Reports → Notes). |
+| Accrual basis | Sales and purchases post when the invoice is issued, payments separately; PPh Final is accrued at each month's end and settled by the deposit. |
+| Historical cost, entity concept | Amounts are recorded at transaction value. Owner withdrawals go to *Prive*, a contra-equity account. |
+| Statement identification | Business name, date or period and "Amounts in Rupiah" on every statement. |
+| Comparative information | The position is compared with the previous year end; the income statement with the same period a year earlier (screen and CSV). |
+| Notes | Statement of compliance, basis of preparation, policies for revenue, receivables, inventory, fixed assets, liabilities, income tax and PPN (wording follows the organization's settings), one note per statement line group, and free-text additional information. |
+| Policy choices | Inventory cost formula (FIFO or weighted average) and depreciation method (straight line or declining balance) are organization settings, stated in the notes. |
+| Income tax | Current tax only (PPh Final or regular); no deferred tax. |
+
+Not automated yet: a fixed asset register with scheduled depreciation, and inventory valuation
+(purchases post to *Beban Pokok Penjualan*; adjust inventory with a journal entry after a stock count).
+
 ### Exporting the books
 
 Owners and admins can download their organization's complete books from
@@ -259,7 +278,7 @@ Owners and admins can download their organization's complete books from
 
 - the general journal (one row per line) and the chart of accounts;
 - sales invoices, purchase bills, their lines and payments;
-- contacts, items, PPN rates and PPh Final deposits;
+- contacts, items, PPN rates, PPh Final expenses and deposits;
 - the business profile, today's trial balance and a README.
 
 CSV files are UTF-8 with `;` separators (like the report downloads). Headers are in

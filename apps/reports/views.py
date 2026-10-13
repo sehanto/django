@@ -22,8 +22,8 @@ from apps.audit.domain import AuditAction
 from apps.tenants.mixins import ManageMixin, OrganizationMixin
 
 from .exports import archive_filename, write_books_archive
-from .forms import AsOfForm, LedgerForm, PeriodForm, start_of_year
-from .statements import build_balance_sheet, build_income_statement, build_trial_balance
+from .forms import AsOfForm, LedgerForm, PeriodForm, end_of_previous_year, one_year_earlier, start_of_year
+from .statements import FinancialNotes, build_balance_sheet, build_income_statement, build_trial_balance
 
 
 class ExportFormat(models.TextChoices):
@@ -37,6 +37,30 @@ def csv_response(filename: str, rows) -> HttpResponse:
     writer = csv.writer(response, delimiter=";")
     writer.writerows([csv_safe(cell) for cell in row] for row in rows)  # account names etc. are user data
     return response
+
+
+def income_statement(organization, date_from, date_to):
+    """The period with the same period a year earlier as the comparative."""
+    previous_from, previous_to = one_year_earlier(date_from), one_year_earlier(date_to)
+    return build_income_statement(
+        account_balances(organization, date_from=date_from, date_to=date_to), date_from, date_to,
+        previous_balances=account_balances(organization, date_from=previous_from, date_to=previous_to),
+        previous_from=previous_from, previous_to=previous_to,
+    )
+
+
+def balance_sheet(organization, as_of):
+    """Position at ``as_of``, compared with the end of the previous fiscal year."""
+    previous_as_of = end_of_previous_year(as_of)
+
+    def before_year(on):
+        return account_balances(organization, date_to=start_of_year(on) - timedelta(days=1))
+
+    return build_balance_sheet(
+        account_balances(organization, date_to=as_of), before_year(as_of), as_of,
+        previous_balances_to_date=account_balances(organization, date_to=previous_as_of),
+        previous_balances_before_year=before_year(previous_as_of), previous_as_of=previous_as_of,
+    )
 
 
 class ReportView(OrganizationMixin, TemplateView):
@@ -78,8 +102,7 @@ class IncomeStatementView(ReportView):
     csv_name = "income-statement.csv"
 
     def build(self, data):
-        balances = account_balances(self.organization, date_from=data["date_from"], date_to=data["date_to"])
-        return build_income_statement(balances, data["date_from"], data["date_to"])
+        return income_statement(self.organization, data["date_from"], data["date_to"])
 
 
 class BalanceSheetView(ReportView):
@@ -88,12 +111,21 @@ class BalanceSheetView(ReportView):
     csv_name = "balance-sheet.csv"
 
     def build(self, data):
+        return balance_sheet(self.organization, data["as_of"])
+
+
+class NotesView(ReportView):
+    """Notes for the year to date: what SAK EMKM requires next to the two statements."""
+
+    template_name = "reports/notes.html"
+    form_class = AsOfForm
+
+    def build(self, data):
         as_of = data["as_of"]
-        year_start = start_of_year(as_of)
-        return build_balance_sheet(
-            account_balances(self.organization, date_to=as_of),
-            account_balances(self.organization, date_to=year_start - timedelta(days=1)),
-            as_of,
+        return FinancialNotes(
+            organization=self.organization,
+            balance_sheet=balance_sheet(self.organization, as_of),
+            income_statement=income_statement(self.organization, start_of_year(as_of), as_of),
         )
 
 
