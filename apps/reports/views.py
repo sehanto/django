@@ -17,6 +17,7 @@ from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
 from apps.accounts.throttle import ThrottleScope, allow
+from apps.assets.selectors import revisions_in
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
 from apps.tenants.mixins import ManageMixin, OrganizationMixin
@@ -126,6 +127,7 @@ class NotesView(ReportView):
             organization=self.organization,
             balance_sheet=balance_sheet(self.organization, as_of),
             income_statement=income_statement(self.organization, start_of_year(as_of), as_of),
+            estimate_changes=list(revisions_in(self.organization, start_of_year(as_of), as_of)),
         )
 
 

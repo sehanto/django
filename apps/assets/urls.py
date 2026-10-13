@@ -11,5 +11,6 @@ urlpatterns = [
     path("<int:pk>/", views.AssetDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.AssetUpdateView.as_view(), name="update"),
     path("<int:pk>/delete/", views.AssetDeleteView.as_view(), name="delete"),
+    path("<int:pk>/revise/", views.AssetReviseView.as_view(), name="revise"),
     path("<int:pk>/dispose/", views.AssetDisposeView.as_view(), name="dispose"),
 ]

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 14:15+0700\n"
+"POT-Creation-Date: 2026-10-13 14:26+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -333,23 +333,23 @@ msgstr ""
 msgid "Fixed assets"
 msgstr "Aset Tetap"
 
-#: apps/assets/domain.py:34
+#: apps/assets/domain.py:40
 msgid "Straight line"
 msgstr "Garis lurus"
 
-#: apps/assets/domain.py:35
+#: apps/assets/domain.py:41
 msgid "Declining balance"
 msgstr "Saldo menurun"
 
-#: apps/assets/domain.py:39
+#: apps/assets/domain.py:45
 msgid "In use"
 msgstr "Digunakan"
 
-#: apps/assets/domain.py:40
+#: apps/assets/domain.py:46
 msgid "Disposed"
 msgstr "Dilepas"
 
-#: apps/assets/forms.py:39
+#: apps/assets/forms.py:40
 msgid ""
 "Depreciation has been posted for this asset, so its figures are fixed. The "
 "name and description can still change."
@@ -357,33 +357,65 @@ msgstr ""
 "Penyusutan aset ini sudah dijurnal, sehingga angkanya tetap. Nama dan "
 "keterangan masih dapat diubah."
 
-#: apps/assets/forms.py:46
+#: apps/assets/forms.py:47
 msgid "Required for a depreciable asset."
 msgstr "Wajib untuk aset yang disusutkan."
 
-#: apps/assets/forms.py:51
+#: apps/assets/forms.py:52
 msgid "Disposal date"
 msgstr "Tanggal pelepasan"
 
-#: apps/assets/forms.py:53
+#: apps/assets/forms.py:54
 msgid "Sale proceeds"
 msgstr "Hasil penjualan"
 
-#: apps/assets/forms.py:54
+#: apps/assets/forms.py:55
 msgid "0 for a write-off."
 msgstr "0 untuk penghapusan."
 
-#: apps/assets/forms.py:56
+#: apps/assets/forms.py:57
 msgid "Received in"
 msgstr "Diterima di"
 
-#: apps/assets/forms.py:58
+#: apps/assets/forms.py:59
 msgid "Gain or loss account"
 msgstr "Akun laba atau rugi"
 
-#: apps/assets/forms.py:59
+#: apps/assets/forms.py:60
 msgid "Other income for a gain, other expense for a loss."
 msgstr "Pendapatan lain-lain untuk laba, beban lain-lain untuk rugi."
+
+#: apps/assets/forms.py:71 templates/assets/asset_detail.html:39
+#: templates/reports/notes.html:61
+msgid "Applies from"
+msgstr "Berlaku mulai"
+
+#: apps/assets/forms.py:71
+msgid "The change applies from the start of this month."
+msgstr "Perubahan berlaku mulai awal bulan ini."
+
+#: apps/assets/forms.py:73 templates/assets/asset_detail.html:39
+#: templates/reports/notes.html:61
+msgid "Useful life (months)"
+msgstr "Umur manfaat (bulan)"
+
+#: apps/assets/forms.py:74 apps/assets/models.py:129
+msgid "The whole useful life, counted from the month of acquisition."
+msgstr "Seluruh umur manfaat, dihitung dari bulan perolehan."
+
+#: apps/assets/forms.py:77 templates/assets/asset_detail.html:28
+#: templates/assets/asset_detail.html:39 templates/reports/notes.html:61
+msgid "Residual value"
+msgstr "Nilai residu"
+
+#: apps/assets/forms.py:79 templates/assets/asset_detail.html:39
+#: templates/reports/notes.html:61
+msgid "Reason"
+msgstr "Alasan"
+
+#: apps/assets/forms.py:79
+msgid "E.g. the machine will be used two years longer than expected."
+msgstr "Misalnya mesin akan dipakai dua tahun lebih lama dari perkiraan."
 
 #: apps/assets/models.py:29 apps/billing/models.py:27
 #: apps/invoicing/models.py:66 apps/invoicing/models.py:243
@@ -434,7 +466,7 @@ msgstr "disusutkan"
 msgid "Turn off for land, which is not depreciated."
 msgstr "Matikan untuk tanah, yang tidak disusutkan."
 
-#: apps/assets/models.py:39
+#: apps/assets/models.py:39 apps/assets/models.py:131
 msgid "residual value"
 msgstr "nilai residu"
 
@@ -444,7 +476,7 @@ msgid ""
 "Usually 0."
 msgstr "Perkiraan nilai aset pada akhir umur manfaatnya. Biasanya 0."
 
-#: apps/assets/models.py:41
+#: apps/assets/models.py:41 apps/assets/models.py:128
 msgid "useful life (months)"
 msgstr "umur manfaat (bulan)"
 
@@ -492,7 +524,8 @@ msgstr "tanggal pelepasan"
 msgid "sale proceeds"
 msgstr "hasil penjualan"
 
-#: apps/assets/models.py:65 apps/assets/models.py:108
+#: apps/assets/models.py:65 apps/assets/models.py:125
+#: apps/assets/models.py:156
 msgid "fixed asset"
 msgstr "aset tetap"
 
@@ -500,57 +533,85 @@ msgstr "aset tetap"
 msgid "fixed assets"
 msgstr "aset tetap"
 
-#: apps/assets/models.py:109 apps/taxes/models.py:61 apps/taxes/models.py:91
+#: apps/assets/models.py:126
+msgid "applies from"
+msgstr "berlaku mulai"
+
+#: apps/assets/models.py:126
+msgid "The first month the new estimate applies to."
+msgstr "Bulan pertama estimasi baru berlaku."
+
+#: apps/assets/models.py:132
+msgid "previous useful life (months)"
+msgstr "umur manfaat sebelumnya (bulan)"
+
+#: apps/assets/models.py:133
+msgid "previous residual value"
+msgstr "nilai residu sebelumnya"
+
+#: apps/assets/models.py:134
+msgid "reason"
+msgstr "alasan"
+
+#: apps/assets/models.py:139
+msgid "change in estimate"
+msgstr "perubahan estimasi"
+
+#: apps/assets/models.py:140
+msgid "changes in estimates"
+msgstr "perubahan estimasi"
+
+#: apps/assets/models.py:157 apps/taxes/models.py:61 apps/taxes/models.py:91
 msgid "year"
 msgstr "tahun"
 
-#: apps/assets/models.py:110 apps/taxes/models.py:62 apps/taxes/models.py:92
+#: apps/assets/models.py:158 apps/taxes/models.py:62 apps/taxes/models.py:92
 msgid "month"
 msgstr "bulan"
 
-#: apps/assets/models.py:111 apps/invoicing/models.py:181
+#: apps/assets/models.py:159 apps/invoicing/models.py:181
 #: apps/invoicing/models.py:246
 msgid "amount"
 msgstr "jumlah"
 
-#: apps/assets/models.py:116
+#: apps/assets/models.py:164
 msgid "depreciation posting"
 msgstr "jurnal penyusutan"
 
-#: apps/assets/models.py:117
+#: apps/assets/models.py:165
 msgid "depreciation postings"
 msgstr "jurnal penyusutan"
 
-#: apps/assets/services.py:33
+#: apps/assets/services.py:35
 msgid "Choose a fixed asset account (not accumulated depreciation)."
 msgstr "Pilih akun aset tetap (bukan akumulasi penyusutan)."
 
-#: apps/assets/services.py:36
+#: apps/assets/services.py:38
 msgid "The cost must be positive and the residual value lower than the cost."
 msgstr ""
 "Biaya perolehan harus positif dan nilai residu lebih kecil dari biaya "
 "perolehan."
 
-#: apps/assets/services.py:40
+#: apps/assets/services.py:42
 msgid "Enter the useful life of a depreciable asset."
 msgstr "Isi umur manfaat aset yang disusutkan."
 
-#: apps/assets/services.py:43
+#: apps/assets/services.py:45
 msgid ""
 "Choose an accumulated depreciation account (a contra fixed asset account)."
 msgstr "Pilih akun akumulasi penyusutan (akun kontra aset tetap)."
 
-#: apps/assets/services.py:45
+#: apps/assets/services.py:47
 msgid "Choose an expense account for the depreciation."
 msgstr "Pilih akun beban untuk penyusutan."
 
-#: apps/assets/services.py:48
+#: apps/assets/services.py:50
 msgid "Depreciation already recorded can't end before the acquisition date."
 msgstr ""
 "Penyusutan yang sudah dicatat tidak dapat berakhir sebelum tanggal "
 "perolehan."
 
-#: apps/assets/services.py:98
+#: apps/assets/services.py:100
 msgid ""
 "This asset has posted depreciation or has been disposed, so it stays in the "
 "register."
@@ -558,23 +619,23 @@ msgstr ""
 "Aset ini sudah memiliki jurnal penyusutan atau sudah dilepas, sehingga tetap"
 " tercatat di daftar aset."
 
-#: apps/assets/services.py:144
+#: apps/assets/services.py:146
 msgid "This asset has already been disposed."
 msgstr "Aset ini sudah dilepas."
 
-#: apps/assets/services.py:147
+#: apps/assets/services.py:149
 msgid "The disposal date can't be before the acquisition date."
 msgstr "Tanggal pelepasan tidak boleh sebelum tanggal perolehan."
 
-#: apps/assets/services.py:150
+#: apps/assets/services.py:152
 msgid "The sale proceeds can't be negative."
 msgstr "Hasil penjualan tidak boleh negatif."
 
-#: apps/assets/services.py:152
+#: apps/assets/services.py:154
 msgid "Choose the cash or bank account that received the proceeds."
 msgstr "Pilih akun kas atau bank yang menerima hasil penjualan."
 
-#: apps/assets/services.py:159
+#: apps/assets/services.py:161
 #, python-format
 msgid ""
 "Depreciation is already posted for %(period)s. Choose a disposal date after "
@@ -583,10 +644,53 @@ msgstr ""
 "Penyusutan sudah dijurnal untuk masa %(period)s. Pilih tanggal pelepasan "
 "setelah bulan tersebut."
 
-#: apps/assets/services.py:167
+#: apps/assets/services.py:169
 msgid "Choose an other income or other expense account for the gain or loss."
 msgstr ""
 "Pilih akun pendapatan lain-lain atau beban lain-lain untuk laba atau rugi."
+
+#: apps/assets/services.py:215
+msgid "Only a depreciable asset in use can be revised."
+msgstr "Hanya aset yang disusutkan dan masih digunakan yang dapat direvisi."
+
+#: apps/assets/services.py:217
+msgid ""
+"No depreciation has been posted for this asset yet, so edit it instead."
+msgstr ""
+"Belum ada penyusutan yang dijurnal untuk aset ini, jadi ubah saja asetnya."
+
+#: apps/assets/services.py:219
+msgid "Give the reason for the change."
+msgstr "Isi alasan perubahan."
+
+#: apps/assets/services.py:225
+#, python-format
+msgid ""
+"Depreciation up to %(period)s is already recorded. The change can apply from"
+" %(earliest)s."
+msgstr ""
+"Penyusutan sampai masa %(period)s sudah dicatat. Perubahan dapat berlaku "
+"mulai %(earliest)s."
+
+#: apps/assets/services.py:231
+#, python-format
+msgid ""
+"The useful life must run past %(period)s: at least %(months)d month from "
+"acquisition."
+msgid_plural ""
+"The useful life must run past %(period)s: at least %(months)d months from "
+"acquisition."
+msgstr[0] ""
+"Umur manfaat harus melewati masa %(period)s: paling sedikit %(months)d bulan"
+" sejak perolehan."
+
+#: apps/assets/services.py:239
+#, python-format
+msgid ""
+"The residual value can't be more than the book value at that point "
+"(%(amount)s)."
+msgstr ""
+"Nilai residu tidak boleh melebihi nilai buku pada saat itu (%(amount)s)."
 
 #: apps/assets/views.py:51
 #, python-format
@@ -606,13 +710,23 @@ msgstr "Aset tetap disimpan."
 msgid "Fixed asset deleted."
 msgstr "Aset tetap dihapus."
 
-#: apps/assets/views.py:129
+#: apps/assets/views.py:136
 msgid "The disposal details are incomplete."
 msgstr "Data pelepasan belum lengkap."
 
-#: apps/assets/views.py:133
+#: apps/assets/views.py:140
 msgid "Fixed asset disposed and posted to the ledger."
 msgstr "Aset tetap dilepas dan dijurnal."
+
+#: apps/assets/views.py:151
+msgid "The new estimate is incomplete."
+msgstr "Estimasi baru belum lengkap."
+
+#: apps/assets/views.py:155
+msgid ""
+"Estimate revised. Depreciation from that month on follows the new schedule."
+msgstr ""
+"Estimasi direvisi. Penyusutan mulai bulan tersebut mengikuti jadwal baru."
 
 #: apps/audit/apps.py:7
 msgid "Audit log"
@@ -1262,7 +1376,7 @@ msgid "Item description"
 msgstr "Deskripsi"
 
 #: apps/invoicing/forms.py:53 apps/ledger/forms.py:40 apps/reports/forms.py:51
-#: apps/reports/statements.py:326 templates/assets/asset_list.html:23
+#: apps/reports/statements.py:327 templates/assets/asset_list.html:23
 #: templates/assets/asset_list.html:45
 #: templates/invoicing/invoice_form.html:13
 #: templates/invoicing/payment_list.html:11
@@ -1728,7 +1842,7 @@ msgid "General Ledger"
 msgstr "Buku Besar"
 
 #: apps/ledger/domain.py:17 apps/ledger/forms.py:42
-#: apps/reports/statements.py:326 templates/ledger/journal_detail.html:33
+#: apps/reports/statements.py:327 templates/ledger/journal_detail.html:33
 #: templates/ledger/journal_form.html:13
 #: templates/reports/general_ledger.html:10
 #: templates/reports/trial_balance.html:9
@@ -1736,7 +1850,7 @@ msgid "Debit"
 msgstr "Debit"
 
 #: apps/ledger/domain.py:18 apps/ledger/forms.py:43
-#: apps/reports/statements.py:326 templates/ledger/journal_detail.html:33
+#: apps/reports/statements.py:327 templates/ledger/journal_detail.html:33
 #: templates/ledger/journal_form.html:13
 #: templates/reports/general_ledger.html:10
 #: templates/reports/trial_balance.html:9
@@ -1864,7 +1978,8 @@ msgid "Payment"
 msgstr "Pembayaran"
 
 #: apps/ledger/domain.py:109 apps/reports/exports.py:186
-#: templates/assets/asset_form.html:2
+#: apps/reports/exports.py:193 templates/assets/asset_form.html:2
+#: templates/reports/notes.html:61
 msgid "Fixed asset"
 msgstr "Aset tetap"
 
@@ -1908,7 +2023,7 @@ msgstr ""
 msgid "System accounts are always active."
 msgstr "Akun sistem selalu aktif."
 
-#: apps/ledger/forms.py:41 templates/assets/asset_detail.html:33
+#: apps/ledger/forms.py:41 templates/assets/asset_detail.html:34
 #: templates/ledger/journal_detail.html:33
 #: templates/ledger/journal_form.html:13 templates/ledger/journal_list.html:15
 #: templates/reports/general_ledger.html:10
@@ -2184,8 +2299,8 @@ msgid "Contact NPWP on the invoice"
 msgstr "NPWP kontak pada faktur"
 
 #: apps/reports/exports.py:143 apps/reports/exports.py:163
-#: apps/reports/exports.py:187 apps/reports/exports.py:194
-#: apps/reports/exports.py:202 templates/assets/asset_detail.html:38
+#: apps/reports/exports.py:194 apps/reports/exports.py:201
+#: apps/reports/exports.py:209 templates/assets/asset_detail.html:49
 #: templates/invoicing/invoice_detail.html:26
 msgid "Journal entry"
 msgstr "Jurnal"
@@ -2206,7 +2321,7 @@ msgstr "Kode barang/jasa"
 msgid "Receipts and disbursements."
 msgstr "Penerimaan dan pengeluaran."
 
-#: apps/reports/exports.py:162 apps/reports/exports.py:201
+#: apps/reports/exports.py:162 apps/reports/exports.py:208
 msgid "Cash/bank account code"
 msgstr "Kode akun kas/bank"
 
@@ -2235,53 +2350,57 @@ msgid "Disposal journal entry"
 msgstr "Jurnal pelepasan"
 
 #: apps/reports/exports.py:185
+msgid "Changes in the useful life and residual value of fixed assets."
+msgstr "Perubahan umur manfaat dan nilai residu aset tetap."
+
+#: apps/reports/exports.py:192
 msgid "Depreciation posted per asset and month."
 msgstr "Penyusutan yang dijurnal per aset dan bulan."
 
-#: apps/reports/exports.py:192
+#: apps/reports/exports.py:199
 msgid "MSME PPh Final expenses, recognised at the end of each month."
 msgstr "Beban PPh Final UMKM, diakui pada akhir setiap bulan."
 
-#: apps/reports/exports.py:199
+#: apps/reports/exports.py:206
 msgid "MSME PPh Final deposits."
 msgstr "Setoran PPh Final UMKM."
 
-#: apps/reports/exports.py:224
+#: apps/reports/exports.py:231
 msgid "Field"
 msgstr "Kolom"
 
-#: apps/reports/exports.py:224
+#: apps/reports/exports.py:231
 msgid "Value"
 msgstr "Nilai"
 
-#: apps/reports/exports.py:232
+#: apps/reports/exports.py:239
 msgid "Business profile."
 msgstr "Profil usaha."
 
-#: apps/reports/exports.py:234
+#: apps/reports/exports.py:241
 #, python-format
 msgid "Trial balance of posted entries as of %(date)s."
 msgstr "Neraca saldo dari jurnal yang diposting per %(date)s."
 
-#: apps/reports/exports.py:237
+#: apps/reports/exports.py:244
 #, python-format
 msgid "Books of %(organization)s"
 msgstr "Pembukuan %(organization)s"
 
-#: apps/reports/exports.py:238
+#: apps/reports/exports.py:245
 #, python-format
 msgid "Exported on %(datetime)s by %(user)s."
 msgstr "Diekspor pada %(datetime)s oleh %(user)s."
 
-#: apps/reports/exports.py:240
+#: apps/reports/exports.py:247
 msgid "the system operator"
 msgstr "operator sistem"
 
-#: apps/reports/exports.py:243
+#: apps/reports/exports.py:250
 msgid "Files:"
 msgstr "Berkas:"
 
-#: apps/reports/exports.py:246
+#: apps/reports/exports.py:253
 msgid ""
 "CSV files are UTF-8 and separated by semicolons (;). Amounts are in rupiah "
 "with a dot as the decimal separator; dates are YYYY-MM-DD. Account names, "
@@ -2291,7 +2410,7 @@ msgstr ""
 "rupiah dengan titik sebagai pemisah desimal; tanggal berformat YYYY-MM-DD. "
 "Nama akun, keterangan, dan data usaha lainnya diekspor sesuai yang dicatat."
 
-#: apps/reports/exports.py:249
+#: apps/reports/exports.py:256
 msgid ""
 "Indonesian taxpayers must keep their books and records for 10 years (UU KUP "
 "Art. 28(11))."
@@ -2299,12 +2418,12 @@ msgstr ""
 "Wajib Pajak wajib menyimpan pembukuan dan catatan selama 10 tahun (UU KUP "
 "Pasal 28 ayat 11)."
 
-#: apps/reports/exports.py:251
+#: apps/reports/exports.py:258
 #, python-format
 msgid "Ledger chain head: %(head)s"
 msgstr "Ujung rantai buku besar: %(head)s"
 
-#: apps/reports/exports.py:252
+#: apps/reports/exports.py:259
 msgid ""
 "Each posted journal entry carries a SHA-256 hash that includes the previous "
 "entry's hash. Keep this head: if any posted entry is later changed or "
@@ -2402,29 +2521,29 @@ msgstr "Aset Lancar"
 msgid "Capital"
 msgstr "Modal"
 
-#: apps/reports/statements.py:326 templates/invoicing/item_list.html:10
+#: apps/reports/statements.py:327 templates/invoicing/item_list.html:10
 #: templates/ledger/account_list.html:9 templates/reports/trial_balance.html:9
 msgid "Code"
 msgstr "Kode"
 
-#: apps/reports/statements.py:329 templates/reports/trial_balance.html:12
+#: apps/reports/statements.py:330 templates/reports/trial_balance.html:12
 msgid "TOTAL"
 msgstr "TOTAL"
 
-#: apps/reports/statements.py:345 templates/reports/_section.html:5
+#: apps/reports/statements.py:346 templates/reports/_section.html:5
 #, python-format
 msgid "Total %(section)s"
 msgstr "Total %(section)s"
 
-#: apps/reports/views.py:151
+#: apps/reports/views.py:153
 msgid "Receivables aging"
 msgstr "Umur Piutang"
 
-#: apps/reports/views.py:151
+#: apps/reports/views.py:153
 msgid "Payables aging"
 msgstr "Umur Utang"
 
-#: apps/reports/views.py:175
+#: apps/reports/views.py:177
 msgid "Too many exports in the last hour. Please try again later."
 msgstr ""
 "Terlalu banyak ekspor dalam satu jam terakhir. Silakan coba lagi nanti."
@@ -3160,9 +3279,10 @@ msgid "Change password"
 msgstr "Ubah kata sandi"
 
 #: templates/accounts/password_change.html:10
-#: templates/accounts/profile.html:10 templates/assets/asset_form.html:12
-#: templates/contacts/contact_form.html:9 templates/invoicing/item_form.html:9
-#: templates/ledger/account_form.html:9 templates/taxes/taxrate_form.html:9
+#: templates/accounts/profile.html:10 templates/assets/asset_detail.html:68
+#: templates/assets/asset_form.html:12 templates/contacts/contact_form.html:9
+#: templates/invoicing/item_form.html:9 templates/ledger/account_form.html:9
+#: templates/taxes/taxrate_form.html:9
 msgid "Save"
 msgstr "Simpan"
 
@@ -3524,15 +3644,19 @@ msgstr "Perbarui dan kirim tautan"
 msgid "Edit"
 msgstr "Ubah"
 
-#: templates/assets/asset_detail.html:10 templates/assets/asset_detail.html:52
+#: templates/assets/asset_detail.html:10 templates/assets/asset_detail.html:63
+msgid "Revise estimate"
+msgstr "Revisi estimasi"
+
+#: templates/assets/asset_detail.html:11 templates/assets/asset_detail.html:73
 msgid "Sell or write off"
 msgstr "Jual atau hapus"
 
-#: templates/assets/asset_detail.html:11
+#: templates/assets/asset_detail.html:12
 msgid "Delete this asset from the register?"
 msgstr "Hapus aset ini dari daftar?"
 
-#: templates/assets/asset_detail.html:11
+#: templates/assets/asset_detail.html:12
 #: templates/contacts/contact_list.html:24
 #: templates/invoicing/invoice_detail.html:15
 #: templates/ledger/account_list.html:21
@@ -3540,92 +3664,102 @@ msgstr "Hapus aset ini dari daftar?"
 msgid "Delete"
 msgstr "Hapus"
 
-#: templates/assets/asset_detail.html:16 templates/assets/asset_list.html:23
+#: templates/assets/asset_detail.html:17 templates/assets/asset_list.html:23
 msgid "Cost"
 msgstr "Biaya perolehan"
 
-#: templates/assets/asset_detail.html:17 templates/assets/asset_list.html:23
+#: templates/assets/asset_detail.html:18 templates/assets/asset_list.html:23
 msgid "Accumulated depreciation"
 msgstr "Akumulasi penyusutan"
 
-#: templates/assets/asset_detail.html:18 templates/assets/asset_detail.html:38
+#: templates/assets/asset_detail.html:19 templates/assets/asset_detail.html:49
 #: templates/assets/asset_list.html:23
 msgid "Book value"
 msgstr "Nilai buku"
 
-#: templates/assets/asset_detail.html:19 templates/assets/asset_detail.html:38
+#: templates/assets/asset_detail.html:20 templates/assets/asset_detail.html:49
 msgid "Depreciation"
 msgstr "Penyusutan"
 
-#: templates/assets/asset_detail.html:20
+#: templates/assets/asset_detail.html:21
 #, python-format
 msgid "%(method)s, %(months)s month"
 msgid_plural "%(method)s, %(months)s months"
 msgstr[0] "%(method)s, %(months)s bulan"
 
-#: templates/assets/asset_detail.html:20
+#: templates/assets/asset_detail.html:21
 msgid "Not depreciated (land)"
 msgstr "Tidak disusutkan (tanah)"
 
-#: templates/assets/asset_detail.html:24
+#: templates/assets/asset_detail.html:25
 msgid "Acquisition date"
 msgstr "Tanggal perolehan"
 
-#: templates/assets/asset_detail.html:25
+#: templates/assets/asset_detail.html:26
 msgid "Fixed asset account"
 msgstr "Akun aset tetap"
 
-#: templates/assets/asset_detail.html:27
-msgid "Residual value"
-msgstr "Nilai residu"
-
-#: templates/assets/asset_detail.html:28
+#: templates/assets/asset_detail.html:29
 msgid "Accumulated depreciation account"
 msgstr "Akun akumulasi penyusutan"
 
-#: templates/assets/asset_detail.html:29
+#: templates/assets/asset_detail.html:30
 msgid "Depreciation expense account"
 msgstr "Akun beban penyusutan"
 
-#: templates/assets/asset_detail.html:30
+#: templates/assets/asset_detail.html:31
 msgid "Already depreciated through"
 msgstr "Sudah disusutkan sampai"
 
-#: templates/assets/asset_detail.html:32
+#: templates/assets/asset_detail.html:33
 msgid "Disposal"
 msgstr "Pelepasan"
 
-#: templates/assets/asset_detail.html:36
+#: templates/assets/asset_detail.html:37
+msgid "Changes in estimate"
+msgstr "Perubahan estimasi"
+
+#: templates/assets/asset_detail.html:47
 msgid "Depreciation schedule"
 msgstr "Jadwal penyusutan"
 
-#: templates/assets/asset_detail.html:38 templates/dashboard/home.html:50
+#: templates/assets/asset_detail.html:49 templates/dashboard/home.html:50
 msgid "Month"
 msgstr "Bulan"
 
-#: templates/assets/asset_detail.html:38
+#: templates/assets/asset_detail.html:49
 msgid "Accumulated"
 msgstr "Akumulasi"
 
-#: templates/assets/asset_detail.html:43
+#: templates/assets/asset_detail.html:54
 msgid "In opening balances"
 msgstr "Di saldo awal"
 
-#: templates/assets/asset_detail.html:44
+#: templates/assets/asset_detail.html:55
 msgid "Not posted yet"
 msgstr "Belum dijurnal"
 
-#: templates/assets/asset_detail.html:45
+#: templates/assets/asset_detail.html:56
 msgid "Scheduled"
 msgstr "Terjadwal"
 
-#: templates/assets/asset_detail.html:52
+#: templates/assets/asset_detail.html:63 templates/assets/asset_detail.html:73
 #: templates/invoicing/invoice_detail.html:53
 #: templates/partials/messages.html:5 templates/taxes/pph_final.html:63
 msgid "Close"
 msgstr "Tutup"
 
-#: templates/assets/asset_detail.html:55
+#: templates/assets/asset_detail.html:66
+msgid ""
+"A change in estimate applies from then on (SAK EMKM): depreciation already "
+"posted stays, and the remaining book value less the new residual value is "
+"spread over the remaining months."
+msgstr ""
+"Perubahan estimasi berlaku ke depan (SAK EMKM): penyusutan yang sudah "
+"dijurnal tetap, dan sisa nilai buku dikurangi nilai residu baru dibagi rata "
+"ke sisa bulan."
+
+#: templates/assets/asset_detail.html:76
 msgid ""
 "Depreciation runs to the end of the month before the disposal and is posted "
 "first if it is still due. The entry removes the cost and accumulated "
@@ -3637,7 +3771,7 @@ msgstr ""
 "penyusutan, mencatat hasil penjualan, dan membukukan selisihnya sebagai laba"
 " atau rugi."
 
-#: templates/assets/asset_detail.html:57
+#: templates/assets/asset_detail.html:78
 msgid "Dispose & post"
 msgstr "Lepas & jurnal"
 
@@ -4924,13 +5058,15 @@ msgstr ""
 msgid ""
 "Fixed assets are measured at cost less accumulated depreciation. Land is not"
 " depreciated; other fixed assets are depreciated monthly over their useful "
-"lives using the %(method)s method, from the month they are acquired. When an"
-" asset is sold or written off, the difference between the proceeds and its "
-"book value is recognised as a gain or loss."
+"lives using the %(method)s method, from the month they are acquired. Changes"
+" in useful life or residual value are applied prospectively. When an asset "
+"is sold or written off, the difference between the proceeds and its book "
+"value is recognised as a gain or loss."
 msgstr ""
 "Aset tetap diukur sebesar biaya perolehan dikurangi akumulasi penyusutan. "
 "Tanah tidak disusutkan; aset tetap lainnya disusutkan setiap bulan selama "
-"umur manfaatnya dengan metode %(method)s, mulai bulan perolehan. Bila aset "
+"umur manfaatnya dengan metode %(method)s, mulai bulan perolehan. Perubahan "
+"umur manfaat atau nilai residu diterapkan secara prospektif. Bila aset "
 "dijual atau dihapus, selisih antara hasil penjualan dan nilai bukunya diakui"
 " sebagai laba atau rugi."
 
@@ -4982,11 +5118,25 @@ msgstr ""
 " yang dibayar kepada pemasok bukan pendapatan atau beban. Saldonya disajikan"
 " sebagai liabilitas (PPN Keluaran) dan aset (PPN Masukan)."
 
-#: templates/reports/notes.html:57
+#: templates/reports/notes.html:58
+msgid "Changes in accounting estimates"
+msgstr "Perubahan estimasi akuntansi"
+
+#: templates/reports/notes.html:59
+msgid ""
+"The useful life or residual value of these fixed assets was revised. The "
+"change applies from the month shown; depreciation recorded earlier is not "
+"restated."
+msgstr ""
+"Umur manfaat atau nilai residu aset tetap berikut direvisi. Perubahan "
+"berlaku mulai bulan yang tercantum; penyusutan yang dicatat sebelumnya tidak"
+" disajikan kembali."
+
+#: templates/reports/notes.html:69
 msgid "Additional information"
 msgstr "Informasi tambahan"
 
-#: templates/reports/notes.html:58
+#: templates/reports/notes.html:70
 #, python-format
 msgid ""
 "None. Add commitments, guarantees, events after the reporting date or other "

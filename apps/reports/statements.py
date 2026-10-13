@@ -284,6 +284,7 @@ class FinancialNotes:
     organization: object
     balance_sheet: BalanceSheet
     income_statement: IncomeStatement
+    estimate_changes: list = field(default_factory=list)  # fixed asset revisions effective in the period
 
     @property
     def item_notes(self) -> list[ItemNote]:

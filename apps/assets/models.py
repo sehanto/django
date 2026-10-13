@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, money_field
 from apps.core.money import ZERO
 
-from .domain import MAX_USEFUL_LIFE_MONTHS, AssetStatus, DepreciationMethod, ScheduledMonth, depreciation_schedule
+from .domain import MAX_USEFUL_LIFE_MONTHS, AssetStatus, DepreciationMethod, Estimate, ScheduledMonth, depreciation_schedule
 
 
 class FixedAsset(TenantOwnedModel):
@@ -80,12 +80,27 @@ class FixedAsset(TenantOwnedModel):
         return f"{self.number} · {self.name}"
 
     @property
+    def estimates(self) -> list["AssetRevision"]:
+        return sorted(self.revisions.all(), key=lambda r: (r.effective_from, r.pk))
+
+    @property
+    def current_useful_life_months(self) -> int | None:
+        revisions = self.estimates
+        return revisions[-1].useful_life_months if revisions else self.useful_life_months
+
+    @property
+    def current_residual_value(self):
+        revisions = self.estimates
+        return revisions[-1].residual_value if revisions else self.residual_value
+
+    @property
     def schedule(self) -> list[ScheduledMonth]:
         if not self.is_depreciable:
             return []
         return depreciation_schedule(
             cost=self.cost, residual_value=self.residual_value, useful_life_months=self.useful_life_months,
             method=self.method, acquired_on=self.acquisition_date,
+            revisions=[r.estimate for r in self.estimates],
         )
 
     def is_booked_elsewhere(self, month: ScheduledMonth) -> bool:
@@ -97,6 +112,39 @@ class FixedAsset(TenantOwnedModel):
         """Accumulated depreciation already in the opening balances."""
         booked = [m for m in self.schedule if self.is_booked_elsewhere(m)]
         return booked[-1].accumulated if booked else ZERO
+
+
+class AssetRevision(TenantOwnedModel):
+    """A change in accounting estimate: a new useful life and residual value from a month on.
+
+    Applied prospectively (past depreciation stays as posted). Append-only in the database
+    (assets migration 0004): it starts after the last posted month and after earlier
+    revisions; a mistake is corrected by another revision.
+    """
+
+    asset = models.ForeignKey(FixedAsset, on_delete=models.PROTECT, related_name="revisions", verbose_name=_("fixed asset"))
+    effective_from = models.DateField(_("applies from"), help_text=_("The first month the new estimate applies to."))
+    useful_life_months = models.PositiveSmallIntegerField(
+        _("useful life (months)"), validators=[MinValueValidator(1), MaxValueValidator(MAX_USEFUL_LIFE_MONTHS)],
+        help_text=_("The whole useful life, counted from the month of acquisition."),
+    )
+    residual_value = money_field(_("residual value"), validators=[MinValueValidator(0)])
+    previous_useful_life_months = models.PositiveSmallIntegerField(_("previous useful life (months)"))
+    previous_residual_value = money_field(_("previous residual value"))
+    reason = models.CharField(_("reason"), max_length=255)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["effective_from", "pk"]
+        verbose_name = _("change in estimate")
+        verbose_name_plural = _("changes in estimates")
+
+    def __str__(self):
+        return f"{self.asset.number} {self.effective_from:%m/%Y}"
+
+    @property
+    def estimate(self) -> Estimate:
+        return Estimate((self.effective_from.year, self.effective_from.month), self.useful_life_months, self.residual_value)
 
 
 class DepreciationPosting(TenantOwnedModel):

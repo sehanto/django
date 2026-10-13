@@ -13,7 +13,7 @@ from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
-from .forms import DisposalForm, FixedAssetForm
+from .forms import DisposalForm, FixedAssetForm, RevisionForm
 from .selectors import accumulated_depreciation, assets_for, due_depreciation, posted_amounts, reconcile, register
 
 
@@ -110,13 +110,20 @@ class AssetDetailView(OrganizationMixin, DetailView):
         today = timezone.localdate()
         schedule = [(m, posted.get(m.key), asset.is_booked_elsewhere(m)) for m in asset.schedule]
         accumulated = accumulated_depreciation(asset)
+        locked = services.is_locked(asset)
+        can_revise = locked and asset.status == asset.Status.ACTIVE and asset.is_depreciable
         return super().get_context_data(
             schedule=schedule,
             accumulated=accumulated,
             book_value=ZERO if asset.status == asset.Status.DISPOSED else asset.cost - accumulated,
             today=today,
-            locked=services.is_locked(asset),
+            locked=locked,
             disposal_form=DisposalForm(organization=self.organization, initial={"on": today}),
+            revisions=asset.estimates,
+            revision_form=RevisionForm(initial={
+                "effective_from": services.first_revisable_month(asset), "useful_life_months": asset.current_useful_life_months,
+                "residual_value": asset.current_residual_value,
+            }) if can_revise else None,
             **kwargs,
         )
 
@@ -134,3 +141,18 @@ class AssetDisposeView(WriteMixin, View):
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect(reverse("assets:detail", args=[asset.pk]))
+
+
+class AssetReviseView(WriteMixin, View):
+    def post(self, request, pk):
+        asset = get_object_or_404(assets_for(self.organization), pk=pk)
+        form = RevisionForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _("The new estimate is incomplete."))
+            return redirect("assets:detail", asset.pk)
+        try:
+            services.revise_estimate(asset=asset, created_by=request.user, **form.cleaned_data)
+            messages.success(request, _("Estimate revised. Depreciation from that month on follows the new schedule."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("assets:detail", asset.pk)

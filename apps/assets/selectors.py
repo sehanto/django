@@ -11,13 +11,13 @@ from apps.ledger.models import Account
 from apps.ledger.selectors import account_balance, accounts_for
 
 from .domain import ScheduledMonth
-from .models import DepreciationPosting, FixedAsset
+from .models import AssetRevision, DepreciationPosting, FixedAsset
 
 
 def assets_for(organization) -> QuerySet[FixedAsset]:
     return FixedAsset.objects.for_organization(organization).select_related(
         "asset_account", "accumulated_depreciation_account", "depreciation_expense_account", "disposal_entry"
-    )
+    ).prefetch_related("revisions")
 
 
 def fixed_asset_accounts(organization) -> QuerySet[Account]:
@@ -122,3 +122,12 @@ def reconcile(organization, rows: list[RegisterRow], as_of: date) -> list[Reconc
         for pk, account in sorted(accounts.items(), key=lambda item: item[1].code)
     ]
 
+
+
+def revisions_in(organization, date_from: date, date_to: date) -> QuerySet[AssetRevision]:
+    """Changes in estimate that take effect in the period (disclosed in the notes)."""
+    return (
+        AssetRevision.objects.for_organization(organization)
+        .filter(effective_from__gte=date(date_from.year, date_from.month, 1), effective_from__lte=date_to)
+        .select_related("asset")
+    )

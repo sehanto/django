@@ -12,9 +12,15 @@ asset with a useful life of 48 months is fully depreciated after its 48th month:
 
 Monthly amounts are whole rupiah, rounded on the running total so that they always
 add up exactly to the depreciable amount.
+
+A revised useful life or residual value is a change in accounting estimate, applied
+prospectively: months before the revision keep their amounts, and from the revision's
+month the book value at that point, less the new residual value, is depreciated over the
+remaining useful life with the same method.
 """
 
 import calendar
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
@@ -98,18 +104,52 @@ def _yearly_charges(depreciable: Decimal, residual: Decimal, life_months: int, m
     return charges
 
 
-def depreciation_schedule(
-    *, cost: Decimal, residual_value: Decimal, useful_life_months: int, method: str, acquired_on: date
-) -> list[ScheduledMonth]:
-    """Month-by-month depreciation from the month of acquisition to the end of the useful life."""
+@dataclass(frozen=True)
+class Estimate:
+    """A revised useful life (total, counted from the month of acquisition) and residual value,
+    applied from ``starts`` (year, month)."""
+
+    starts: tuple[int, int]
+    useful_life_months: int
+    residual_value: Decimal
+
+
+def months_between(start: tuple[int, int], end: tuple[int, int]) -> int:
+    return (end[0] - start[0]) * MONTHS_PER_YEAR + (end[1] - start[1])
+
+
+def _plain_schedule(cost: Decimal, residual_value: Decimal, life_months: int, method: str, start: tuple[int, int]) -> list[ScheduledMonth]:
     depreciable = quantize(cost) - quantize(residual_value)
-    if depreciable <= 0 or useful_life_months <= 0:
+    if depreciable <= 0 or life_months <= 0:
         return []
     schedule, accumulated, offset = [], ZERO, 0
-    for charge, months in _yearly_charges(depreciable, quantize(residual_value), useful_life_months, method):
+    for charge, months in _yearly_charges(depreciable, quantize(residual_value), life_months, method):
         for amount in _spread(charge, months):
-            year, month = add_months(acquired_on.year, acquired_on.month, offset)
+            year, month = add_months(*start, offset)
             accumulated += amount
             schedule.append(ScheduledMonth(year, month, amount, accumulated, quantize(cost) - accumulated))
             offset += 1
+    return schedule
+
+
+def accumulated_before(schedule: Sequence[ScheduledMonth], key: tuple[int, int]) -> Decimal:
+    earlier = [m for m in schedule if m.key < key]
+    return earlier[-1].accumulated if earlier else ZERO
+
+
+def depreciation_schedule(
+    *, cost: Decimal, residual_value: Decimal, useful_life_months: int, method: str, acquired_on: date,
+    revisions: Sequence[Estimate] = (),
+) -> list[ScheduledMonth]:
+    """Month-by-month depreciation from the month of acquisition to the end of the useful life,
+    with each revision applied from its month on (in order; a later one for the same month wins)."""
+    acquired = (acquired_on.year, acquired_on.month)
+    schedule = _plain_schedule(cost, residual_value, useful_life_months, method, acquired)
+    for revision in sorted(revisions, key=lambda r: r.starts):  # stable: same-month revisions keep their order
+        before = accumulated_before(schedule, revision.starts)
+        remaining = revision.useful_life_months - months_between(acquired, revision.starts)
+        tail = _plain_schedule(quantize(cost) - before, revision.residual_value, remaining, method, revision.starts)
+        schedule = [m for m in schedule if m.key < revision.starts] + [
+            ScheduledMonth(m.year, m.month, m.amount, before + m.accumulated, m.book_value) for m in tail
+        ]
     return schedule

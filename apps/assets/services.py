@@ -5,8 +5,10 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
+from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.validators import ensure_business_date
@@ -14,8 +16,8 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import add_months, month_end
-from .models import DepreciationPosting, FixedAsset
+from .domain import accumulated_before, add_months, month_end, months_between
+from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 
 NUMBER_PREFIX = "AT"
@@ -187,3 +189,57 @@ def dispose_asset(
     asset.disposal_entry = entry
     asset.save(update_fields=["status", "disposed_on", "disposal_proceeds", "disposal_entry", "updated_at"])
     return asset
+
+
+def first_revisable_month(asset: FixedAsset) -> date:
+    """The first month a change in estimate can apply to: after the posted and opening-balance months."""
+    candidates = [date(asset.acquisition_date.year, asset.acquisition_date.month, 1)]
+    if asset.depreciated_before_until:
+        candidates.append(date(*add_months(asset.depreciated_before_until.year, asset.depreciated_before_until.month, 1), 1))
+    posted = posted_amounts(asset)
+    if posted:
+        candidates.append(date(*add_months(*max(posted), 1), 1))
+    candidates += [r.effective_from for r in asset.estimates]
+    return max(candidates)
+
+
+@transaction.atomic
+def revise_estimate(
+    *, asset: FixedAsset, effective_from: date, useful_life_months: int, residual_value: Decimal, reason: str, created_by=None
+) -> AssetRevision:
+    """Change the useful life and residual value from a month on (a change in accounting
+    estimate, applied prospectively): depreciation already posted stays, and from that month
+    the remaining book value less the new residual value is spread over the remaining life."""
+    asset = FixedAsset.objects.select_for_update().get(pk=asset.pk)
+    if asset.status != FixedAsset.Status.ACTIVE or not asset.is_depreciable:
+        raise InvalidStateTransition(_("Only a depreciable asset in use can be revised."))
+    if not is_locked(asset):
+        raise InvalidStateTransition(_("No depreciation has been posted for this asset yet, so edit it instead."))
+    if not reason.strip():
+        raise ValidationFailed(_("Give the reason for the change."))
+    ensure_business_date(effective_from)
+    starts = date(effective_from.year, effective_from.month, 1)
+    earliest = first_revisable_month(asset)
+    if starts < earliest:
+        raise ValidationFailed(
+            _("Depreciation up to %(period)s is already recorded. The change can apply from %(earliest)s.")
+            % {"period": _period(*add_months(earliest.year, earliest.month, -1)), "earliest": _period(earliest.year, earliest.month)}
+        )
+    elapsed = months_between((asset.acquisition_date.year, asset.acquisition_date.month), (starts.year, starts.month))
+    if useful_life_months <= elapsed:
+        raise ValidationFailed(ngettext(
+            "The useful life must run past %(period)s: at least %(months)d month from acquisition.",
+            "The useful life must run past %(period)s: at least %(months)d months from acquisition.",
+            elapsed + 1,
+        ) % {"period": _period(starts.year, starts.month), "months": elapsed + 1})
+    residual_value = quantize(residual_value or ZERO)
+    book_value = asset.cost - accumulated_before(asset.schedule, (starts.year, starts.month))
+    if residual_value < 0 or residual_value > book_value:
+        raise ValidationFailed(
+            _("The residual value can't be more than the book value at that point (%(amount)s).") % {"amount": localized_rupiah(book_value)}
+        )
+    return AssetRevision.objects.create(
+        organization=asset.organization, asset=asset, effective_from=starts, useful_life_months=useful_life_months,
+        residual_value=residual_value, previous_useful_life_months=asset.current_useful_life_months,
+        previous_residual_value=asset.current_residual_value, reason=reason.strip(), created_by=created_by,
+    )

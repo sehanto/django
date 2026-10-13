@@ -32,7 +32,7 @@
   <li class="mb-2"><strong>{% translate "Inventory" %}.</strong>
     {% blocktranslate trimmed with formula=org.get_inventory_cost_formula_display %}Inventory is measured at cost: the purchase price and the other costs of bringing it to its present location and condition. The cost of inventory sold is determined using the {{ formula }} formula.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Fixed assets" %}.</strong>
-    {% blocktranslate trimmed with method=org.get_depreciation_method_display %}Fixed assets are measured at cost less accumulated depreciation. Land is not depreciated; other fixed assets are depreciated monthly over their useful lives using the {{ method }} method, from the month they are acquired. When an asset is sold or written off, the difference between the proceeds and its book value is recognised as a gain or loss.{% endblocktranslate %}</li>
+    {% blocktranslate trimmed with method=org.get_depreciation_method_display %}Fixed assets are measured at cost less accumulated depreciation. Land is not depreciated; other fixed assets are depreciated monthly over their useful lives using the {{ method }} method, from the month they are acquired. Changes in useful life or residual value are applied prospectively. When an asset is sold or written off, the difference between the proceeds and its book value is recognised as a gain or loss.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Liabilities" %}.</strong>
     {% translate "Liabilities are stated at the amount needed to settle them." %}</li>
   <li class="mb-2"><strong>{% translate "Income tax" %}.</strong>
@@ -54,7 +54,19 @@
 </table></div>
 {% endwith %}{% endfor %}
 
-<h2 class="h6 fw-bold">{{ report.item_notes|length|add:3 }}. {% translate "Additional information" %}</h2>
+{% if report.estimate_changes %}
+<h2 class="h6 fw-bold">{{ report.item_notes|length|add:3 }}. {% translate "Changes in accounting estimates" %}</h2>
+<p class="small">{% translate "The useful life or residual value of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
+<div class="table-responsive mb-4"><table class="table table-sm mb-0 small">
+  <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Reason" %}</th></tr></thead>
+  <tbody>{% for r in report.estimate_changes %}
+    <tr><td>{{ r.asset.number }} {{ r.asset.name }}</td><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
+      <td class="num">{{ r.previous_residual_value|rupiah }} → {{ r.residual_value|rupiah }}</td><td>{{ r.reason }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endif %}
+
+<h2 class="h6 fw-bold">{% if report.estimate_changes %}{{ report.item_notes|length|add:4 }}{% else %}{{ report.item_notes|length|add:3 }}{% endif %}. {% translate "Additional information" %}</h2>
 <p class="small mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-secondary">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
 </div></div>
 {% endwith %}{% endif %}

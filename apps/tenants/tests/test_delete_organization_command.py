@@ -50,7 +50,7 @@ def test_deletes_tax_records_too(other_organization):
 
 def test_deletes_the_fixed_asset_register_too(organization, account):
     from apps.assets import services as assets
-    from apps.assets.models import DepreciationPosting, FixedAsset
+    from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
 
     asset = assets.register_asset(
         organization=organization, name="Mesin", description="", asset_account=account("1-2300"), acquisition_date=date(2026, 1, 5),
@@ -58,10 +58,12 @@ def test_deletes_the_fixed_asset_register_too(organization, account):
         accumulated_depreciation_account=account("1-2900"), depreciation_expense_account=account("6-1600"), depreciated_before_until=None,
     )
     assets.post_depreciation(organization=organization, through=date(2026, 2, 28))
+    assets.revise_estimate(asset=asset, effective_from=date(2026, 3, 1), useful_life_months=24, residual_value=Decimal("0"), reason="x")
     assets.dispose_asset(asset=asset, on=date(2026, 3, 2), gain_loss_account=account("7-1100"))
     call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
     assert not FixedAsset.objects.filter(organization_id=organization.pk).exists()
     assert not DepreciationPosting.objects.filter(organization_id=organization.pk).exists()
+    assert not AssetRevision.objects.filter(organization_id=organization.pk).exists()
 
 
 def test_asks_for_the_organization_name(books):

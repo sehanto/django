@@ -20,7 +20,7 @@ from django.utils.text import capfirst, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
-from apps.assets.models import DepreciationPosting, FixedAsset
+from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
 from apps.contacts.models import Contact
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
@@ -180,6 +180,13 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("disposal_entry__number", gettext_lazy("Disposal journal entry")),
         )),
         FixedAsset, "organization", ("number",),
+    ),
+    (
+        Table("asset_revisions.csv", gettext_lazy("Changes in the useful life and residual value of fixed assets."), (
+            C("asset__number", gettext_lazy("Fixed asset")), C("effective_from"), C("previous_useful_life_months"),
+            C("useful_life_months"), C("previous_residual_value"), C("residual_value"), C("reason"),
+        )),
+        AssetRevision, "organization", ("asset__number", "effective_from", "pk"),
     ),
     (
         Table("depreciation.csv", gettext_lazy("Depreciation posted per asset and month."), (

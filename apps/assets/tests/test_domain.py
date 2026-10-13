@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from apps.assets.domain import DepreciationMethod, add_months, depreciation_schedule
+from apps.assets.domain import DepreciationMethod, Estimate, add_months, depreciation_schedule
 
 D = Decimal
 
@@ -51,3 +51,46 @@ def test_months_roll_over_the_year():
     assert add_months(2026, 1, -1) == (2025, 12)
     months = schedule("1200", 3, acquired_on=date(2026, 11, 30))
     assert [m.period_end for m in months] == [date(2026, 11, 30), date(2026, 12, 31), date(2027, 1, 31)]
+
+
+# --- Changes in estimate (prospective) ---------------------------------------------
+
+
+def revised(cost, months, *revisions, method=DepreciationMethod.STRAIGHT_LINE, residual="0"):
+    return depreciation_schedule(
+        cost=D(cost), residual_value=D(residual), useful_life_months=months, method=method, acquired_on=date(2026, 1, 15),
+        revisions=[Estimate(starts, life, D(res)) for starts, life, res in revisions],
+    )
+
+
+def test_a_longer_life_spreads_the_remaining_book_value_over_the_remaining_months():
+    months = revised("4800000", 48, ((2027, 1), 60, "0"))  # after 12 months of 100.000
+    assert len(months) == 60
+    assert {m.amount for m in months[:12]} == {D("100000")}  # the past stays
+    assert {m.amount for m in months[12:]} == {D("75000")}  # 3.600.000 over 48 months
+    assert months[11].accumulated == D("1200000") and months[-1].book_value == 0
+
+
+def test_a_new_residual_value_is_kept_at_the_end():
+    months = revised("4800000", 48, ((2027, 1), 48, "600000"))
+    assert months[-1].book_value == D("600000") and len(months) == 48
+    assert sum(m.amount for m in months[12:]) == D("3000000")
+
+
+def test_declining_balance_restarts_on_the_remaining_book_value():
+    months = revised("10000000", 48, ((2027, 1), 36, "1000000"), method=DepreciationMethod.DECLINING_BALANCE)
+    assert sum(m.amount for m in months[:12]) == D("5000000")  # year one as before
+    assert len(months) == 36 and months[-1].book_value == D("1000000")
+    # 24 months left: twice the straight-line rate is 100%, capped at what's left above the residual value.
+    assert sum(m.amount for m in months[12:24]) == D("4000000")
+
+
+def test_the_last_revision_for_a_month_wins():
+    months = revised("4800000", 48, ((2027, 1), 60, "0"), ((2027, 1), 24, "0"))
+    assert len(months) == 24 and months[-1].book_value == 0
+
+
+def test_revisions_apply_in_order():
+    months = revised("4800000", 48, ((2027, 1), 60, "0"), ((2028, 1), 36, "0"))
+    assert len(months) == 36 and months[-1].book_value == 0
+    assert months[23].accumulated == D("1200000") + 12 * D("75000")

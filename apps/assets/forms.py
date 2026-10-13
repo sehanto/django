@@ -6,6 +6,7 @@ from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.ledger.models import Account
 from apps.ledger.selectors import cash_accounts
 
+from .domain import MAX_USEFUL_LIFE_MONTHS
 from .models import FixedAsset
 from .selectors import accumulated_depreciation_accounts, depreciation_expense_accounts, fixed_asset_accounts, gain_loss_accounts
 
@@ -64,3 +65,15 @@ class DisposalForm(OrganizationFormMixin, BaseForm):
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
         self.fields["gain_loss_account"].queryset = gain_loss_accounts(self.organization)
 
+
+
+class RevisionForm(BaseForm):
+    effective_from = BusinessDateField(label=_("Applies from"), help_text=_("The change applies from the start of this month."))
+    useful_life_months = forms.IntegerField(
+        label=_("Useful life (months)"), min_value=1, max_value=MAX_USEFUL_LIFE_MONTHS,
+        help_text=_("The whole useful life, counted from the month of acquisition."),
+    )
+    residual_value = forms.DecimalField(
+        label=_("Residual value"), max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES, min_value=0, required=False,
+    )
+    reason = forms.CharField(label=_("Reason"), max_length=255, help_text=_("E.g. the machine will be used two years longer than expected."))
