@@ -150,6 +150,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("account__code", gettext_lazy("Account code")), C("quantity"), C("unit_price"),
             C("discount_percent"), C("tax_rate__name", gettext_lazy("Tax")), C("amount"),
             C("account_code"), C("account_name"),
+            C("tax_name"), C("tax_rate_percent"), C("tax_dpp_numerator"), C("tax_dpp_denominator"),
         )),
         InvoiceLine, "invoice__organization", ("invoice__date", "invoice_id", "id"),
     ),

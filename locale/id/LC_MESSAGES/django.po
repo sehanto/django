@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 09:26+0700\n"
+"POT-Creation-Date: 2026-10-13 09:42+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -595,7 +595,7 @@ msgid "Failed"
 msgstr "Gagal"
 
 #: apps/billing/models.py:27 apps/invoicing/models.py:66
-#: apps/invoicing/models.py:221 apps/ledger/models.py:64
+#: apps/invoicing/models.py:236 apps/ledger/models.py:64
 msgid "number"
 msgstr "nomor"
 
@@ -660,7 +660,7 @@ msgid "total"
 msgstr "total"
 
 #: apps/billing/models.py:54 apps/invoicing/models.py:75
-#: apps/invoicing/models.py:228 apps/ledger/models.py:68
+#: apps/invoicing/models.py:243 apps/ledger/models.py:68
 #: apps/taxes/models.py:70
 msgid "status"
 msgstr "status"
@@ -928,7 +928,7 @@ msgstr "Belum Dibayar"
 msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
-#: apps/invoicing/domain.py:23 apps/invoicing/models.py:219
+#: apps/invoicing/domain.py:23 apps/invoicing/models.py:234
 #: apps/taxes/models.py:51
 msgid "Void"
 msgstr "Dibatalkan"
@@ -1083,7 +1083,7 @@ msgstr "barang/jasa"
 msgid "items"
 msgstr "barang/jasa"
 
-#: apps/invoicing/models.py:68 apps/invoicing/models.py:223
+#: apps/invoicing/models.py:68 apps/invoicing/models.py:238
 #: apps/ledger/models.py:65
 msgid "date"
 msgstr "tanggal"
@@ -1148,7 +1148,7 @@ msgstr "alamat penjual"
 msgid "seller city"
 msgstr "kota penjual"
 
-#: apps/invoicing/models.py:100 apps/invoicing/models.py:222
+#: apps/invoicing/models.py:100 apps/invoicing/models.py:237
 msgid "invoice"
 msgstr "faktur"
 
@@ -1186,7 +1186,7 @@ msgstr "diskon (%)"
 msgid "tax"
 msgstr "pajak"
 
-#: apps/invoicing/models.py:181 apps/invoicing/models.py:224
+#: apps/invoicing/models.py:181 apps/invoicing/models.py:239
 msgid "amount"
 msgstr "jumlah"
 
@@ -1198,51 +1198,67 @@ msgstr "kode akun saat diterbitkan"
 msgid "account name when issued"
 msgstr "nama akun saat diterbitkan"
 
-#: apps/invoicing/models.py:205 templates/invoicing/invoice_list.html:29
+#: apps/invoicing/models.py:187
+msgid "tax name when issued"
+msgstr "nama pajak saat diterbitkan"
+
+#: apps/invoicing/models.py:188
+msgid "tax rate when issued (%)"
+msgstr "tarif pajak saat diterbitkan (%)"
+
+#: apps/invoicing/models.py:189
+msgid "DPP numerator when issued"
+msgstr "pembilang DPP saat diterbitkan"
+
+#: apps/invoicing/models.py:190
+msgid "DPP denominator when issued"
+msgstr "penyebut DPP saat diterbitkan"
+
+#: apps/invoicing/models.py:220 templates/invoicing/invoice_list.html:29
 msgid "Overdue"
 msgstr "Jatuh tempo"
 
-#: apps/invoicing/models.py:211
+#: apps/invoicing/models.py:226
 msgid "Cash"
 msgstr "Tunai"
 
-#: apps/invoicing/models.py:212
+#: apps/invoicing/models.py:227
 msgid "Bank transfer"
 msgstr "Transfer Bank"
 
-#: apps/invoicing/models.py:213
+#: apps/invoicing/models.py:228
 msgid "QRIS"
 msgstr "QRIS"
 
-#: apps/invoicing/models.py:214
+#: apps/invoicing/models.py:229
 msgid "E-wallet"
 msgstr "E-Wallet"
 
-#: apps/invoicing/models.py:215
+#: apps/invoicing/models.py:230
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:218 apps/taxes/models.py:50
+#: apps/invoicing/models.py:233 apps/taxes/models.py:50
 msgid "Recorded"
 msgstr "Tercatat"
 
-#: apps/invoicing/models.py:225
+#: apps/invoicing/models.py:240
 msgid "cash/bank account"
 msgstr "akun kas/bank"
 
-#: apps/invoicing/models.py:226
+#: apps/invoicing/models.py:241
 msgid "method"
 msgstr "metode"
 
-#: apps/invoicing/models.py:227 apps/ledger/models.py:67
+#: apps/invoicing/models.py:242 apps/ledger/models.py:67
 msgid "reference"
 msgstr "referensi"
 
-#: apps/invoicing/models.py:234
+#: apps/invoicing/models.py:249
 msgid "payment"
 msgstr "pembayaran"
 
-#: apps/invoicing/models.py:235
+#: apps/invoicing/models.py:250
 msgid "payments"
 msgstr "pembayaran"
 
@@ -1870,11 +1886,11 @@ msgid "Sales invoices and purchase bills."
 msgstr "Faktur penjualan dan tagihan pembelian."
 
 #: apps/reports/exports.py:136 apps/reports/exports.py:148
-#: apps/reports/exports.py:158
+#: apps/reports/exports.py:159
 msgid "Invoice ID"
 msgstr "ID faktur"
 
-#: apps/reports/exports.py:136 apps/reports/exports.py:159
+#: apps/reports/exports.py:136 apps/reports/exports.py:160
 #: templates/contacts/contact_form.html:2
 #: templates/invoicing/payment_list.html:11 templates/reports/aging.html:7
 msgid "Contact"
@@ -1892,8 +1908,8 @@ msgstr "Nama kontak pada faktur"
 msgid "Contact NPWP on the invoice"
 msgstr "NPWP kontak pada faktur"
 
-#: apps/reports/exports.py:142 apps/reports/exports.py:161
-#: apps/reports/exports.py:175 templates/invoicing/invoice_detail.html:26
+#: apps/reports/exports.py:142 apps/reports/exports.py:162
+#: apps/reports/exports.py:176 templates/invoicing/invoice_detail.html:26
 msgid "Journal entry"
 msgstr "Jurnal"
 
@@ -1901,7 +1917,7 @@ msgstr "Jurnal"
 msgid "Invoice and bill lines (linked by invoice ID)."
 msgstr "Rincian faktur dan tagihan (terhubung melalui ID faktur)."
 
-#: apps/reports/exports.py:148 apps/reports/exports.py:159
+#: apps/reports/exports.py:148 apps/reports/exports.py:160
 msgid "Invoice number"
 msgstr "Nomor faktur"
 
@@ -1909,58 +1925,58 @@ msgstr "Nomor faktur"
 msgid "Item code"
 msgstr "Kode barang/jasa"
 
-#: apps/reports/exports.py:157
+#: apps/reports/exports.py:158
 msgid "Receipts and disbursements."
 msgstr "Penerimaan dan pengeluaran."
 
-#: apps/reports/exports.py:160 apps/reports/exports.py:174
+#: apps/reports/exports.py:161 apps/reports/exports.py:175
 msgid "Cash/bank account code"
 msgstr "Kode akun kas/bank"
 
-#: apps/reports/exports.py:166
+#: apps/reports/exports.py:167
 msgid "PPN rates."
 msgstr "Tarif PPN."
 
-#: apps/reports/exports.py:172
+#: apps/reports/exports.py:173
 msgid "MSME PPh Final deposits."
 msgstr "Setoran PPh Final UMKM."
 
-#: apps/reports/exports.py:196
+#: apps/reports/exports.py:197
 msgid "Field"
 msgstr "Kolom"
 
-#: apps/reports/exports.py:196
+#: apps/reports/exports.py:197
 msgid "Value"
 msgstr "Nilai"
 
-#: apps/reports/exports.py:204
+#: apps/reports/exports.py:205
 msgid "Business profile."
 msgstr "Profil usaha."
 
-#: apps/reports/exports.py:206
+#: apps/reports/exports.py:207
 #, python-format
 msgid "Trial balance of posted entries as of %(date)s."
 msgstr "Neraca saldo dari jurnal yang diposting per %(date)s."
 
-#: apps/reports/exports.py:209
+#: apps/reports/exports.py:210
 #, python-format
 msgid "Books of %(organization)s"
 msgstr "Pembukuan %(organization)s"
 
-#: apps/reports/exports.py:210
+#: apps/reports/exports.py:211
 #, python-format
 msgid "Exported on %(datetime)s by %(user)s."
 msgstr "Diekspor pada %(datetime)s oleh %(user)s."
 
-#: apps/reports/exports.py:212
+#: apps/reports/exports.py:213
 msgid "the system operator"
 msgstr "operator sistem"
 
-#: apps/reports/exports.py:215
+#: apps/reports/exports.py:216
 msgid "Files:"
 msgstr "Berkas:"
 
-#: apps/reports/exports.py:218
+#: apps/reports/exports.py:219
 msgid ""
 "CSV files are UTF-8 and separated by semicolons (;). Amounts are in rupiah "
 "with a dot as the decimal separator; dates are YYYY-MM-DD. Account names, "
@@ -1970,7 +1986,7 @@ msgstr ""
 "rupiah dengan titik sebagai pemisah desimal; tanggal berformat YYYY-MM-DD. "
 "Nama akun, keterangan, dan data usaha lainnya diekspor sesuai yang dicatat."
 
-#: apps/reports/exports.py:221
+#: apps/reports/exports.py:222
 msgid ""
 "Indonesian taxpayers must keep their books and records for 10 years (UU KUP "
 "Art. 28(11))."
@@ -1978,12 +1994,12 @@ msgstr ""
 "Wajib Pajak wajib menyimpan pembukuan dan catatan selama 10 tahun (UU KUP "
 "Pasal 28 ayat 11)."
 
-#: apps/reports/exports.py:223
+#: apps/reports/exports.py:224
 #, python-format
 msgid "Ledger chain head: %(head)s"
 msgstr "Ujung rantai buku besar: %(head)s"
 
-#: apps/reports/exports.py:224
+#: apps/reports/exports.py:225
 msgid ""
 "Each posted journal entry carries a SHA-256 hash that includes the previous "
 "entry's hash. Keep this head: if any posted entry is later changed or "

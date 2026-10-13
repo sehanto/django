@@ -93,7 +93,8 @@ Key design decisions:
     line's account code and name onto the line (migration `ledger/0009`, written by the
     database), so a rename relabels the chart and the period reports, but past journal
     entries and the journal export keep the name used when they were posted. Issuing an
-    invoice does the same for its lines (migration `invoicing/0006`). System accounts are
+    invoice does the same for its lines (migration `invoicing/0006`), and copies each
+    line's tax rate name, rate and DPP too (`invoicing/0007`). System accounts are
     never deleted, deactivated or stripped of their role, and no account changes
     organization;
   - issuing an invoice snapshots the buyer's and your own name, NPWP, address and city

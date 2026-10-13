@@ -183,14 +183,29 @@ class InvoiceLine(TimeStampedModel):
     # migration 0006) and frozen with the line. Empty on drafts.
     account_code = models.CharField(_("account code when issued"), max_length=20, blank=True, editable=False)
     account_name = models.CharField(_("account name when issued"), max_length=150, blank=True, editable=False)
+    # The tax rate as it was at issue (same migration 0007 pattern); empty without tax.
+    tax_name = models.CharField(_("tax name when issued"), max_length=100, blank=True, editable=False)
+    tax_rate_percent = models.DecimalField(_("tax rate when issued (%)"), max_digits=5, decimal_places=2, null=True, blank=True, editable=False)
+    tax_dpp_numerator = models.PositiveSmallIntegerField(_("DPP numerator when issued"), null=True, blank=True, editable=False)
+    tax_dpp_denominator = models.PositiveSmallIntegerField(_("DPP denominator when issued"), null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ["id"]
 
     @property
+    def is_snapshot(self) -> bool:
+        """Issued lines carry their account and tax as they were at issue; drafts follow the current data."""
+        return bool(self.account_code)
+
+    @property
     def account_label(self) -> str:
-        """Issued lines show the account as named at issue; drafts the current name."""
-        return f"{self.account_code} · {self.account_name}" if self.account_code else str(self.account)
+        return f"{self.account_code} · {self.account_name}" if self.is_snapshot else str(self.account)
+
+    @property
+    def tax_label(self) -> str:
+        if self.is_snapshot:
+            return self.tax_name
+        return str(self.tax_rate) if self.tax_rate_id else ""
 
     def to_spec(self) -> LineSpec:
         tax = None

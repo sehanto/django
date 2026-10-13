@@ -17,7 +17,7 @@ from apps.invoicing.models import Invoice, InvoiceKind, InvoiceLine, Item, Payme
 from apps.invoicing.services import InvoiceLineInput
 from apps.ledger.models import Account
 from apps.ledger.services import JournalLineInput, create_journal_entry
-from apps.taxes.models import PphFinalPayment
+from apps.taxes.models import PphFinalPayment, TaxRate
 from apps.taxes.services import cancel_pph_final_payment, record_pph_final_payment
 
 D = Decimal
@@ -224,7 +224,6 @@ def test_items_used_on_issued_invoices_cannot_be_deleted(organization, customer,
 def test_tax_rates_used_on_issued_invoices_are_locked(pkp_organization, customer, account):
     organization = pkp_organization
     from apps.taxes.forms import TaxRateForm
-    from apps.taxes.models import TaxRate
 
     ppn = TaxRate.objects.get(organization=organization, name__startswith="PPN 12% (DPP 11/12)")
     form = TaxRateForm(instance=ppn, organization=organization)
@@ -259,3 +258,23 @@ def test_issued_lines_keep_the_account_as_named_at_issue(organization, customer,
     assert line.account_label == "4-1000 · Penjualan Kopi"
     with refused():
         InvoiceLine.objects.filter(pk=line.pk).update(account_name="Akun Lain")
+
+
+def test_issued_lines_keep_the_tax_rate_as_it_was(pkp_organization, customer, account):
+    organization = pkp_organization
+    ppn = TaxRate.objects.get(organization=organization, name__startswith="PPN 12% (DPP 11/12)")
+    taxed = services.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=ON,
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)],
+    )
+    assert taxed.lines.get().tax_name == "" and taxed.lines.get().tax_label == str(ppn)  # drafts: current rate
+    services.issue_invoice(invoice=taxed)
+    line = taxed.lines.get()
+    assert (line.tax_name, line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator) == (ppn.name, D("12.00"), 11, 12)
+    assert line.tax_label == ppn.name
+    with refused():
+        InvoiceLine.objects.filter(pk=line.pk).update(tax_rate_percent=D("11"))
+
+    untaxed = services.issue_invoice(invoice=draft(organization, customer, account))
+    plain = untaxed.lines.get()
+    assert (plain.tax_name, plain.tax_rate_percent, plain.tax_label) == ("", None, "")
