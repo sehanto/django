@@ -93,9 +93,9 @@ def check_cache_answers(app_configs, **kwargs):
 
     probe = secrets.token_hex(8)
     try:
-        cache.set("bukuumkm:deploy-check", probe, 30)
-        works = cache.get("bukuumkm:deploy-check") == probe
-        cache.delete("bukuumkm:deploy-check")
+        cache.set("ea-system:deploy-check", probe, 30)
+        works = cache.get("ea-system:deploy-check") == probe
+        cache.delete("ea-system:deploy-check")
     except Exception as exc:  # unreachable server, missing table, ...
         works, reason = False, f"{type(exc).__name__}: {exc}"
     else:

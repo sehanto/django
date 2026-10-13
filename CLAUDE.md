@@ -1,4 +1,4 @@
-# BukuUMKM
+# EA-System
 
 Django 5.2 + PostgreSQL multi-tenant accounting SaaS for Indonesian MSMEs. See README.md for architecture.
 

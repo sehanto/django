@@ -24,7 +24,7 @@ def _fresh_throttles():
 
 @pytest.fixture
 def site(settings, db):
-    settings.SITE_URL = "https://app.bukuumkm.id"
+    settings.SITE_URL = "https://app.ea-system.id"
     return settings
 
 
@@ -36,7 +36,7 @@ def sign_up(client, email="dewi@example.com", **extra):
 
 
 def link_in(message) -> str:
-    return re.search(r"https://app\.bukuumkm\.id(/account/verify-email/\S+/)", message.body).group(1)
+    return re.search(r"https://app\.ea-system\.id(/account/verify-email/\S+/)", message.body).group(1)
 
 
 def test_new_account_is_gated_until_confirmed(client, site):
@@ -50,7 +50,7 @@ def test_new_account_is_gated_until_confirmed(client, site):
 
     message = mail.outbox[0]
     assert message.to == ["dewi@example.com"]
-    assert message.subject == "Konfirmasi email Anda untuk BukuUMKM"
+    assert message.subject == "Konfirmasi email Anda untuk EA-System"
     confirmed = client.get(link_in(message), follow=True)
     assert confirmed.redirect_chain[-1][0] == reverse("tenants:settings")
     user.refresh_from_db()
@@ -61,7 +61,7 @@ def test_new_account_is_gated_until_confirmed(client, site):
 def test_email_follows_the_users_language(client, site):
     client.post(reverse("accounts:set_language"), {"language": "en", "next": "/"})
     sign_up(client)
-    assert mail.outbox[0].subject == "Confirm your email for BukuUMKM"
+    assert mail.outbox[0].subject == "Confirm your email for EA-System"
     assert "valid for 3\xa0days" in mail.outbox[0].body
 
 
@@ -124,7 +124,7 @@ def test_password_reset_also_confirms_the_address(client, site):
     sign_up(client)
     client.logout()
     client.post(reverse("accounts:password_reset"), {"email": "dewi@example.com", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
-    reset_path = re.search(r"https://app\.bukuumkm\.id(/account/password-reset/\S+/)", mail.outbox[-1].body).group(1)
+    reset_path = re.search(r"https://app\.ea-system\.id(/account/password-reset/\S+/)", mail.outbox[-1].body).group(1)
     form = client.get(reset_path, follow=True)
     client.post(form.redirect_chain[-1][0], {"new_password1": "Baru-Sekali-456", "new_password2": "Baru-Sekali-456"})
     assert User.objects.get(email="dewi@example.com").is_email_verified

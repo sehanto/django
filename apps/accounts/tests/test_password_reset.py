@@ -24,7 +24,7 @@ def _fresh_throttles():
 
 @pytest.fixture
 def site(settings):
-    settings.SITE_URL = "https://app.bukuumkm.id"
+    settings.SITE_URL = "https://app.ea-system.id"
     return settings
 
 
@@ -37,7 +37,7 @@ def reset_link(message) -> str:
 
 
 def path_of(link: str) -> str:
-    return link.split("app.bukuumkm.id", 1)[1]
+    return link.split("app.ea-system.id", 1)[1]
 
 
 def set_new_password(client, link, password=NEW_PASSWORD):
@@ -53,7 +53,7 @@ def test_full_reset_flow(client, user, site):
     message = mail.outbox[0]
     assert message.to == [user.email]
     link = reset_link(message)
-    assert link.startswith("https://app.bukuumkm.id/account/password-reset/")
+    assert link.startswith("https://app.ea-system.id/account/password-reset/")
 
     done = set_new_password(client, link)
     assert done["Location"] == reverse("accounts:password_reset_complete")
@@ -67,13 +67,13 @@ def test_email_is_in_the_account_holders_language(client, user, site):
     user.save()
     request_reset(client, user.email)  # the visitor browses in Indonesian (default)
     message = mail.outbox[0]
-    assert message.subject == "Reset your BukuUMKM password"
+    assert message.subject == "Reset your EA-System password"
     assert "expires in 1\xa0hour" in message.body
 
 
 def test_indonesian_email_by_default(client, user, site):
     request_reset(client, user.email)
-    assert mail.outbox[0].subject == "Atur ulang kata sandi BukuUMKM Anda"
+    assert mail.outbox[0].subject == "Atur ulang kata sandi EA-System Anda"
 
 
 def test_unknown_address_looks_identical_and_sends_nothing(client, db, site):
@@ -117,7 +117,7 @@ def test_link_ignores_a_forged_host_header(client, user, site, settings):
     settings.ALLOWED_HOSTS = ["*"]  # even if the Host header were accepted...
     request_reset(client, user.email, HTTP_HOST="evil.example")
     link = reset_link(mail.outbox[0])
-    assert "evil.example" not in link and link.startswith("https://app.bukuumkm.id/")  # ...the link uses SITE_URL
+    assert "evil.example" not in link and link.startswith("https://app.ea-system.id/")  # ...the link uses SITE_URL
 
 
 def test_reset_lifts_a_login_lockout(client, user, site):

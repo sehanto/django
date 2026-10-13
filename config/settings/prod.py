@@ -175,7 +175,7 @@ _from_address = parseaddr(DEFAULT_FROM_EMAIL)[1]
 try:
     validate_email(_from_address)
 except ValidationError:
-    raise ImproperlyConfigured("DEFAULT_FROM_EMAIL must be an address, e.g. BukuUMKM <noreply@example.com>.") from None
+    raise ImproperlyConfigured("DEFAULT_FROM_EMAIL must be an address, e.g. EA-System <noreply@example.com>.") from None
 
 # Links in emails are built from SITE_URL (never the request's Host header).
 SITE_URL = _required("SITE_URL", "links in emails are built from it")
@@ -192,7 +192,7 @@ _RESERVED_SUFFIXES = (".localhost", ".example", ".test", ".invalid", "example.co
 def _allowed_hosts() -> list[str]:
     hosts = [host.strip().lower() for host in env.list("DJANGO_ALLOWED_HOSTS", default=[]) if host.strip()]  # noqa: F405
     if not hosts:
-        raise ImproperlyConfigured("Set DJANGO_ALLOWED_HOSTS to the site's public host names, e.g. app.bukuumkm.id.")
+        raise ImproperlyConfigured("Set DJANGO_ALLOWED_HOSTS to the site's public host names, e.g. app.ea-system.id.")
     for host in hosts:
         name = host.lstrip(".")
         if host in ("*", ".") or not name:
@@ -230,7 +230,7 @@ def _csrf_trusted_origins() -> list[str]:
         parts = urlsplit(origin)
         host = (parts.hostname or "").lower()
         if parts.scheme != "https" or not host or parts.path not in ("", "/") or parts.query or parts.fragment or parts.username:
-            raise ImproperlyConfigured(f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} must be a bare https:// origin, e.g. https://app.bukuumkm.id.")
+            raise ImproperlyConfigured(f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} must be a bare https:// origin, e.g. https://app.ea-system.id.")
         name = host.removeprefix("*.")
         if host == "*" or not name or name in _NOT_PUBLIC_HOSTS or name.endswith(_RESERVED_SUFFIXES):
             raise ImproperlyConfigured(f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} is a catch-all, local or a reserved example domain.")

@@ -25,7 +25,7 @@
   <div class="col-lg-5">
     <div class="card"><div class="card-body">
       <h2 class="h6">{% translate "Add member" %}</h2>
-      <p class="small text-secondary">{% translate "The user must already have a BukuUMKM account." %}</p>
+      <p class="small text-secondary">{% translate "The user must already have a EA-System account." %}</p>
       <form method="post">{% csrf_token %}
         {% include "partials/form_fields.html" with col="col-12" %}
         <button class="btn btn-primary mt-3">{% translate "Add" %}</button>

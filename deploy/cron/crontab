@@ -1,4 +1,4 @@
-# BukuUMKM scheduled jobs. Times are in the server's time zone (WIB on Asia/Jakarta servers).
+# EA-System scheduled jobs. Times are in the server's time zone (WIB on Asia/Jakarta servers).
 # Install with deploy/cron/install.sh, which fills in the project path.
 # Uncomment MAILTO to receive failures by email (needs a working local mailer).
 # MAILTO=ops@example.com

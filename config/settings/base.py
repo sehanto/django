@@ -149,10 +149,10 @@ BILLING_CHECKOUT_HOURS = env.int("BILLING_CHECKOUT_HOURS", default=24)  # paymen
 BILLING_REMINDER_DAYS = env.int("BILLING_REMINDER_DAYS", default=7)  # remind this many days before expiry
 BILLING_GRACE_DAYS = env.int("BILLING_GRACE_DAYS", default=7)  # keep the plan this long after expiry
 # Seller details printed on subscription receipts.
-BILLING_SELLER_NAME = env("BILLING_SELLER_NAME", default="BukuUMKM")
+BILLING_SELLER_NAME = env("BILLING_SELLER_NAME", default="EA-System")
 BILLING_SELLER_NPWP = env("BILLING_SELLER_NPWP", default="")
 BILLING_SELLER_ADDRESS = env("BILLING_SELLER_ADDRESS", default="")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="BukuUMKM <noreply@bukuumkm.id>")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="EA-System <noreply@ea-system.id>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")  # absolute links in emails
 
 # Login rate limiting (django-axes). Lock a username+IP pair, not a whole IP: many
@@ -177,7 +177,7 @@ TRUSTED_PROXY_COUNT = env.int("TRUSTED_PROXY_COUNT", default=0)
 PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60)
 PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR = 3
 PASSWORD_RESET_REQUESTS_PER_IP_PER_HOUR = 10
-SITE_NAME = env("SITE_NAME", default="BukuUMKM")  # shown in emails
+SITE_NAME = env("SITE_NAME", default="EA-System")  # shown in emails
 
 # Shared cache (throttling, fake gateway). Use a cache shared by all workers in
 # production: "dbcache://django_cache" (run createcachetable) or a Redis URL.

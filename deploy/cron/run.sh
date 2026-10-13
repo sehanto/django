@@ -5,7 +5,7 @@
 #
 #   deploy/cron/run.sh process_billing
 #
-# Env overrides: PYTHON (default .venv/bin/python), BUKUUMKM_LOG_DIR (default logs/).
+# Env overrides: PYTHON (default .venv/bin/python), EA_SYSTEM_LOG_DIR (default logs/).
 set -uo pipefail
 
 if [ $# -lt 1 ]; then
@@ -15,7 +15,7 @@ fi
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PYTHON="${PYTHON:-$PROJECT_DIR/.venv/bin/python}"
-LOG_DIR="${BUKUUMKM_LOG_DIR:-$PROJECT_DIR/logs}"
+LOG_DIR="${EA_SYSTEM_LOG_DIR:-$PROJECT_DIR/logs}"
 COMMAND="$1"
 LOG="$LOG_DIR/$COMMAND.log"
 
@@ -43,7 +43,7 @@ status=$?
 } >> "$LOG"
 
 if [ $status -ne 0 ]; then
-    echo "BukuUMKM: 'manage.py $*' failed with exit status $status" >&2
+    echo "EA-System: 'manage.py $*' failed with exit status $status" >&2
     echo "$output" >&2
 fi
 exit $status

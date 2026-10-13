@@ -6,11 +6,11 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: BukuUMKM\n"
+"Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-13 09:44+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
-"Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
+"Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
@@ -4486,8 +4486,8 @@ msgid "Add member"
 msgstr "Tambah anggota"
 
 #: templates/tenants/members.html:28
-msgid "The user must already have a BukuUMKM account."
-msgstr "Pengguna harus sudah mendaftar akun BukuUMKM."
+msgid "The user must already have a EA-System account."
+msgstr "Pengguna harus sudah mendaftar akun EA-System."
 
 #: templates/tenants/members.html:31
 msgid "Add"

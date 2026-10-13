@@ -27,7 +27,7 @@ from config.settings.base import development_field_key
     ("0123456789012345", "", True),
 ])
 def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
-    with override_settings(BILLING_SELLER_NAME="PT BukuUMKM Indonesia", BILLING_SELLER_NPWP=npwp, BILLING_SELLER_ADDRESS=address):
+    with override_settings(BILLING_SELLER_NAME="PT EA-System Indonesia", BILLING_SELLER_NPWP=npwp, BILLING_SELLER_ADDRESS=address):
         assert [w.id for w in check_billing_seller(None)] == (["core.W003"] if warned else [])
 
 
@@ -39,10 +39,10 @@ PRODUCTION_ENV = {
     "DATABASE_URL": f"postgres://msme_app:{APP_DB_PASSWORD}@db.internal:5432/msme_db",
     "DATABASE_OWNER_URL": f"postgres://msme_user:{OWNER_DB_PASSWORD}@db.internal:5432/msme_db",
     "DJANGO_SECRET_KEY": SECRET_KEY, "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
-    "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
-    "SITE_URL": "https://app.bukuumkm.id", "DJANGO_ALLOWED_HOSTS": "app.bukuumkm.id",
+    "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "EA-System <noreply@example.com>",
+    "SITE_URL": "https://app.ea-system.id", "DJANGO_ALLOWED_HOSTS": "app.ea-system.id",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": FIELD_KEY,
-    "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
+    "BILLING_SELLER_NAME": "PT EA-System Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
 }
 
@@ -96,7 +96,7 @@ def test_production_requires_live_xendit_keys(monkeypatch, name, value):
     ("EMAIL_URL", None), ("EMAIL_URL", ""), ("EMAIL_URL", "consolemail://"), ("EMAIL_URL", "dummymail://"),
     ("EMAIL_URL", "filemail:///tmp/mail"), ("EMAIL_URL", "memorymail://"),
     ("EMAIL_URL", "smtp://user:pass@smtp.example.com:25"),  # remote without TLS: password in clear text
-    ("DEFAULT_FROM_EMAIL", None), ("DEFAULT_FROM_EMAIL", " "), ("DEFAULT_FROM_EMAIL", "BukuUMKM"),
+    ("DEFAULT_FROM_EMAIL", None), ("DEFAULT_FROM_EMAIL", " "), ("DEFAULT_FROM_EMAIL", "EA-System"),
     ("SITE_URL", None), ("SITE_URL", "http://app.example.com"), ("SITE_URL", "https://localhost:8000"),
     ("SITE_URL", "https://127.0.0.1"),
 ])
@@ -165,20 +165,20 @@ def test_production_without_an_owner_url_still_checks_the_app_url(monkeypatch):
     ({"DJANGO_ALLOWED_HOSTS": None}, "DJANGO_ALLOWED_HOSTS"),
     ({"DJANGO_ALLOWED_HOSTS": " , "}, "DJANGO_ALLOWED_HOSTS"),
     ({"DJANGO_ALLOWED_HOSTS": "*"}, "catch-all"),
-    ({"DJANGO_ALLOWED_HOSTS": "app.bukuumkm.id,localhost"}, "localhost"),
+    ({"DJANGO_ALLOWED_HOSTS": "app.ea-system.id,localhost"}, "localhost"),
     ({"DJANGO_ALLOWED_HOSTS": "127.0.0.1"}, "127.0.0.1"),
     ({"DJANGO_ALLOWED_HOSTS": "app.example.com", "SITE_URL": "https://app.example.com"}, "example"),
     ({"DJANGO_ALLOWED_HOSTS": "shop.test"}, "shop.test"),
-    ({"DJANGO_ALLOWED_HOSTS": "other.bukuumkm.id"}, "SITE_URL"),  # email links would be rejected
+    ({"DJANGO_ALLOWED_HOSTS": "other.ea-system.id"}, "SITE_URL"),  # email links would be rejected
 ])
 def test_production_requires_real_allowed_hosts(monkeypatch, overrides, message):
     with pytest.raises(ImproperlyConfigured, match=message):
         load_production_settings(monkeypatch, **overrides)
 
 
-@pytest.mark.parametrize("hosts", ["app.bukuumkm.id", ".bukuumkm.id", "bukuumkm.id,app.bukuumkm.id", "APP.BUKUUMKM.ID"])
+@pytest.mark.parametrize("hosts", ["app.ea-system.id", ".ea-system.id", "ea-system.id,app.ea-system.id", "APP.EA-SYSTEM.ID"])
 def test_production_accepts_public_hosts(monkeypatch, hosts):
-    prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS="https://app.bukuumkm.id")
+    prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS="https://app.ea-system.id")
     assert prod.ALLOWED_HOSTS
 
 
@@ -208,15 +208,15 @@ def test_deploy_check_tests_that_the_cache_answers():
 
 
 @pytest.mark.parametrize("origin", [
-    "http://app.bukuumkm.id",  # not https
-    "https://app.bukuumkm.id/login",  # not a bare origin
-    "https://user@app.bukuumkm.id",
+    "http://app.ea-system.id",  # not https
+    "https://app.ea-system.id/login",  # not a bare origin
+    "https://user@app.ea-system.id",
     "https://*",
     "https://localhost:8000",
     "https://app.example.com",
     "https://evil.example.net",
     "https://partner.co.id",  # a site this app doesn't serve
-    "https://*.bukuumkm.id",  # wider than the single allowed host
+    "https://*.ea-system.id",  # wider than the single allowed host
 ])
 def test_production_requires_real_csrf_trusted_origins(monkeypatch, origin):
     with pytest.raises(ImproperlyConfigured, match="DJANGO_CSRF_TRUSTED_ORIGINS"):
@@ -224,10 +224,10 @@ def test_production_requires_real_csrf_trusted_origins(monkeypatch, origin):
 
 
 @pytest.mark.parametrize(("hosts", "origins"), [
-    ("app.bukuumkm.id", None),  # optional: the site's own forms work without it
-    ("app.bukuumkm.id", "https://app.bukuumkm.id"),
-    ("app.bukuumkm.id", "https://app.bukuumkm.id:8443"),
-    (".bukuumkm.id", "https://*.bukuumkm.id,https://bukuumkm.id"),
+    ("app.ea-system.id", None),  # optional: the site's own forms work without it
+    ("app.ea-system.id", "https://app.ea-system.id"),
+    ("app.ea-system.id", "https://app.ea-system.id:8443"),
+    (".ea-system.id", "https://*.ea-system.id,https://ea-system.id"),
 ])
 def test_production_accepts_trusted_origins_of_served_hosts(monkeypatch, hosts, origins):
     prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS=origins)

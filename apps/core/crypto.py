@@ -39,6 +39,7 @@ def _fernet() -> MultiFernet:
 @lru_cache(maxsize=1)
 def _hash_keys() -> tuple[bytes, ...]:
     # Domain-separated HMAC keys derived from each encryption key.
+    # The label keeps the project's former name: changing it would invalidate every stored hash.
     return tuple(hashlib.sha256(b"bukuumkm/keyed-hash/v1:" + key).digest() for key in _keys())
 
 

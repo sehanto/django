@@ -2,7 +2,7 @@
 
 The demo business data (names, journal descriptions) is Indonesian on purpose.
 
-Usage: python manage.py seed_demo [--email demo@bukuumkm.id] [--password demo12345]
+Usage: python manage.py seed_demo [--email demo@ea-system.id] [--password demo12345]
 """
 
 from datetime import timedelta
@@ -31,7 +31,7 @@ class Command(BaseCommand):
     help = "Create a demo organization with sample transactions."
 
     def add_arguments(self, parser):
-        parser.add_argument("--email", default="demo@bukuumkm.id")
+        parser.add_argument("--email", default="demo@ea-system.id")
         parser.add_argument("--password", default="demo12345")
 
     @transaction.atomic

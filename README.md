@@ -1,4 +1,4 @@
-# BukuUMKM: Akuntansi SaaS untuk UMKM Indonesia
+# EA-System: Akuntansi SaaS untuk UMKM Indonesia
 
 Multi-tenant accounting SaaS for Indonesian micro, small and medium enterprises,
 built with **Django 5.2 LTS** and **PostgreSQL 18**. The interface is in Bahasa
@@ -157,7 +157,7 @@ See [Database roles](#database-roles). Then:
 .venv/bin/python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000 and sign in with `demo@bukuumkm.id` / `demo12345`, or
+Open http://127.0.0.1:8000 and sign in with `demo@ea-system.id` / `demo12345`, or
 register a new business at `/account/signup/`. For the Django admin, run
 `manage.py createsuperuser`.
 
