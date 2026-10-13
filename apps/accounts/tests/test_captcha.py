@@ -10,9 +10,10 @@ from django.core import mail
 from django.test import RequestFactory, override_settings
 from django.urls import reverse
 
-from apps.accounts import captcha
+from apps.accounts import captcha, two_factor
 from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts.models import User
+from apps.accounts.tests.test_two_factor import code_for
 from apps.core.checks import check_captcha_keys
 
 LOGIN = reverse("accounts:login")
@@ -179,6 +180,41 @@ def test_changing_the_password_needs_a_solved_captcha_before_anything_is_checked
     assert auth_client.post(change, {"old_password": PASSWORD, **new, RESPONSE_FIELD: FAKE_PASSING_TOKEN}).status_code == 302
     user.refresh_from_db()
     assert user.check_password("Baru-Rahasia-456")
+
+
+# --- Two-factor settings: always required -----------------------------------------------
+
+
+@pytest.fixture
+def two_factor_on(user):
+    device = two_factor.start_setup(user)
+    two_factor.confirm_setup(user, device, code_for(device))
+    return two_factor
+
+
+def test_creating_backup_codes_needs_a_solved_captcha(auth_client, user, two_factor_on):
+    url = reverse("accounts:two_factor_backup_codes")
+    assert 'data-action="backup_codes"' in auth_client.get(url).content.decode()
+    before = two_factor_on.remaining_backup_codes(user)
+
+    response = auth_client.post(url, {"password": "a-guess"})
+    assert list(response.context["form"].errors) == ["__all__"]  # no "password is incorrect" without it
+    auth_client.post(url, {"password": PASSWORD})
+    assert auth_client.get(url).context["new_codes"] is None and mail.outbox == []
+
+    auth_client.post(url, {"password": PASSWORD, RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert two_factor_on.remaining_backup_codes(user) == before  # a fresh full set
+    assert len(mail.outbox) == 1  # the security notice
+
+
+def test_turning_off_two_factor_needs_a_solved_captcha_before_the_code_is_tried(auth_client, user, two_factor_on):
+    url = reverse("accounts:two_factor_disable")
+    assert 'data-action="disable_two_factor"' in auth_client.get(url).content.decode()
+    with mock.patch.object(two_factor_on, "verify", wraps=two_factor_on.verify) as verify:
+        response = auth_client.post(url, {"password": PASSWORD, "code": "123456"})
+    assert list(response.context["form"].errors) == ["__all__"]
+    verify.assert_not_called()  # no code attempt counted against the user
+    assert two_factor_on.is_enabled(user)
 
 
 # --- Talking to Cloudflare -------------------------------------------------------------

@@ -12,6 +12,7 @@ from django.utils import timezone
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.oath import TOTP
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice, TrustedDevice
 from apps.accounts.trusted_devices import COOKIE_NAME
@@ -118,7 +119,7 @@ def test_password_change_forgets_every_remembered_device(client, user, device):
 def test_turning_off_2fa_forgets_devices(client, user, device):
     remembered_browser(client, user, device)
     client.force_login(user)
-    client.post(reverse("accounts:two_factor_disable"), {"password": PASSWORD, "code": code_for(device, steps_ahead=2)})
+    client.post(reverse("accounts:two_factor_disable"), {"password": PASSWORD, "code": code_for(device, steps_ahead=2), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert not TrustedDevice.objects.exists()
 
 

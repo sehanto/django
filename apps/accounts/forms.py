@@ -172,3 +172,16 @@ class TwoFactorConfirmForm(PasswordConfirmationForm):
     """Password plus a current code (used to turn 2FA on or off)."""
 
     code = two_factor_code_field(autofocus=False)  # the password field comes first
+
+
+class RegenerateBackupCodesForm(CaptchaFirstFormMixin, PasswordConfirmationForm):
+    """Password before new backup codes; the CAPTCHA first, so the password can't be guessed here."""
+
+    captcha_action = captcha.CaptchaAction.BACKUP_CODES
+
+
+class DisableTwoFactorForm(CaptchaFirstFormMixin, TwoFactorConfirmForm):
+    """Password and code before 2FA goes off; the CAPTCHA first, so neither is checked (nor a
+    code attempt counted) for a script using a hijacked session."""
+
+    captcha_action = captcha.CaptchaAction.DISABLE_TWO_FACTOR

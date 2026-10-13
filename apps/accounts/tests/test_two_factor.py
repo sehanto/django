@@ -162,8 +162,8 @@ def test_users_without_two_factor_sign_in_directly(client, user):
 def test_regenerating_backup_codes_needs_password_and_invalidates_old_ones(client, user, enabled):
     client.force_login(user)
     url = reverse("accounts:two_factor_backup_codes")
-    assert "password" in client.post(url, {"password": "nope"}).context["form"].errors
-    new_codes = client.post(url, {"password": PASSWORD}, follow=True).context["new_codes"]
+    assert "password" in client.post(url, {"password": "nope", RESPONSE_FIELD: FAKE_PASSING_TOKEN}).context["form"].errors
+    new_codes = client.post(url, {"password": PASSWORD, RESPONSE_FIELD: FAKE_PASSING_TOKEN}, follow=True).context["new_codes"]
     assert set(new_codes).isdisjoint(enabled["backup_codes"])
     assert two_factor.verify(user, enabled["backup_codes"][1]) is None
     with later():
@@ -173,10 +173,10 @@ def test_regenerating_backup_codes_needs_password_and_invalidates_old_ones(clien
 def test_turning_off_needs_password_and_code(client, user, enabled):
     client.force_login(user)
     url = reverse("accounts:two_factor_disable")
-    assert "code" in client.post(url, {"password": PASSWORD, "code": "000000"}).context["form"].errors
+    assert "code" in client.post(url, {"password": PASSWORD, "code": "000000", RESPONSE_FIELD: FAKE_PASSING_TOKEN}).context["form"].errors
     assert two_factor.is_enabled(user)
     with later():
-        client.post(url, {"password": PASSWORD, "code": code_for(enabled["device"], steps_ahead=1)})
+        client.post(url, {"password": PASSWORD, "code": code_for(enabled["device"], steps_ahead=1), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert not two_factor.is_enabled(user)
     assert "dimatikan" in mail.outbox[-1].body
     client.logout()

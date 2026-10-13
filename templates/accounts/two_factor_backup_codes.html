@@ -19,8 +19,10 @@
   <p class="small text-secondary">{% translate "Your current backup codes will stop working." %}</p>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-md-6" %}
+    {% include "accounts/_captcha.html" %}
     <button class="btn btn-outline-primary mt-3">{% translate "Create new codes" %}</button>
   </form>
 {% endif %}
 </div></div>
 {% endblock %}
+{% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}

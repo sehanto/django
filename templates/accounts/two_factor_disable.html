@@ -10,6 +10,7 @@
   <div class="alert alert-warning">{% translate "Your account will be protected by your password only. Your authenticator and backup codes will stop working." %}</div>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-md-6" %}
+    {% include "accounts/_captcha.html" %}
     <div class="d-flex gap-2 justify-content-end mt-4">
       <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
       <button class="btn btn-danger">{% translate "Turn off" %}</button>
@@ -18,3 +19,4 @@
 {% endif %}
 </div></div>
 {% endblock %}
+{% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}

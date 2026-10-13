@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django_otp.oath import TOTP
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice
 from apps.tenants.roles import Role
@@ -129,7 +130,7 @@ def test_cannot_turn_off_2fa_while_required(client, user, organization):
     client.post(reverse("accounts:login_otp"), {"code": code_for(device, steps_ahead=1)})
     page = client.get(reverse("accounts:two_factor_disable"))
     assert page.context["required_by"] == [organization]
-    response = client.post(reverse("accounts:two_factor_disable"), {"password": PASSWORD, "code": code_for(device, steps_ahead=2)})
+    response = client.post(reverse("accounts:two_factor_disable"), {"password": PASSWORD, "code": code_for(device, steps_ahead=2), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert response.context["form"].non_field_errors()
     assert two_factor.is_enabled(user)
 

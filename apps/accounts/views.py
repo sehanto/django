@@ -32,10 +32,11 @@ from .client_ip import client_ip
 from .forms import (
     ChangeEmailForm,
     ChangePasswordForm,
+    DisableTwoFactorForm,
     LoginForm,
     NewPasswordForm,
-    PasswordConfirmationForm,
     ProfileForm,
+    RegenerateBackupCodesForm,
     ResetPasswordForm,
     SignUpForm,
     TwoFactorCodeForm,
@@ -496,7 +497,7 @@ class BackupCodesView(LoginRequiredMixin, FormView):
     """Shows newly generated backup codes once; regenerating needs the password."""
 
     template_name = "accounts/two_factor_backup_codes.html"
-    form_class = PasswordConfirmationForm
+    form_class = RegenerateBackupCodesForm
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not two_factor.is_enabled(request.user):
@@ -504,10 +505,11 @@ class BackupCodesView(LoginRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "user": self.request.user}
+        return {**super().get_form_kwargs(), "user": self.request.user, "request": self.request}
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
+            captcha=captcha.widget(captcha.CaptchaAction.BACKUP_CODES),
             new_codes=self.request.session.pop(BACKUP_CODES_SESSION_KEY, None),
             backup_codes_left=two_factor.remaining_backup_codes(self.request.user),
             **kwargs,
@@ -523,10 +525,14 @@ class BackupCodesView(LoginRequiredMixin, FormView):
 
 class TwoFactorDisableView(LoginRequiredMixin, FormView):
     template_name = "accounts/two_factor_disable.html"
-    form_class = TwoFactorConfirmForm
+    form_class = DisableTwoFactorForm
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(required_by=list(organizations_requiring_two_factor(self.request.user)), **kwargs)
+        return super().get_context_data(
+            captcha=captcha.widget(captcha.CaptchaAction.DISABLE_TWO_FACTOR),
+            required_by=list(organizations_requiring_two_factor(self.request.user)),
+            **kwargs,
+        )
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not two_factor.is_enabled(request.user):
@@ -534,7 +540,7 @@ class TwoFactorDisableView(LoginRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "user": self.request.user}
+        return {**super().get_form_kwargs(), "user": self.request.user, "request": self.request}
 
     def form_valid(self, form):
         user = self.request.user
