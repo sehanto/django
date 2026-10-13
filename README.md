@@ -673,7 +673,8 @@ Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY` (a
 50 characters: production refuses short, repetitive, `django-insecure-` or placeholder keys such as
 `change-me`),
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` (the data-only app role) and
-`DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `BILLING_SELLER_NAME`, `BILLING_SELLER_NPWP` and
+`DATABASE_OWNER_URL` (see [Database roles](#database-roles); production refuses database passwords that
+are missing, shorter than 16 characters, repetitive, placeholders or the user name), `BILLING_SELLER_NAME`, `BILLING_SELLER_NPWP` and
 `BILLING_SELLER_ADDRESS` (printed on subscription receipts: production refuses to
 start if any is missing or blank, and `check --deploy` warns, `core.W003`, about
 placeholder values), `TURNSTILE_SITE_KEY` and

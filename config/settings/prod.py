@@ -15,6 +15,31 @@ def _required(name: str, why: str) -> str:
     return value
 
 
+# Database roles (README "Database roles"): each URL must carry a real password.
+_DB_PASSWORD_MIN_LENGTH = 16
+_DB_PASSWORD_PLACEHOLDERS = ("change", "password", "passwd", "postgres", "example", "secret", "default", "admin", "placeholder")
+
+
+def _check_database_password(setting: str, database: dict | None) -> None:
+    if not database:
+        return
+    password, user = database.get("PASSWORD") or "", database.get("USER") or ""
+    weak = (
+        len(password) < _DB_PASSWORD_MIN_LENGTH
+        or len(set(password)) < 6
+        or password.lower() == user.lower()
+        or any(word in password.lower() for word in _DB_PASSWORD_PLACEHOLDERS)
+    )
+    if weak:  # never echo the password
+        raise ImproperlyConfigured(
+            f"{setting} needs a real database password: at least {_DB_PASSWORD_MIN_LENGTH} random characters, "
+            "not a placeholder and not the user name."
+        )
+
+
+_check_database_password("DATABASE_URL", DATABASES["default"])  # noqa: F405
+_check_database_password("DATABASE_OWNER_URL", DATABASE_OWNER)  # noqa: F405
+
 DEBUG = False
 # Signs sessions, password-reset and email-confirmation links: Django's own standard
 # (check --deploy, security.W009) is enforced here, plus no placeholder words.

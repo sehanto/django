@@ -7,7 +7,7 @@ from base64 import b32encode
 from binascii import hexlify
 
 import pytest
-from django.core.management.utils import get_random_secret_key
+from django.core.exceptions import ImproperlyConfigured
 from cryptography.fernet import Fernet, InvalidToken
 from django.apps import apps
 from django.core.management import call_command
@@ -98,22 +98,8 @@ def test_migration_moves_plaintext_devices(user):
 
 
 def test_production_requires_encryption_keys(monkeypatch):
-    import environ
+    """Production refuses to start without FIELD_ENCRYPTION_KEYS (details: apps/core/tests/test_checks.py)."""
+    from apps.core.tests.test_checks import load_production_settings
 
-    monkeypatch.setenv("DJANGO_SECRET_KEY", get_random_secret_key())
-    monkeypatch.setenv("XENDIT_SECRET_KEY", "xnd_" + "production_" + "NOT-A-REAL-KEY")
-    monkeypatch.setenv("XENDIT_CALLBACK_TOKEN", "x")
-    monkeypatch.setenv("EMAIL_URL", "smtp://localhost:25")
-    monkeypatch.setenv("DEFAULT_FROM_EMAIL", "BukuUMKM <noreply@example.com>")
-    monkeypatch.setenv("SITE_URL", "https://app.example.com")
-    monkeypatch.setenv("TURNSTILE_SITE_KEY", "x")
-    monkeypatch.setenv("TURNSTILE_SECRET_KEY", "x")
-    for name in ("BILLING_SELLER_NAME", "BILLING_SELLER_NPWP", "BILLING_SELLER_ADDRESS"):
-        monkeypatch.setenv(name, "x")
-    monkeypatch.delenv("FIELD_ENCRYPTION_KEYS", raising=False)
-    monkeypatch.setattr(environ.Env, "read_env", staticmethod(lambda *args, **kwargs: None))  # ignore local .env
-    import sys
-
-    sys.modules.pop("config.settings.prod", None)
-    with pytest.raises(Exception, match="FIELD_ENCRYPTION_KEYS"):
-        importlib.import_module("config.settings.prod")
+    with pytest.raises(ImproperlyConfigured, match="FIELD_ENCRYPTION_KEYS"):
+        load_production_settings(monkeypatch, FIELD_ENCRYPTION_KEYS=None)

@@ -2,6 +2,7 @@
 
 import base64
 import importlib
+import secrets
 import sys
 
 import environ
@@ -31,8 +32,11 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
 
 LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"
 FIELD_KEY, NEXT_FIELD_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()  # fresh per run, never committed
-SECRET_KEY = get_random_secret_key()  # assembled so no key-shaped literal sits in the repo
+SECRET_KEY = get_random_secret_key()
+APP_DB_PASSWORD, OWNER_DB_PASSWORD = secrets.token_urlsafe(24), secrets.token_urlsafe(24)  # fresh per run  # assembled so no key-shaped literal sits in the repo
 PRODUCTION_ENV = {
+    "DATABASE_URL": f"postgres://msme_app:{APP_DB_PASSWORD}@db.internal:5432/msme_db",
+    "DATABASE_OWNER_URL": f"postgres://msme_user:{OWNER_DB_PASSWORD}@db.internal:5432/msme_db",
     "DJANGO_SECRET_KEY": SECRET_KEY, "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
     "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
     "SITE_URL": "https://app.example.com",
@@ -49,11 +53,14 @@ def load_production_settings(monkeypatch, **overrides):
         else:
             monkeypatch.setenv(name, value)
     monkeypatch.setattr(environ.Env, "read_env", staticmethod(lambda *args, **kwargs: None))  # ignore local .env
+    # Re-read base.py too: the running test settings already loaded (and adjusted) it.
+    running_base = sys.modules.pop("config.settings.base")
     sys.modules.pop("config.settings.prod", None)
     try:
         return importlib.import_module("config.settings.prod")
     finally:
         sys.modules.pop("config.settings.prod", None)
+        sys.modules["config.settings.base"] = running_base
 
 
 @pytest.mark.parametrize("name", ["BILLING_SELLER_NAME", "BILLING_SELLER_NPWP", "BILLING_SELLER_ADDRESS"])
@@ -132,3 +139,22 @@ def test_production_accepts_rotated_keys(monkeypatch):
 def test_production_requires_a_real_secret_key(monkeypatch, value):
     with pytest.raises(ImproperlyConfigured, match="DJANGO_SECRET_KEY"):
         load_production_settings(monkeypatch, DJANGO_SECRET_KEY=value)
+
+
+@pytest.mark.parametrize(("name", "url"), [
+    ("DATABASE_URL", "postgres://msme_app@db.internal:5432/msme_db"),  # no password
+    ("DATABASE_URL", "postgres://msme_app:short1@db.internal:5432/msme_db"),
+    ("DATABASE_URL", "postgres://msme_app:CHANGE_ME_CHANGE_ME_2026@db.internal:5432/msme_db"),  # .env.example placeholder
+    ("DATABASE_URL", "postgres://msme_app:aaaaaaaaaaaaaaaaaaaaaaaa@db.internal:5432/msme_db"),  # repetitive
+    ("DATABASE_URL", "postgres://a_long_user_name_x:a_long_user_name_x@db.internal:5432/msme_db"),  # = user
+    ("DATABASE_OWNER_URL", "postgres://msme_user:postgres-postgres-2026@db.internal:5432/msme_db"),
+])
+def test_production_requires_real_database_passwords(monkeypatch, name, url):
+    with pytest.raises(ImproperlyConfigured, match=name) as refused:
+        load_production_settings(monkeypatch, **{name: url})
+    assert url.split("@")[0].split(":")[-1] not in str(refused.value)  # the password is never echoed
+
+
+def test_production_without_an_owner_url_still_checks_the_app_url(monkeypatch):
+    prod = load_production_settings(monkeypatch, DATABASE_OWNER_URL=None)
+    assert prod.DATABASE_OWNER is None and prod.DATABASES["default"]["PASSWORD"] == APP_DB_PASSWORD
