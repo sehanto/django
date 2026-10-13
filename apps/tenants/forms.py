@@ -8,21 +8,19 @@ from django.utils import timezone
 from apps.core.forms import BaseForm, BaseModelForm, DateInput, DigitsField, OrganizationFormMixin
 from apps.core.validators import nib_validator
 
-from .models import Organization
+from .models import BusinessPlace, Organization
 from .roles import Role
 
 
 class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
     npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator],
                        help_text=_("15 or 16 digits; dots and dashes are removed."))
-    nitku = DigitsField(label=_("NITKU (place of business)"), max_length=22, required=False, validators=[nitku_validator],
-                        help_text=Organization._meta.get_field("nitku").help_text)
     nib = DigitsField(label=_("business ID (NIB)"), max_length=13, required=False, validators=[nib_validator])
 
     class Meta:
         model = Organization
         fields = [
-            "name", "legal_form", "npwp", "nitku", "nib", "address", "city", "phone", "email",
+            "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email",
             "is_pkp", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
             "lock_date", "require_two_factor",
         ]
@@ -61,3 +59,24 @@ class AddMemberForm(OrganizationFormMixin, BaseForm):
         choices=[(r.value, r.label) for r in Role if r != Role.OWNER],
         initial=Role.ACCOUNTANT,
     )
+
+
+class BusinessPlaceForm(OrganizationFormMixin, BaseModelForm):
+    nitku = DigitsField(label=_("NITKU"), max_length=22, validators=[nitku_validator],
+                        help_text=BusinessPlace._meta.get_field("nitku").help_text)
+
+    class Meta:
+        model = BusinessPlace
+        fields = ["name", "nitku", "address", "city", "is_active"]
+        widgets = {"address": forms.Textarea(attrs={"rows": 2})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance.organization = self.organization  # its NITKU is checked against the organization's NPWP
+
+    def clean_nitku(self):
+        nitku = self.cleaned_data["nitku"]
+        others = BusinessPlace.objects.for_organization(self.organization).filter(nitku=nitku).exclude(pk=self.instance.pk)
+        if others.exists():
+            raise forms.ValidationError(_("This NITKU is already registered as another place."))
+        return nitku

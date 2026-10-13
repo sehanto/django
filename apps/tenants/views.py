@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-from django.views.generic import FormView, UpdateView
+from django.views.generic import CreateView, FormView, UpdateView
 
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
@@ -13,7 +13,8 @@ from apps.core.exceptions import DomainError
 from apps.core.views import DomainErrorFormMixin, flash_domain_error
 
 from . import services
-from .forms import AddMemberForm, OrganizationCreateForm, OrganizationSettingsForm
+from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm
+from .models import BusinessPlace
 from .mixins import ManageMixin
 from .selectors import members_of, organizations_for_user
 from .session import set_current_organization
@@ -29,6 +30,9 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
 
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "acting_user": self.request.user}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(places=BusinessPlace.objects.for_organization(self.organization), **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -47,6 +51,35 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
             ) % {"count": notified})
         messages.success(self.request, _("Organization settings saved."))
         return response
+
+
+class BusinessPlaceFormMixin(ManageMixin):
+    form_class = BusinessPlaceForm
+    template_name = "tenants/place_form.html"
+    success_url = reverse_lazy("tenants:settings")
+
+    def get_queryset(self):
+        return BusinessPlace.objects.for_organization(self.organization)
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organization": self.organization}
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        audit.record(
+            AuditAction.BUSINESS_PLACE_SAVED, request=self.request, organization=self.organization, target=self.object,
+            nitku=self.object.nitku, active=self.object.is_active,
+        )
+        messages.success(self.request, _("Place of business saved."))
+        return response
+
+
+class BusinessPlaceCreateView(BusinessPlaceFormMixin, CreateView):
+    pass
+
+
+class BusinessPlaceUpdateView(BusinessPlaceFormMixin, UpdateView):
+    pass
 
 
 class OrganizationCreateView(LoginRequiredMixin, FormView):

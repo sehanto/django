@@ -9,7 +9,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.exceptions import ValidationFailed
-from apps.core.money import ZERO, quantize
+from apps.core.money import ZERO, quantize, round_down_rupiah
 from apps.taxes.domain import compute_vat
 
 HUNDRED = Decimal("100")
@@ -37,6 +37,7 @@ class TaxSpec:
     rate: Decimal
     dpp_numerator: int = 1
     dpp_denominator: int = 1
+    luxury_rate: Decimal = ZERO  # PPnBM (%), on the same tax base as the PPN
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,7 @@ class TaxGroup:
     base: Decimal = ZERO
     dpp: Decimal = ZERO
     tax: Decimal = ZERO
+    luxury: Decimal = ZERO  # PPnBM
     line_indexes: list[int] = field(default_factory=list)
 
 
@@ -74,15 +76,17 @@ class InvoiceTotals:
     subtotal: Decimal
     tax_total: Decimal
     vat_not_collected: Decimal = ZERO  # PPN under a facility (code 07/08): on the faktur, not charged
+    luxury_total: Decimal = ZERO  # PPnBM charged
 
     @property
     def total(self) -> Decimal:
-        return self.subtotal + self.tax_total
+        return self.subtotal + self.tax_total + self.luxury_total
 
 
 def compute_invoice_totals(lines: Sequence[LineSpec], *, charge_vat: bool = True) -> InvoiceTotals:
-    """Tax is computed per rate on the aggregated base, like an e-Faktur. Without
-    ``charge_vat`` (a PPN facility) the PPN is still computed but not added to the total."""
+    """Tax is computed per rate on the aggregated base, like an e-Faktur, PPnBM on the same
+    base (rounded down to whole rupiah). Without ``charge_vat`` (a PPN facility) the PPN and
+    PPnBM are still computed but not added to the total."""
     if not lines:
         raise ValidationFailed(_("An invoice needs at least one line."))
     amounts = [line.net_amount for line in lines]
@@ -96,11 +100,14 @@ def compute_invoice_totals(lines: Sequence[LineSpec], *, charge_vat: bool = True
     for group in groups.values():
         vat = compute_vat(group.base, group.spec.rate, group.spec.dpp_numerator, group.spec.dpp_denominator)
         group.dpp, group.tax = vat.dpp, vat.tax
+        if group.spec.luxury_rate:
+            group.luxury = round_down_rupiah(vat.dpp * group.spec.luxury_rate / HUNDRED)
     subtotal = sum(amounts, ZERO)
     tax_total = sum((g.tax for g in groups.values()), ZERO)
+    luxury_total = sum((g.luxury for g in groups.values()), ZERO)
     if not charge_vat:
         return InvoiceTotals(amounts, list(groups.values()), subtotal, ZERO, vat_not_collected=tax_total)
-    return InvoiceTotals(amounts, list(groups.values()), subtotal, tax_total)
+    return InvoiceTotals(amounts, list(groups.values()), subtotal, tax_total, luxury_total=luxury_total)
 
 
 def allocate(amount: Decimal, weights: Sequence[Decimal]) -> list[Decimal]:

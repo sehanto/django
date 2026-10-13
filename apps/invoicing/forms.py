@@ -9,6 +9,7 @@ from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts, prepaid_tax_accounts, purchase_accounts, revenue_accounts
 from apps.taxes.models import TaxRate
 from apps.taxes.selectors import tax_rates_for
+from apps.tenants.models import BusinessPlace
 
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
 from .models import IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
@@ -51,11 +52,11 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
         help_text=Invoice._meta.get_field("supporting_document").help_text,
     )
     supporting_document_date = BusinessDateField(label=_("Supporting document date"), required=False)
-    FACILITY_FIELDS = ("facility_info_choice", "facility_stamp_choice", "supporting_document", "supporting_document_date")
+    FACILITY_FIELDS = ("delivery_kind", "facility_info_choice", "facility_stamp_choice", "supporting_document", "supporting_document_date")
 
     class Meta:
         model = Invoice
-        fields = ["contact", "date", "due_date", "reference", "tax_invoice_number", "notes"]
+        fields = ["contact", "date", "due_date", "business_place", "reference", "tax_invoice_number", "notes", "delivery_kind"]
         field_classes = {"date": BusinessDateField}
         widgets = {"notes": forms.Textarea(attrs={"rows": 2})}
 
@@ -68,11 +69,19 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
         else:
             self.fields["contact"].queryset = suppliers_for(self.organization)
             self.fields["contact"].label = _("Supplier")
+        places = BusinessPlace.objects.for_organization(self.organization).filter(is_active=True)
+        if kind == InvoiceKind.SALES and places.exists():
+            self.fields["business_place"].queryset = places
+            self.fields["business_place"].empty_label = _("Head office")
+            self.fields["business_place"].help_text = _("Where the sale is made from: its NITKU and address go on the invoice and the faktur.")
+        else:
+            del self.fields["business_place"]
         if kind == InvoiceKind.PURCHASE or not self.organization.is_pkp:
             del self.fields["tax_invoice_number"]
             for name in self.FACILITY_FIELDS:
                 del self.fields[name]
             return
+        self.fields["delivery_kind"].help_text = _("A tourist's VAT refund (the customer identified by a foreign passport) or the sale of an asset not originally for sale.")
         self.fields["facility_info_choice"].choices = _facility_choices(ADDITIONAL_INFO)
         self.fields["facility_stamp_choice"].choices = [("", "—")] + _facility_choices(STAMPS)[1:]
         invoice = self.instance
@@ -94,9 +103,9 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
     @property
     def shows_facility(self) -> bool:
         """Open the facility section: one is set, or it has errors."""
-        return bool(self.instance.vat_facility or self.initial.get("supporting_document")) or any(
+        return bool(self.instance.vat_facility or self.instance.delivery_kind or self.initial.get("supporting_document")) or any(
             name in self.errors for name in self.FACILITY_FIELDS
-        ) or bool(self.data.get(self.add_prefix("facility_info_choice")))
+        ) or bool(self.data.get(self.add_prefix("facility_info_choice")) or self.data.get(self.add_prefix("delivery_kind")))
 
     def clean(self):
         """The services take the facility as one ``facility`` value (services.Facility)."""

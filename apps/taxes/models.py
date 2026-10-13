@@ -24,6 +24,17 @@ class TaxRate(TenantOwnedModel):
     dpp_denominator = models.PositiveSmallIntegerField(
         _("DPP denominator"), default=1, validators=[MinValueValidator(1)], help_text=_("Alternative tax base (DPP nilai lain), e.g. 11/12 for non-luxury goods since 2025.")
     )
+    # PPN "besaran tertentu" (Art. 9A UU PPN, Faktur Pajak code 05): ``rate`` is then the
+    # fixed share of the selling price charged as PPN, e.g. 1.2 for certain farm produce.
+    is_specific_amount = models.BooleanField(
+        _("PPN besaran tertentu (code 05)"), default=False,
+        help_text=_("For deliveries whose PPN is a fixed share of the price (Art. 9A UU PPN), e.g. certain farm produce or used cars: enter that share as the rate, with DPP 1/1."),
+    )
+    luxury_rate = models.DecimalField(
+        _("PPnBM rate (%)"), max_digits=5, decimal_places=2, default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(200)],
+        help_text=_("Sales tax on luxury goods, charged on the same tax base as the PPN. 0 for none."),
+    )
     is_active = models.BooleanField(_("active"), default=True)
 
     class Meta:
@@ -37,6 +48,8 @@ class TaxRate(TenantOwnedModel):
     def clean(self):
         if self.dpp_numerator and self.dpp_denominator and self.dpp_numerator > self.dpp_denominator:
             raise ValidationError({"dpp_numerator": _("The DPP numerator cannot be larger than the denominator.")})
+        if self.is_specific_amount and (self.dpp_numerator != self.dpp_denominator or self.luxury_rate):
+            raise ValidationError({"is_specific_amount": _("PPN besaran tertentu is a share of the full price: use DPP 1/1 and no PPnBM.")})
 
     @property
     def effective_rate(self) -> Decimal:
@@ -93,8 +106,9 @@ class PphFinalPayment(TenantOwnedModel):
     gross_turnover = money_field(_("gross turnover"))
     taxable_turnover = money_field(_("taxable gross turnover"))
     tax_amount = money_field(_("tax due"))
-    # PPh Final that buyers withheld from receipts of the month and deposit themselves; the
-    # deposit is the rest (tax_amount - withheld).
+    # PPh Final that buyers withheld from receipts of the month and deposit themselves, less
+    # what refunds of the month gave back to them (so it can be negative); the deposit is the
+    # rest (tax_amount - withheld).
     withheld = money_field(_("withheld by buyers"))
     paid_on = models.DateField(_("payment date"))
     ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator], help_text=_("State revenue transaction number (Nomor Transaksi Penerimaan Negara)."))
@@ -117,7 +131,7 @@ class PphFinalPayment(TenantOwnedModel):
                 name="unique_pph_final_period",
             ),
             models.CheckConstraint(
-                name="pph_final_withheld_below_tax", condition=models.Q(withheld__gte=0, withheld__lt=models.F("tax_amount")),
+                name="pph_final_withheld_below_tax", condition=models.Q(withheld__lt=models.F("tax_amount")),
             ),
         ]
 

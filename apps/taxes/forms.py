@@ -12,11 +12,11 @@ from .selectors import tax_rate_is_used
 
 
 class TaxRateForm(OrganizationFormMixin, BaseModelForm):
-    LOCKED_WHEN_USED = ("name", "rate", "dpp_numerator", "dpp_denominator")
+    LOCKED_WHEN_USED = ("name", "rate", "dpp_numerator", "dpp_denominator", "is_specific_amount", "luxury_rate")
 
     class Meta:
         model = TaxRate
-        fields = ["name", "rate", "dpp_numerator", "dpp_denominator", "is_active"]
+        fields = ["name", "rate", "dpp_numerator", "dpp_denominator", "is_specific_amount", "luxury_rate", "is_active"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

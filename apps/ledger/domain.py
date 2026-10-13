@@ -87,6 +87,7 @@ class SystemRole(models.TextChoices):
     RECEIVABLE = "receivable", _("Accounts receivable")
     PAYABLE = "payable", _("Accounts payable")
     OUTPUT_VAT = "output_vat", _("Output VAT (PPN Keluaran)")
+    LUXURY_TAX = "luxury_tax", _("Sales tax on luxury goods (PPnBM)")
     INPUT_VAT = "input_vat", _("Input VAT (PPN Masukan)")
     SALES_REVENUE = "sales_revenue", _("Sales revenue")
     PURCHASE_EXPENSE = "purchase_expense", _("Purchases / cost of sales")

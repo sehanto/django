@@ -448,19 +448,36 @@ def test_buyers_without_an_npwp_are_identified_by_their_document(books, customer
 def test_branches_use_their_nitku(books, customer, account):
     from django.core.exceptions import ValidationError
 
-    books.nitku = "0012345678901234000001"
-    books.full_clean()
-    books.save()
+    from apps.tenants.models import BusinessPlace
+
+    branch = BusinessPlace(organization=books, name="Cabang Sleman", nitku="0012345678901234000001", address="Jl. Kaliurang 5", city="Sleman")
+    branch.full_clean()
+    branch.save()
     customer.npwp, customer.nitku = "3174061502560010", "3174061502560010000002"
     customer.full_clean()
     customer.save()
     ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
-    invoice = services.issue_invoice(invoice=services.create_invoice(
-        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
-        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)],
-    ))
-    faktur = ET.fromstring(coretax.build_invoices_xml(books, [invoice])).find("ListOfTaxInvoice/TaxInvoice")
+
+    def sell(**kwargs):
+        return services.issue_invoice(invoice=services.create_invoice(
+            organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+            lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)], **kwargs,
+        ))
+
+    invoice, head_office = sell(business_place=branch), sell()
+    branch.nitku, branch.address = "0012345678901234000009", "Pindah"  # the invoice keeps the place as issued
+    branch.save()
+    invoice.refresh_from_db()
+    faktur, other = ET.fromstring(coretax.build_invoices_xml(books, [invoice, head_office])).find("ListOfTaxInvoice")
     assert (faktur.findtext("SellerIDTKU"), faktur.findtext("BuyerIDTKU")) == ("0012345678901234000001", "3174061502560010000002")
+    assert other.findtext("SellerIDTKU") == "0012345678901234000000"
+    assert (invoice.seller["address"], invoice.seller["city"]) == ("Jl. Kaliurang 5", "Sleman")
+    branch.is_active = False
+    branch.save()
+    with pytest.raises(Exception, match="inactive"):
+        sell(business_place=branch)
+    with pytest.raises(ValidationError, match="starts with the 16-digit NPWP"):
+        BusinessPlace(organization=books, name="X", nitku="9999999999999999000001").full_clean()
 
     customer.nitku = "9999999999999999000002"  # someone else's NPWP
     with pytest.raises(ValidationError, match="starts with the 16-digit NPWP"):

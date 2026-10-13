@@ -121,11 +121,13 @@ def vat_summary(organization, year: int) -> list[dict]:
         Invoice.objects.for_organization(organization)
         .filter(date__year=year, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
         .values("date__month", "kind")
-        .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"))
+        .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"), luxury=Sum("luxury_tax_amount"))
     )
     returns = (
         ReturnNote.objects.for_organization(organization).filter(date__year=year, status=ReturnNote.Status.POSTED)
-        .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"))
+        .values("date__month", "kind").annotate(
+            tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"), luxury=Sum("luxury_tax_amount"),
+        )
     )
     # PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer, not payable by us.
     collected = (
@@ -139,15 +141,16 @@ def vat_summary(organization, year: int) -> list[dict]:
         .exclude(invoice__buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
     )
     # PPN under a facility (codes 07/08) is reported but never charged nor payable.
-    keys = ("output_base", "output", "not_collected", "collected", "input_base", "input")
+    keys = ("output_base", "output", "luxury", "not_collected", "collected", "input_base", "input")
     months = {m: {"month": m, **{key: ZERO for key in keys}} for m in range(1, 13)}
     for row, sign in [*((r, 1) for r in rows), *((r, -1) for r in returns)]:
         target = months[row["date__month"]]
         prefix = "output" if row["kind"] == InvoiceKind.SALES else "input"
         target[prefix] += sign * row["tax"]
         target[f"{prefix}_base"] += sign * row["base"]
-        if prefix == "output":
+        if prefix == "output":  # PPnBM on purchases is part of their cost: only sales owe it
             target["not_collected"] += sign * row["not_collected"]
+            target["luxury"] += sign * row["luxury"]
     for row, sign in [*((r, 1) for r in collected), *((r, -1) for r in collected_returns)]:
         months[row["date__month"]]["collected"] += sign * row["tax"]
     for month in months.values():

@@ -28,7 +28,7 @@ from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLin
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate
-from apps.tenants.models import Organization
+from apps.tenants.models import BusinessPlace, Organization
 
 from .statements import build_trial_balance
 
@@ -152,9 +152,10 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("contact_nitku"), C("contact_id_type"), C("contact_id_number"), C("contact_country"),
             C("contact_address"), C("contact_city"), C("buyer_vat_collector"), C("seller_name"), C("seller_npwp"), C("seller_nitku"),
             C("date"), C("due_date"), C("reference"),
-            C("tax_invoice_number"), C("vat_facility"), C("facility_info"), C("facility_stamp"),
+            C("tax_invoice_number"), C("delivery_kind"), C("business_place__nitku", gettext_lazy("Place of business NITKU")),
+            C("vat_facility"), C("facility_info"), C("facility_stamp"),
             C("supporting_document"), C("supporting_document_date"),
-            C("status"), C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("total"), C("amount_paid"),
+            C("status"), C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("luxury_tax_amount"), C("total"), C("amount_paid"),
             C("amount_credited"), C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
         )),
         Invoice, "organization", ("date", "id"),
@@ -167,13 +168,16 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("discount_percent"), C("tax_rate__name", gettext_lazy("Tax")), C("amount"),
             C("account_code"), C("account_name"),
             C("tax_name"), C("tax_rate_percent"), C("tax_dpp_numerator"), C("tax_dpp_denominator"),
+            C("tax_specific_amount"), C("tax_luxury_rate"),
         )),
         InvoiceLine, "invoice__organization", ("invoice__date", "invoice_id", "id"),
     ),
     (
         Table("returns.csv", gettext_lazy("Sales and purchase returns (nota retur)."), (
             C("kind"), C("number"), C("invoice__number", gettext_lazy("Invoice number")), C("date"), C("reason"),
-            C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("total"), C("credited"), C("refunded"), C("vat_withheld"),
+            C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("luxury_tax_amount"), C("total"), C("credited"), C("refunded"),
+            C("vat_withheld"), C("income_tax_kind"), C("income_tax_withheld"),
+            C("income_tax_account__code", gettext_lazy("Prepaid tax account code")),
             C("cash_account__code", gettext_lazy("Refund cash/bank account code")),
             C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
@@ -199,9 +203,15 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
     (
         Table("tax_rates.csv", gettext_lazy("PPN rates."), (
-            C("name"), C("rate"), C("dpp_numerator"), C("dpp_denominator"), C("is_active"),
+            C("name"), C("rate"), C("dpp_numerator"), C("dpp_denominator"), C("is_specific_amount"), C("luxury_rate"), C("is_active"),
         )),
         TaxRate, "organization", ("name",),
+    ),
+    (
+        Table("business_places.csv", gettext_lazy("Places of business (branches) and their NITKU."), (
+            C("name"), C("nitku"), C("address"), C("city"), C("is_active"),
+        )),
+        BusinessPlace, "organization", ("name", "id"),
     ),
     (
         Table("fixed_assets.csv", gettext_lazy("The fixed asset register."), (
@@ -211,6 +221,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("depreciation_expense_account__code", gettext_lazy("Depreciation expense account code")),
             C("depreciated_before_until"), C("status"), C("disposed_on"), C("disposal_proceeds"),
             C("disposal_entry__number", gettext_lazy("Disposal journal entry")),
+            C("disposal_invoice__number", gettext_lazy("Disposal sales invoice")),
         )),
         FixedAsset, "organization", ("number",),
     ),
@@ -246,7 +257,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
 )
 ORGANIZATION_FIELDS = (
-    "name", "legal_form", "npwp", "nitku", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
+    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
     "inventory_cost_formula", "depreciation_method", "additional_notes", "lock_date",
 )
 ORGANIZATION_FILE = "organization.csv"

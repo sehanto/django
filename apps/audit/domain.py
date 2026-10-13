@@ -32,6 +32,7 @@ class AuditAction(models.TextChoices):
 
     ORGANIZATION_CREATED = "organization_created", _("Organization created")
     ORGANIZATION_SETTINGS_CHANGED = "organization_settings_changed", _("Organization settings changed")
+    BUSINESS_PLACE_SAVED = "business_place_saved", _("Place of business saved")
     MEMBER_ADDED = "member_added", _("Member added")
     MEMBER_REMOVED = "member_removed", _("Member removed")
     BOOKS_EXPORTED = "books_exported", _("Books exported")
@@ -59,7 +60,7 @@ ACTION_CATEGORY = {
         AuditCategory.ACCOUNT,
     ),
     **dict.fromkeys(
-        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.MEMBER_ADDED, A.MEMBER_REMOVED,
+        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.BUSINESS_PLACE_SAVED, A.MEMBER_ADDED, A.MEMBER_REMOVED,
          A.BOOKS_EXPORTED, A.ORGANIZATION_DELETED, A.ACCOUNT_CREATED, A.ACCOUNT_CHANGED, A.ACCOUNT_DELETED],
         AuditCategory.ORGANIZATION,
     ),

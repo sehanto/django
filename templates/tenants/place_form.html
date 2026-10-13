@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Place of business" %}{% endblock %}
+{% block content %}
+<a href="{% url 'tenants:settings' %}" class="small text-decoration-none">&larr; {% translate "Organization settings" %}</a>
+<h1 class="h4 mb-3">{% if object %}{{ object.name }}{% else %}{% translate "New place of business" %}{% endif %}</h1>
+<form method="post" class="card" style="max-width: 760px;"><div class="card-body">{% csrf_token %}
+  {% include "partials/form_fields.html" %}
+</div>
+<div class="card-footer d-flex gap-2 justify-content-end">
+  <a href="{% url 'tenants:settings' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
+</div></form>
+{% endblock %}

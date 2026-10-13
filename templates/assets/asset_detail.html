@@ -30,7 +30,7 @@
   <dt class="col-sm-4">{% translate "Depreciation expense account" %}</dt><dd class="col-sm-8">{{ asset.depreciation_expense_account }}</dd>
   {% if asset.depreciated_before_until %}<dt class="col-sm-4">{% translate "Already depreciated through" %}</dt><dd class="col-sm-8">{{ asset.depreciated_before_until|date:"F Y" }}</dd>{% endif %}
   {% endif %}
-  {% if asset.disposal_entry %}<dt class="col-sm-4">{% translate "Disposal" %}</dt><dd class="col-sm-8">{{ asset.disposal_proceeds|rupiah }} · <a href="{% url 'ledger:journal_detail' asset.disposal_entry_id %}">{{ asset.disposal_entry.number }}</a></dd>{% endif %}
+  {% if asset.disposal_entry %}<dt class="col-sm-4">{% translate "Disposal" %}</dt><dd class="col-sm-8">{{ asset.disposal_proceeds|rupiah }} · <a href="{% url 'ledger:journal_detail' asset.disposal_entry_id %}">{{ asset.disposal_entry.number }}</a>{% if asset.disposal_invoice %} · <a href="{% url 'invoicing:detail' asset.disposal_invoice.kind asset.disposal_invoice_id %}">{{ asset.disposal_invoice.number }}</a>{% endif %}</dd>{% endif %}
   {% if asset.description %}<dt class="col-sm-4">{% translate "Description" %}</dt><dd class="col-sm-8">{{ asset.description }}</dd>{% endif %}
 </dl>
 {% if revisions %}

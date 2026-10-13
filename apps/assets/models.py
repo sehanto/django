@@ -58,6 +58,12 @@ class FixedAsset(TenantOwnedModel):
     disposed_on = models.DateField(_("disposal date"), null=True, blank=True)
     disposal_proceeds = money_field(_("sale proceeds"))
     disposal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, null=True, blank=True, related_name="+")
+    # A sale on a sales invoice (Faktur Pajak code 09 for a PKP): the proceeds are invoiced
+    # instead of received in cash, so the invoice credits them to the asset account.
+    disposal_invoice = models.ForeignKey(
+        "invoicing.Invoice", on_delete=models.PROTECT, null=True, blank=True, related_name="disposed_assets",
+        verbose_name=_("sales invoice"),
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:

@@ -23,6 +23,7 @@ DEFAULT_CHART = [
     # Liabilitas
     ("2-1000", "Utang Usaha", C.CURRENT_LIABILITY, R.PAYABLE, False),
     ("2-1100", "PPN Keluaran", C.CURRENT_LIABILITY, R.OUTPUT_VAT, False),
+    ("2-1150", "PPnBM Keluaran", C.CURRENT_LIABILITY, R.LUXURY_TAX, False),
     ("2-1200", "Utang PPh Final", C.CURRENT_LIABILITY, R.PPH_FINAL_PAYABLE, False),
     ("2-1300", "Utang Gaji", C.CURRENT_LIABILITY, None, False),
     ("2-1400", "Utang Lain-lain", C.CURRENT_LIABILITY, None, False),

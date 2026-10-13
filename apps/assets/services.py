@@ -1,5 +1,6 @@
 """Fixed asset register: writes. Depreciation and disposals post through the ledger."""
 
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
@@ -133,13 +134,27 @@ def post_depreciation(*, organization, through: date, created_by=None) -> list[J
     return entries
 
 
+@dataclass(frozen=True)
+class InvoicedSale:
+    """Sell an asset on a sales invoice to ``customer``: a receivable instead of cash. For a
+    PKP with a PPN rate, it is a delivery of an asset not originally for sale (Art. 16D UU PPN,
+    Faktur Pajak code 09)."""
+
+    customer: object  # contacts.Contact
+    tax_rate: object = None  # taxes.TaxRate | None
+
+
 @transaction.atomic
 def dispose_asset(
-    *, asset: FixedAsset, on: date, proceeds: Decimal = ZERO, cash_account=None, gain_loss_account=None, created_by=None
+    *, asset: FixedAsset, on: date, proceeds: Decimal = ZERO, cash_account=None, gain_loss_account=None,
+    sale: InvoicedSale | None = None, created_by=None,
 ) -> FixedAsset:
     """Sell or write off an asset. Depreciation runs to the end of the month before the
     disposal (posted first if it is still due); the disposal entry removes the cost and the
-    accumulated depreciation, records the proceeds and books the difference as a gain or loss."""
+    accumulated depreciation, records the proceeds and books the difference as a gain or loss.
+
+    With ``sale`` the proceeds are invoiced: the sales invoice (issued on the disposal date)
+    credits them to the asset account, and the disposal entry removes the rest of the cost."""
     asset = FixedAsset.objects.select_for_update().get(pk=asset.pk)
     organization = asset.organization
     if asset.status != FixedAsset.Status.ACTIVE:
@@ -150,7 +165,11 @@ def dispose_asset(
     proceeds = quantize(proceeds or ZERO)
     if proceeds < 0:
         raise ValidationFailed(_("The sale proceeds can't be negative."))
-    if proceeds and (cash_account is None or not cash_account.is_cash or cash_account.organization_id != organization.pk):
+    if sale is not None and not proceeds:
+        raise ValidationFailed(_("Enter the sale price to invoice."))
+    if proceeds and sale is None and (
+        cash_account is None or not cash_account.is_cash or cash_account.organization_id != organization.pk
+    ):
         raise ValidationFailed(_("Choose the cash or bank account that received the proceeds."))
 
     previous_month_end = month_end(*add_months(on.year, on.month, -1))
@@ -169,14 +188,20 @@ def dispose_asset(
         raise ValidationFailed(_("Choose an other income or other expense account for the gain or loss."))
 
     label = f"{asset.number} {asset.name}"
+    invoice = _invoice_sale(asset, on, proceeds, sale, created_by) if sale is not None else None
+    # An invoiced sale already credited the proceeds to the asset account.
+    asset_credit = asset.cost - proceeds if invoice is not None else asset.cost
     lines = []
-    if proceeds:
+    if proceeds and invoice is None:
         lines.append(JournalLineInput(cash_account, debit=proceeds, description=label))
     if accumulated:
         lines.append(JournalLineInput(asset.accumulated_depreciation_account, debit=accumulated, description=label))
     if difference > 0:
         lines.append(JournalLineInput(gain_loss_account, debit=difference, description=label))
-    lines.append(JournalLineInput(asset.asset_account, credit=asset.cost, description=label))
+    if asset_credit > 0:
+        lines.append(JournalLineInput(asset.asset_account, credit=asset_credit, description=label))
+    elif asset_credit < 0:
+        lines.append(JournalLineInput(asset.asset_account, debit=-asset_credit, description=label))
     if difference < 0:
         lines.append(JournalLineInput(gain_loss_account, credit=-difference, description=label))
     entry = create_journal_entry(
@@ -187,8 +212,26 @@ def dispose_asset(
     asset.disposed_on = on
     asset.disposal_proceeds = proceeds
     asset.disposal_entry = entry
-    asset.save(update_fields=["status", "disposed_on", "disposal_proceeds", "disposal_entry", "updated_at"])
+    asset.disposal_invoice = invoice
+    asset.save(update_fields=["status", "disposed_on", "disposal_proceeds", "disposal_entry", "disposal_invoice", "updated_at"])
     return asset
+
+
+def _invoice_sale(asset: FixedAsset, on: date, proceeds: Decimal, sale: InvoicedSale, created_by):
+    from apps.invoicing import services as invoicing  # invoicing doesn't depend on assets
+    from apps.invoicing.models import DeliveryKind, InvoiceKind
+
+    organization = asset.organization
+    taxed = organization.is_pkp and sale.tax_rate is not None
+    if sale.tax_rate is not None and sale.tax_rate.organization_id != organization.pk:
+        raise ValidationFailed(_("Choose one of your tax rates."))
+    invoice = invoicing.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=sale.customer, date=on, created_by=created_by,
+        delivery_kind=DeliveryKind.ASSET if taxed else DeliveryKind.NORMAL,
+        lines=[invoicing.InvoiceLineInput(asset.name, asset.asset_account, Decimal("1"), proceeds, tax_rate=sale.tax_rate if taxed else None)],
+        notes=f"Penjualan aset tetap {asset.number}",  # stored business records stay Indonesian
+    )
+    return invoicing.issue_invoice(invoice=invoice, issued_by=created_by)
 
 
 def first_revisable_month(asset: FixedAsset) -> date:

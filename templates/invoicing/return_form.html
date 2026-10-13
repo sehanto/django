@@ -25,6 +25,8 @@
     Lines are returned at their invoiced price, discount and PPN rate. The return first reduces what is still owed ({{ balance }}); anything more is refunded. The PPN is corrected in the month of the return.
   {% endblocktranslate %}{% if invoice.vat_withheld %} {% blocktranslate trimmed with amount=invoice.vat_withheld|rupiah %}
     The buyer withheld {{ amount }} of PPN and deposited it: up to that amount, the return's PPN is neither credited nor refunded. The buyer recovers it from the tax office with the nota retur.
+  {% endblocktranslate %}{% endif %}{% if invoice.income_tax_withheld %} {% blocktranslate trimmed with amount=invoice.income_tax_withheld|rupiah %}
+    The buyer withheld {{ amount }} of income tax on its payments: a refund gives back its share of that tax (the buyer corrects its withholding slip) instead of paying it out.
   {% endblocktranslate %}{% endif %}</p>
 </div>
 <div class="card-footer d-flex gap-2 justify-content-end">

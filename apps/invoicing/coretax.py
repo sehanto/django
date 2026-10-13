@@ -6,12 +6,15 @@ Template XML dan Converter Excel ke XML).
 
 Sales invoices ("Sample Faktur PK Template v.1.4", rules from template v.1.6.1): one
 TaxInvoice per invoice, dated YYYY-MM-DD, "Normal", and one GoodService per taxed line.
-Transaction code: 07/08 for a delivery under a PPN facility (with its keterangan tambahan,
-cap fasilitas and supporting document), else 02/03 when the buyer is a VAT collector
-(government treasurer / other appointed collector, from the contact as it was at issue),
-else 04 when the lines use DPP nilai lain (11/12, the standard 12% rate since 2025) or 01
-with the full DPP (luxury goods). The seller's and buyer's NITKU are their branch's when
-set, else the 16-digit NPWP plus 000000 (head office). A buyer without an NPWP is
+Transaction code, in DJP's order of priority (``transaction_code``): 07/08 for a delivery
+under a PPN facility (with its keterangan tambahan, cap fasilitas and supporting document),
+02/03 when the buyer is a VAT collector (government treasurer / other appointed collector,
+from the contact as it was at issue), 06 for a tourist's VAT refund, 05 for PPN besaran
+tertentu, 09 for an asset not originally for sale (Art. 16D), 10 for a rate other than 12%,
+else 04 when the lines use DPP nilai lain (11/12, the standard 12% rate since 2025) or 01 with
+the full DPP (luxury goods). PPnBM goes in STLGRate/STLG on the same base as the PPN. The
+seller's NITKU is that of the place of business the invoice was made from, the buyer's its
+branch's when set, else the 16-digit NPWP plus 000000 (head office). A buyer without an NPWP is
 identified by its NIK, passport or other document: NPWP 0000000000000000, its country and
 NITKU 000000, as the template asks. Coretax issues the faktur number; record it on the
 invoice afterwards.
@@ -92,6 +95,8 @@ class Row:
     other_tax_base: Decimal
     uses_other_base: bool
     vat: Decimal
+    luxury_rate: Decimal
+    luxury: Decimal
 
 
 def _rows(note: ReturnNote) -> list[Row]:
@@ -111,6 +116,7 @@ def _rows(note: ReturnNote) -> list[Row]:
             name=line.description, quantity=line.quantity, unit=unit_code(line.item.unit if line.item_id else ""),
             unit_price=line.unit_price, returned=quantity, discount=discount, tax_base=base,
             other_tax_base=other, uses_other_base=uses_other, vat=_round(other * line.tax_rate_percent / HUNDRED),
+            luxury_rate=line.tax_luxury_rate or ZERO, luxury=_round(other * (line.tax_luxury_rate or ZERO) / HUNDRED),
         ))
     return rows
 
@@ -149,7 +155,7 @@ def build_xml(organization, notes: Iterable[ReturnNote]) -> bytes:
         if problem:
             raise ValidationFailed(f"{note.number}: {problem}")
         rows = _rows(note)
-        totals = {name: sum((getattr(r, name) for r in rows), ZERO) for name in ("tax_base", "other_tax_base", "vat")}
+        totals = {name: sum((getattr(r, name) for r in rows), ZERO) for name in ("tax_base", "other_tax_base", "vat", "luxury")}
         data = ET.SubElement(data_list, "InputReturnData")
         document = ET.SubElement(data, "TransactionDocumentData")
         _text(document, "InvoiceNumber", "".join(ch for ch in note.invoice.tax_invoice_number if ch.isdigit()))
@@ -158,24 +164,24 @@ def build_xml(organization, notes: Iterable[ReturnNote]) -> bytes:
         _text(document, "ReturnTaxBase", _number(totals["tax_base"]))
         _text(document, "ReturnOtherTaxBase", _number(totals["other_tax_base"]))
         _text(document, "ReturnVAT", _number(totals["vat"]))
-        _text(document, "ReturnSTLG", "0")
+        _text(document, "ReturnSTLG", _number(totals["luxury"]))
         details = ET.SubElement(data, "TransactionDetailsData")
         for row in rows:
             element = ET.SubElement(details, "Rows")
             for tag, value in [
                 ("Type", row.kind), ("Name", row.name), ("Code", "000000"), ("Quantity", _quantity(row.quantity)),
-                ("Unit", row.unit), ("UnitPrice", _number(row.unit_price)), ("STLGRate", "0"),
+                ("Unit", row.unit), ("UnitPrice", _number(row.unit_price)), ("STLGRate", _quantity(row.luxury_rate)),
                 ("ReturnQuantity", _quantity(row.returned)), ("ReturnDiscount", _number(row.discount)),
                 ("ReturnTaxBase", _number(row.tax_base)), ("ReturnOtherTaxBase", _number(row.other_tax_base)),
                 ("ReturnOtherTaxBaseCheck", "true" if row.uses_other_base else "false"),
-                ("ReturnVAT", _number(row.vat)), ("ReturnSTLG", "0"),
+                ("ReturnVAT", _number(row.vat)), ("ReturnSTLG", _number(row.luxury)),
             ]:
                 _text(element, tag, value)
         footer = ET.SubElement(details, "FooterRow")
         _text(footer, "ReturnTaxBaseTotal", _number(totals["tax_base"]))
         _text(footer, "ReturnOtherTaxBaseTotal", _number(totals["other_tax_base"]))
         _text(footer, "ReturnVATTotal", _number(totals["vat"]))
-        _text(footer, "ReturnSTLGTotal", "0")
+        _text(footer, "ReturnSTLGTotal", _number(totals["luxury"]))
     ET.indent(root, space="\t")
     return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
 
@@ -197,8 +203,11 @@ def month_returns(organization, year: int, month: int):
 
 # --- Faktur Pajak Keluaran (sales invoices) ----------------------------------------
 
-STANDARD, GOVERNMENT_COLLECTOR, OTHER_COLLECTOR, OTHER_TAX_BASE = "01", "02", "03", "04"  # template sheet REF-General
+# Template sheet REF-General; PER-11/PJ/2025 for what each code covers.
+STANDARD, GOVERNMENT_COLLECTOR, OTHER_COLLECTOR, OTHER_TAX_BASE = "01", "02", "03", "04"
+SPECIFIC_AMOUNT, OTHER_RATE = "05", "10"
 COLLECTOR_CODES = {VatCollector.GOVERNMENT: GOVERNMENT_COLLECTOR, VatCollector.OTHER: OTHER_COLLECTOR}
+STANDARD_RATE = Decimal("12")  # Art. 7(1) UU PPN since 2025; another rate takes code 10
 
 
 NO_TIN = "0000000000000000"  # BuyerTin when the buyer is identified by another document
@@ -206,14 +215,31 @@ NO_NITKU = "000000"  # BuyerIDTKU then
 TIN_DOCUMENT = "TIN"
 
 
-def transaction_code(invoice: Invoice, uses_other_tax_base: bool) -> str:
-    """07/08 under a PPN facility, else 02/03 for a buyer that collects the PPN (whatever the
-    tax base; DPP nilai lain stays in its own column), else 04 for DPP nilai lain or 01."""
+def _line_kind(line) -> tuple[bool, bool, bool]:
+    """What decides a line's code: PPN besaran tertentu, DPP nilai lain, a rate other than 12%."""
+    specific = bool(line.tax_specific_amount)
+    return specific, line.tax_dpp_numerator != line.tax_dpp_denominator, not specific and line.tax_rate_percent != STANDARD_RATE
+
+
+def transaction_code(invoice: Invoice, lines) -> str:
+    """In DJP's order of priority: 07/08 under a PPN facility; 02/03 for a buyer that collects
+    the PPN (whatever the tax base, even besaran tertentu; DPP nilai lain stays in its own
+    column); 06 for a tourist's VAT refund; 05 for PPN besaran tertentu; 09 for an asset not
+    originally for sale; 10 for a rate other than 12%; else 04 for DPP nilai lain or 01."""
+    specific, uses_other_base, other_rate = _line_kind(lines[0])
     if invoice.vat_facility:
         return invoice.vat_facility
     if invoice.buyer_vat_collector:
         return COLLECTOR_CODES[invoice.buyer_vat_collector]
-    return OTHER_TAX_BASE if uses_other_tax_base else STANDARD
+    if invoice.delivery_kind == Invoice.DeliveryKind.TOURIST:
+        return invoice.delivery_kind
+    if specific:
+        return SPECIFIC_AMOUNT
+    if invoice.delivery_kind == Invoice.DeliveryKind.ASSET:
+        return invoice.delivery_kind
+    if other_rate:
+        return OTHER_RATE
+    return OTHER_TAX_BASE if uses_other_base else STANDARD
 
 
 def buyer_identity(invoice: Invoice) -> dict[str, str] | None:
@@ -254,6 +280,8 @@ def invoice_problem(invoice: Invoice) -> str | None:
         return _("The invoice carries no PPN.")
     if len({line.tax_dpp_numerator != line.tax_dpp_denominator for line in lines}) > 1:
         return _("The invoice mixes the 11/12 tax base with the full tax base; Coretax needs a separate faktur for each.")
+    if len({_line_kind(line) for line in lines}) > 1:
+        return _("The invoice mixes PPN besaran tertentu or a rate other than 12% with other PPN; Coretax needs a separate faktur for each.")
     return None
 
 
@@ -262,13 +290,18 @@ def _good_service(parent, line) -> None:
     discount = _round(gross * line.discount_percent / HUNDRED)
     base = _round(gross - discount)
     other = _round(base * line.tax_dpp_numerator / line.tax_dpp_denominator)
+    luxury_rate = line.tax_luxury_rate or ZERO
+    # Besaran tertentu: the faktur shows the statutory rate, and the PPN is the fixed share of
+    # the price (the template allows a PPN other than rate x base outside codes 01, 04 and 09).
+    rate = STANDARD_RATE if line.tax_specific_amount else line.tax_rate_percent
     element = ET.SubElement(parent, "GoodService")
     for tag, value in [
         ("Opt", SERVICES if line.item_id and line.item.type == Item.Type.SERVICE else GOODS), ("Code", "000000"),
         ("Name", line.description), ("Unit", unit_code(line.item.unit if line.item_id else "")),
         ("Price", _number(line.unit_price)), ("Qty", _quantity(line.quantity)), ("TotalDiscount", _number(discount)),
-        ("TaxBase", _number(base)), ("OtherTaxBase", _number(other)), ("VATRate", _quantity(line.tax_rate_percent)),
-        ("VAT", _number(_round(other * line.tax_rate_percent / HUNDRED))), ("STLGRate", "0"), ("STLG", "0"),
+        ("TaxBase", _number(base)), ("OtherTaxBase", _number(other)), ("VATRate", _quantity(rate)),
+        ("VAT", _number(_round(other * line.tax_rate_percent / HUNDRED))), ("STLGRate", _quantity(luxury_rate)),
+        ("STLG", _number(_round(other * luxury_rate / HUNDRED))),
     ]:
         _text(element, tag, value)
 
@@ -286,13 +319,12 @@ def build_invoices_xml(organization, invoices: Iterable[Invoice]) -> bytes:
         if problem:
             raise ValidationFailed(f"{invoice.number}: {problem}")
         lines = _taxed_lines(invoice)
-        uses_other = lines[0].tax_dpp_numerator != lines[0].tax_dpp_denominator
         buyer = buyer_identity(invoice)
         document_date = invoice.supporting_document_date
         element = ET.SubElement(listing, "TaxInvoice")
         for tag, value in [
             ("TaxInvoiceDate", f"{invoice.date:%Y-%m-%d}"), ("TaxInvoiceOpt", "Normal"),
-            ("TrxCode", transaction_code(invoice, uses_other)), ("AddInfo", invoice.facility_info),
+            ("TrxCode", transaction_code(invoice, lines)), ("AddInfo", invoice.facility_info),
             ("CustomDoc", invoice.supporting_document), ("CustomDocMonthYear", f"{document_date:%m%Y}" if document_date else ""),
             ("RefDesc", invoice.number), ("FacilityStamp", invoice.facility_stamp),
             ("SellerIDTKU", invoice.seller_tin_nitku), ("BuyerTin", buyer["BuyerTin"]), ("BuyerDocument", buyer["BuyerDocument"]),

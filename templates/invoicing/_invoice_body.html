@@ -13,6 +13,7 @@
     <div>{% translate "Due date" %}: <strong>{{ invoice.due_date|date:"d F Y" }}</strong></div>
     {% if invoice.reference %}<div>{% translate "Reference" %}: {{ invoice.reference }}</div>{% endif %}
     {% if invoice.tax_invoice_number %}<div>{% translate "Tax invoice no." %}: {{ invoice.tax_invoice_number }}</div>{% endif %}
+    {% if invoice.delivery_kind %}<div>{{ invoice.get_delivery_kind_display }}</div>{% endif %}
   </div>
 </div>
 <div class="table-responsive"><table class="table">
@@ -26,6 +27,7 @@
   <tfoot>
     <tr><td colspan="5" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
     {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPN" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
+    {% if invoice.luxury_tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPnBM" %}</td><td class="num">{{ invoice.luxury_tax_amount|rupiah }}</td></tr>{% endif %}
     {% if invoice.vat_facility %}<tr class="text-secondary"><td colspan="5" class="text-end">{{ invoice.get_vat_facility_display }}</td><td class="num">{{ invoice.vat_not_collected|rupiah }}</td></tr>{% endif %}
     <tr class="fw-bold"><td colspan="5" class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
     {% if invoice.amount_paid %}<tr><td colspan="5" class="text-end">{% translate "Amount paid" %}</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>{% endif %}

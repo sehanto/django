@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.assets.domain import DepreciationMethod
 from apps.inventory.domain import CostFormula as InventoryCostFormula
 from apps.contacts.validators import nitku_validator, npwp_format_validator, validate_nitku_of
-from apps.core.models import TimeStampedModel, money_field
+from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
 
 from .roles import Role
@@ -51,10 +51,6 @@ class Organization(TimeStampedModel):
     npwp = models.CharField(
         _("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator],
         help_text=_("15 or 16 digits without punctuation."),
-    )
-    nitku = models.CharField(
-        _("NITKU (place of business)"), max_length=22, blank=True, validators=[nitku_validator],
-        help_text=_("Only when invoices are issued from a branch: its 22-digit NITKU. Empty means the head office (the NPWP followed by 000000)."),
     )
     nib = models.CharField(
         _("business ID (NIB)"), max_length=13, blank=True, validators=[nib_validator],
@@ -117,17 +113,42 @@ class Organization(TimeStampedModel):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        super().clean()
-        try:
-            validate_nitku_of(self.nitku, self.npwp)
-        except ValidationError as exc:
-            raise ValidationError({"nitku": exc}) from exc
-
     @property
     def is_individual_taxpayer(self) -> bool:
         """Wajib Pajak Orang Pribadi gets the Rp500 juta PPh Final threshold."""
         return self.legal_form == self.LegalForm.PERORANGAN
+
+
+class BusinessPlace(TenantOwnedModel):
+    """A branch or other place of business (tempat kegiatan usaha) registered with DJP under
+    its own NITKU. A sales invoice made from it carries that NITKU and address; invoices
+    without one come from the head office (the NPWP followed by 000000)."""
+
+    name = models.CharField(_("name"), max_length=100, help_text=_("E.g. Cabang Sleman."))
+    nitku = models.CharField(
+        _("NITKU"), max_length=22, validators=[nitku_validator],
+        help_text=_("22 digits: the organization's 16-digit NPWP followed by the 6 digits of this place, as registered in Coretax."),
+    )
+    address = models.TextField(_("address"), max_length=500, blank=True)
+    city = models.CharField(_("city/regency"), max_length=100, blank=True)
+    is_active = models.BooleanField(_("active"), default=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = _("place of business")
+        verbose_name_plural = _("places of business")
+        constraints = [models.UniqueConstraint(fields=["organization", "nitku"], name="unique_business_place_nitku")]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        super().clean()
+        if self.nitku and self.organization_id:
+            try:
+                validate_nitku_of(self.nitku, self.organization.npwp)
+            except ValidationError as exc:
+                raise ValidationError({"nitku": exc}) from exc
 
 
 class Membership(TimeStampedModel):

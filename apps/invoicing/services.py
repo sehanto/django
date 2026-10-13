@@ -18,7 +18,7 @@ from django.utils.translation import ngettext
 
 from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, ValidationFailed
 from apps.core.formatting import localized_rupiah
-from apps.core.money import ZERO
+from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.validators import ensure_business_date
 from apps.inventory import services as inventory
@@ -28,8 +28,11 @@ from apps.ledger.selectors import prepaid_tax_accounts
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
 from .domain import InvoiceTotals, LineSpec, TaxSpec, allocate, compute_invoice_totals, payment_state
+from apps.contacts.countries import INDONESIA
+from apps.contacts.models import BuyerIdType
+
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
+from .models import DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from .selectors import invoices_created_this_month
 
 INVOICE_PREFIX = {InvoiceKind.SALES: "INV", InvoiceKind.PURCHASE: "BILL"}
@@ -54,7 +57,8 @@ class InvoiceLineInput:
     def to_spec(self) -> LineSpec:
         tax = None
         if self.tax_rate is not None:
-            tax = TaxSpec(self.tax_rate.pk, self.tax_rate.rate, self.tax_rate.dpp_numerator, self.tax_rate.dpp_denominator)
+            rate = self.tax_rate
+            tax = TaxSpec(rate.pk, rate.rate, rate.dpp_numerator, rate.dpp_denominator, rate.luxury_rate)
         return LineSpec(self.quantity, self.unit_price, self.discount_percent, tax)
 
 
@@ -115,6 +119,25 @@ def _validate_facility(organization, kind: str, facility: Facility, lines: Seque
         raise ValidationFailed(_("Under a PPN facility the lines keep their PPN rate: the faktur shows the PPN that isn't collected."))
 
 
+def _validate_delivery(organization, kind: str, contact, delivery_kind: str, business_place) -> None:
+    """The type of delivery (Faktur Pajak code 06/09) and the place of business it is made from."""
+    if business_place is not None:
+        if kind != InvoiceKind.SALES or not _belongs(business_place, organization):
+            raise ValidationFailed(_("Choose one of your places of business, for a sales invoice."))
+        if not business_place.is_active:
+            raise ValidationFailed(_("The place of business %(place)s is inactive.") % {"place": business_place.name})
+    if not delivery_kind:
+        return
+    if delivery_kind not in DeliveryKind.values:
+        raise ValidationFailed(_("Choose a valid type of delivery."))
+    if kind != InvoiceKind.SALES or not organization.is_pkp:
+        raise ValidationFailed(_("Only a VAT-registered business (PKP) issues a Faktur Pajak with its own type of delivery."))
+    if delivery_kind == DeliveryKind.TOURIST and not (
+        contact.id_type == BuyerIdType.PASSPORT and contact.id_number and contact.country != INDONESIA and not contact.npwp
+    ):
+        raise ValidationFailed(_("A VAT refund for a tourist needs a buyer identified by a foreign passport (in the contact)."))
+
+
 def _validate_lines(organization, kind: str, lines: Sequence[InvoiceLineInput], *, charge_vat: bool = True) -> InvoiceTotals:
     for line in lines:
         if not all(_belongs(obj, organization) for obj in (line.account, line.tax_rate, line.item)):
@@ -172,6 +195,7 @@ def _apply_totals(invoice: Invoice, totals: InvoiceTotals) -> None:
     invoice.subtotal = totals.subtotal
     invoice.tax_amount = totals.tax_total
     invoice.vat_not_collected = totals.vat_not_collected
+    invoice.luxury_tax_amount = totals.luxury_total
     invoice.total = totals.total
 
 
@@ -188,11 +212,14 @@ def create_invoice(
     tax_invoice_number: str = "",
     notes: str = "",
     facility: Facility = NO_FACILITY,
+    delivery_kind: str = DeliveryKind.NORMAL,
+    business_place=None,
     created_by=None,
 ) -> Invoice:
     due_date = due_date or date + timedelta(days=contact.payment_terms_days)
     _validate_header(organization, kind, contact, date, due_date)
     _validate_facility(organization, kind, facility, lines)
+    _validate_delivery(organization, kind, contact, delivery_kind, business_place)
     totals = _validate_lines(organization, kind, lines, charge_vat=not facility.vat_facility)
     _ensure_plan_allows_new_invoice(organization)
     invoice = Invoice(
@@ -204,6 +231,8 @@ def create_invoice(
         reference=reference,
         tax_invoice_number=tax_invoice_number,
         notes=notes,
+        delivery_kind=delivery_kind,
+        business_place=business_place,
         created_by=created_by,
     )
     facility.apply(invoice)
@@ -230,6 +259,8 @@ def update_draft_invoice(
     tax_invoice_number: str = "",
     notes: str = "",
     facility: Facility = NO_FACILITY,
+    delivery_kind: str = DeliveryKind.NORMAL,
+    business_place=None,
 ) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     _ensure_draft(invoice)
@@ -237,6 +268,8 @@ def update_draft_invoice(
     due_date = due_date or date + timedelta(days=contact.payment_terms_days)
     _validate_header(organization, invoice.kind, contact, date, due_date)
     _validate_facility(organization, invoice.kind, facility, lines)
+    _validate_delivery(organization, invoice.kind, contact, delivery_kind, business_place)
+    invoice.delivery_kind, invoice.business_place = delivery_kind, business_place
     totals = _validate_lines(organization, invoice.kind, lines, charge_vat=not facility.vat_facility)
     invoice.contact, invoice.date, invoice.due_date = contact, date, due_date
     invoice.reference, invoice.tax_invoice_number, invoice.notes = reference, tax_invoice_number, notes
@@ -266,13 +299,13 @@ def _amounts_by_account(pairs) -> "OrderedDict[Account, Decimal]":
 
 def purchase_costs(organization, lines: list[InvoiceLine], totals: InvoiceTotals) -> list[Decimal]:
     """What each purchase line costs the business: a PKP credits input VAT; otherwise the VAT
-    is part of the cost (and so of the inventory value)."""
+    is part of the cost (and so of the inventory value). PPnBM is never credited: always cost."""
     amounts = [line.amount for line in lines]
-    if not organization.is_pkp:
-        for group in totals.tax_groups:
-            shares = allocate(group.tax, [amounts[i] for i in group.line_indexes])
-            for index, share in zip(group.line_indexes, shares):
-                amounts[index] += share
+    for group in totals.tax_groups:
+        uncredited = group.luxury if organization.is_pkp else group.tax + group.luxury
+        shares = allocate(uncredited, [amounts[i] for i in group.line_indexes])
+        for index, share in zip(group.line_indexes, shares):
+            amounts[index] += share
     return amounts
 
 
@@ -286,6 +319,8 @@ def _journal_lines(invoice: Invoice, lines: list[InvoiceLine], totals: InvoiceTo
                 result.append(JournalLineInput(account, credit=amount))
         if totals.tax_total:
             result.append(JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), credit=totals.tax_total))
+        if totals.luxury_total:
+            result.append(JournalLineInput(get_system_account(organization, SystemRole.LUXURY_TAX), credit=totals.luxury_total))
         return result + inventory.cost_journal_lines(stock)  # cost of goods sold of tracked items
 
     vat_recoverable = organization.is_pkp
@@ -311,6 +346,7 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
         invoice.vat_facility, invoice.facility_info, invoice.facility_stamp, invoice.supporting_document, invoice.supporting_document_date,
     )
     _validate_facility(invoice.organization, invoice.kind, facility, inputs)
+    _validate_delivery(invoice.organization, invoice.kind, invoice.contact, invoice.delivery_kind, invoice.business_place)
     totals = _validate_lines(invoice.organization, invoice.kind, inputs, charge_vat=not invoice.vat_facility)
     if totals.total <= 0:
         raise ValidationFailed(_("The invoice total must be greater than zero."))
@@ -344,6 +380,8 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
 @transaction.atomic
 def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
+    if invoice.is_asset_sale:
+        raise InvalidStateTransition(_("This invoice sold a fixed asset, so it stands with that disposal and can't be voided."))
     if invoice.returns.filter(status=ReturnNote.Status.POSTED).exists():
         raise InvalidStateTransition(_("This invoice has returns, so it can't be voided. Record a return for the rest instead."))
     if invoice.status in (Invoice.Status.PARTIAL, Invoice.Status.PAID):
@@ -411,11 +449,28 @@ def _income_tax_debit(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
                 _("The PPh Final for %(period)s has already been deposited. Cancel that deposit first, so that it can take this withholding into account.")
                 % {"period": f"{on:%m/%Y}"}
             )
-        return JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=income_tax.amount)
-    account = income_tax.account
-    if account is None or not prepaid_tax_accounts(organization).filter(pk=account.pk).exists():
-        raise ValidationFailed(_("Choose the prepaid tax account for the income tax withheld."))
-    return JournalLineInput(account, debit=income_tax.amount)
+        line = JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=income_tax.amount)
+    else:
+        account = income_tax.account
+        if account is None or not prepaid_tax_accounts(organization).filter(pk=account.pk).exists():
+            raise ValidationFailed(_("Choose the prepaid tax account for the income tax withheld."))
+        line = JournalLineInput(account, debit=income_tax.amount)
+    # A refund gives back the income tax withheld on what it refunds (create_return), so one
+    # invoice's receipts withhold one kind of tax, into one account.
+    earlier = {(p.income_tax_kind, p.income_tax_account_id) for p in invoice._posted_payments() if p.income_tax_withheld}
+    if earlier and earlier != {(income_tax.kind, line.account.pk if income_tax.kind != IncomeTaxWithheld.PPH_FINAL else None)}:
+        raise ValidationFailed(_("Earlier receipts of this invoice withheld another income tax or used another account. Record the same kind here."))
+    return line
+
+
+def _split_vat_withheld(invoice: Invoice, amount: Decimal) -> list[JournalLineInput]:
+    """PPN and PPnBM a VAT collector withheld (it collects both), in the invoice's proportion."""
+    organization = invoice.organization
+    vat, luxury = allocate(amount, [invoice.tax_amount, invoice.luxury_tax_amount])
+    return [
+        JournalLineInput(get_system_account(organization, role), debit=part)
+        for role, part in ((SystemRole.OUTPUT_VAT, vat), (SystemRole.LUXURY_TAX, luxury)) if part
+    ]
 
 
 @transaction.atomic
@@ -457,8 +512,8 @@ def record_payment(
         withheld_income_tax = income_tax_line.debit if income_tax_line else ZERO
         lines = [
             JournalLineInput(cash_account, debit=amount - vat_withheld - withheld_income_tax),
-            # The collector deposits this PPN itself: it settles the output VAT, not the seller.
-            JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), debit=vat_withheld),
+            # The collector deposits this PPN (and PPnBM) itself: it settles the output tax, not the seller.
+            *_split_vat_withheld(invoice, vat_withheld),
             *([income_tax_line] if income_tax_line else []),
             JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=amount),
         ]
@@ -494,6 +549,8 @@ def void_payment(*, payment: Payment, on: date, voided_by=None) -> Payment:
     invoice = Invoice.objects.select_for_update().get(pk=payment.invoice_id)
     if payment.vat_withheld and payment.vat_withheld > invoice.vat_withheld:
         raise InvalidStateTransition(_("Returns gave back PPN the buyer withheld on this payment. Void those returns first."))
+    if payment.income_tax_withheld and payment.income_tax_withheld > invoice.income_tax_withheld:
+        raise InvalidStateTransition(_("Refunds gave back income tax the buyer withheld on this payment. Void those returns first."))
     if payment.income_tax_kind == IncomeTaxWithheld.PPH_FINAL and _deposited_pph_final(invoice.organization, payment.date):
         raise InvalidStateTransition(
             _("The PPh Final for %(period)s, which counts this withholding, has been deposited. Cancel that deposit first.")
@@ -528,8 +585,9 @@ def _issued_spec(line: InvoiceLine, quantity: Decimal) -> LineSpec:
     """The line as issued: its price, discount and the tax rate frozen at issue."""
     tax = None
     if line.tax_rate_percent is not None:
-        key = (line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator)
-        tax = TaxSpec(key, line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator)
+        luxury = line.tax_luxury_rate or ZERO
+        key = (line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator, luxury)
+        tax = TaxSpec(key, line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator, luxury)
     return LineSpec(quantity, line.unit_price, line.discount_percent, tax)
 
 
@@ -552,8 +610,13 @@ def create_return(
     leaves at its current cost (purchases, the difference to cost of goods sold).
 
     PPN a VAT collector withheld and deposited is not ours to give back: up to what it still
-    holds, the return's PPN is left out of the credit and the refund (``vat_withheld``); the
-    collector recovers it from the tax office with the nota retur.
+    holds, the return's PPN (and PPnBM) is left out of the credit and the refund
+    (``vat_withheld``); the collector recovers it from the tax office with the nota retur.
+
+    A refund undoes part of what the buyer paid, so it also undoes the income tax the buyer
+    withheld on that part (in the proportion its receipts withheld): the buyer corrects its
+    withholding slip, and that tax comes off the prepaid tax, or back onto the PPh Final payable,
+    instead of being paid out (``income_tax_withheld``).
     """
     invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
     organization = invoice.organization
@@ -578,9 +641,11 @@ def create_return(
             )
 
     totals = compute_invoice_totals([_issued_spec(l.invoice_line, l.quantity) for l in lines], charge_vat=not invoice.vat_facility)
-    vat_withheld = min(totals.tax_total, max(invoice.vat_withheld, ZERO)) if invoice.is_sales else ZERO
+    withheld_taxes = totals.tax_total + totals.luxury_total
+    vat_withheld = min(withheld_taxes, max(invoice.vat_withheld, ZERO)) if invoice.is_sales else ZERO
     credited = min(totals.total - vat_withheld, max(invoice.balance_due, ZERO))
-    refunded = totals.total - vat_withheld - credited
+    income_tax = _income_tax_refunded(invoice, date, totals.total - vat_withheld - credited)
+    refunded = totals.total - vat_withheld - credited - income_tax.amount
     if refunded and (not _belongs(cash_account, organization) or cash_account is None or not cash_account.is_cash):
         raise ValidationFailed(
             _("%(amount)s has already been settled and is refunded: choose the cash or bank account.")
@@ -589,7 +654,7 @@ def create_return(
 
     pairs = [(l.invoice_line, l.quantity) for l in lines]
     stock = inventory.plan_sales_return(pairs) if invoice.is_sales else inventory.plan_purchase_return(organization, pairs)
-    journal_lines = _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withheld, cash_account, stock)
+    journal_lines = _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withheld, income_tax, cash_account, stock)
 
     number = next_document_number(organization, RETURN_PREFIX[invoice.kind], date)
     label = "Retur penjualan" if invoice.is_sales else "Retur pembelian"  # stored business records stay Indonesian
@@ -599,8 +664,10 @@ def create_return(
     )
     note = ReturnNote.objects.create(
         organization=organization, kind=invoice.kind, number=number, invoice=invoice, date=date, reason=reason.strip(),
-        subtotal=totals.subtotal, tax_amount=totals.tax_total, total=totals.total, credited=credited, refunded=refunded,
-        vat_withheld=vat_withheld, vat_not_collected=totals.vat_not_collected, cash_account=cash_account if refunded else None, journal_entry=entry, created_by=created_by,
+        subtotal=totals.subtotal, tax_amount=totals.tax_total, luxury_tax_amount=totals.luxury_total, total=totals.total,
+        credited=credited, refunded=refunded, vat_withheld=vat_withheld, vat_not_collected=totals.vat_not_collected,
+        income_tax_kind=income_tax.kind, income_tax_withheld=income_tax.amount, income_tax_account=income_tax.account,
+        cash_account=cash_account if refunded else None, journal_entry=entry, created_by=created_by,
     )
     created = {}
     for line, amount in zip(lines, totals.line_amounts):
@@ -616,7 +683,27 @@ def create_return(
     return note
 
 
-def _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withheld, cash_account, stock) -> list[JournalLineInput]:
+def _income_tax_refunded(invoice: Invoice, on: date, refund: Decimal) -> IncomeTaxInput:
+    """The income tax the buyer withheld on the part of its payments a return refunds."""
+    if not invoice.is_sales or refund <= 0:
+        return NO_INCOME_TAX
+    payments = [p for p in invoice._posted_payments()]
+    withheld = [p for p in payments if p.income_tax_withheld]
+    held = invoice.income_tax_withheld
+    if not withheld or held <= 0:
+        return NO_INCOME_TAX
+    paid = sum((p.amount for p in payments), ZERO)
+    share = min(quantize(refund * sum((p.income_tax_withheld for p in withheld), ZERO) / paid), held, refund)
+    kind, account = withheld[0].income_tax_kind, withheld[0].income_tax_account
+    if kind == IncomeTaxWithheld.PPH_FINAL and _deposited_pph_final(invoice.organization, on):
+        raise ValidationFailed(
+            _("The PPh Final for %(period)s has already been deposited, and this refund gives back PPh Final the buyer withheld. Cancel that deposit first.")
+            % {"period": f"{on:%m/%Y}"}
+        )
+    return IncomeTaxInput(kind, share, account)
+
+
+def _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withheld, income_tax, cash_account, stock) -> list[JournalLineInput]:
     organization = invoice.organization
     if invoice.is_sales:
         result = [
@@ -625,12 +712,20 @@ def _return_journal_lines(invoice, lines, totals, credited, refunded, vat_withhe
                 (l.invoice_line.account, amount) for l, amount in zip(lines, totals.line_amounts)
             ).items() if amount
         ]
-        if totals.tax_total - vat_withheld:  # the collector's share was never ours (see create_return)
-            result.append(JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), debit=totals.tax_total - vat_withheld))
+        # The collector's share was never ours (see create_return): split like its withholding.
+        withheld_vat, withheld_luxury = allocate(vat_withheld, [totals.tax_total, totals.luxury_total])
+        for role, amount in ((SystemRole.OUTPUT_VAT, totals.tax_total - withheld_vat), (SystemRole.LUXURY_TAX, totals.luxury_total - withheld_luxury)):
+            if amount:
+                result.append(JournalLineInput(get_system_account(organization, role), debit=amount))
         if credited:
             result.append(JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=credited))
         if refunded:
             result.append(JournalLineInput(cash_account, credit=refunded))
+        if income_tax.amount:
+            account = income_tax.account
+            if income_tax.kind == IncomeTaxWithheld.PPH_FINAL:
+                account = get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE)
+            result.append(JournalLineInput(account, credit=income_tax.amount))
         return result + inventory.cost_journal_lines(stock)
 
     # Purchases: what each line cost (with PPN a non-PKP can't credit) goes back out of its
@@ -668,6 +763,11 @@ def void_return(*, note: ReturnNote, on: date, voided_by=None) -> ReturnNote:
     if note.status != ReturnNote.Status.POSTED:
         raise InvalidStateTransition(_("This return has already been voided."))
     invoice = Invoice.objects.select_for_update().get(pk=note.invoice_id)
+    if note.income_tax_kind == IncomeTaxWithheld.PPH_FINAL and _deposited_pph_final(invoice.organization, note.date):
+        raise InvalidStateTransition(
+            _("The PPh Final for %(period)s, which counts this return, has been deposited. Cancel that deposit first.")
+            % {"period": f"{note.date:%m/%Y}"}
+        )
     stock = inventory.plan_return_void(note)
     reversal = reverse_journal_entry(
         entry=note.journal_entry, date=max(on, note.date), created_by=voided_by,

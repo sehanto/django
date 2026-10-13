@@ -136,7 +136,7 @@ class AssetDisposeView(WriteMixin, View):
             messages.error(request, _("The disposal details are incomplete."))
             return redirect("assets:detail", asset.pk)
         try:
-            services.dispose_asset(asset=asset, created_by=request.user, **form.cleaned_data)
+            services.dispose_asset(asset=asset, created_by=request.user, **form.service_kwargs())
             messages.success(request, _("Fixed asset disposed and posted to the ledger."))
         except DomainError as exc:
             flash_domain_error(request, exc)

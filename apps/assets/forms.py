@@ -1,13 +1,18 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.contacts.models import Contact
+from apps.contacts.selectors import customers_for
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, DateInput, OrganizationFormMixin
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.ledger.models import Account
 from apps.ledger.selectors import cash_accounts
+from apps.taxes.models import TaxRate
+from apps.taxes.selectors import tax_rates_for
 
 from .domain import MAX_USEFUL_LIFE_MONTHS, DepreciationMethod
 from .models import FixedAsset
+from .services import InvoicedSale
 from .selectors import accumulated_depreciation_accounts, depreciation_expense_accounts, fixed_asset_accounts, gain_loss_accounts
 
 DEPRECIATION_FIELDS = ("useful_life_months", "residual_value", "accumulated_depreciation_account", "depreciation_expense_account")
@@ -59,11 +64,33 @@ class DisposalForm(OrganizationFormMixin, BaseForm):
         label=_("Gain or loss account"), queryset=Account.objects.none(), required=False,
         help_text=_("Other income for a gain, other expense for a loss."),
     )
+    customer = forms.ModelChoiceField(
+        label=_("Invoice to"), queryset=Contact.objects.none(), required=False,
+        help_text=_("To sell on credit: a sales invoice is issued for the proceeds instead of cash being received."),
+    )
+    tax_rate = forms.ModelChoiceField(
+        label=_("PPN on the invoice"), queryset=TaxRate.objects.none(), required=False,
+        help_text=_("A PKP charges PPN on selling business assets (Art. 16D UU PPN, Faktur Pajak code 09)."),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
         self.fields["gain_loss_account"].queryset = gain_loss_accounts(self.organization)
+        self.fields["customer"].queryset = customers_for(self.organization)
+        if self.organization.is_pkp:
+            self.fields["tax_rate"].queryset = tax_rates_for(self.organization, active_only=True)
+        else:
+            del self.fields["tax_rate"]
+
+    def service_kwargs(self) -> dict:
+        """What ``services.dispose_asset`` takes."""
+        data = dict(self.cleaned_data)
+        customer, tax_rate = data.pop("customer", None), data.pop("tax_rate", None)
+        if customer is not None:
+            data["sale"] = InvoicedSale(customer, tax_rate)
+            data["cash_account"] = None
+        return data
 
 
 

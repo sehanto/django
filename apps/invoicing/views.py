@@ -171,7 +171,9 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
         invoice = self.object
         today = timezone.localdate()
         returns = list(invoice.returns.all())
-        show_coretax = invoice.is_sales and invoice.organization.is_pkp and invoice.can_return
+        show_coretax = invoice.is_sales and invoice.organization.is_pkp and invoice.status in (
+            Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID,
+        )
         return super().get_context_data(
             coretax_problem=coretax.invoice_problem(invoice) if show_coretax else None,
             show_coretax=show_coretax,

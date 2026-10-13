@@ -33,10 +33,12 @@
     <tfoot>
       <tr><td colspan="4" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ note.subtotal|rupiah }}</td></tr>
       {% if note.tax_amount %}<tr><td colspan="4" class="text-end">{% translate "PPN" %}</td><td class="num">{{ note.tax_amount|rupiah }}</td></tr>{% endif %}
+      {% if note.luxury_tax_amount %}<tr><td colspan="4" class="text-end">{% translate "PPnBM" %}</td><td class="num">{{ note.luxury_tax_amount|rupiah }}</td></tr>{% endif %}
       <tr class="fw-bold"><td colspan="4" class="text-end">{% translate "Total" %}</td><td class="num">{{ note.total|rupiah }}</td></tr>
       {% if note.credited %}<tr><td colspan="4" class="text-end">{% translate "Credited to the invoice" %}</td><td class="num">{{ note.credited|rupiah }}</td></tr>{% endif %}
       {% if note.refunded %}<tr><td colspan="4" class="text-end">{% blocktranslate trimmed with account=note.cash_account.name %}Refunded through {{ account }}{% endblocktranslate %}</td><td class="num">{{ note.refunded|rupiah }}</td></tr>{% endif %}
       {% if note.vat_withheld %}<tr><td colspan="4" class="text-end">{% translate "PPN withheld by the buyer, which it recovers from the tax office" %}</td><td class="num">{{ note.vat_withheld|rupiah }}</td></tr>{% endif %}
+      {% if note.income_tax_withheld %}<tr><td colspan="4" class="text-end">{% blocktranslate trimmed with tax=note.get_income_tax_kind_display %}{{ tax }} the buyer withheld on the refund, given back through its withholding slip{% endblocktranslate %}</td><td class="num">{{ note.income_tax_withheld|rupiah }}</td></tr>{% endif %}
       {% if note.vat_not_collected %}<tr><td colspan="4" class="text-end">{% translate "PPN not collected (facility)" %}</td><td class="num">{{ note.vat_not_collected|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>

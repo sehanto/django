@@ -84,9 +84,18 @@ class Item(TenantOwnedModel):
         return f"{self.code} · {self.name}" if self.code else self.name
 
 
+class DeliveryKind(models.TextChoices):
+    """Deliveries that take their own Faktur Pajak transaction code."""
+
+    NORMAL = "", _("Normal delivery")
+    TOURIST = "06", _("VAT refund for a tourist (code 06)")
+    ASSET = "09", _("Asset not originally for sale, Art. 16D (code 09)")
+
+
 class Invoice(TenantOwnedModel):
     Status = InvoiceStatus
     VatFacility = VatFacility
+    DeliveryKind = DeliveryKind
 
     OPEN_STATUSES = (Status.ISSUED, Status.PARTIAL)
 
@@ -112,11 +121,20 @@ class Invoice(TenantOwnedModel):
         help_text=_("For a facility, if any: e.g. the SPPB submission number, or PJKEK#number for a special economic zone."),
     )
     supporting_document_date = models.DateField(_("supporting document date"), null=True, blank=True)
+    delivery_kind = models.CharField(
+        _("type of delivery"), max_length=2, choices=DeliveryKind.choices, default=DeliveryKind.NORMAL, blank=True,
+    )
+    # Where the sale is made from (its NITKU goes on the faktur); empty for the head office.
+    business_place = models.ForeignKey(
+        "tenants.BusinessPlace", null=True, blank=True, on_delete=models.PROTECT, related_name="invoices",
+        verbose_name=_("place of business"),
+    )
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.DRAFT)
 
     subtotal = money_field(_("subtotal"))
     tax_amount = money_field(_("PPN (VAT)"))
     vat_not_collected = money_field(_("PPN not collected (facility)"))
+    luxury_tax_amount = money_field(_("PPnBM"))
     total = money_field(_("total"))
     amount_paid = money_field(_("amount paid"))
     # Returns credited against the balance (not the part refunded in cash): with the payments,
@@ -177,8 +195,11 @@ class Invoice(TenantOwnedModel):
         self.buyer_vat_collector = contact.vat_collector if self.is_sales else VatCollector.NONE
         self.contact_address, self.contact_city = contact.address, contact.city
         self.seller_name, self.seller_npwp = organization.name, organization.npwp
-        self.seller_nitku = organization.nitku
+        place = self.business_place
         self.seller_address, self.seller_city = organization.address, organization.city
+        if place is not None and (place.address or place.city):
+            self.seller_address, self.seller_city = place.address, place.city
+        self.seller_nitku = place.nitku if place is not None else ""
 
     def _party(self, snapshot: str, live) -> str:
         """Issued invoices show the parties as they were; drafts show the current details."""
@@ -224,8 +245,10 @@ class Invoice(TenantOwnedModel):
     @property
     def seller_tin_nitku(self) -> str:
         """The seller's place of business: its branch NITKU, or the head office."""
-        org = self.organization
-        npwp, nitku = (org.npwp, org.nitku) if self.status == self.Status.DRAFT else (self.seller_npwp, self.seller_nitku)
+        if self.status == self.Status.DRAFT:
+            npwp, nitku = self.organization.npwp, self.business_place.nitku if self.business_place_id else ""
+        else:
+            npwp, nitku = self.seller_npwp, self.seller_nitku
         return nitku or npwp16(npwp) + HEAD_OFFICE
 
     @property
@@ -252,6 +275,9 @@ class Invoice(TenantOwnedModel):
     def seller(self) -> dict:
         org = self.organization
         if self.status == self.Status.DRAFT:
+            place = self.business_place
+            if place is not None and (place.address or place.city):
+                return {"name": org.name, "npwp": org.npwp, "address": place.address, "city": place.city}
             return {"name": org.name, "npwp": org.npwp, "address": org.address, "city": org.city}
         return {"name": self.seller_name, "npwp": self.seller_npwp, "address": self.seller_address, "city": self.seller_city}
 
@@ -271,7 +297,7 @@ class Invoice(TenantOwnedModel):
 
     @property
     def buyer_withholds_vat(self) -> bool:
-        return bool(self.buyer_vat_collector) and bool(self.tax_amount)
+        return bool(self.buyer_vat_collector) and bool(self.tax_amount or self.luxury_tax_amount)
 
     def _posted_payments(self):
         return [p for p in self.payments.all() if p.status == Payment.Status.POSTED]
@@ -281,7 +307,7 @@ class Invoice(TenantOwnedModel):
 
     @property
     def vat_withheld(self):
-        """PPN the buyer withheld on its payments, less what returns gave back to it."""
+        """PPN (and PPnBM) the buyer withheld on its payments, less what returns gave back to it."""
         return (
             sum((p.vat_withheld for p in self._posted_payments()), ZERO)
             - sum((r.vat_withheld for r in self._posted_returns()), ZERO)
@@ -290,12 +316,25 @@ class Invoice(TenantOwnedModel):
     @property
     def vat_still_withheld(self):
         """How much more PPN the buyer may withhold: the PPN after returns, less what it withheld."""
-        returned = sum((r.tax_amount for r in self._posted_returns()), ZERO)
-        return max(self.tax_amount - returned - self.vat_withheld, ZERO)
+        returned = sum((r.tax_amount + r.luxury_tax_amount for r in self._posted_returns()), ZERO)
+        return max(self.tax_amount + self.luxury_tax_amount - returned - self.vat_withheld, ZERO)
+
+    @property
+    def income_tax_withheld(self):
+        """Income tax the buyer withheld on its payments, less what refunds gave back to it."""
+        return (
+            sum((p.income_tax_withheld for p in self._posted_payments()), ZERO)
+            - sum((r.income_tax_withheld for r in self._posted_returns()), ZERO)
+        )
+
+    @property
+    def is_asset_sale(self) -> bool:
+        """Made by disposing of a fixed asset: it stands or falls with that disposal."""
+        return self.disposed_assets.exists() if self.pk else False
 
     @property
     def can_return(self) -> bool:
-        return self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID)
+        return self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID) and not self.is_asset_sale
 
     @property
     def is_sales(self) -> bool:
@@ -333,6 +372,8 @@ class InvoiceLine(TimeStampedModel):
     tax_rate_percent = models.DecimalField(_("tax rate when issued (%)"), max_digits=5, decimal_places=2, null=True, blank=True, editable=False)
     tax_dpp_numerator = models.PositiveSmallIntegerField(_("DPP numerator when issued"), null=True, blank=True, editable=False)
     tax_dpp_denominator = models.PositiveSmallIntegerField(_("DPP denominator when issued"), null=True, blank=True, editable=False)
+    tax_specific_amount = models.BooleanField(_("PPN besaran tertentu when issued"), null=True, blank=True, editable=False)
+    tax_luxury_rate = models.DecimalField(_("PPnBM rate when issued (%)"), max_digits=5, decimal_places=2, null=True, blank=True, editable=False)
     item_code = models.CharField(_("item code when issued"), max_length=50, blank=True, editable=False)  # migration 0008
 
     class Meta:
@@ -362,7 +403,8 @@ class InvoiceLine(TimeStampedModel):
     def to_spec(self) -> LineSpec:
         tax = None
         if self.tax_rate_id:
-            tax = TaxSpec(self.tax_rate_id, self.tax_rate.rate, self.tax_rate.dpp_numerator, self.tax_rate.dpp_denominator)
+            rate = self.tax_rate
+            tax = TaxSpec(self.tax_rate_id, rate.rate, rate.dpp_numerator, rate.dpp_denominator, rate.luxury_rate)
         return LineSpec(self.quantity, self.unit_price, self.discount_percent, tax)
 
 
@@ -378,6 +420,7 @@ class IncomeTaxWithheld(models.TextChoices):
 
     NONE = "", _("None")
     PPH_22 = "pph22", _("PPh 22 (e.g. 1.5% by a government treasurer)")
+    # xgettext:no-python-format
     PPH_23 = "pph23", _("PPh 23 (2% on services)")
     PPH_FINAL = "pph_final", _("PPh Final 0.5% (PP 55/2022, with a Surat Keterangan)")
 
@@ -479,6 +522,16 @@ class ReturnNote(TenantOwnedModel):
     # neither credited nor refunded, the buyer settles it with the tax office.
     vat_withheld = money_field(_("PPN withheld by the buyer"))
     vat_not_collected = money_field(_("PPN not collected (facility)"))
+    luxury_tax_amount = money_field(_("PPnBM"))
+    # Income tax the buyer withheld on the part refunded: the buyer corrects its withholding
+    # slip, so it comes off the prepaid tax (or the PPh Final settled) instead of being paid out.
+    income_tax_kind = models.CharField(
+        _("income tax withheld"), max_length=10, choices=IncomeTaxWithheld.choices, default=IncomeTaxWithheld.NONE, blank=True,
+    )
+    income_tax_withheld = money_field(_("income tax the buyer withheld"))
+    income_tax_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("prepaid tax account"),
+    )
     cash_account = models.ForeignKey(
         "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("refund cash/bank account")
     )
@@ -494,8 +547,9 @@ class ReturnNote(TenantOwnedModel):
             models.CheckConstraint(
                 name="return_is_credited_or_refunded",
                 condition=Q(
-                    total__gt=0, credited__gte=0, refunded__gte=0, vat_withheld__gte=0, vat_withheld__lte=F("tax_amount"),
-                    total=F("credited") + F("refunded") + F("vat_withheld"),
+                    total__gt=0, credited__gte=0, refunded__gte=0, income_tax_withheld__gte=0,
+                    vat_withheld__gte=0, vat_withheld__lte=F("tax_amount") + F("luxury_tax_amount"),
+                    total=F("credited") + F("refunded") + F("vat_withheld") + F("income_tax_withheld"),
                 ),
             ),
         ]
