@@ -366,8 +366,9 @@ limited to `API_REQUESTS_PER_HOUR` (default 1000) per key; responses and errors 
 | `items/`, `tax-rates/` | GET | |
 | `invoices/` | GET, POST | `?kind=`, `?status=`; POST `{"kind", "contact", "date", "lines": [{"account": "4-1000", "description", "quantity", "unit_price", "tax_rate", "item"}], "issue": true}` |
 | `invoices/<id>/` | GET, POST | POST `{"action": "issue"}` issues a draft |
-| `invoices/<id>/payments/` | POST | `{"date", "amount", "cash_account": "1-1100", "method"}` |
-| `journal-entries/` | GET | `?from=`, `?to=` |
+| `invoices/<id>/payments/` | POST | `{"date", "amount", "cash_account": "1-1100", "method", "vat_withheld", "income_tax": {"kind", "amount", "account"} (receipts) or {"kind": "pph23", "base", "rate", "slip"} (bills)}` |
+| `invoices/<id>/returns/` | POST | `{"date", "reason", "lines": [{"line": <invoice line id>, "quantity"}], "cash_account"}` |
+| `journal-entries/` | GET, POST | `?from=`, `?to=`; POST `{"date", "description", "reference", "lines": [{"account", "debit", "credit", "description"}]}` posts a manual entry |
 | `reports/trial-balance/` | GET | `?as_of=` |
 
 Lists take `?limit=` (max 100) and `?offset=`. Writes go through the same services as the web
@@ -843,4 +844,3 @@ Static files are served by WhiteNoise.
 ## Possible next steps
 
 - PPh 21 on salaries (needs a payroll module)
-- Write endpoints for more documents in the REST API (bills' payments with withholding, returns, journals)

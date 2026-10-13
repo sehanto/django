@@ -22,9 +22,10 @@ from apps.core.exceptions import DomainError
 from apps.core.sanitizers import sanitize_text
 from apps.invoicing import services as invoicing
 from apps.invoicing.domain import InvoiceStatus
-from apps.invoicing.models import Invoice, InvoiceKind, Item, Payment
+from apps.invoicing.models import Invoice, InvoiceKind, Item, Payment, ReturnNote
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.selectors import account_balances
+from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.taxes.models import TaxRate
 from apps.tenants.roles import Permission
 
@@ -178,12 +179,13 @@ def invoice_json(i: Invoice, *, lines: bool = False) -> dict:
     }
     if lines:
         data["lines"] = [
-            {"description": line.description, "account": line.account_label, "quantity": f"{line.quantity.normalize():f}",
+            {"id": line.pk, "description": line.description, "account": line.account_label, "quantity": f"{line.quantity.normalize():f}",
              "unit_price": _money(line.unit_price), "discount_percent": f"{line.discount_percent.normalize():f}",
              "tax": line.tax_label or None, "amount": _money(line.amount), "item": line.item_id}
             for line in i.lines.all()
         ]
         data["payments"] = [payment_json(p) for p in i.payments.all()]
+        data["returns"] = [return_json(r) for r in i.returns.all()]
     return data
 
 
@@ -319,15 +321,84 @@ def invoice_payments(request, pk: int):
     method = data.get("method", Payment.Method.TRANSFER)
     if method not in Payment.Method.values:
         raise ApiError(f"'method' must be one of {', '.join(Payment.Method.values)}.")
+    income_tax = invoicing.NO_INCOME_TAX
+    if (withheld := data.get("income_tax")) is not None:
+        if not isinstance(withheld, dict):
+            raise ApiError("'income_tax' must be an object.")
+        income_tax = invoicing.IncomeTaxInput(
+            kind=_text(withheld, "kind", required=True, max_length=10),
+            amount=_decimal(withheld, "amount", required=False, default=Decimal("0")),
+            account=_one(Account.objects.for_organization(organization), withheld.get("account"), "income_tax.account", "code"),
+            slip=_text(withheld, "slip", max_length=50),
+            base=_decimal(withheld, "base", required=False, default=Decimal("0")),
+            rate=_decimal(withheld, "rate", required=False),
+        )
     payment = invoicing.record_payment(
         invoice=invoice, date=_date(data, "date"), amount=_decimal(data, "amount"), cash_account=cash, method=method,
         reference=_text(data, "reference", max_length=100), created_by=request.api_user,
+        vat_withheld=_decimal(data, "vat_withheld", required=False, default=Decimal("0")), income_tax=income_tax,
     )
     return JsonResponse(payment_json(payment), status=201)
 
 
-@endpoint("GET")
+def return_json(r: ReturnNote) -> dict:
+    return {
+        "id": r.pk, "number": r.number, "invoice": r.invoice_id, "kind": r.kind, "status": r.status, "date": r.date.isoformat(),
+        "reason": r.reason, "subtotal": _money(r.subtotal), "tax_amount": _money(r.tax_amount), "total": _money(r.total),
+        "credited": _money(r.credited), "refunded": _money(r.refunded),
+        "lines": [{"invoice_line": line.invoice_line_id, "quantity": f"{line.quantity.normalize():f}", "amount": _money(line.amount)}
+                  for line in r.lines.all()],
+    }
+
+
+@endpoint("POST")
+def invoice_returns(request, pk: int):
+    """A sales or purchase return of an issued invoice: {"date", "reason", "lines": [{"line", "quantity"}], "cash_account"}."""
+    organization = request.organization
+    invoice = _one(Invoice.objects.for_organization(organization), pk, "invoice")
+    data = _body(request)
+    lines = data.get("lines")
+    if not isinstance(lines, list) or not lines:
+        raise ApiError("'lines' must be a non-empty list of {\"line\": <invoice line id>, \"quantity\"}.")
+    invoice_lines = invoice.lines.all()
+    inputs = []
+    for line in lines:
+        if not isinstance(line, dict):
+            raise ApiError("Each line must be an object.")
+        inputs.append(invoicing.ReturnLineInput(_one(invoice_lines, line.get("line"), "line"), _decimal(line, "quantity")))
+    note = invoicing.create_return(
+        invoice=invoice, date=_date(data, "date"), reason=_text(data, "reason", required=True), lines=inputs,
+        cash_account=_one(Account.objects.for_organization(organization), data.get("cash_account"), "cash_account", "code"),
+        created_by=request.api_user,
+    )
+    return JsonResponse(return_json(note), status=201)
+
+
+@endpoint("GET", "POST")
 def journal_entries(request):
+    organization = request.organization
+    if request.method == "POST":  # {"date", "description", "reference", "lines": [{"account", "debit", "credit", "description"}]}
+        data = _body(request)
+        lines = data.get("lines")
+        if not isinstance(lines, list) or not 2 <= len(lines) <= 200:
+            raise ApiError("'lines' must be a list of 2 to 200 lines.")
+        accounts = Account.objects.for_organization(organization)
+        inputs = []
+        for line in lines:
+            if not isinstance(line, dict):
+                raise ApiError("Each line must be an object.")
+            account = _one(accounts, line.get("account"), "account", "code")
+            if account is None:
+                raise ApiError("Each line needs an 'account' code.")
+            inputs.append(JournalLineInput(
+                account, debit=_decimal(line, "debit", required=False, default=Decimal("0")),
+                credit=_decimal(line, "credit", required=False, default=Decimal("0")), description=_text(line, "description"),
+            ))
+        entry = create_journal_entry(
+            organization=organization, date=_date(data, "date"), description=_text(data, "description", required=True),
+            reference=_text(data, "reference", max_length=100), lines=inputs, created_by=request.api_user,
+        )
+        return JsonResponse(entry_json(entry), status=201)
     queryset = JournalEntry.objects.for_organization(request.organization).order_by("-date", "-id").prefetch_related("lines__account")
     if start := _date(request.GET, "from", required=False):
         queryset = queryset.filter(date__gte=start)

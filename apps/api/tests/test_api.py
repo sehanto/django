@@ -81,3 +81,35 @@ def test_keys_are_managed_by_owners(auth_client, organization):
         auth_client.post(reverse("api_keys:revoke", args=[key.pk]))
     key.refresh_from_db()
     assert key.revoked_at is not None
+
+
+def test_bills_are_paid_with_withholding_returned_and_journals_posted(client, key, organization, supplier, account):
+    from apps.invoicing import services
+    from apps.invoicing.models import InvoiceKind
+    from apps.invoicing.services import InvoiceLineInput
+
+    bill = services.issue_invoice(invoice=services.create_invoice(
+        organization=organization, kind=InvoiceKind.PURCHASE, contact=supplier, date=date(2026, 3, 1),
+        lines=[InvoiceLineInput("Servis", account("6-1700"), D("1"), D("1000000"))],
+    ))
+    paid = call(client, "post", "invoice_payments", key, args=[bill.pk], body={
+        "date": "2026-03-10", "amount": "1000000", "cash_account": "1-1100",
+        "income_tax": {"kind": "pph23", "base": "1000000", "rate": "2"},
+    })
+    assert paid.status_code == 201 and paid.json()["income_tax_withheld"] == "20000.00"
+    line = call(client, "get", "invoice", key, args=[bill.pk]).json()["lines"][0]["id"]
+    returned = call(client, "post", "invoice_returns", key, args=[bill.pk], body={
+        "date": "2026-03-20", "reason": "Batal", "lines": [{"line": line, "quantity": "0.5"}], "cash_account": "1-1100",
+    })
+    assert returned.status_code == 201, returned.content
+    assert returned.json()["total"] == "500000.00"
+    entry = call(client, "post", "journal_entries", key, body={
+        "date": "2026-03-31", "description": "Biaya bank", "lines": [
+            {"account": "7-1000", "debit": "6500"}, {"account": "1-1100", "credit": "6500"},
+        ],
+    })
+    assert entry.status_code == 201 and entry.json()["status"] == "posted"
+    unbalanced = call(client, "post", "journal_entries", key, body={
+        "date": "2026-03-31", "description": "x", "lines": [{"account": "7-1000", "debit": "1"}, {"account": "1-1100", "credit": "2"}],
+    })
+    assert unbalanced.status_code == 400

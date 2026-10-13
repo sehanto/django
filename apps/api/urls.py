@@ -12,6 +12,7 @@ urlpatterns = [
     path("invoices/", views.invoices, name="invoices"),
     path("invoices/<int:pk>/", views.invoice_detail, name="invoice"),
     path("invoices/<int:pk>/payments/", views.invoice_payments, name="invoice_payments"),
+    path("invoices/<int:pk>/returns/", views.invoice_returns, name="invoice_returns"),
     path("journal-entries/", views.journal_entries, name="journal_entries"),
     path("reports/trial-balance/", views.trial_balance, name="trial_balance"),
 ]
