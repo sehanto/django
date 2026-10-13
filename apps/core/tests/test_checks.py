@@ -170,7 +170,6 @@ def test_production_without_an_owner_url_still_checks_the_app_url(monkeypatch):
     ({"DJANGO_ALLOWED_HOSTS": "app.example.com", "SITE_URL": "https://app.example.com"}, "example"),
     ({"DJANGO_ALLOWED_HOSTS": "shop.test"}, "shop.test"),
     ({"DJANGO_ALLOWED_HOSTS": "other.bukuumkm.id"}, "SITE_URL"),  # email links would be rejected
-    ({"DJANGO_CSRF_TRUSTED_ORIGINS": "http://app.bukuumkm.id"}, "DJANGO_CSRF_TRUSTED_ORIGINS"),
 ])
 def test_production_requires_real_allowed_hosts(monkeypatch, overrides, message):
     with pytest.raises(ImproperlyConfigured, match=message):
@@ -206,3 +205,30 @@ def test_deploy_check_tests_that_the_cache_answers():
     with mock.patch("django.core.cache.cache.set", side_effect=ConnectionError("redis.internal:6379 refused")):
         warnings = check_cache_answers(None)
     assert [w.id for w in warnings] == ["core.W004"] and "refused" in warnings[0].msg
+
+
+@pytest.mark.parametrize("origin", [
+    "http://app.bukuumkm.id",  # not https
+    "https://app.bukuumkm.id/login",  # not a bare origin
+    "https://user@app.bukuumkm.id",
+    "https://*",
+    "https://localhost:8000",
+    "https://app.example.com",
+    "https://evil.example.net",
+    "https://partner.co.id",  # a site this app doesn't serve
+    "https://*.bukuumkm.id",  # wider than the single allowed host
+])
+def test_production_requires_real_csrf_trusted_origins(monkeypatch, origin):
+    with pytest.raises(ImproperlyConfigured, match="DJANGO_CSRF_TRUSTED_ORIGINS"):
+        load_production_settings(monkeypatch, DJANGO_CSRF_TRUSTED_ORIGINS=origin)
+
+
+@pytest.mark.parametrize(("hosts", "origins"), [
+    ("app.bukuumkm.id", None),  # optional: the site's own forms work without it
+    ("app.bukuumkm.id", "https://app.bukuumkm.id"),
+    ("app.bukuumkm.id", "https://app.bukuumkm.id:8443"),
+    (".bukuumkm.id", "https://*.bukuumkm.id,https://bukuumkm.id"),
+])
+def test_production_accepts_trusted_origins_of_served_hosts(monkeypatch, hosts, origins):
+    prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS=origins)
+    assert prod.CSRF_TRUSTED_ORIGINS == (origins.split(",") if origins else [])

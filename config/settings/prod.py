@@ -76,9 +76,6 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # noqa: F405
-if any(not origin.startswith("https://") for origin in CSRF_TRUSTED_ORIGINS):
-    raise ImproperlyConfigured("DJANGO_CSRF_TRUSTED_ORIGINS entries must be https:// origins.")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -148,6 +145,43 @@ def _allowed_hosts() -> list[str]:
 
 
 ALLOWED_HOSTS = _allowed_hosts()
+
+
+def _served(host: str) -> bool:
+    """Whether ``host`` (possibly ``*.domain``) is answered by this site per ALLOWED_HOSTS."""
+    wildcard = host.startswith("*.")
+    name = host[2:] if wildcard else host
+    for allowed in ALLOWED_HOSTS:
+        if allowed.startswith("."):  # ".domain" serves domain and every subdomain
+            if name == allowed[1:] or name.endswith(allowed):
+                return True
+        elif not wildcard and name == allowed:
+            return True
+    return False
+
+
+# Optional: the site's own forms work without it (Django compares the Origin with the Host).
+# Every entry is an origin whose forms Django will accept, so each must be a bare https://
+# origin of a host this site serves; trusting anything else lets that site post as the user.
+def _csrf_trusted_origins() -> list[str]:
+    origins = [origin.strip() for origin in env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[]) if origin.strip()]  # noqa: F405
+    for origin in origins:
+        parts = urlsplit(origin)
+        host = (parts.hostname or "").lower()
+        if parts.scheme != "https" or not host or parts.path not in ("", "/") or parts.query or parts.fragment or parts.username:
+            raise ImproperlyConfigured(f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} must be a bare https:// origin, e.g. https://app.bukuumkm.id.")
+        name = host.removeprefix("*.")
+        if host == "*" or not name or name in _NOT_PUBLIC_HOSTS or name.endswith(_RESERVED_SUFFIXES):
+            raise ImproperlyConfigured(f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} is a catch-all, local or a reserved example domain.")
+        if not _served(host):
+            raise ImproperlyConfigured(
+                f"DJANGO_CSRF_TRUSTED_ORIGINS entry {origin} is not a host in DJANGO_ALLOWED_HOSTS; "
+                "trusting it would let that site submit forms for signed-in users."
+            )
+    return origins
+
+
+CSRF_TRUSTED_ORIGINS = _csrf_trusted_origins()
 # A cache shared by all workers (and servers): sign-in rate limits, CAPTCHA triggers, and the
 # password-reset and export limits count there. A per-process cache multiplies every limit by
 # the number of workers; a dummy cache turns them off. check --deploy (core.W004) also tests
