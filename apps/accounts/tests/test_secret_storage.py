@@ -7,6 +7,7 @@ from base64 import b32encode
 from binascii import hexlify
 
 import pytest
+from django.core.management.utils import get_random_secret_key
 from cryptography.fernet import Fernet, InvalidToken
 from django.apps import apps
 from django.core.management import call_command
@@ -99,7 +100,7 @@ def test_migration_moves_plaintext_devices(user):
 def test_production_requires_encryption_keys(monkeypatch):
     import environ
 
-    monkeypatch.setenv("DJANGO_SECRET_KEY", "x")
+    monkeypatch.setenv("DJANGO_SECRET_KEY", get_random_secret_key())
     monkeypatch.setenv("XENDIT_SECRET_KEY", "xnd_" + "production_" + "NOT-A-REAL-KEY")
     monkeypatch.setenv("XENDIT_CALLBACK_TOKEN", "x")
     monkeypatch.setenv("EMAIL_URL", "smtp://localhost:25")

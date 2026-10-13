@@ -16,7 +16,34 @@ def _required(name: str, why: str) -> str:
 
 
 DEBUG = False
-SECRET_KEY = env("DJANGO_SECRET_KEY")  # noqa: F405 - fail fast if missing
+# Signs sessions, password-reset and email-confirmation links: Django's own standard
+# (check --deploy, security.W009) is enforced here, plus no placeholder words.
+_SECRET_KEY_PLACEHOLDER_WORDS = ("change", "insecure", "example", "secret-key", "placeholder")
+
+
+def _secret_key() -> str:
+    from django.core.checks.security.base import (
+        SECRET_KEY_INSECURE_PREFIX,
+        SECRET_KEY_MIN_LENGTH,
+        SECRET_KEY_MIN_UNIQUE_CHARACTERS,
+    )
+
+    key = _required("DJANGO_SECRET_KEY", "it signs sessions and the links in emails")
+    weak = (
+        len(key) < SECRET_KEY_MIN_LENGTH
+        or len(set(key)) < SECRET_KEY_MIN_UNIQUE_CHARACTERS
+        or key.startswith(SECRET_KEY_INSECURE_PREFIX)
+        or any(word in key.lower() for word in _SECRET_KEY_PLACEHOLDER_WORDS)
+    )
+    if weak:
+        raise ImproperlyConfigured(
+            f"DJANGO_SECRET_KEY must be a random value of at least {SECRET_KEY_MIN_LENGTH} characters (generate one with: "
+            "python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\")."
+        )
+    return key
+
+
+SECRET_KEY = _secret_key()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)  # noqa: F405
 SESSION_COOKIE_SECURE = True

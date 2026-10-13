@@ -8,6 +8,7 @@ import environ
 import pytest
 from cryptography.fernet import Fernet
 from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 from django.test import override_settings
 
 from apps.core.checks import check_billing_seller
@@ -29,9 +30,10 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
 
 
 LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"
-FIELD_KEY, NEXT_FIELD_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()  # fresh per run, never committed  # assembled so no key-shaped literal sits in the repo
+FIELD_KEY, NEXT_FIELD_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()  # fresh per run, never committed
+SECRET_KEY = get_random_secret_key()  # assembled so no key-shaped literal sits in the repo
 PRODUCTION_ENV = {
-    "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
+    "DJANGO_SECRET_KEY": SECRET_KEY, "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
     "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
     "SITE_URL": "https://app.example.com",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": FIELD_KEY,
@@ -119,3 +121,14 @@ def test_production_requires_real_encryption_keys(monkeypatch, value):
 def test_production_accepts_rotated_keys(monkeypatch):
     prod = load_production_settings(monkeypatch, FIELD_ENCRYPTION_KEYS=f"{NEXT_FIELD_KEY},{FIELD_KEY}")
     assert prod.FIELD_ENCRYPTION_KEYS == [NEXT_FIELD_KEY, FIELD_KEY]
+
+
+@pytest.mark.parametrize("value", [
+    None, "", "x", "change-me", "insecure-dev-key",
+    "a" * 60,  # long but one character
+    "django-insecure-" + "k3j4h5g6f7d8s9a0q1w2e3r4t5y6u7i8o9p0z1x2c3v4b5n6m7",  # Django's startproject marker
+    "please-change-this-to-a-long-random-value-0123456789abcdef",  # long, but a placeholder
+])
+def test_production_requires_a_real_secret_key(monkeypatch, value):
+    with pytest.raises(ImproperlyConfigured, match="DJANGO_SECRET_KEY"):
+        load_production_settings(monkeypatch, DJANGO_SECRET_KEY=value)

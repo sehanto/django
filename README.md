@@ -669,7 +669,9 @@ few lines a day.
 
 ## Production
 
-Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
+Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY` (a random value of at least
+50 characters: production refuses short, repetitive, `django-insecure-` or placeholder keys such as
+`change-me`),
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` (the data-only app role) and
 `DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `BILLING_SELLER_NAME`, `BILLING_SELLER_NPWP` and
 `BILLING_SELLER_ADDRESS` (printed on subscription receipts: production refuses to
