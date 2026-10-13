@@ -30,24 +30,18 @@ class LoginForm(SanitizedFormMixin, AuthenticationForm):
         return self.cleaned_data["username"].lower()  # accounts are stored with lowercase emails
 
 
-class SignUpForm(BaseForm):
-    """Registers an owner together with their first organization."""
+class CaptchaFirstFormMixin:
+    """The CAPTCHA comes first and alone: without a solved one, no field is validated and
+    nothing else is said (no "already registered", no throttle counted, no email sent)."""
 
-    full_name = forms.CharField(label=_("Full name"), max_length=150)
-    email = forms.EmailField(label=_("Email"))
-    # strip=False: the login form uses the password exactly as typed, so sign-up must too.
-    password = forms.CharField(label=_("Password"), widget=forms.PasswordInput, strip=False)
-    organization_name = forms.CharField(label=_("Business name"), max_length=200)
-    legal_form = forms.ChoiceField(label=_("Legal form"), choices=Organization.LegalForm.choices)
+    captcha_action: captcha.CaptchaAction
 
     def __init__(self, *args, request=None, **kwargs):
         self.request = request
         super().__init__(*args, **kwargs)
 
     def full_clean(self):
-        # The CAPTCHA comes first and alone: without it, no field is validated, so the
-        # "already registered" message can't be used to probe for accounts.
-        if self.is_bound and not captcha.verify(self.request, captcha.CaptchaAction.SIGNUP):
+        if self.is_bound and not captcha.verify(self.request, self.captcha_action):
             self._errors = ErrorDict()
             self.cleaned_data = {}
             self.add_error(None, forms.ValidationError(
@@ -55,6 +49,19 @@ class SignUpForm(BaseForm):
             ))
             return
         super().full_clean()
+
+
+class SignUpForm(CaptchaFirstFormMixin, BaseForm):
+    """Registers an owner together with their first organization."""
+
+    captcha_action = captcha.CaptchaAction.SIGNUP
+
+    full_name = forms.CharField(label=_("Full name"), max_length=150)
+    email = forms.EmailField(label=_("Email"))
+    # strip=False: the login form uses the password exactly as typed, so sign-up must too.
+    password = forms.CharField(label=_("Password"), widget=forms.PasswordInput, strip=False)
+    organization_name = forms.CharField(label=_("Business name"), max_length=200)
+    legal_form = forms.ChoiceField(label=_("Legal form"), choices=Organization.LegalForm.choices)
 
     def clean_email(self):
         email = self.cleaned_data["email"].lower()
@@ -74,8 +81,10 @@ class ProfileForm(BaseModelForm):
         fields = ["full_name", "phone", "language"]
 
 
-class ResetPasswordForm(SanitizedFormMixin, PasswordResetForm):
+class ResetPasswordForm(CaptchaFirstFormMixin, SanitizedFormMixin, PasswordResetForm):
     """Django's reset form; the email goes out in the recipient's own language."""
+
+    captcha_action = captcha.CaptchaAction.PASSWORD_RESET
 
     email = forms.EmailField(label=_("Email"), max_length=254, widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}))
 

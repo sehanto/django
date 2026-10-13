@@ -460,11 +460,15 @@ many addresses *and* accounts still needs an IP-reputation service at the proxy.
 
 ### Login CAPTCHA
 
-The sign-in and sign-up pages use [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/).
+The sign-in, sign-up and password-reset pages use
+[Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/).
 
-**Sign-up** always shows it. Turnstile usually passes without a puzzle. It is checked
-before any other field: without a solved CAPTCHA the form says nothing else, so bots
-can't use "This email is already registered" to find out who has an account.
+**Sign-up and password reset** always show it. Turnstile usually passes without a puzzle.
+It is checked before any other field (`CaptchaFirstFormMixin`). Without a solved CAPTCHA
+the form says nothing else and does nothing:
+- bots can't use "This email is already registered" to find out who has an account;
+- bots can't send reset emails to strangers;
+- bots can't use up the per-email and per-IP reset limits of real users.
 
 **Sign-in** shows it only after repeated failures, so normal users never see it:
 
@@ -473,9 +477,10 @@ can't use "This email is already registered" to find out who has an account.
   Turnstile usually passes without a puzzle.
 - While the CAPTCHA is required, the password is not checked until Cloudflare confirms the
   token (`apps/accounts/captcha.py`, server-side `siteverify`). Bots therefore can't keep
-  testing passwords. If Cloudflare can't be reached, sign-in (and sign-up) fail closed
+  testing passwords. If Cloudflare can't be reached, all three forms fail closed
   with "complete the security check". Each token is bound to its form (Turnstile
-  `action` `login` or `signup`), so a token solved on one page is refused on the other.
+  `action` `login`, `signup` or `password_reset`), so a token solved on one page is
+  refused on the others.
 - A correct sign-in, or a password reset, clears the email's count. The address's count
   runs until the window ends.
 - django-axes still locks the email+IP pair after 5 failures, even for someone who solves

@@ -6,6 +6,7 @@ import pytest
 import requests
 from axes.models import AccessAttempt
 from django.conf import settings
+from django.core import mail
 from django.test import RequestFactory, override_settings
 from django.urls import reverse
 
@@ -111,6 +112,24 @@ def test_sign_up_reveals_nothing_about_existing_accounts_without_the_captcha(cli
     assert "email" in sign_up(client, email=user.email, token=FAKE_PASSING_TOKEN).context["form"].errors
 
 
+# --- Password reset: always required ---------------------------------------------------
+
+RESET = reverse("accounts:password_reset")
+
+
+def test_password_reset_needs_a_solved_captcha_before_anything_happens(client, user):
+    html = client.get(RESET).content.decode()
+    assert 'data-action="password_reset"' in html and captcha.SCRIPT_URL in html
+
+    for _ in range(settings.PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR + 1):  # would exhaust the limit if counted
+        response = client.post(RESET, {"email": user.email})
+        assert response.status_code == 200 and list(response.context["form"].errors) == ["__all__"]
+    assert mail.outbox == []
+
+    response = client.post(RESET, {"email": user.email, RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert response.status_code == 302 and len(mail.outbox) == 1  # the limit was not used up
+
+
 # --- Talking to Cloudflare -------------------------------------------------------------
 
 
@@ -132,6 +151,15 @@ def test_turnstile_verification(reply, accepted):
         assert captcha.verify(turnstile_request(), captcha.CaptchaAction.LOGIN) is accepted
     post.assert_called_once()
     assert post.call_args.kwargs["data"] == {"secret": "secret-key", "response": "token-from-widget", "remoteip": "203.0.113.5"}
+
+
+@override_settings(CAPTCHA_BACKEND="turnstile")
+@pytest.mark.parametrize("action", list(captcha.CaptchaAction))
+def test_each_form_only_accepts_its_own_tokens(action):
+    for solved_for in captcha.CaptchaAction:
+        with mock.patch("apps.accounts.captcha.requests.post") as post:
+            post.return_value.json.return_value = {"success": True, "action": solved_for}
+            assert captcha.verify(turnstile_request(), action) is (solved_for == action)
 
 
 @override_settings(CAPTCHA_BACKEND="turnstile")

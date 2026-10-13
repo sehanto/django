@@ -5,8 +5,8 @@
   ``LOGIN_CAPTCHA_WINDOW_MINUTES``, the form shows the widget and the password is not even
   checked until Cloudflare confirms the token. django-axes still locks the email+IP pair
   after ``AXES_FAILURE_LIMIT`` failures.
-- Sign-up: always required, checked before any other field (so bots can't probe which
-  emails are registered).
+- Sign-up and password reset: always required, checked before any other field (so bots
+  can't probe which emails are registered, send reset emails or use up the reset limits).
 
 Tokens are verified server-side with ``siteverify`` and bound to their form's action.
 """
@@ -42,6 +42,7 @@ class CaptchaAction(StrEnum):
 
     LOGIN = "login"
     SIGNUP = "signup"
+    PASSWORD_RESET = "password_reset"
 
 
 def _window_seconds() -> int:

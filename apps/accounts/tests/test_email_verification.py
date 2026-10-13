@@ -123,7 +123,7 @@ def test_cannot_switch_to_an_address_already_registered(client, site, user):
 def test_password_reset_also_confirms_the_address(client, site):
     sign_up(client)
     client.logout()
-    client.post(reverse("accounts:password_reset"), {"email": "dewi@example.com"})
+    client.post(reverse("accounts:password_reset"), {"email": "dewi@example.com", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     reset_path = re.search(r"https://app\.bukuumkm\.id(/account/password-reset/\S+/)", mail.outbox[-1].body).group(1)
     form = client.get(reset_path, follow=True)
     client.post(form.redirect_chain[-1][0], {"new_password1": "Baru-Sekali-456", "new_password2": "Baru-Sekali-456"})

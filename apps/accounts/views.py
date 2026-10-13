@@ -186,6 +186,12 @@ class PasswordResetView(auth_views.PasswordResetView):
     subject_template_name = "accounts/emails/password_reset_subject.txt"
     success_url = reverse_lazy("accounts:password_reset_done")
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "request": self.request}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(captcha=captcha.widget(captcha.CaptchaAction.PASSWORD_RESET), **kwargs)
+
     def form_valid(self, form):
         email = form.cleaned_data["email"].lower()
         within_limits = all([

@@ -29,7 +29,7 @@ def site(settings):
 
 
 def request_reset(client, email, ip="203.0.113.10", **headers):
-    return client.post(RESET, {"email": email}, REMOTE_ADDR=ip, **headers)
+    return client.post(RESET, {"email": email, RESPONSE_FIELD: FAKE_PASSING_TOKEN}, REMOTE_ADDR=ip, **headers)
 
 
 def reset_link(message) -> str:
