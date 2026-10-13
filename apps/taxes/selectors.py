@@ -39,6 +39,8 @@ def pph_final_schedule(organization, year: int) -> list[PphFinalMonth]:
 def pph_final_payments(organization, year: int) -> dict[int, PphFinalPayment]:
     return {
         p.month: p
-        for p in PphFinalPayment.objects.for_organization(organization).filter(year=year).select_related("journal_entry")
+        for p in PphFinalPayment.objects.for_organization(organization)
+        .filter(year=year, status=PphFinalPayment.Status.POSTED)
+        .select_related("journal_entry")
     }
 

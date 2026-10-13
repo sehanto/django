@@ -136,15 +136,15 @@ def delete_organization(*, organization: Organization) -> None:
     """
     from apps.contacts.models import Contact
     from apps.core.models import DocumentSequence
-    from apps.invoicing.models import Invoice, Item, Payment
+    from apps.invoicing.models import Item
     from apps.ledger.models import Account
     from apps.ledger.services import purge_organization_ledger
-    from apps.taxes.models import PphFinalPayment, TaxRate
+    from apps.taxes.models import TaxRate
 
-    for model in (PphFinalPayment, Payment, Invoice, Item):
-        model.objects.filter(organization=organization).delete()
+    # Invoices, payments, PPh Final payments and the ledger are immutable in the database;
+    # only the owner's purge function can remove them.
     purge_organization_ledger(organization)
-    for model in (Contact, TaxRate, Account, DocumentSequence):
+    for model in (Item, Contact, TaxRate, Account, DocumentSequence):
         model.objects.filter(organization=organization).delete()
     organization.delete()
 

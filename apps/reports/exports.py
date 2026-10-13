@@ -167,7 +167,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         Table("pph_final_payments.csv", gettext_lazy("MSME PPh Final deposits."), (
             C("year"), C("month"), C("gross_turnover"), C("taxable_turnover"), C("tax_amount"), C("paid_on"),
             C("ntpn"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
-            C("journal_entry__number", gettext_lazy("Journal entry")),
+            C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
         )),
         PphFinalPayment, "organization", ("year", "month"),
     ),

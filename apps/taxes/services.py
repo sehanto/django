@@ -3,7 +3,7 @@ from datetime import date
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from apps.core.exceptions import ValidationFailed
+from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
@@ -37,7 +37,7 @@ def record_pph_final_payment(
         raise ValidationFailed(_("This organization does not use the MSME PPh Final scheme."))
     if not cash_account.is_cash or cash_account.organization_id != organization.pk:
         raise ValidationFailed(_("Choose a valid cash or bank account."))
-    if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month).exists():
+    if PphFinalPayment.objects.for_organization(organization).filter(year=year, month=month, status=PphFinalPayment.Status.POSTED).exists():
         raise ValidationFailed(_("PPh Final for %(period)s has already been recorded.") % {"period": f"{month.label} {year}"})
     period = pph_final_schedule(organization, year)[month - 1]
     if period.tax <= 0:
@@ -72,9 +72,14 @@ def record_pph_final_payment(
 
 
 @transaction.atomic
-def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=None) -> None:
+def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=None) -> PphFinalPayment:
+    payment = PphFinalPayment.objects.select_for_update().get(pk=payment.pk)
+    if payment.status != PphFinalPayment.Status.POSTED:
+        raise InvalidStateTransition(_("This PPh Final payment has already been cancelled."))
     reverse_journal_entry(
         entry=payment.journal_entry, date=on, created_by=created_by,
         description=f"Pembatalan setoran PPh Final masa {Month(payment.month).tax_period(payment.year)}",
     )
-    payment.delete()
+    payment.status = PphFinalPayment.Status.VOID  # kept as history: never deleted
+    payment.save(update_fields=["status", "updated_at"])
+    return payment

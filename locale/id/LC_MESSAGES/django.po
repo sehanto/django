@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 08:39+0700\n"
+"POT-Creation-Date: 2026-10-13 08:59+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -661,6 +661,7 @@ msgstr "total"
 
 #: apps/billing/models.py:54 apps/invoicing/models.py:74
 #: apps/invoicing/models.py:173 apps/ledger/models.py:64
+#: apps/taxes/models.py:70
 msgid "status"
 msgstr "status"
 
@@ -928,6 +929,7 @@ msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
 #: apps/invoicing/domain.py:23 apps/invoicing/models.py:164
+#: apps/taxes/models.py:51
 msgid "Void"
 msgstr "Dibatalkan"
 
@@ -1180,7 +1182,7 @@ msgstr "E-Wallet"
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:163
+#: apps/invoicing/models.py:163 apps/taxes/models.py:50
 msgid "Recorded"
 msgstr "Tercatat"
 
@@ -2103,7 +2105,7 @@ msgstr "Tanggal setor"
 msgid "Paid from"
 msgstr "Dibayar dari"
 
-#: apps/taxes/forms.py:23 apps/taxes/models.py:58
+#: apps/taxes/forms.py:23 apps/taxes/models.py:66
 msgid "NTPN"
 msgstr "NTPN"
 
@@ -2137,43 +2139,43 @@ msgstr "tarif pajak"
 msgid "The DPP numerator cannot be larger than the denominator."
 msgstr "Pembilang DPP tidak boleh lebih besar dari penyebutnya."
 
-#: apps/taxes/models.py:52
+#: apps/taxes/models.py:60
 msgid "year"
 msgstr "tahun"
 
-#: apps/taxes/models.py:53
+#: apps/taxes/models.py:61
 msgid "month"
 msgstr "bulan"
 
-#: apps/taxes/models.py:54
+#: apps/taxes/models.py:62
 msgid "gross turnover"
 msgstr "peredaran bruto"
 
-#: apps/taxes/models.py:55
+#: apps/taxes/models.py:63
 msgid "taxable gross turnover"
 msgstr "peredaran bruto kena pajak"
 
-#: apps/taxes/models.py:56
+#: apps/taxes/models.py:64
 msgid "tax due"
 msgstr "PPh terutang"
 
-#: apps/taxes/models.py:57
+#: apps/taxes/models.py:65
 msgid "payment date"
 msgstr "tanggal setor"
 
-#: apps/taxes/models.py:58
+#: apps/taxes/models.py:66
 msgid "State revenue transaction number (Nomor Transaksi Penerimaan Negara)."
 msgstr "Nomor Transaksi Penerimaan Negara."
 
-#: apps/taxes/models.py:59
+#: apps/taxes/models.py:67
 msgid "paid from"
 msgstr "dibayar dari"
 
-#: apps/taxes/models.py:65
+#: apps/taxes/models.py:74
 msgid "PPh Final payment"
 msgstr "setoran PPh Final"
 
-#: apps/taxes/models.py:66
+#: apps/taxes/models.py:75
 msgid "PPh Final payments"
 msgstr "setoran PPh Final"
 
@@ -2190,6 +2192,10 @@ msgstr "PPh Final masa %(period)s sudah dicatat."
 msgid "No PPh Final is due for this period."
 msgstr "Tidak ada PPh Final terutang untuk masa ini."
 
+#: apps/taxes/services.py:78
+msgid "This PPh Final payment has already been cancelled."
+msgstr "Setoran PPh Final ini sudah dibatalkan."
+
 #: apps/taxes/views.py:38
 msgid "Tax rate saved."
 msgstr "Tarif pajak disimpan."
@@ -2202,7 +2208,7 @@ msgstr "Data setoran tidak lengkap."
 msgid "PPh Final payment recorded and posted to the ledger."
 msgstr "Setoran PPh Final dicatat dan dijurnal."
 
-#: apps/taxes/views.py:99
+#: apps/taxes/views.py:101
 msgid "PPh Final payment cancelled (journal entry reversed)."
 msgstr "Setoran PPh Final dibatalkan (jurnal dibalik)."
 

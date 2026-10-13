@@ -92,7 +92,9 @@ class PphFinalPayView(WriteMixin, View):
 
 class PphFinalCancelView(WriteMixin, View):
     def post(self, request, pk):
-        payment = get_object_or_404(PphFinalPayment.objects.for_organization(self.organization), pk=pk)
+        payment = get_object_or_404(
+            PphFinalPayment.objects.for_organization(self.organization).filter(status=PphFinalPayment.Status.POSTED), pk=pk
+        )
         year = payment.year
         try:
             services.cancel_pph_final_payment(payment=payment, on=timezone.localdate(), created_by=request.user)

@@ -74,6 +74,16 @@ Key design decisions:
   works only for the owner. A role that owns the tables can disable triggers
   anyway, so the app connects as a data-only role
   (see [Database roles](#database-roles)).
+- **Source documents are immutable too** (migrations `invoicing/0004`, `taxes/0006`).
+  Invoices can be edited or deleted only as drafts. Once issued, everything except the
+  paid amount and status is frozen, and their lines are frozen too:
+  - the paid amount must equal the posted payments, and the status must follow from it;
+  - voiding requires an unpaid invoice whose journal entry has been reversed, and a void
+    invoice is final.
+
+  Payments and PPh Final payments are inserted as recorded and can only be voided, after
+  their journal entry is reversed. They are never deleted: cancelling a PPh Final payment
+  keeps it as a void record. Only the owner's organization purge removes them.
 - **Tamper-evident audit trail.** Posting records who posted (`posted_by`). The database
   (migration `ledger/0006_hash_chain`) also gives each posted entry a gap-free
   `posting_sequence` per organization and a SHA-256 `entry_hash` over its content, its

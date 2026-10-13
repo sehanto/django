@@ -264,12 +264,13 @@ def reverse_manual_journal_entry(*, entry: JournalEntry, date: date, created_by=
 
 @transaction.atomic
 def purge_organization_ledger(organization) -> None:
-    """Delete every journal entry of a tenant that is being offboarded.
+    """Delete a tenant's books (journal entries, invoices, payments, PPh Final payments)
+    when it is offboarded.
 
-    The only sanctioned way to remove posted entries. The data-only app role
-    cannot lift the database guard itself; ``ledger_purge_organization`` (a
-    SECURITY DEFINER function owned by the schema owner, migration 0005) does it
-    for exactly one whole organization.
+    The only sanctioned way to remove posted entries and issued documents. The data-only
+    app role cannot lift the database guards itself; ``ledger_purge_organization`` (a
+    SECURITY DEFINER function owned by the schema owner, migrations 0005 and 0007) does
+    it for exactly one whole organization.
     """
     with connection.cursor() as cursor:
         cursor.execute("SELECT ledger_purge_organization(%s)", [organization.pk])

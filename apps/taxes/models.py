@@ -46,8 +46,16 @@ class TaxRate(TenantOwnedModel):
         return compute_vat(base, self.rate, self.dpp_numerator, self.dpp_denominator)
 
 
+class PphFinalStatus(models.TextChoices):
+    POSTED = "posted", _("Recorded")
+    VOID = "void", _("Void")
+
+
 class PphFinalPayment(TenantOwnedModel):
-    """Monthly PPh Final UMKM deposit (setoran), linked to its journal."""
+    """Monthly PPh Final UMKM deposit (setoran), linked to its journal. Cancelling voids it
+    (its journal entry is reversed); the record is never deleted (taxes migration 0006)."""
+
+    Status = PphFinalStatus
 
     year = models.PositiveSmallIntegerField(_("year"))
     month = models.PositiveSmallIntegerField(_("month"), choices=Month.choices)
@@ -59,13 +67,17 @@ class PphFinalPayment(TenantOwnedModel):
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    status = models.CharField(_("status"), max_length=10, choices=PphFinalStatus.choices, default=PphFinalStatus.POSTED)
 
     class Meta:
         ordering = ["-year", "-month"]
         verbose_name = _("PPh Final payment")
         verbose_name_plural = _("PPh Final payments")
         constraints = [
-            models.UniqueConstraint(fields=["organization", "year", "month"], name="unique_pph_final_period"),
+            models.UniqueConstraint(  # one recorded deposit per period; voided ones stay as history
+                fields=["organization", "year", "month"], condition=models.Q(status=PphFinalStatus.POSTED),
+                name="unique_pph_final_period",
+            ),
         ]
 
     def __str__(self):
