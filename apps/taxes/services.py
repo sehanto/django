@@ -175,7 +175,10 @@ def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=N
     return payment
 
 
-PAYER_ROLES = {PayerWithholding.PPH_23: SystemRole.PPH_23_PAYABLE, PayerWithholding.PPH_4_2: SystemRole.PPH_4_2_PAYABLE}
+PAYER_ROLES = {
+    PayerWithholding.PPH_23: SystemRole.PPH_23_PAYABLE, PayerWithholding.PPH_4_2: SystemRole.PPH_4_2_PAYABLE,
+    PayerWithholding.PPH_21: SystemRole.PPH_21_PAYABLE,
+}
 
 
 @transaction.atomic
@@ -193,7 +196,7 @@ def record_withholding_deposit(
     amount = withholding_due(organization, year).get((kind, month), ZERO)
     if amount <= 0:
         raise ValidationFailed(_("No %(tax)s was withheld in %(period)s.") % {"tax": kind.label, **_period(month, year)})
-    tax = "PPh 23" if kind == PayerWithholding.PPH_23 else "PPh Pasal 4 ayat (2)"
+    tax = {PayerWithholding.PPH_23: "PPh 23", PayerWithholding.PPH_4_2: "PPh Pasal 4 ayat (2)", PayerWithholding.PPH_21: "PPh 21"}[kind]
     entry = create_journal_entry(
         organization=organization, date=paid_on, description=f"Setoran {tax} masa {month.tax_period(year)}", reference=ntpn,
         source=JournalEntry.Source.TAX, created_by=created_by,

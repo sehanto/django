@@ -1,8 +1,8 @@
 {% extends "base.html" %}{% load i18n money %}
-{% block title %}{% translate "PPh 23 & 4(2) withheld" %}{% endblock %}
+{% block title %}{% translate "PPh 21, 23 & 4(2) withheld" %}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% blocktranslate trimmed %}PPh 23 & 4(2) withheld {{ year }}{% endblocktranslate %}</h1>
+  <h1 class="h4 mb-0">{% blocktranslate trimmed %}PPh 21, 23 & 4(2) withheld {{ year }}{% endblocktranslate %}</h1>
   <form method="get"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
@@ -17,7 +17,7 @@
         {% elif row.due > 0 and can_write %}
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#depositModal" data-month="{{ row.month.value }}" data-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
         {% endif %}</td>
-      <td class="text-end"><a href="{% url 'taxes:withholding_month' year row.month.value %}" class="small">{% translate "Bukti potong" %}</a></td></tr>
+      <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="small">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "No income tax was withheld from suppliers this year. Record it when paying a bill." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 <p class="small text-secondary mt-2">{% translate "When you pay a supplier for services (PPh 23) or rent of land or buildings (PPh 4(2)), you withhold the tax, deposit it by the 15th of the next month and give the supplier a bukti potong from Coretax eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first." %}</p>

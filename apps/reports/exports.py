@@ -28,6 +28,7 @@ from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLin
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
+from apps.payroll.models import Employee, PayrollRun, Payslip
 from apps.tenants.models import BusinessPlace, Organization
 
 from .statements import build_trial_balance
@@ -262,6 +263,29 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
         )),
         WithholdingDeposit, "organization", ("year", "month", "kind"),
+    ),
+    (
+        Table("employees.csv", gettext_lazy("Employees."), (
+            C("name"), C("nik"), C("npwp"), C("email"), C("position"), C("ptkp_status"), C("start_date"), C("end_date"),
+            C("base_salary"), C("fixed_allowance"), C("bpjs_employment"), C("bpjs_health"), C("is_active"),
+        )),
+        Employee, "organization", ("name", "id"),
+    ),
+    (
+        Table("payroll_runs.csv", gettext_lazy("Monthly payroll runs."), (
+            C("year"), C("month"), C("status"), C("gross"), C("employer_contributions"), C("employee_contributions"), C("pph21"),
+            C("net_pay"), C("journal_entry__number", gettext_lazy("Journal entry")), C("paid_on"), C("bpjs_paid_on"),
+        )),
+        PayrollRun, "organization", ("year", "month", "id"),
+    ),
+    (
+        Table("payslips.csv", gettext_lazy("Payslips, with their PPh 21."), (
+            C("run__year", gettext_lazy("Year")), C("run__month", gettext_lazy("Month")), C("employee__name", gettext_lazy("Employee")),
+            C("employee__nik", gettext_lazy("NIK")), C("ptkp_status"), C("base_salary"), C("allowances"), C("bonus"), C("jkk"), C("jkm"),
+            C("jht_employer"), C("jp_employer"), C("health_employer"), C("jht_employee"), C("jp_employee"), C("health_employee"),
+            C("taxable_gross"), C("ter_category"), C("ter_rate"), C("is_final_period"), C("pph21"), C("net_pay"), C("withholding_slip"),
+        )),
+        Payslip, "run__organization", ("run__year", "run__month", "employee__name", "id"),
     ),
 )
 ORGANIZATION_FIELDS = (

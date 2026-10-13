@@ -180,6 +180,7 @@ class WithholdingRow:
     kind: PayerWithholding
     due: Decimal
     deposit: WithholdingDeposit | None
+    detail_url: str = ""  # the month's bukti potong: supplier payments, or the payroll run
 
 
 class WithholdingView(OrganizationMixin, TemplateView):
@@ -189,8 +190,17 @@ class WithholdingView(OrganizationMixin, TemplateView):
         year = _selected_year(self.request)
         due = withholding_due(self.organization, year)
         deposits = withholding_deposits(self.organization, year)
+        from apps.payroll.models import PayrollRun  # payroll depends on taxes
+
+        runs = {r.month: r.pk for r in PayrollRun.objects.for_organization(self.organization).filter(year=year, status=PayrollRun.Status.POSTED)}
+
+        def detail_url(kind, month):
+            if kind == PayerWithholding.PPH_21:
+                return reverse("payroll:run", args=[runs[month]]) if month in runs else ""
+            return reverse("taxes:withholding_month", args=[year, month])
+
         rows = [
-            WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)))
+            WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)), detail_url(kind, month))
             for month in Month for kind in PayerWithholding
             if due.get((kind, month)) or (kind, month) in deposits
         ]

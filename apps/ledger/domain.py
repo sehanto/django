@@ -96,6 +96,8 @@ class SystemRole(models.TextChoices):
     PPH_FINAL_PAYABLE = "pph_final_payable", _("Final income tax payable")
     PPH_23_PAYABLE = "pph23_payable", _("Withheld PPh 23 payable")
     PPH_4_2_PAYABLE = "pph4_2_payable", _("Withheld PPh 4(2) payable")
+    PPH_21_PAYABLE = "pph21_payable", _("Withheld PPh 21 payable")
+    BPJS_PAYABLE = "bpjs_payable", _("BPJS contributions payable")
 
 
 class JournalStatus(models.TextChoices):
@@ -111,6 +113,7 @@ class JournalSource(models.TextChoices):
     TAX = "tax", _("Tax")
     FIXED_ASSET = "fixed_asset", _("Fixed asset")
     INVENTORY = "inventory", _("Inventory")
+    PAYROLL = "payroll", _("Payroll")
     REVERSAL = "reversal", _("Reversal")
 
 

@@ -49,6 +49,7 @@ class PayerWithholding(models.TextChoices):
     PPH_23 = "pph23", _("PPh 23 (e.g. 2% on services)")
     # xgettext:no-python-format
     PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
+    PPH_21 = "pph21", _("PPh 21 (salaries)")
 
 
 # The usual rate of each, suggested on the payment form.

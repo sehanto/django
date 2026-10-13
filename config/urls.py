@@ -35,6 +35,7 @@ urlpatterns = [
     path("reports/", include("apps.reports.urls")),
     path("fixed-assets/", include("apps.assets.urls")),
     path("inventory/", include("apps.inventory.urls")),
+    path("payroll/", include("apps.payroll.urls")),
     path("billing/", include("apps.billing.urls")),
     path("api/v1/", include("apps.api.urls")),
     # Invoicing lives at the root: /sales/, /purchases/, /payments/, /items/.

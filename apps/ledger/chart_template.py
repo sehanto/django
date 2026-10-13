@@ -27,6 +27,8 @@ DEFAULT_CHART = [
     ("2-1200", "Utang PPh Final", C.CURRENT_LIABILITY, R.PPH_FINAL_PAYABLE, False),
     ("2-1210", "Utang PPh Pasal 23", C.CURRENT_LIABILITY, R.PPH_23_PAYABLE, False),
     ("2-1220", "Utang PPh Pasal 4 ayat (2)", C.CURRENT_LIABILITY, R.PPH_4_2_PAYABLE, False),
+    ("2-1230", "Utang PPh Pasal 21", C.CURRENT_LIABILITY, R.PPH_21_PAYABLE, False),
+    ("2-1240", "Utang Iuran BPJS", C.CURRENT_LIABILITY, R.BPJS_PAYABLE, False),
     ("2-1300", "Utang Gaji", C.CURRENT_LIABILITY, None, False),
     ("2-1400", "Utang Lain-lain", C.CURRENT_LIABILITY, None, False),
     ("2-2000", "Utang Bank Jangka Panjang", C.LONG_TERM_LIABILITY, None, False),

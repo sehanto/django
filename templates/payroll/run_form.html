@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Run payroll" %}{% endblock %}
+{% block content %}
+<a href="{% url 'payroll:index' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a>
+<h1 class="h4 mb-3">{% blocktranslate trimmed with period=month.label %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}</h1>
+<form method="post">{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Base salary" %}</th><th>{% translate "Allowances" %}</th><th>{% translate "Bonus / THR" %}</th></tr></thead>
+  <tbody>{% for employee, base, allowance, bonus in form.rows %}<tr>
+    <td>{{ employee.name }}<div class="small text-secondary">{{ employee.ptkp_status }}</div></td>
+    <td>{{ base }}</td><td>{{ allowance }}</td><td>{{ bonus }}</td></tr>
+  {% empty %}<tr><td colspan="4" class="text-center text-secondary py-4">{% translate "No employee works here in this month." %}</td></tr>{% endfor %}</tbody>
+</table></div>
+<div class="card-footer d-flex justify-content-between align-items-center gap-2">
+  <span class="small text-secondary">{% translate "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances, PPh 21 on everything paid." %}</span>
+  <button class="btn btn-primary">{% translate "Calculate & post" %}</button></div></div>
+</form>
+{% endblock %}

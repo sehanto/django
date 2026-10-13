@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{% translate "Payroll" %} {{ run.period }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div><a href="{% url 'payroll:index' %}?year={{ run.year }}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a>
+    <h1 class="h4 mb-0">{% blocktranslate trimmed with period=run.period %}Payroll {{ period }}{% endblocktranslate %} <span class="badge align-middle text-bg-{% if run.status == run.Status.VOID %}secondary{% else %}success{% endif %}">{{ run.get_status_display }}</span></h1></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'payroll:run_csv' run.pk %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>{% translate "PPh 21 (CSV)" %}</a>
+    {% if can_write and run.status == run.Status.POSTED and not run.paid_on and not run.bpjs_paid_on %}<form method="post" action="{% url 'payroll:run_action' run.pk 'void' %}" data-confirm="{% translate 'Void this payroll?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Void" %}</button></form>{% endif %}
+  </div>
+</div>
+<div class="card mb-3"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>{% translate "Employee" %}</th><th class="num">{% translate "Pay" context "salary" %}</th><th class="num">{% translate "BPJS (employee)" %}</th><th class="num">{% translate "Gross for PPh 21" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "PPh 21" %}</th><th class="num">{% translate "Net pay" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
+  <tbody>{% for p in payslips %}<tr>
+    <td><a href="{% url 'payroll:payslip' p.pk %}">{{ p.employee.name }}</a><div class="small text-secondary">{{ p.ptkp_status }} · {% translate "category" %} {{ p.ter_category }}</div></td>
+    <td class="num">{{ p.pay|rupiah }}</td><td class="num">{{ p.employee_contributions|rupiah }}</td><td class="num">{{ p.taxable_gross|rupiah }}</td>
+    <td class="num">{% if p.is_final_period %}<span class="small">{% translate "annual" %}</span>{% else %}{{ p.ter_rate|floatformat:"-2" }}%{% endif %}</td>
+    <td class="num">{{ p.pph21|rupiah }}</td><td class="num fw-semibold">{{ p.net_pay|rupiah }}</td>
+    <td>{% if p.withholding_slip %}{{ p.withholding_slip }}{% elif can_write and run.status == run.Status.POSTED %}<form method="post" action="{% url 'payroll:payslip_slip' p.pk %}" class="d-flex gap-1">{% csrf_token %}<input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'Bukti potong no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td></tr>{% endfor %}</tbody>
+  <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td><td class="num">{{ run.gross|rupiah }}</td><td class="num">{{ run.employee_contributions|rupiah }}</td><td></td><td></td><td class="num">{{ run.pph21|rupiah }}</td><td class="num">{{ run.net_pay|rupiah }}</td><td></td></tr></tfoot>
+</table></div></div>
+<p class="small text-secondary">{% blocktranslate trimmed with employer=run.employer_contributions|rupiah %}The employer's BPJS contributions ({{ employer }}) are an expense of the period.{% endblocktranslate %} {% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' run.journal_entry_id %}">{{ run.journal_entry.number }}</a></p>
+{% if run.status == run.Status.POSTED %}
+<div class="row g-3">
+  <div class="col-md-6"><div class="card"><div class="card-body">
+    <h2 class="h6">{% translate "Salaries" %}</h2>
+    {% if run.paid_on %}<p class="mb-0">{% blocktranslate trimmed with date=run.paid_on|date:"d/m/Y" %}Paid on {{ date }}.{% endblocktranslate %} <a href="{% url 'ledger:journal_detail' run.payment_entry_id %}">{{ run.payment_entry.number }}</a></p>
+    {% elif can_write %}<form method="post" action="{% url 'payroll:run_action' run.pk 'pay' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-md-6" %}<button class="btn btn-success mt-3">{% blocktranslate trimmed with amount=run.net_pay|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
+  </div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body">
+    <h2 class="h6">{% translate "BPJS contributions" %}</h2>
+    {% if run.bpjs_paid_on %}<p class="mb-0">{% blocktranslate trimmed with date=run.bpjs_paid_on|date:"d/m/Y" %}Paid on {{ date }}.{% endblocktranslate %} <a href="{% url 'ledger:journal_detail' run.bpjs_entry_id %}">{{ run.bpjs_entry.number }}</a></p>
+    {% elif can_write and run.employer_contributions %}<form method="post" action="{% url 'payroll:run_action' run.pk 'bpjs' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-md-6" %}<button class="btn btn-success mt-3">{% blocktranslate trimmed with amount=run.employer_contributions|add:run.employee_contributions|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
+  </div></div></div>
+</div>
+{% endif %}
+{% endblock %}

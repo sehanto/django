@@ -96,6 +96,11 @@ def withholding_due(organization, year: int) -> dict[tuple[str, int], Decimal]:
         for row in rows:
             key = (row["income_tax_kind"], row["month"])
             due[key] = due.get(key, ZERO) + sign * row["amount"]
+    from apps.payroll.models import PayrollRun  # PPh 21 withheld from salaries
+
+    for run in PayrollRun.objects.for_organization(organization).filter(year=year, status=PayrollRun.Status.POSTED):
+        key = (PayerWithholding.PPH_21.value, run.month)
+        due[key] = due.get(key, ZERO) + run.pph21
     return due
 
 
