@@ -673,7 +673,10 @@ Production always redirects plain HTTP to HTTPS (`DJANGO_SECURE_SSL_REDIRECT` ma
 behind a TLS proxy it relies on the proxy sending `X-Forwarded-Proto: https`) and sends HSTS for at least
 one year with subdomains (`DJANGO_SECURE_HSTS_SECONDS` may only raise it). HSTS preload is opt-in
 (`DJANGO_SECURE_HSTS_PRELOAD=true`): it needs the bare domain to send the header too and is hard to
-undo. Misspelled true/false values are refused instead of read as false.
+undo. Misspelled true/false values are refused instead of read as false. Session and CSRF cookies
+are `Secure`, `HttpOnly`, `SameSite=Lax` and named with the `__Host-` prefix (only this exact host,
+over HTTPS, can set them); sessions last at most 14 days (`DJANGO_SESSION_COOKIE_AGE` may only
+shorten that).
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY` (a random value of at least
 50 characters: production refuses short, repetitive, `django-insecure-` or placeholder keys such as

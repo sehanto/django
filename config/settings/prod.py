@@ -82,8 +82,32 @@ if _ssl_redirect not in environ.Env.BOOLEAN_TRUE_STRINGS:
         "to true (if the redirect loops, make the proxy send X-Forwarded-Proto: https)."
     )
 SECURE_SSL_REDIRECT = True
+# Cookies: HTTPS-only, out of JavaScript's reach, not sent on cross-site requests, and
+# with the "__Host-" prefix, so browsers only accept them from this exact host over
+# HTTPS (no Domain, Path=/): a subdomain or a plain-HTTP attacker can't plant a session
+# or CSRF cookie. Lax (not Strict) keeps links from emails opening signed in.
+SESSION_COOKIE_NAME = "__Host-sessionid"
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_PATH = "/"
+CSRF_COOKIE_NAME = "__Host-csrftoken"
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True  # no JavaScript reads it; forms carry the token
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_PATH = "/"
+
+# Session lifetime: at most two weeks (Django's default); DJANGO_SESSION_COOKIE_AGE may only
+# shorten it (in seconds, at least five minutes).
+_SESSION_MAX_AGE, _SESSION_MIN_AGE = 14 * 24 * 60 * 60, 5 * 60
+_session_age = env.str("DJANGO_SESSION_COOKIE_AGE", default=str(_SESSION_MAX_AGE)).strip()  # noqa: F405
+if not _session_age.isdigit() or not _SESSION_MIN_AGE <= int(_session_age) <= _SESSION_MAX_AGE:
+    raise ImproperlyConfigured(
+        f"DJANGO_SESSION_COOKIE_AGE is {_session_age!r}; use seconds between {_SESSION_MIN_AGE} and {_SESSION_MAX_AGE} (14 days)."
+    )
+SESSION_COOKIE_AGE = int(_session_age)
 # HSTS: browsers refuse plain HTTP to the site for this long. At least one year (what the
 # browser preload list and security scanners expect); longer may be set. Subdomains are
 # always included; preload is opt-in (it needs the bare domain to serve this header, and

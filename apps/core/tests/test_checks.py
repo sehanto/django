@@ -271,3 +271,45 @@ def test_production_requires_real_hsts(monkeypatch, name, value):
 def test_production_hsts_settings(monkeypatch, overrides, seconds, preload):
     prod = load_production_settings(monkeypatch, **overrides)
     assert (prod.SECURE_HSTS_SECONDS, prod.SECURE_HSTS_INCLUDE_SUBDOMAINS, prod.SECURE_HSTS_PRELOAD) == (seconds, True, preload)
+
+
+def test_production_cookies_are_locked_down(monkeypatch):
+    prod = load_production_settings(monkeypatch)
+    for prefix in ("SESSION", "CSRF"):
+        assert getattr(prod, f"{prefix}_COOKIE_NAME").startswith("__Host-")  # needs Secure, Path=/, no Domain
+        assert getattr(prod, f"{prefix}_COOKIE_SECURE") is True
+        assert getattr(prod, f"{prefix}_COOKIE_HTTPONLY") is True
+        assert getattr(prod, f"{prefix}_COOKIE_SAMESITE") == "Lax"
+        assert getattr(prod, f"{prefix}_COOKIE_DOMAIN") is None and getattr(prod, f"{prefix}_COOKIE_PATH") == "/"
+    assert prod.SESSION_COOKIE_AGE == 14 * 24 * 60 * 60
+
+
+@pytest.mark.parametrize("value", ["0", "60", str(30 * 24 * 60 * 60), "2w", "-1"])
+def test_production_session_age_can_only_be_shortened(monkeypatch, value):
+    with pytest.raises(ImproperlyConfigured, match="DJANGO_SESSION_COOKIE_AGE"):
+        load_production_settings(monkeypatch, DJANGO_SESSION_COOKIE_AGE=value)
+
+
+def test_production_session_age_shorter_is_fine(monkeypatch):
+    assert load_production_settings(monkeypatch, DJANGO_SESSION_COOKIE_AGE="28800").SESSION_COOKIE_AGE == 8 * 60 * 60
+
+
+PRODUCTION_COOKIES = dict(
+    SESSION_COOKIE_NAME="__Host-sessionid", SESSION_COOKIE_SECURE=True, SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax", CSRF_COOKIE_NAME="__Host-csrftoken", CSRF_COOKIE_SECURE=True,
+    CSRF_COOKIE_HTTPONLY=True, CSRF_COOKIE_SAMESITE="Lax",
+)
+
+
+@override_settings(**PRODUCTION_COOKIES)
+def test_cookies_meet_the_host_prefix_rules(client, user):
+    """Browsers drop a __Host- cookie unless it is Secure, Path=/ and has no Domain."""
+    from django.urls import reverse
+
+    page = client.get(reverse("accounts:login"), secure=True)
+    signed_in = client.post(reverse("accounts:login"), {"username": user.email, "password": "Rahasia-123"}, secure=True)
+    cookies = {**page.cookies, **signed_in.cookies}
+    for name in ("__Host-csrftoken", "__Host-sessionid"):
+        cookie = cookies[name]
+        assert cookie["secure"] and cookie["httponly"] and cookie["path"] == "/" and not cookie["domain"]
+        assert cookie["samesite"] == "Lax"
