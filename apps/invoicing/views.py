@@ -179,7 +179,7 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
                 organization=self.organization, invoice=invoice,
                 initial={
                     "date": max(today, invoice.date), "amount": invoice.balance_due,
-                    "vat_withheld": max(min(invoice.tax_amount - invoice.vat_withheld, invoice.balance_due), ZERO),
+                    "vat_withheld": max(min(invoice.vat_still_withheld, invoice.balance_due), ZERO),
                 },
             ),
             void_form=VoidForm(initial={"date": today}),
@@ -245,7 +245,7 @@ class PaymentCreateView(InvoiceActionView):
         if not form.is_valid():
             errors = "; ".join(e for errs in form.errors.values() for e in errs)
             raise DomainError(_("Invalid payment data: %(errors)s") % {"errors": errors})
-        payment = services.record_payment(invoice=invoice, created_by=self.request.user, **form.cleaned_data)
+        payment = services.record_payment(invoice=invoice, created_by=self.request.user, **form.service_kwargs())
         messages.success(self.request, _("Payment %(number)s recorded.") % {"number": payment.number})
         return self.detail_url(invoice)
 

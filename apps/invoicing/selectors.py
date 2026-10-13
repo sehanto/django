@@ -115,16 +115,17 @@ def outstanding_summary(organization, kind: str) -> dict:
 
 def vat_summary(organization, year: int) -> list[dict]:
     """Monthly PPN Keluaran vs PPN Masukan from non-void invoices, less returns (nota retur)
-    in the month of the return."""
+    in the month of the return. Sales under a PPN facility count in the sales value with
+    their PPN not collected."""
     rows = (
         Invoice.objects.for_organization(organization)
         .filter(date__year=year, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
         .values("date__month", "kind")
-        .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
+        .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"))
     )
     returns = (
         ReturnNote.objects.for_organization(organization).filter(date__year=year, status=ReturnNote.Status.POSTED)
-        .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
+        .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"))
     )
     # PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer, not payable by us.
     collected = (
@@ -137,13 +138,16 @@ def vat_summary(organization, year: int) -> list[dict]:
         .filter(date__year=year, kind=InvoiceKind.SALES, status=ReturnNote.Status.POSTED)
         .exclude(invoice__buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
     )
-    keys = ("output_base", "output", "collected", "input_base", "input")
+    # PPN under a facility (codes 07/08) is reported but never charged nor payable.
+    keys = ("output_base", "output", "not_collected", "collected", "input_base", "input")
     months = {m: {"month": m, **{key: ZERO for key in keys}} for m in range(1, 13)}
     for row, sign in [*((r, 1) for r in rows), *((r, -1) for r in returns)]:
         target = months[row["date__month"]]
         prefix = "output" if row["kind"] == InvoiceKind.SALES else "input"
         target[prefix] += sign * row["tax"]
         target[f"{prefix}_base"] += sign * row["base"]
+        if prefix == "output":
+            target["not_collected"] += sign * row["not_collected"]
     for row, sign in [*((r, 1) for r in collected), *((r, -1) for r in collected_returns)]:
         months[row["date__month"]]["collected"] += sign * row["tax"]
     for month in months.values():

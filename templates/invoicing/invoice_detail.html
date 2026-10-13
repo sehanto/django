@@ -40,7 +40,12 @@
     <div class="card mb-3"><div class="card-body">
       <h2 class="h6">{% if invoice.is_sales %}{% translate "Receive payment" %}{% else %}{% translate "Pay bill" %}{% endif %}</h2>
       <form method="post" action="{% url 'invoicing:pay' kind invoice.pk %}">{% csrf_token %}
-        {% include "partials/form_fields.html" with form=payment_form col="col-12" %}
+        {% if payment_form.income_tax_fields %}
+          {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-12" %}
+          <details class="mt-3"{% if payment_form.errors %} open{% endif %}><summary class="small">{% translate "The buyer withheld income tax" %}</summary>
+            <div class="mt-2">{% include "partials/form_fields.html" with form=payment_form fields=payment_form.income_tax_fields col="col-12" %}</div>
+          </details>
+        {% else %}{% include "partials/form_fields.html" with form=payment_form col="col-12" %}{% endif %}
         <button class="btn btn-success w-100 mt-3">{% translate "Record payment" %}</button>
       </form>
     </div></div>
@@ -49,7 +54,7 @@
       <h2 class="h6">{% translate "Payment history" %}</h2>
       {% for p in invoice.payments.all %}
         <div class="d-flex justify-content-between align-items-start border-top py-2 {% if p.status == p.Status.VOID %}text-decoration-line-through text-secondary{% endif %}">
-          <div><div class="small fw-semibold">{{ p.number }}</div><div class="small text-secondary">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="small text-secondary">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}</div>
+          <div><div class="small fw-semibold">{{ p.number }}</div><div class="small text-secondary">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="small text-secondary">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}{% if p.income_tax_withheld %}<div class="small text-secondary">{% blocktranslate trimmed with amount=p.income_tax_withheld|rupiah tax=p.get_income_tax_kind_display %}incl. {{ amount }} withheld as {{ tax }}{% endblocktranslate %}{% if p.withholding_slip %} · {{ p.withholding_slip }}{% endif %}</div>{% endif %}</div>
           <div class="text-end"><div class="num">{{ p.amount|rupiah }}</div>
             {% if p.status == p.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:payment_void' p.pk %}" data-confirm="{% translate 'Void this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}
           </div>

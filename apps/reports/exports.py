@@ -119,8 +119,9 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (ENTRY_LINES, JournalLine, "entry__organization", ("entry__date", "entry__number", "id")),
     (
         Table("contacts.csv", gettext_lazy("Customers and suppliers."), (
-            C("name"), C("kind"), C("npwp"), C("email"), C("phone"), C("address"), C("city"),
-            C("payment_terms_days"), C("document_language"), C("notes"), C("is_active"),
+            C("name"), C("kind"), C("npwp"), C("nitku"), C("id_type"), C("id_number"), C("country"),
+            C("email"), C("phone"), C("address"), C("city"),
+            C("payment_terms_days"), C("document_language"), C("vat_collector"), C("notes"), C("is_active"),
         )),
         Contact, "organization", ("name", "id"),
     ),
@@ -148,9 +149,12 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("id", gettext_lazy("Invoice ID")), C("kind"), C("number"), C("contact__name", gettext_lazy("Contact")),
             C("contact__npwp", gettext_lazy("Contact NPWP")),
             C("contact_name", gettext_lazy("Contact name on the invoice")), C("contact_npwp", gettext_lazy("Contact NPWP on the invoice")),
-            C("contact_address"), C("contact_city"), C("seller_name"), C("seller_npwp"),
+            C("contact_nitku"), C("contact_id_type"), C("contact_id_number"), C("contact_country"),
+            C("contact_address"), C("contact_city"), C("buyer_vat_collector"), C("seller_name"), C("seller_npwp"), C("seller_nitku"),
             C("date"), C("due_date"), C("reference"),
-            C("tax_invoice_number"), C("status"), C("subtotal"), C("tax_amount"), C("total"), C("amount_paid"),
+            C("tax_invoice_number"), C("vat_facility"), C("facility_info"), C("facility_stamp"),
+            C("supporting_document"), C("supporting_document_date"),
+            C("status"), C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("total"), C("amount_paid"),
             C("amount_credited"), C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
         )),
         Invoice, "organization", ("date", "id"),
@@ -169,7 +173,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (
         Table("returns.csv", gettext_lazy("Sales and purchase returns (nota retur)."), (
             C("kind"), C("number"), C("invoice__number", gettext_lazy("Invoice number")), C("date"), C("reason"),
-            C("subtotal"), C("tax_amount"), C("total"), C("credited"), C("refunded"),
+            C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("total"), C("credited"), C("refunded"), C("vat_withheld"),
             C("cash_account__code", gettext_lazy("Refund cash/bank account code")),
             C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
@@ -187,6 +191,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("number"), C("date"), C("invoice__id", gettext_lazy("Invoice ID")),
             C("invoice__number", gettext_lazy("Invoice number")), C("invoice__contact__name", gettext_lazy("Contact")),
             C("amount"), C("method"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
+            C("vat_withheld"), C("income_tax_kind"), C("income_tax_withheld"),
+            C("income_tax_account__code", gettext_lazy("Prepaid tax account code")), C("withholding_slip"),
             C("reference"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         Payment, "organization", ("date", "id"),
@@ -232,7 +238,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
     (
         Table("pph_final_payments.csv", gettext_lazy("MSME PPh Final deposits."), (
-            C("year"), C("month"), C("gross_turnover"), C("taxable_turnover"), C("tax_amount"), C("paid_on"),
+            C("year"), C("month"), C("gross_turnover"), C("taxable_turnover"), C("tax_amount"), C("withheld"), C("paid_on"),
             C("ntpn"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
             C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
         )),
@@ -240,7 +246,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
 )
 ORGANIZATION_FIELDS = (
-    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
+    "name", "legal_form", "npwp", "nitku", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
     "inventory_cost_formula", "depreciation_method", "additional_notes", "lock_date",
 )
 ORGANIZATION_FILE = "organization.csv"

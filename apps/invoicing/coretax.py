@@ -5,13 +5,16 @@ Both follow DJP's samples and Excel templates shipped with converter v1.6 (pajak
 Template XML dan Converter Excel ke XML).
 
 Sales invoices ("Sample Faktur PK Template v.1.4", rules from template v.1.6.1): one
-TaxInvoice per invoice, dated YYYY-MM-DD, "Normal", transaction code 04 when the lines use
-DPP nilai lain (11/12, the standard 12% rate since 2025) or 01 with the full DPP (luxury
-goods), or 02/03 when the buyer is a VAT collector (government treasurer / other appointed
-collector, from the contact as it was at issue), seller and buyer NITKU as the 16-digit NPWP plus 000000 (head office), buyer
-identified by NPWP, and one GoodService per taxed line. Coretax issues the faktur number;
-record it on the invoice afterwards. Special cases (facilities 07/08,
-buyers without NPWP) are left to Coretax itself.
+TaxInvoice per invoice, dated YYYY-MM-DD, "Normal", and one GoodService per taxed line.
+Transaction code: 07/08 for a delivery under a PPN facility (with its keterangan tambahan,
+cap fasilitas and supporting document), else 02/03 when the buyer is a VAT collector
+(government treasurer / other appointed collector, from the contact as it was at issue),
+else 04 when the lines use DPP nilai lain (11/12, the standard 12% rate since 2025) or 01
+with the full DPP (luxury goods). The seller's and buyer's NITKU are their branch's when
+set, else the 16-digit NPWP plus 000000 (head office). A buyer without an NPWP is
+identified by its NIK, passport or other document: NPWP 0000000000000000, its country and
+NITKU 000000, as the template asks. Coretax issues the faktur number; record it on the
+invoice afterwards.
 
 Purchase returns: since 2025 the buyer creates the nota retur in Coretax DJP and the seller
 approves it, so only *purchase* returns are exported; a customer files our sales returns
@@ -31,6 +34,7 @@ from xml.etree import ElementTree as ET
 from django.utils.translation import gettext as _
 
 from apps.contacts.models import VatCollector
+from apps.contacts.validators import npwp16
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO
 
@@ -59,10 +63,7 @@ def unit_code(unit: str) -> str:
     return UNIT_CODES.get(unit.strip().lower(), OTHER_UNIT)
 
 
-def tin(npwp: str) -> str:
-    """The 16-digit NPWP Coretax expects (a 15-digit NPWP is prefixed with 0)."""
-    digits = "".join(ch for ch in npwp if ch.isdigit())
-    return "0" + digits if len(digits) == 15 else digits
+tin = npwp16  # the 16-digit NPWP Coretax expects
 
 
 def _round(value: Decimal) -> Decimal:
@@ -200,17 +201,35 @@ STANDARD, GOVERNMENT_COLLECTOR, OTHER_COLLECTOR, OTHER_TAX_BASE = "01", "02", "0
 COLLECTOR_CODES = {VatCollector.GOVERNMENT: GOVERNMENT_COLLECTOR, VatCollector.OTHER: OTHER_COLLECTOR}
 
 
+NO_TIN = "0000000000000000"  # BuyerTin when the buyer is identified by another document
+NO_NITKU = "000000"  # BuyerIDTKU then
+TIN_DOCUMENT = "TIN"
+
+
 def transaction_code(invoice: Invoice, uses_other_tax_base: bool) -> str:
-    """02/03 for a buyer that collects the PPN (whatever the tax base; DPP nilai lain stays in
-    its own column), else 04 for DPP nilai lain or 01."""
+    """07/08 under a PPN facility, else 02/03 for a buyer that collects the PPN (whatever the
+    tax base; DPP nilai lain stays in its own column), else 04 for DPP nilai lain or 01."""
+    if invoice.vat_facility:
+        return invoice.vat_facility
     if invoice.buyer_vat_collector:
         return COLLECTOR_CODES[invoice.buyer_vat_collector]
     return OTHER_TAX_BASE if uses_other_tax_base else STANDARD
-HEAD_OFFICE = "000000"  # NITKU suffix of the head office
 
 
-def nitku(npwp: str) -> str:
-    return tin(npwp) + HEAD_OFFICE
+def buyer_identity(invoice: Invoice) -> dict[str, str] | None:
+    """BuyerTin, BuyerDocument, BuyerCountry, BuyerDocumentNumber and BuyerIDTKU, or None
+    when the buyer had neither an NPWP nor an identity document when the invoice was issued."""
+    if invoice.party_tin:
+        return {
+            "BuyerTin": invoice.party_tin, "BuyerDocument": TIN_DOCUMENT, "BuyerCountry": invoice.party_country,
+            "BuyerDocumentNumber": "-", "BuyerIDTKU": invoice.party_nitku,
+        }
+    if invoice.party_id_type and invoice.party_id_number:
+        return {
+            "BuyerTin": NO_TIN, "BuyerDocument": invoice.party_id_type, "BuyerCountry": invoice.party_country,
+            "BuyerDocumentNumber": invoice.party_id_number, "BuyerIDTKU": NO_NITKU,
+        }
+    return None
 
 
 def _taxed_lines(invoice: Invoice):
@@ -228,8 +247,8 @@ def invoice_problem(invoice: Invoice) -> str | None:
         return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
     if len(tin(organization.npwp)) != 16:
         return _("Enter the organization's NPWP in the settings.")
-    if len(tin(invoice.party_npwp)) != 16:
-        return _("The customer had no NPWP when the invoice was issued. Create this faktur in Coretax directly (buyer by NIK or other ID).")
+    if buyer_identity(invoice) is None:
+        return _("The customer had neither an NPWP nor an identity document (NIK, passport) when the invoice was issued. Create this faktur in Coretax directly.")
     lines = _taxed_lines(invoice)
     if not lines:
         return _("The invoice carries no PPN.")
@@ -268,15 +287,19 @@ def build_invoices_xml(organization, invoices: Iterable[Invoice]) -> bytes:
             raise ValidationFailed(f"{invoice.number}: {problem}")
         lines = _taxed_lines(invoice)
         uses_other = lines[0].tax_dpp_numerator != lines[0].tax_dpp_denominator
+        buyer = buyer_identity(invoice)
+        document_date = invoice.supporting_document_date
         element = ET.SubElement(listing, "TaxInvoice")
         for tag, value in [
             ("TaxInvoiceDate", f"{invoice.date:%Y-%m-%d}"), ("TaxInvoiceOpt", "Normal"),
-            ("TrxCode", transaction_code(invoice, uses_other)), ("AddInfo", ""), ("CustomDoc", ""),
-            ("CustomDocMonthYear", ""), ("RefDesc", invoice.number), ("FacilityStamp", ""),
-            ("SellerIDTKU", nitku(organization.npwp)), ("BuyerTin", tin(invoice.party_npwp)), ("BuyerDocument", "TIN"),
-            ("BuyerCountry", "IDN"), ("BuyerDocumentNumber", "-"), ("BuyerName", invoice.party_name),
+            ("TrxCode", transaction_code(invoice, uses_other)), ("AddInfo", invoice.facility_info),
+            ("CustomDoc", invoice.supporting_document), ("CustomDocMonthYear", f"{document_date:%m%Y}" if document_date else ""),
+            ("RefDesc", invoice.number), ("FacilityStamp", invoice.facility_stamp),
+            ("SellerIDTKU", invoice.seller_tin_nitku), ("BuyerTin", buyer["BuyerTin"]), ("BuyerDocument", buyer["BuyerDocument"]),
+            ("BuyerCountry", buyer["BuyerCountry"]), ("BuyerDocumentNumber", buyer["BuyerDocumentNumber"]),
+            ("BuyerName", invoice.party_name),
             ("BuyerAdress", ", ".join(part for part in (invoice.party_address, invoice.party_city) if part) or "-"),
-            ("BuyerEmail", invoice.contact.email), ("BuyerIDTKU", nitku(invoice.party_npwp)),
+            ("BuyerEmail", invoice.contact.email), ("BuyerIDTKU", buyer["BuyerIDTKU"]),
         ]:
             _text(element, tag, value)
         goods = ET.SubElement(element, "ListOfGoodService")

@@ -93,6 +93,9 @@ class PphFinalPayment(TenantOwnedModel):
     gross_turnover = money_field(_("gross turnover"))
     taxable_turnover = money_field(_("taxable gross turnover"))
     tax_amount = money_field(_("tax due"))
+    # PPh Final that buyers withheld from receipts of the month and deposit themselves; the
+    # deposit is the rest (tax_amount - withheld).
+    withheld = money_field(_("withheld by buyers"))
     paid_on = models.DateField(_("payment date"))
     ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator], help_text=_("State revenue transaction number (Nomor Transaksi Penerimaan Negara)."))
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
@@ -113,7 +116,14 @@ class PphFinalPayment(TenantOwnedModel):
                 fields=["organization", "year", "month"], condition=models.Q(status=PphFinalStatus.POSTED),
                 name="unique_pph_final_period",
             ),
+            models.CheckConstraint(
+                name="pph_final_withheld_below_tax", condition=models.Q(withheld__gte=0, withheld__lt=models.F("tax_amount")),
+            ),
         ]
 
     def __str__(self):
         return f"PPh Final {Month(self.month).tax_period(self.year)}"
+
+    @property
+    def deposited(self) -> Decimal:
+        return self.tax_amount - self.withheld

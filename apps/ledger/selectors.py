@@ -5,7 +5,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import connection
-from django.db.models import Q, QuerySet, Sum
+from django.db.models import Case, Q, QuerySet, Sum, When
 
 from apps.core.money import ZERO
 
@@ -155,6 +155,19 @@ def search_journal_entries(organization, *, query: str = "", status: str = "", s
 def revenue_accounts(organization) -> QuerySet[Account]:
     return accounts_for(organization, active_only=True).filter(
         category__in=[AccountCategory.REVENUE, AccountCategory.OTHER_INCOME]
+    )
+
+
+PREPAID_TAX_CODE = "1-1500"  # "Pajak Dibayar di Muka" in the default chart
+
+
+def prepaid_tax_accounts(organization) -> QuerySet[Account]:
+    """Accounts for income tax withheld by customers (PPh 22/23 credits): other current
+    assets that automated postings don't own, the default chart's prepaid tax first."""
+    return (
+        accounts_for(organization, active_only=True)
+        .filter(category=AccountCategory.OTHER_CURRENT_ASSET, system_role__isnull=True)
+        .order_by(Case(When(code=PREPAID_TAX_CODE, then=0), default=1), "code")
     )
 
 

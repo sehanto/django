@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.db import models
+from django.db.models import Q
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -161,14 +162,17 @@ class VatReportView(OrganizationMixin, TemplateView):
     def get_context_data(self, **kwargs):
         year = year_param(self.request.GET)
         rows = vat_summary(self.organization, year)
-        totals = {key: sum(r[key] for r in rows) for key in ("output_base", "output", "collected", "input_base", "input", "net")}
+        totals = {
+            key: sum(r[key] for r in rows)
+            for key in ("output_base", "output", "not_collected", "collected", "input_base", "input", "net")
+        }
         return_months = set(
             ReturnNote.objects.for_organization(self.organization)
             .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year).values_list("date__month", flat=True)
         )
         sales_months = set(
             Invoice.objects.for_organization(self.organization)
-            .filter(kind=InvoiceKind.SALES, tax_amount__gt=0, date__year=year,
+            .filter(Q(tax_amount__gt=0) | Q(vat_not_collected__gt=0), kind=InvoiceKind.SALES, date__year=year,
                     status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
             .values_list("date__month", flat=True)
         ) if self.organization.is_pkp else set()

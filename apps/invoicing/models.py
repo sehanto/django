@@ -7,13 +7,15 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.contacts.models import VatCollector
-from apps.contacts.validators import format_npwp
+from apps.contacts.countries import INDONESIA
+from apps.contacts.models import BuyerIdType, VatCollector
+from apps.contacts.validators import HEAD_OFFICE, format_npwp, npwp16
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.money import ZERO
 from apps.core.validators import code_validator, tax_invoice_number_validator
 
 from .domain import InvoiceStatus, LineSpec, TaxSpec
+from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility, describe, stamp_text
 
 
 class InvoiceKind(models.TextChoices):
@@ -84,6 +86,7 @@ class Item(TenantOwnedModel):
 
 class Invoice(TenantOwnedModel):
     Status = InvoiceStatus
+    VatFacility = VatFacility
 
     OPEN_STATUSES = (Status.ISSUED, Status.PARTIAL)
 
@@ -97,10 +100,23 @@ class Invoice(TenantOwnedModel):
         _("tax invoice no."), max_length=30, blank=True, validators=[tax_invoice_number_validator], help_text=_("Faktur Pajak serial number (e-Faktur/Coretax).")
     )
     notes = models.TextField(_("notes"), max_length=2000, blank=True)
+    # A PPN facility (Faktur Pajak code 07/08): the lines keep their PPN rate so the faktur
+    # shows the PPN, but the buyer isn't charged it (``vat_not_collected``, not in the total).
+    vat_facility = models.CharField(
+        _("PPN facility"), max_length=2, choices=VatFacility.choices, default=VatFacility.NONE, blank=True,
+    )
+    facility_info = models.CharField(_("facility (keterangan tambahan)"), max_length=10, blank=True)
+    facility_stamp = models.CharField(_("facility stamp (cap fasilitas)"), max_length=10, blank=True)
+    supporting_document = models.CharField(
+        _("supporting document"), max_length=100, blank=True,
+        help_text=_("For a facility, if any: e.g. the SPPB submission number, or PJKEK#number for a special economic zone."),
+    )
+    supporting_document_date = models.DateField(_("supporting document date"), null=True, blank=True)
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.DRAFT)
 
     subtotal = money_field(_("subtotal"))
     tax_amount = money_field(_("PPN (VAT)"))
+    vat_not_collected = money_field(_("PPN not collected (facility)"))
     total = money_field(_("total"))
     amount_paid = money_field(_("amount paid"))
     # Returns credited against the balance (not the part refunded in cash): with the payments,
@@ -119,10 +135,17 @@ class Invoice(TenantOwnedModel):
         _("buyer collects the PPN"), max_length=12, choices=VatCollector.choices, blank=True, default="", editable=False,
     )
     contact_npwp = models.CharField(_("contact NPWP"), max_length=16, blank=True, editable=False)
+    contact_nitku = models.CharField(_("contact NITKU"), max_length=22, blank=True, editable=False)
+    contact_id_type = models.CharField(
+        _("contact identity document"), max_length=12, choices=BuyerIdType.choices, blank=True, editable=False,
+    )
+    contact_id_number = models.CharField(_("contact identity document number"), max_length=30, blank=True, editable=False)
+    contact_country = models.CharField(_("contact country"), max_length=3, blank=True, editable=False)
     contact_address = models.TextField(_("contact address"), blank=True, editable=False)
     contact_city = models.CharField(_("contact city"), max_length=100, blank=True, editable=False)
     seller_name = models.CharField(_("seller name"), max_length=200, blank=True, editable=False)
     seller_npwp = models.CharField(_("seller NPWP"), max_length=16, blank=True, editable=False)
+    seller_nitku = models.CharField(_("seller NITKU"), max_length=22, blank=True, editable=False)
     seller_address = models.TextField(_("seller address"), blank=True, editable=False)
     seller_city = models.CharField(_("seller city"), max_length=100, blank=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
@@ -149,9 +172,12 @@ class Invoice(TenantOwnedModel):
         """Copy the buyer's and the organization's details onto the invoice (at issue)."""
         contact, organization = self.contact, self.organization
         self.contact_name, self.contact_npwp = contact.name, contact.npwp
+        self.contact_nitku, self.contact_country = contact.nitku, contact.country
+        self.contact_id_type, self.contact_id_number = contact.id_type, contact.id_number
         self.buyer_vat_collector = contact.vat_collector if self.is_sales else VatCollector.NONE
         self.contact_address, self.contact_city = contact.address, contact.city
         self.seller_name, self.seller_npwp = organization.name, organization.npwp
+        self.seller_nitku = organization.nitku
         self.seller_address, self.seller_city = organization.address, organization.city
 
     def _party(self, snapshot: str, live) -> str:
@@ -165,6 +191,54 @@ class Invoice(TenantOwnedModel):
     @property
     def party_npwp(self) -> str:
         return format_npwp(self._party("contact_npwp", self.contact.npwp))
+
+    @property
+    def party_tin(self) -> str:
+        """The buyer's 16-digit NPWP for Coretax, or "" when it has none."""
+        tin = npwp16(self._party("contact_npwp", self.contact.npwp))
+        return tin if len(tin) == 16 else ""
+
+    @property
+    def party_nitku(self) -> str:
+        """The buyer's place of business: its branch NITKU, or the head office."""
+        tin = self.party_tin
+        return (self._party("contact_nitku", self.contact.nitku) or tin + HEAD_OFFICE) if tin else ""
+
+    @property
+    def party_id_type(self) -> str:
+        return self._party("contact_id_type", self.contact.id_type)
+
+    @property
+    def party_id_number(self) -> str:
+        return self._party("contact_id_number", self.contact.id_number)
+
+    @property
+    def party_id_label(self) -> str:
+        return BuyerIdType(self.party_id_type).label if self.party_id_type else ""
+
+    @property
+    def party_country(self) -> str:
+        # Invoices issued before countries were recorded were all to Indonesian buyers.
+        return self._party("contact_country", self.contact.country) or INDONESIA
+
+    @property
+    def seller_tin_nitku(self) -> str:
+        """The seller's place of business: its branch NITKU, or the head office."""
+        org = self.organization
+        npwp, nitku = (org.npwp, org.nitku) if self.status == self.Status.DRAFT else (self.seller_npwp, self.seller_nitku)
+        return nitku or npwp16(npwp) + HEAD_OFFICE
+
+    @property
+    def facility_info_label(self) -> str:
+        return describe(ADDITIONAL_INFO, self.vat_facility, self.facility_info)
+
+    @property
+    def facility_stamp_label(self) -> str:
+        return describe(STAMPS, self.vat_facility, self.facility_stamp)
+
+    @property
+    def facility_stamp_text(self) -> str:
+        return stamp_text(self.vat_facility, self.facility_stamp)
 
     @property
     def party_address(self) -> str:
@@ -199,9 +273,25 @@ class Invoice(TenantOwnedModel):
     def buyer_withholds_vat(self) -> bool:
         return bool(self.buyer_vat_collector) and bool(self.tax_amount)
 
+    def _posted_payments(self):
+        return [p for p in self.payments.all() if p.status == Payment.Status.POSTED]
+
+    def _posted_returns(self):
+        return [r for r in self.returns.all() if r.status == ReturnNote.Status.POSTED]
+
     @property
     def vat_withheld(self):
-        return sum((p.vat_withheld for p in self.payments.all() if p.status == Payment.Status.POSTED), ZERO)
+        """PPN the buyer withheld on its payments, less what returns gave back to it."""
+        return (
+            sum((p.vat_withheld for p in self._posted_payments()), ZERO)
+            - sum((r.vat_withheld for r in self._posted_returns()), ZERO)
+        )
+
+    @property
+    def vat_still_withheld(self):
+        """How much more PPN the buyer may withhold: the PPN after returns, less what it withheld."""
+        returned = sum((r.tax_amount for r in self._posted_returns()), ZERO)
+        return max(self.tax_amount - returned - self.vat_withheld, ZERO)
 
     @property
     def can_return(self) -> bool:
@@ -283,7 +373,18 @@ InvoiceStatusFilter = models.TextChoices(
 )
 
 
+class IncomeTaxWithheld(models.TextChoices):
+    """Income tax a buyer withholds from what it pays (it deposits the tax and gives a bukti potong)."""
+
+    NONE = "", _("None")
+    PPH_22 = "pph22", _("PPh 22 (e.g. 1.5% by a government treasurer)")
+    PPH_23 = "pph23", _("PPh 23 (2% on services)")
+    PPH_FINAL = "pph_final", _("PPh Final 0.5% (PP 55/2022, with a Surat Keterangan)")
+
+
 class Payment(TenantOwnedModel):
+    IncomeTax = IncomeTaxWithheld
+
     class Method(models.TextChoices):
         CASH = "cash", _("Cash")
         TRANSFER = "transfer", _("Bank transfer")
@@ -305,6 +406,18 @@ class Payment(TenantOwnedModel):
     # Part of ``amount`` the buyer withheld as PPN and deposits itself (a VAT collector); the
     # rest is the cash received.
     vat_withheld = money_field(_("PPN withheld by the buyer"), validators=[MinValueValidator(0)])
+    # Part of ``amount`` the buyer withheld as income tax: prepaid tax (PPh 22/23) or part of
+    # the month's PPh Final, which the buyer deposits for us.
+    income_tax_kind = models.CharField(
+        _("income tax withheld"), max_length=10, choices=IncomeTaxWithheld.choices, default=IncomeTaxWithheld.NONE, blank=True,
+    )
+    income_tax_withheld = money_field(_("income tax withheld by the buyer"), validators=[MinValueValidator(0)])
+    income_tax_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("prepaid tax account"),
+    )
+    withholding_slip = models.CharField(
+        _("withholding slip no."), max_length=50, blank=True, help_text=_("The bukti potong number from the buyer."),
+    )
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="payment")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
@@ -317,6 +430,11 @@ class Payment(TenantOwnedModel):
             models.UniqueConstraint(fields=["organization", "number"], name="unique_payment_number"),
             models.CheckConstraint(condition=Q(amount__gt=0), name="payment_amount_positive"),
             models.CheckConstraint(condition=Q(vat_withheld__gte=0, vat_withheld__lte=F("amount")), name="payment_vat_withheld_within_amount"),
+            models.CheckConstraint(
+                name="payment_income_tax_withheld_within_amount",
+                condition=Q(income_tax_withheld__gte=0, income_tax_withheld__lte=F("amount") - F("vat_withheld"))
+                & (Q(income_tax_kind="", income_tax_withheld=0) | (~Q(income_tax_kind="") & Q(income_tax_withheld__gt=0))),
+            ),
         ]
 
     def __str__(self):
@@ -325,6 +443,10 @@ class Payment(TenantOwnedModel):
     @property
     def is_receipt(self) -> bool:
         return self.invoice.kind == InvoiceKind.SALES
+
+    @property
+    def cash_received(self):
+        return self.amount - self.vat_withheld - self.income_tax_withheld
 
 
 class ReturnNote(TenantOwnedModel):
@@ -353,6 +475,10 @@ class ReturnNote(TenantOwnedModel):
     total = money_field(_("total"))
     credited = money_field(_("credited to the invoice"))
     refunded = money_field(_("refunded"))
+    # PPN of the return that the buyer (a VAT collector) had withheld and deposited: it is
+    # neither credited nor refunded, the buyer settles it with the tax office.
+    vat_withheld = money_field(_("PPN withheld by the buyer"))
+    vat_not_collected = money_field(_("PPN not collected (facility)"))
     cash_account = models.ForeignKey(
         "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("refund cash/bank account")
     )
@@ -367,7 +493,10 @@ class ReturnNote(TenantOwnedModel):
             models.UniqueConstraint(fields=["organization", "number"], name="unique_return_number"),
             models.CheckConstraint(
                 name="return_is_credited_or_refunded",
-                condition=Q(total__gt=0, credited__gte=0, refunded__gte=0, total=F("credited") + F("refunded")),
+                condition=Q(
+                    total__gt=0, credited__gte=0, refunded__gte=0, vat_withheld__gte=0, vat_withheld__lte=F("tax_amount"),
+                    total=F("credited") + F("refunded") + F("vat_withheld"),
+                ),
             ),
         ]
 

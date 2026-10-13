@@ -1,11 +1,12 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.assets.domain import DepreciationMethod
 from apps.inventory.domain import CostFormula as InventoryCostFormula
-from apps.contacts.validators import npwp_format_validator
+from apps.contacts.validators import nitku_validator, npwp_format_validator, validate_nitku_of
 from apps.core.models import TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
 
@@ -50,6 +51,10 @@ class Organization(TimeStampedModel):
     npwp = models.CharField(
         _("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator],
         help_text=_("15 or 16 digits without punctuation."),
+    )
+    nitku = models.CharField(
+        _("NITKU (place of business)"), max_length=22, blank=True, validators=[nitku_validator],
+        help_text=_("Only when invoices are issued from a branch: its 22-digit NITKU. Empty means the head office (the NPWP followed by 000000)."),
     )
     nib = models.CharField(
         _("business ID (NIB)"), max_length=13, blank=True, validators=[nib_validator],
@@ -111,6 +116,13 @@ class Organization(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+        try:
+            validate_nitku_of(self.nitku, self.npwp)
+        except ValidationError as exc:
+            raise ValidationError({"nitku": exc}) from exc
 
     @property
     def is_individual_taxpayer(self) -> bool:

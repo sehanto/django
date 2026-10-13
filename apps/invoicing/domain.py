@@ -73,14 +73,16 @@ class InvoiceTotals:
     tax_groups: list[TaxGroup]
     subtotal: Decimal
     tax_total: Decimal
+    vat_not_collected: Decimal = ZERO  # PPN under a facility (code 07/08): on the faktur, not charged
 
     @property
     def total(self) -> Decimal:
         return self.subtotal + self.tax_total
 
 
-def compute_invoice_totals(lines: Sequence[LineSpec]) -> InvoiceTotals:
-    """Tax is computed per rate on the aggregated base, like an e-Faktur."""
+def compute_invoice_totals(lines: Sequence[LineSpec], *, charge_vat: bool = True) -> InvoiceTotals:
+    """Tax is computed per rate on the aggregated base, like an e-Faktur. Without
+    ``charge_vat`` (a PPN facility) the PPN is still computed but not added to the total."""
     if not lines:
         raise ValidationFailed(_("An invoice needs at least one line."))
     amounts = [line.net_amount for line in lines]
@@ -96,6 +98,8 @@ def compute_invoice_totals(lines: Sequence[LineSpec]) -> InvoiceTotals:
         group.dpp, group.tax = vat.dpp, vat.tax
     subtotal = sum(amounts, ZERO)
     tax_total = sum((g.tax for g in groups.values()), ZERO)
+    if not charge_vat:
+        return InvoiceTotals(amounts, list(groups.values()), subtotal, ZERO, vat_not_collected=tax_total)
     return InvoiceTotals(amounts, list(groups.values()), subtotal, tax_total)
 
 

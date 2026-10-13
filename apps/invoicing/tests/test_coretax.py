@@ -206,7 +206,7 @@ def test_invoices_that_cannot_be_reported_say_why(books, customer, account, sale
         organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
         lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("1000"), tax_rate=ppn)],
     ))
-    assert "no NPWP" in coretax.invoice_problem(no_npwp)
+    assert "neither an NPWP nor an identity document" in coretax.invoice_problem(no_npwp)
     customer.npwp = "3174061502560010"
     customer.save()
     mixed = services.issue_invoice(invoice=services.create_invoice(
@@ -286,7 +286,7 @@ def test_sales_to_collectors_use_their_codes_and_keep_dpp_nilai_lain(books, cust
 
 
 def test_the_collector_pays_without_the_ppn(books, account, collector_sale):
-    from apps.core.exceptions import InvalidStateTransition, ValidationFailed
+    from apps.core.exceptions import ValidationFailed
     from apps.invoicing.models import Invoice
     from apps.invoicing.selectors import vat_summary
     from apps.ledger.selectors import account_balance
@@ -304,8 +304,6 @@ def test_the_collector_pays_without_the_ppn(books, account, collector_sale):
     assert (balance("1-1100"), balance("1-1200"), balance("2-1100")) == (D("1200000"), 0, 0)  # the PPN is the collector's to deposit
     march = vat_summary(books, 2026)[2]
     assert (march["output"], march["collected"], march["net"]) == (D("132000"), D("132000"), 0)
-    with pytest.raises(InvalidStateTransition, match="withheld"):
-        services.create_return(invoice=invoice, date=date(2026, 3, 25), reason="x", lines=[ReturnLineInput(invoice.lines.get(), D("1"))])
 
 
 def test_only_collectors_withhold_ppn(books, sale, account):
@@ -338,3 +336,135 @@ def test_the_payment_form_asks_for_withheld_ppn_only_from_collectors(auth_client
     invoice = collector_sale("other")
     form = auth_client.get(reverse("invoicing:detail", args=[InvoiceKind.SALES, invoice.pk])).context["payment_form"]
     assert form.initial["vat_withheld"] == D("132000")
+
+
+# --- PPN facilities (codes 07/08), buyers without an NPWP, branches ---------------------
+
+
+def facility_sale(books, customer, account, facility, **kwargs):
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    return services.issue_invoice(invoice=services.create_invoice(
+        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5), facility=facility,
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("10"), D("120000"), tax_rate=ppn)],  # PPN 132.000, not charged
+        **kwargs,
+    ))
+
+
+def test_a_facility_reports_the_ppn_without_charging_it(books, customer, account):
+    from apps.invoicing.facilities import VatFacility
+    from apps.invoicing.selectors import vat_summary
+    from apps.ledger.selectors import account_balance
+
+    customer.npwp = "3174061502560010"
+    customer.save()
+    facility = services.Facility(VatFacility.NOT_COLLECTED, "TD.00509", "TD.01117", "PJKEK#12345", date(2026, 2, 27))
+    invoice = facility_sale(books, customer, account, facility)
+    assert (invoice.subtotal, invoice.tax_amount, invoice.vat_not_collected, invoice.total) == (D("1200000"), 0, D("132000"), D("1200000"))
+    assert account_balance(books, account("2-1100")) == 0  # no PPN Keluaran: the buyer doesn't pay it
+    assert invoice.facility_stamp_text == "PAJAK PERTAMBAHAN NILAI TIDAK DIPUNGUT BERDASARKAN PP NOMOR 40 TAHUN 2021"
+    faktur = ET.fromstring(coretax.build_invoices_xml(books, [invoice])).find("ListOfTaxInvoice/TaxInvoice")
+    assert [child.tag for child in faktur] == INVOICE_TAGS
+    assert [faktur.findtext(t) for t in ("TrxCode", "AddInfo", "CustomDoc", "CustomDocMonthYear", "FacilityStamp")] == [
+        "07", "TD.00509", "PJKEK#12345", "022026", "TD.01117",
+    ]
+    assert [faktur.findtext(f"ListOfGoodService/GoodService/{t}") for t in ("TaxBase", "OtherTaxBase", "VAT")] == ["1200000", "1100000", "132000"]
+    march = vat_summary(books, 2026)[2]
+    assert (march["output_base"], march["output"], march["not_collected"], march["net"]) == (D("1200000"), 0, D("132000"), 0)
+
+    returned = services.create_return(invoice=invoice, date=date(2026, 3, 9), reason="Rusak", lines=[ReturnLineInput(invoice.lines.get(), D("1"))])
+    assert (returned.tax_amount, returned.vat_not_collected, returned.total) == (0, D("13200"), D("120000"))
+    assert vat_summary(books, 2026)[2]["not_collected"] == D("118800")
+
+
+def test_facilities_are_checked(books, customer, account, supplier):
+    from apps.core.exceptions import ValidationFailed
+    from apps.invoicing.facilities import VatFacility
+
+    with pytest.raises(ValidationFailed, match="code 08"):  # TD.00511 exists only under 07
+        facility_sale(books, customer, account, services.Facility(VatFacility.EXEMPT, "TD.00511", "TD.01101"))
+    with pytest.raises(ValidationFailed, match="stamp"):
+        facility_sale(books, customer, account, services.Facility(VatFacility.EXEMPT, "TD.00507", ""))
+    with pytest.raises(ValidationFailed, match="PPN facility first"):
+        facility_sale(books, customer, account, services.Facility("", "TD.00507", "TD.01101"))
+    with pytest.raises(ValidationFailed, match="keep their PPN rate"):
+        services.create_invoice(
+            organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+            facility=services.Facility(VatFacility.EXEMPT, "TD.00507", "TD.01107"),
+            lines=[InvoiceLineInput("Air bersih", account("4-1000"), D("1"), D("1000"))],
+        )
+    with pytest.raises(ValidationFailed, match="sales invoice"):
+        services.create_invoice(
+            organization=books, kind=InvoiceKind.PURCHASE, contact=supplier, date=date(2026, 3, 5),
+            facility=services.Facility(VatFacility.EXEMPT, "TD.00507", "TD.01107"),
+            lines=[InvoiceLineInput("Air bersih", account("5-1000"), D("1"), D("1000"))],
+        )
+
+
+def test_the_invoice_form_takes_a_facility(auth_client, books, customer, account):
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    data = {
+        "contact": customer.pk, "date": "2026-03-05", "due_date": "", "reference": "", "tax_invoice_number": "", "notes": "",
+        "facility_info_choice": "08|TD.00507", "facility_stamp_choice": "07|TD.01101",
+        "supporting_document": "", "supporting_document_date": "",
+        "form-TOTAL_FORMS": "1", "form-INITIAL_FORMS": "0", "form-MIN_NUM_FORMS": "1", "form-MAX_NUM_FORMS": "100",
+        "form-0-description": "Air bersih", "form-0-account": account("4-1000").pk, "form-0-quantity": "10",
+        "form-0-unit_price": "5000", "form-0-discount_percent": "", "form-0-tax_rate": ppn.pk, "form-0-item": "",
+    }
+    url = reverse("invoicing:create", args=[InvoiceKind.SALES])
+    with translation.override("en"):
+        response = auth_client.post(url, data)
+        assert response.status_code == 200 and list(response.context["form"].errors) == ["facility_stamp_choice"]
+        response = auth_client.post(url, {**data, "facility_stamp_choice": "08|TD.01107"})
+    assert response.status_code == 302
+    from apps.invoicing.models import Invoice
+
+    invoice = Invoice.objects.get(organization=books)
+    assert (invoice.vat_facility, invoice.facility_info, invoice.facility_stamp, invoice.tax_amount, invoice.vat_not_collected) == (
+        "08", "TD.00507", "TD.01107", 0, D("5499"),  # 50.000 x 11/12 x 12%, rounded down
+    )
+    form = auth_client.get(reverse("invoicing:update", args=[InvoiceKind.SALES, invoice.pk])).context["form"]
+    assert form.initial["facility_info_choice"] == "08|TD.00507" and form.shows_facility
+
+
+@pytest.mark.parametrize("id_type, number, country", [("National ID", "3174061502560099", "IDN"), ("Passport", "X1234567", "SGP")])
+def test_buyers_without_an_npwp_are_identified_by_their_document(books, customer, account, id_type, number, country):
+    customer.npwp, customer.id_type, customer.id_number, customer.country = "", id_type, number, country
+    customer.full_clean()
+    customer.save()
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    invoice = services.issue_invoice(invoice=services.create_invoice(
+        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)],
+    ))
+    customer.id_number = "changed"  # the invoice keeps the buyer as issued
+    customer.save()
+    invoice.refresh_from_db()
+    faktur = ET.fromstring(coretax.build_invoices_xml(books, [invoice])).find("ListOfTaxInvoice/TaxInvoice")
+    assert [faktur.findtext(t) for t in ("BuyerTin", "BuyerDocument", "BuyerCountry", "BuyerDocumentNumber", "BuyerIDTKU")] == [
+        "0000000000000000", id_type, country, number, "000000",
+    ]
+
+
+def test_branches_use_their_nitku(books, customer, account):
+    from django.core.exceptions import ValidationError
+
+    books.nitku = "0012345678901234000001"
+    books.full_clean()
+    books.save()
+    customer.npwp, customer.nitku = "3174061502560010", "3174061502560010000002"
+    customer.full_clean()
+    customer.save()
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    invoice = services.issue_invoice(invoice=services.create_invoice(
+        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)],
+    ))
+    faktur = ET.fromstring(coretax.build_invoices_xml(books, [invoice])).find("ListOfTaxInvoice/TaxInvoice")
+    assert (faktur.findtext("SellerIDTKU"), faktur.findtext("BuyerIDTKU")) == ("0012345678901234000001", "3174061502560010000002")
+
+    customer.nitku = "9999999999999999000002"  # someone else's NPWP
+    with pytest.raises(ValidationError, match="starts with the 16-digit NPWP"):
+        customer.full_clean()
+    customer.nitku, customer.id_type, customer.id_number = "", "National ID", "123"
+    with pytest.raises(ValidationError, match="16 digits"):
+        customer.full_clean()

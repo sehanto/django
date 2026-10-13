@@ -10,7 +10,6 @@ import re
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import gettext as _
 
 _NON_DIGITS = re.compile(r"\D")
 
@@ -27,6 +26,24 @@ def validate_npwp(value: str) -> str:
     if len(digits) not in (15, 16):
         raise ValidationError(_("NPWP must have 15 or 16 digits."))
     return digits
+
+
+def npwp16(value: str) -> str:
+    """The 16-digit NPWP Coretax expects: a 15-digit NPWP is prefixed with 0."""
+    digits = normalize_npwp(value)
+    return "0" + digits if len(digits) == 15 else digits
+
+
+# NITKU (Nomor Identitas Tempat Kegiatan Usaha): the 16-digit NPWP and six digits for the place
+# of business, 000000 being the head office.
+HEAD_OFFICE = "000000"
+nitku_validator = RegexValidator(r"^\d{22}$", _("A NITKU has 22 digits: the 16-digit NPWP followed by 6 digits."))
+
+
+def validate_nitku_of(nitku: str, npwp: str) -> None:
+    """A NITKU belongs to the NPWP it starts with."""
+    if nitku and (not npwp or nitku[:16] != npwp16(npwp)):
+        raise ValidationError(_("A NITKU starts with the 16-digit NPWP of the same taxpayer. Enter the NPWP first."))
 
 
 def format_npwp(value: str) -> str:

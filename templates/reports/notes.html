@@ -37,9 +37,10 @@
     {% translate "Liabilities are stated at the amount needed to settle them." %}</li>
   <li class="mb-2"><strong>{% translate "Income tax" %}.</strong>
     {% if org.uses_pph_final %}{% blocktranslate trimmed %}Income tax is the final income tax for MSMEs under PP 55/2022, 0.5% of gross turnover. It is recognised as an expense in the month the turnover arises, and any amount not yet paid is presented as a liability. Because the tax is final, no deferred tax is recognised.{% endblocktranslate %}
-    {% else %}{% blocktranslate trimmed %}Income tax expense is the tax payable for the period under the tax regulations. As SAK EMKM provides, no deferred tax is recognised.{% endblocktranslate %}{% endif %}</li>
+    {% else %}{% blocktranslate trimmed %}Income tax expense is the tax payable for the period under the tax regulations. As SAK EMKM provides, no deferred tax is recognised.{% endblocktranslate %}{% endif %}
+    {% blocktranslate trimmed %}Income tax that customers withhold from their payments is presented as prepaid tax (PPh 22 and 23) until it is credited, or settles part of the month's final income tax liability (PPh Final).{% endblocktranslate %}</li>
   {% if org.is_pkp %}<li class="mb-2"><strong>{% translate "Value added tax (PPN)" %}.</strong>
-    {% blocktranslate trimmed %}As a VAT-registered business (PKP), PPN charged to customers and PPN paid to suppliers is not revenue or expense. The balances are presented as a liability (output VAT) and an asset (input VAT).{% endblocktranslate %}</li>{% endif %}
+    {% blocktranslate trimmed %}As a VAT-registered business (PKP), PPN charged to customers and PPN paid to suppliers is not revenue or expense. The balances are presented as a liability (output VAT) and an asset (input VAT). PPN that customers appointed as VAT collectors withhold and deposit settles the output VAT; PPN on deliveries under a facility (not collected or exempt) is not charged.{% endblocktranslate %}</li>{% endif %}
 </ol>
 
 {% blocktranslate trimmed with start=pl.date_from|date:"d/m/Y" end=pl.date_to|date:"d/m/Y" asvar period %}{{ start }} to {{ end }}{% endblocktranslate %}

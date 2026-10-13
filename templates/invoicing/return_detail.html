@@ -36,6 +36,8 @@
       <tr class="fw-bold"><td colspan="4" class="text-end">{% translate "Total" %}</td><td class="num">{{ note.total|rupiah }}</td></tr>
       {% if note.credited %}<tr><td colspan="4" class="text-end">{% translate "Credited to the invoice" %}</td><td class="num">{{ note.credited|rupiah }}</td></tr>{% endif %}
       {% if note.refunded %}<tr><td colspan="4" class="text-end">{% blocktranslate trimmed with account=note.cash_account.name %}Refunded through {{ account }}{% endblocktranslate %}</td><td class="num">{{ note.refunded|rupiah }}</td></tr>{% endif %}
+      {% if note.vat_withheld %}<tr><td colspan="4" class="text-end">{% translate "PPN withheld by the buyer, which it recovers from the tax office" %}</td><td class="num">{{ note.vat_withheld|rupiah }}</td></tr>{% endif %}
+      {% if note.vat_not_collected %}<tr><td colspan="4" class="text-end">{% translate "PPN not collected (facility)" %}</td><td class="num">{{ note.vat_not_collected|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>
   {% if note.status == note.Status.POSTED %}<p class="small text-secondary mt-3 mb-0 no-print"><i class="bi bi-info-circle me-1"></i>{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}

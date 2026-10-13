@@ -6,13 +6,25 @@ from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, Organiza
 from apps.inventory.selectors import cost_of_sales_accounts, inventory_accounts
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
-from apps.ledger.selectors import accounts_for, cash_accounts, purchase_accounts, revenue_accounts
+from apps.ledger.selectors import accounts_for, cash_accounts, prepaid_tax_accounts, purchase_accounts, revenue_accounts
 from apps.taxes.models import TaxRate
 from apps.taxes.selectors import tax_rates_for
 
-from .models import Invoice, InvoiceKind, Item, Payment
+from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
+from .models import IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
 from .selectors import items_for
-from .services import InvoiceLineInput, ReturnLineInput, returnable_quantity
+from .services import Facility, IncomeTaxInput, InvoiceLineInput, ReturnLineInput, returnable_quantity
+
+FACILITY_SEPARATOR = "|"
+
+
+def _facility_choices(table: dict) -> list:
+    """Grouped per transaction code; values carry the code, since DJP reuses the same
+    codes with another meaning under 07 and 08."""
+    return [("", VatFacility.NONE.label)] + [
+        (facility.label, [(f"{facility.value}{FACILITY_SEPARATOR}{code}", f"{facility.value} · {text}") for code, text in table[facility]])
+        for facility in (VatFacility.NOT_COLLECTED, VatFacility.EXEMPT)
+    ]
 
 
 def line_accounts(organization, kind):
@@ -28,6 +40,18 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
     due_date = BusinessDateField(
         label=_("Due date"), required=False, help_text=_("Leave empty to use the contact's payment terms."),
     )
+    # A PPN facility (code 07/08), for a PKP's sales only; see clean() for how it reaches the services.
+    facility_info_choice = forms.ChoiceField(
+        label=_("PPN facility"), required=False,
+        help_text=_("Only for deliveries whose PPN isn't collected (code 07) or is exempt (code 08). Keep the PPN rate on the lines: the faktur shows the PPN, the buyer doesn't pay it."),
+    )
+    facility_stamp_choice = forms.ChoiceField(label=_("Facility stamp (cap fasilitas)"), required=False)
+    supporting_document = forms.CharField(
+        label=_("Supporting document"), max_length=100, required=False,
+        help_text=Invoice._meta.get_field("supporting_document").help_text,
+    )
+    supporting_document_date = BusinessDateField(label=_("Supporting document date"), required=False)
+    FACILITY_FIELDS = ("facility_info_choice", "facility_stamp_choice", "supporting_document", "supporting_document_date")
 
     class Meta:
         model = Invoice
@@ -46,6 +70,53 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
             self.fields["contact"].label = _("Supplier")
         if kind == InvoiceKind.PURCHASE or not self.organization.is_pkp:
             del self.fields["tax_invoice_number"]
+            for name in self.FACILITY_FIELDS:
+                del self.fields[name]
+            return
+        self.fields["facility_info_choice"].choices = _facility_choices(ADDITIONAL_INFO)
+        self.fields["facility_stamp_choice"].choices = [("", "—")] + _facility_choices(STAMPS)[1:]
+        invoice = self.instance
+        if invoice.pk and invoice.vat_facility:
+            self.initial.setdefault("facility_info_choice", f"{invoice.vat_facility}{FACILITY_SEPARATOR}{invoice.facility_info}")
+            self.initial.setdefault("facility_stamp_choice", f"{invoice.vat_facility}{FACILITY_SEPARATOR}{invoice.facility_stamp}")
+        if invoice.pk:
+            self.initial.setdefault("supporting_document", invoice.supporting_document)
+            self.initial.setdefault("supporting_document_date", invoice.supporting_document_date)
+
+    @property
+    def main_fields(self):
+        return [field for field in self.visible_fields() if field.name not in self.FACILITY_FIELDS]
+
+    @property
+    def facility_fields(self):
+        return [field for field in self.visible_fields() if field.name in self.FACILITY_FIELDS]
+
+    @property
+    def shows_facility(self) -> bool:
+        """Open the facility section: one is set, or it has errors."""
+        return bool(self.instance.vat_facility or self.initial.get("supporting_document")) or any(
+            name in self.errors for name in self.FACILITY_FIELDS
+        ) or bool(self.data.get(self.add_prefix("facility_info_choice")))
+
+    def clean(self):
+        """The services take the facility as one ``facility`` value (services.Facility)."""
+        cleaned = super().clean()
+        if "facility_info_choice" not in self.fields:
+            return cleaned
+        info = cleaned.pop("facility_info_choice", "") or ""
+        stamp = cleaned.pop("facility_stamp_choice", "") or ""
+        facility, _sep, info_code = info.partition(FACILITY_SEPARATOR)
+        stamp_facility, _sep, stamp_code = stamp.partition(FACILITY_SEPARATOR)
+        if stamp and stamp_facility != facility:
+            self.add_error("facility_stamp_choice", _("Choose a stamp listed under the same transaction code as the facility."))
+        elif facility and not stamp:
+            self.add_error("facility_stamp_choice", _("A delivery with a PPN facility needs its stamp (cap fasilitas)."))
+        cleaned["facility"] = Facility(
+            vat_facility=facility, facility_info=info_code, facility_stamp=stamp_code if facility else "",
+            supporting_document=cleaned.pop("supporting_document", "") or "",
+            supporting_document_date=cleaned.pop("supporting_document_date", None),
+        )
+        return cleaned
 
 
 class InvoiceLineForm(OrganizationFormMixin, BaseForm):
@@ -93,20 +164,75 @@ def line_inputs(formset) -> list[InvoiceLineInput]:
 
 
 class PaymentForm(OrganizationFormMixin, BaseModelForm):
+    INCOME_TAX_FIELDS = ("income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip")
+
     class Meta:
         model = Payment
-        fields = ["date", "amount", "vat_withheld", "cash_account", "method", "reference"]
+        fields = [
+            "date", "amount", "vat_withheld", "cash_account", "method", "reference",
+            "income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip",
+        ]
         field_classes = {"date": BusinessDateField}
 
     def __init__(self, *args, invoice=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
         if invoice is not None and invoice.buyer_withholds_vat:
-            self.fields["amount"].help_text = _("What this settles, including the PPN the buyer withheld.")
+            self.fields["amount"].help_text = _("What this settles, including what the buyer withheld.")
             self.fields["vat_withheld"].help_text = _("The buyer is a VAT collector: it pays without the PPN and deposits the PPN itself.")
             self.fields["vat_withheld"].required = False
         else:
             del self.fields["vat_withheld"]
+        if invoice is None or not invoice.is_sales:
+            for name in self.INCOME_TAX_FIELDS:
+                del self.fields[name]
+            return
+        kinds = self.fields["income_tax_kind"]
+        kinds.choices = [
+            (value, label) for value, label in IncomeTaxWithheld.choices
+            if value != IncomeTaxWithheld.PPH_FINAL or self.organization.uses_pph_final
+        ]
+        kinds.help_text = _("If the buyer withheld income tax and gave you a bukti potong.")
+        self.fields["income_tax_withheld"].required = False
+        accounts = prepaid_tax_accounts(self.organization)
+        self.fields["income_tax_account"].queryset = accounts
+        self.fields["income_tax_account"].initial = accounts.first()
+        self.fields["income_tax_account"].help_text = _("For PPh 22 or 23: the tax prepaid, credited in your annual income tax return.")
+
+    @property
+    def main_fields(self):
+        return [field for field in self.visible_fields() if field.name not in self.INCOME_TAX_FIELDS]
+
+    @property
+    def income_tax_fields(self):
+        return [field for field in self.visible_fields() if field.name in self.INCOME_TAX_FIELDS]
+
+    def clean(self):
+        cleaned = super().clean()
+        if "income_tax_kind" not in self.fields:
+            return cleaned
+        kind, amount = cleaned.get("income_tax_kind"), cleaned.get("income_tax_withheld")
+        if kind and not amount:
+            self.add_error("income_tax_withheld", _("Enter the income tax withheld."))
+        elif amount and not kind:
+            self.add_error("income_tax_kind", _("Choose which income tax the buyer withheld."))
+        elif kind in (IncomeTaxWithheld.PPH_22, IncomeTaxWithheld.PPH_23) and not cleaned.get("income_tax_account"):
+            self.add_error("income_tax_account", _("Choose the prepaid tax account."))
+        return cleaned
+
+    def service_kwargs(self) -> dict:
+        """What ``services.record_payment`` takes."""
+        data = dict(self.cleaned_data)
+        if "income_tax_kind" in data:
+            kind = data.pop("income_tax_kind")
+            income_tax = IncomeTaxInput(
+                kind=kind, amount=data.pop("income_tax_withheld") or 0,
+                account=data.pop("income_tax_account") if kind != IncomeTaxWithheld.PPH_FINAL else None,
+                slip=data.pop("withholding_slip"),
+            )
+            data.pop("income_tax_account", None)
+            data["income_tax"] = income_tax
+        return data
 
 
 class VoidForm(BaseForm):

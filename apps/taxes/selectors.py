@@ -43,6 +43,19 @@ def pph_final_schedule(organization, year: int) -> list[PphFinalMonth]:
     )
 
 
+def pph_final_withheld(organization, year: int) -> dict[int, Decimal]:
+    """PPh Final buyers withheld from receipts, per month of the receipt: they deposit that
+    part of the month's PPh Final for us, so our own deposit is smaller."""
+    from apps.invoicing.models import IncomeTaxWithheld, Payment  # invoicing depends on taxes
+
+    rows = (
+        Payment.objects.for_organization(organization)
+        .filter(status=Payment.Status.POSTED, income_tax_kind=IncomeTaxWithheld.PPH_FINAL, date__year=year)
+        .annotate(month=ExtractMonth("date")).values("month").annotate(amount=Sum("income_tax_withheld"))
+    )
+    return {row["month"]: row["amount"] for row in rows}
+
+
 def pph_final_payments(organization, year: int) -> dict[int, PphFinalPayment]:
     return {
         p.month: p

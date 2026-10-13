@@ -1,13 +1,14 @@
 from django.conf import settings
-from django.core.validators import MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
-
 from apps.core.validators import phone_validator
 
-from .validators import format_npwp, npwp_format_validator
+from .countries import COUNTRY_CODES, INDONESIA
+from .validators import format_npwp, nitku_validator, npwp_format_validator, validate_nitku_of
 
 
 class VatCollector(models.TextChoices):
@@ -19,8 +20,23 @@ class VatCollector(models.TextChoices):
     OTHER = "other", _("Other appointed VAT collector, e.g. a BUMN (code 03)")
 
 
+class BuyerIdType(models.TextChoices):
+    """How a buyer without an NPWP is identified on a Faktur Pajak (values are DJP's codes)."""
+
+    NONE = "", _("None: the NPWP identifies the buyer")
+    NATIONAL_ID = "National ID", _("NIK (Indonesian identity card)")
+    PASSPORT = "Passport", _("Passport")
+    OTHER = "Other ID", _("Other identity document")
+
+
+def validate_country_code(value: str) -> None:
+    if value not in COUNTRY_CODES:
+        raise ValidationError(_("Enter a three-letter country code, e.g. IDN, SGP or MYS."))
+
+
 class Contact(TenantOwnedModel):
     VatCollector = VatCollector
+    BuyerIdType = BuyerIdType
 
     class Kind(models.TextChoices):
         CUSTOMER = "customer", _("Customer")
@@ -30,6 +46,23 @@ class Contact(TenantOwnedModel):
     kind = models.CharField(_("type"), max_length=10, choices=Kind.choices, default=Kind.CUSTOMER)
     name = models.CharField(_("name"), max_length=200)
     npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator])
+    # Coretax identifies a place of business by its NITKU; empty means the head office.
+    nitku = models.CharField(
+        _("NITKU (place of business)"), max_length=22, blank=True, validators=[nitku_validator],
+        help_text=_("Only for a branch: its 22-digit NITKU. Empty means the head office (the NPWP followed by 000000)."),
+    )
+    id_type = models.CharField(
+        _("identity document"), max_length=12, choices=BuyerIdType.choices, default=BuyerIdType.NONE, blank=True,
+        help_text=_("For a customer without an NPWP, the document that identifies them on a Faktur Pajak."),
+    )
+    id_number = models.CharField(
+        _("identity document number"), max_length=30, blank=True,
+        validators=[RegexValidator(r"^[A-Za-z0-9./-]*$", _("Use letters, digits, dots, slashes and dashes only."))],
+    )
+    country = models.CharField(
+        _("country"), max_length=3, default=INDONESIA, validators=[validate_country_code],
+        help_text=_("Three-letter code as used by Coretax, e.g. IDN, SGP or MYS."),
+    )
     email = models.EmailField(_("email"), blank=True)
     phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
     address = models.TextField(_("address"), max_length=500, blank=True)
@@ -59,6 +92,22 @@ class Contact(TenantOwnedModel):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+        errors = {}
+        try:
+            validate_nitku_of(self.nitku, self.npwp)
+        except ValidationError as exc:
+            errors["nitku"] = exc
+        if self.id_type and not self.id_number:
+            errors["id_number"] = _("Enter the number of the identity document.")
+        elif self.id_type == BuyerIdType.NATIONAL_ID and not (self.id_number.isdigit() and len(self.id_number) == 16):
+            errors["id_number"] = _("A NIK has 16 digits.")
+        elif self.id_number and not self.id_type:
+            errors["id_type"] = _("Choose the type of identity document.")
+        if errors:
+            raise ValidationError(errors)
 
     @property
     def formatted_npwp(self) -> str:

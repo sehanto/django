@@ -6,13 +6,15 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
+from apps.core.formatting import localized_rupiah
+from apps.core.money import ZERO
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
 from .domain import Month
 from .models import PphFinalAccrual, PphFinalPayment, TaxRate
-from .selectors import pph_final_schedule
+from .selectors import pph_final_schedule, pph_final_withheld
 
 DEFAULT_TAX_RATES = [
     # (name, rate, dpp_numerator, dpp_denominator)
@@ -111,7 +113,9 @@ def record_pph_final_payment(
     *, organization, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None
 ) -> PphFinalPayment:
     """Deposit (setoran) of a month's PPh Final. It settles the month's recorded expense,
-    which is recorded first when it is missing, so the expense always falls in its own month."""
+    which is recorded first when it is missing, so the expense always falls in its own month.
+    PPh Final that buyers withheld from the month's receipts already settled part of it (the
+    buyers deposit it), so only the rest is paid."""
     month = Month(month)
     _ensure_uses_pph_final(organization)
     if not cash_account.is_cash or cash_account.organization_id != organization.pk:
@@ -121,6 +125,12 @@ def record_pph_final_payment(
     accrual = posted_accrual(organization, year, month) or accrue_pph_final(
         organization=organization, year=year, month=month, created_by=created_by
     )
+    withheld = pph_final_withheld(organization, year).get(month, ZERO)
+    if withheld >= accrual.tax_amount:
+        raise ValidationFailed(
+            _("Buyers withheld %(withheld)s of PPh Final in %(period)s, which covers the %(due)s due: there is nothing to deposit.")
+            % {"withheld": localized_rupiah(withheld), "due": localized_rupiah(accrual.tax_amount), **_period(month, year)}
+        )
 
     entry = create_journal_entry(
         organization=organization,
@@ -130,8 +140,8 @@ def record_pph_final_payment(
         source=JournalEntry.Source.TAX,
         created_by=created_by,
         lines=[
-            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=accrual.tax_amount),
-            JournalLineInput(cash_account, credit=accrual.tax_amount),
+            JournalLineInput(get_system_account(organization, SystemRole.PPH_FINAL_PAYABLE), debit=accrual.tax_amount - withheld),
+            JournalLineInput(cash_account, credit=accrual.tax_amount - withheld),
         ],
     )
     return PphFinalPayment.objects.create(
@@ -141,6 +151,7 @@ def record_pph_final_payment(
         gross_turnover=accrual.gross_turnover,
         taxable_turnover=accrual.taxable_turnover,
         tax_amount=accrual.tax_amount,
+        withheld=withheld,
         paid_on=paid_on,
         ntpn=ntpn,
         cash_account=cash_account,

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
@@ -9,6 +10,7 @@ from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.money import ZERO
 from apps.core.params import int_param, year_choices, year_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
@@ -17,7 +19,7 @@ from . import services
 from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PphFinalMonth
 from .forms import PphFinalPaymentForm, TaxRateForm
 from .models import PphFinalAccrual, PphFinalPayment
-from .selectors import pph_final_accruals, pph_final_payments, pph_final_schedule, tax_rates_for
+from .selectors import pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, tax_rates_for
 
 
 class TaxRateListView(OrganizationMixin, ListView):
@@ -59,6 +61,12 @@ class PphFinalRow:
     accrual: PphFinalAccrual | None
     payment: PphFinalPayment | None
     has_ended: bool
+    withheld: Decimal = ZERO  # by buyers, from the month's receipts
+
+    @property
+    def covered_by_withholding(self) -> bool:
+        due = self.accrual.tax_amount if self.accrual else self.period.tax
+        return self.payment is None and bool(self.withheld) and self.withheld >= due
 
     @property
     def accrual_outdated(self) -> bool:
@@ -74,15 +82,20 @@ class PphFinalView(OrganizationMixin, TemplateView):
         schedule = pph_final_schedule(self.organization, year)
         payments = pph_final_payments(self.organization, year)
         accruals = pph_final_accruals(self.organization, year)
+        withheld = pph_final_withheld(self.organization, year)
         today = timezone.localdate()
         annual_turnover = sum(m.gross_turnover for m in schedule)
         return super().get_context_data(
             year=year,
             years=year_choices(),
             rows=[
-                PphFinalRow(m, accruals.get(m.month), payments.get(m.month), services.month_end(year, m.month) <= today)
+                PphFinalRow(
+                    m, accruals.get(m.month), payments.get(m.month), services.month_end(year, m.month) <= today,
+                    withheld.get(m.month, ZERO),
+                )
                 for m in schedule
             ],
+            any_withheld=bool(withheld),
             total_turnover=annual_turnover,
             total_tax=sum(m.tax for m in schedule),
             over_limit=annual_turnover > MSME_TURNOVER_LIMIT,
