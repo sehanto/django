@@ -49,7 +49,7 @@
       <h2 class="h6">{% translate "Payment history" %}</h2>
       {% for p in invoice.payments.all %}
         <div class="d-flex justify-content-between align-items-start border-top py-2 {% if p.status == p.Status.VOID %}text-decoration-line-through text-secondary{% endif %}">
-          <div><div class="small fw-semibold">{{ p.number }}</div><div class="small text-secondary">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div></div>
+          <div><div class="small fw-semibold">{{ p.number }}</div><div class="small text-secondary">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="small text-secondary">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}</div>
           <div class="text-end"><div class="num">{{ p.amount|rupiah }}</div>
             {% if p.status == p.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:payment_void' p.pk %}" data-confirm="{% translate 'Void this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}
           </div>

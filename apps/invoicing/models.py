@@ -7,8 +7,10 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.contacts.models import VatCollector
 from apps.contacts.validators import format_npwp
+from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.core.money import ZERO
 from apps.core.validators import code_validator, tax_invoice_number_validator
 
 from .domain import InvoiceStatus, LineSpec, TaxSpec
@@ -112,6 +114,10 @@ class Invoice(TenantOwnedModel):
     # Parties as they were when the invoice was issued (frozen with it; contacts and the
     # organization stay editable for future invoices). Empty while a draft.
     contact_name = models.CharField(_("contact name"), max_length=200, blank=True, editable=False)
+    # Whether the buyer withholds the PPN (contacts.VatCollector), as it was at issue.
+    buyer_vat_collector = models.CharField(
+        _("buyer collects the PPN"), max_length=12, choices=VatCollector.choices, blank=True, default="", editable=False,
+    )
     contact_npwp = models.CharField(_("contact NPWP"), max_length=16, blank=True, editable=False)
     contact_address = models.TextField(_("contact address"), blank=True, editable=False)
     contact_city = models.CharField(_("contact city"), max_length=100, blank=True, editable=False)
@@ -143,6 +149,7 @@ class Invoice(TenantOwnedModel):
         """Copy the buyer's and the organization's details onto the invoice (at issue)."""
         contact, organization = self.contact, self.organization
         self.contact_name, self.contact_npwp = contact.name, contact.npwp
+        self.buyer_vat_collector = contact.vat_collector if self.is_sales else VatCollector.NONE
         self.contact_address, self.contact_city = contact.address, contact.city
         self.seller_name, self.seller_npwp = organization.name, organization.npwp
         self.seller_address, self.seller_city = organization.address, organization.city
@@ -187,6 +194,14 @@ class Invoice(TenantOwnedModel):
             if self.status == self.Status.PARTIAL:
                 return _("Partly returned")
         return self.get_status_display()
+
+    @property
+    def buyer_withholds_vat(self) -> bool:
+        return bool(self.buyer_vat_collector) and bool(self.tax_amount)
+
+    @property
+    def vat_withheld(self):
+        return sum((p.vat_withheld for p in self.payments.all() if p.status == Payment.Status.POSTED), ZERO)
 
     @property
     def can_return(self) -> bool:
@@ -287,6 +302,9 @@ class Payment(TenantOwnedModel):
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("cash/bank account"))
     method = models.CharField(_("method"), max_length=10, choices=Method.choices, default=Method.TRANSFER)
     reference = models.CharField(_("reference"), max_length=100, blank=True)
+    # Part of ``amount`` the buyer withheld as PPN and deposits itself (a VAT collector); the
+    # rest is the cash received.
+    vat_withheld = money_field(_("PPN withheld by the buyer"), validators=[MinValueValidator(0)])
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="payment")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
@@ -298,6 +316,7 @@ class Payment(TenantOwnedModel):
         constraints = [
             models.UniqueConstraint(fields=["organization", "number"], name="unique_payment_number"),
             models.CheckConstraint(condition=Q(amount__gt=0), name="payment_amount_positive"),
+            models.CheckConstraint(condition=Q(vat_withheld__gte=0, vat_withheld__lte=F("amount")), name="payment_vat_withheld_within_amount"),
         ]
 
     def __str__(self):

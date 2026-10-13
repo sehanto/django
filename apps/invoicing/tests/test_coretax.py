@@ -256,3 +256,85 @@ def test_the_faktur_number_is_recorded_once_after_issue(auth_client, books, sale
         Invoice.objects.filter(pk=sale.pk).update(tax_invoice_number="04002600000099999")
     with pytest.raises(IntegrityError), transaction.atomic():  # and nothing else opens up
         Invoice.objects.filter(pk=sale.pk).update(notes="diubah")
+
+
+# --- Sales to VAT collectors (codes 02/03) ------------------------------------------
+
+
+@pytest.fixture
+def collector_sale(books, customer, account):
+    def make(collector):
+        customer.npwp, customer.vat_collector = "0001234567890000", collector
+        customer.save()
+        ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+        return services.issue_invoice(invoice=services.create_invoice(
+            organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+            lines=[InvoiceLineInput("Kopi", account("4-1000"), D("10"), D("120000"), tax_rate=ppn)],  # 1.200.000 + PPN 132.000
+        ))
+    return make
+
+
+@pytest.mark.parametrize("collector, code", [("government", "02"), ("other", "03")])
+def test_sales_to_collectors_use_their_codes_and_keep_dpp_nilai_lain(books, customer, collector_sale, collector, code):
+    invoice = collector_sale(collector)
+    customer.vat_collector = ""  # the invoice keeps what it was issued with
+    customer.save()
+    invoice.refresh_from_db()
+    faktur = ET.fromstring(coretax.build_invoices_xml(books, [invoice])).find("ListOfTaxInvoice/TaxInvoice")
+    assert faktur.findtext("TrxCode") == code
+    assert [faktur.findtext(f"ListOfGoodService/GoodService/{t}") for t in ("TaxBase", "OtherTaxBase", "VAT")] == ["1200000", "1100000", "132000"]
+
+
+def test_the_collector_pays_without_the_ppn(books, account, collector_sale):
+    from apps.core.exceptions import InvalidStateTransition, ValidationFailed
+    from apps.invoicing.models import Invoice
+    from apps.invoicing.selectors import vat_summary
+    from apps.ledger.selectors import account_balance
+
+    invoice = collector_sale("government")
+    with pytest.raises(ValidationFailed, match="at most"):
+        services.record_payment(invoice=invoice, date=date(2026, 3, 20), amount=D("1332000"), cash_account=account("1-1100"), vat_withheld=D("140000"))
+    services.record_payment(invoice=invoice, date=date(2026, 3, 20), amount=D("1332000"), cash_account=account("1-1100"), vat_withheld=D("132000"))
+    invoice.refresh_from_db()
+    assert invoice.status == Invoice.Status.PAID and invoice.vat_withheld == D("132000")
+
+    def balance(code):
+        return account_balance(books, account(code))
+
+    assert (balance("1-1100"), balance("1-1200"), balance("2-1100")) == (D("1200000"), 0, 0)  # the PPN is the collector's to deposit
+    march = vat_summary(books, 2026)[2]
+    assert (march["output"], march["collected"], march["net"]) == (D("132000"), D("132000"), 0)
+    with pytest.raises(InvalidStateTransition, match="withheld"):
+        services.create_return(invoice=invoice, date=date(2026, 3, 25), reason="x", lines=[ReturnLineInput(invoice.lines.get(), D("1"))])
+
+
+def test_only_collectors_withhold_ppn(books, sale, account):
+    from apps.core.exceptions import ValidationFailed
+
+    with pytest.raises(ValidationFailed, match="VAT collector"):
+        services.record_payment(invoice=sale, date=date(2026, 3, 20), amount=D("100000"), cash_account=account("1-1100"), vat_withheld=D("1000"))
+
+
+def test_the_database_refuses_withholding_for_other_buyers(books, sale, account):
+    from django.db import IntegrityError, transaction
+
+    from apps.invoicing.models import Payment
+    from apps.ledger.services import JournalLineInput, create_journal_entry
+
+    entry = create_journal_entry(
+        organization=books, date=date(2026, 3, 20), description="x",
+        lines=[JournalLineInput(account("1-1100"), debit=D("10")), JournalLineInput(account("1-1200"), credit=D("10"))],
+    )
+    with pytest.raises(IntegrityError), transaction.atomic():
+        Payment.objects.create(
+            organization=books, number="X-1", invoice=sale, date=date(2026, 3, 20), amount=D("10"), vat_withheld=D("5"),
+            cash_account=account("1-1100"), journal_entry=entry,
+        )
+
+
+def test_the_payment_form_asks_for_withheld_ppn_only_from_collectors(auth_client, books, sale, collector_sale):
+    form = auth_client.get(reverse("invoicing:detail", args=[InvoiceKind.SALES, sale.pk])).context["payment_form"]
+    assert "vat_withheld" not in form.fields
+    invoice = collector_sale("other")
+    form = auth_client.get(reverse("invoicing:detail", args=[InvoiceKind.SALES, invoice.pk])).context["payment_form"]
+    assert form.initial["vat_withheld"] == D("132000")

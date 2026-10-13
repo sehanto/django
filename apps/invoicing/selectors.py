@@ -126,14 +126,28 @@ def vat_summary(organization, year: int) -> list[dict]:
         ReturnNote.objects.for_organization(organization).filter(date__year=year, status=ReturnNote.Status.POSTED)
         .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
     )
-    months = {m: {"month": m, "output_base": ZERO, "output": ZERO, "input_base": ZERO, "input": ZERO} for m in range(1, 13)}
+    # PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer, not payable by us.
+    collected = (
+        Invoice.objects.for_organization(organization)
+        .filter(date__year=year, kind=InvoiceKind.SALES, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+        .exclude(buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
+    )
+    collected_returns = (
+        ReturnNote.objects.for_organization(organization)
+        .filter(date__year=year, kind=InvoiceKind.SALES, status=ReturnNote.Status.POSTED)
+        .exclude(invoice__buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
+    )
+    keys = ("output_base", "output", "collected", "input_base", "input")
+    months = {m: {"month": m, **{key: ZERO for key in keys}} for m in range(1, 13)}
     for row, sign in [*((r, 1) for r in rows), *((r, -1) for r in returns)]:
         target = months[row["date__month"]]
         prefix = "output" if row["kind"] == InvoiceKind.SALES else "input"
         target[prefix] += sign * row["tax"]
         target[f"{prefix}_base"] += sign * row["base"]
+    for row, sign in [*((r, 1) for r in collected), *((r, -1) for r in collected_returns)]:
+        months[row["date__month"]]["collected"] += sign * row["tax"]
     for month in months.values():
-        month["net"] = month["output"] - month["input"]
+        month["net"] = month["output"] - month["collected"] - month["input"]
     return list(months.values())
 
 

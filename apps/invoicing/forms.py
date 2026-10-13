@@ -95,12 +95,18 @@ def line_inputs(formset) -> list[InvoiceLineInput]:
 class PaymentForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Payment
-        fields = ["date", "amount", "cash_account", "method", "reference"]
+        fields = ["date", "amount", "vat_withheld", "cash_account", "method", "reference"]
         field_classes = {"date": BusinessDateField}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, invoice=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
+        if invoice is not None and invoice.buyer_withholds_vat:
+            self.fields["amount"].help_text = _("What this settles, including the PPN the buyer withheld.")
+            self.fields["vat_withheld"].help_text = _("The buyer is a VAT collector: it pays without the PPN and deposits the PPN itself.")
+            self.fields["vat_withheld"].required = False
+        else:
+            del self.fields["vat_withheld"]
 
 
 class VoidForm(BaseForm):

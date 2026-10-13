@@ -10,7 +10,18 @@ from apps.core.validators import phone_validator
 from .validators import format_npwp, npwp_format_validator
 
 
+class VatCollector(models.TextChoices):
+    """Buyers appointed to collect (withhold) the PPN on what they buy: they pay the seller
+    the price without PPN and deposit the PPN themselves (Faktur Pajak code 02 or 03)."""
+
+    NONE = "", _("Not a VAT collector")
+    GOVERNMENT = "government", _("Government treasurer (code 02)")
+    OTHER = "other", _("Other appointed VAT collector, e.g. a BUMN (code 03)")
+
+
 class Contact(TenantOwnedModel):
+    VatCollector = VatCollector
+
     class Kind(models.TextChoices):
         CUSTOMER = "customer", _("Customer")
         SUPPLIER = "supplier", _("Supplier")
@@ -32,6 +43,10 @@ class Contact(TenantOwnedModel):
         choices=settings.LANGUAGES,
         default=settings.LANGUAGE_CODE,
         help_text=_("Language of the invoices and bills printed for this contact."),
+    )
+    vat_collector = models.CharField(
+        _("VAT collector"), max_length=12, choices=VatCollector.choices, default=VatCollector.NONE, blank=True,
+        help_text=_("For customers appointed to withhold PPN: they pay without the PPN and deposit it themselves."),
     )
     notes = models.TextField(_("notes"), max_length=2000, blank=True)
     is_active = models.BooleanField(_("active"), default=True)

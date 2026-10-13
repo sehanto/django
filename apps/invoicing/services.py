@@ -326,8 +326,10 @@ def _refresh_payment_status(invoice: Invoice) -> None:
 @transaction.atomic
 def record_payment(
     *, invoice: Invoice, date: date, amount: Decimal, cash_account: Account,
-    method: str = Payment.Method.TRANSFER, reference: str = "", created_by=None,
+    method: str = Payment.Method.TRANSFER, reference: str = "", vat_withheld: Decimal = ZERO, created_by=None,
 ) -> Payment:
+    """``amount`` settles the invoice; for a buyer that collects the PPN (a VAT collector),
+    ``vat_withheld`` of it is the PPN they withheld and deposit themselves, the rest is cash."""
     invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
     organization = invoice.organization
     if not invoice.is_open:
@@ -342,14 +344,26 @@ def record_payment(
         raise ValidationFailed(_("The payment date cannot be before the invoice date."))
     if not _belongs(cash_account, organization) or not cash_account.is_cash:
         raise ValidationFailed(_("Choose a valid cash or bank account."))
+    vat_withheld = vat_withheld or ZERO
+    if vat_withheld:
+        if not invoice.buyer_withholds_vat:
+            raise ValidationFailed(_("Only a buyer appointed as VAT collector withholds the PPN."))
+        remaining = invoice.tax_amount - invoice.vat_withheld
+        if vat_withheld < 0 or vat_withheld > min(amount, remaining):
+            raise ValidationFailed(
+                _("The PPN withheld can be at most %(amount)s.") % {"amount": localized_rupiah(max(min(amount, remaining), ZERO))}
+            )
 
     number = next_document_number(organization, PAYMENT_PREFIX[invoice.kind], date)
     if invoice.is_sales:
         description = f"Penerimaan dari {invoice.contact.name} atas {invoice.number}"
         lines = [
-            JournalLineInput(cash_account, debit=amount),
+            JournalLineInput(cash_account, debit=amount - vat_withheld),
+            # The collector deposits this PPN itself: it settles the output VAT, not the seller.
+            JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), debit=vat_withheld),
             JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=amount),
         ]
+        lines = [line for line in lines if line.debit or line.credit]
     else:
         description = f"Pembayaran kepada {invoice.contact.name} atas {invoice.number}"
         lines = [
@@ -362,7 +376,8 @@ def record_payment(
     )
     payment = Payment.objects.create(
         organization=organization, number=number, invoice=invoice, date=date, amount=amount,
-        cash_account=cash_account, method=method, reference=reference, journal_entry=entry, created_by=created_by,
+        cash_account=cash_account, method=method, reference=reference, vat_withheld=vat_withheld, journal_entry=entry,
+        created_by=created_by,
     )
     invoice.amount_paid += amount
     _refresh_payment_status(invoice)
@@ -431,6 +446,10 @@ def create_return(
     organization = invoice.organization
     if not invoice.can_return:
         raise InvalidStateTransition(_("Only issued invoices can have returns."))
+    if invoice.vat_withheld:
+        raise InvalidStateTransition(
+            _("The buyer has already withheld and deposited this invoice's PPN. Void that payment first, or record the return in Coretax and with a journal entry.")
+        )
     ensure_business_date(date)
     if date < invoice.date:
         raise ValidationFailed(_("The return date cannot be before the invoice date."))

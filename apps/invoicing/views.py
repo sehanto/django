@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
+from apps.core.money import ZERO
 from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
@@ -175,7 +176,11 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
             coretax_problem=coretax.invoice_problem(invoice) if show_coretax else None,
             show_coretax=show_coretax,
             payment_form=PaymentForm(
-                organization=self.organization, initial={"date": max(today, invoice.date), "amount": invoice.balance_due}
+                organization=self.organization, invoice=invoice,
+                initial={
+                    "date": max(today, invoice.date), "amount": invoice.balance_due,
+                    "vat_withheld": max(min(invoice.tax_amount - invoice.vat_withheld, invoice.balance_due), ZERO),
+                },
             ),
             void_form=VoidForm(initial={"date": today}),
             returns=returns,
@@ -236,7 +241,7 @@ class InvoiceDeleteView(InvoiceActionView):
 
 class PaymentCreateView(InvoiceActionView):
     def act(self, invoice):
-        form = PaymentForm(self.request.POST, organization=self.organization)
+        form = PaymentForm(self.request.POST, organization=self.organization, invoice=invoice)
         if not form.is_valid():
             errors = "; ".join(e for errs in form.errors.values() for e in errs)
             raise DomainError(_("Invalid payment data: %(errors)s") % {"errors": errors})

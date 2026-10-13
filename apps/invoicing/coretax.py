@@ -7,9 +7,10 @@ Template XML dan Converter Excel ke XML).
 Sales invoices ("Sample Faktur PK Template v.1.4", rules from template v.1.6.1): one
 TaxInvoice per invoice, dated YYYY-MM-DD, "Normal", transaction code 04 when the lines use
 DPP nilai lain (11/12, the standard 12% rate since 2025) or 01 with the full DPP (luxury
-goods), seller and buyer NITKU as the 16-digit NPWP plus 000000 (head office), buyer
+goods), or 02/03 when the buyer is a VAT collector (government treasurer / other appointed
+collector, from the contact as it was at issue), seller and buyer NITKU as the 16-digit NPWP plus 000000 (head office), buyer
 identified by NPWP, and one GoodService per taxed line. Coretax issues the faktur number;
-record it on the invoice afterwards. Special cases (collectors 02/03, facilities 07/08,
+record it on the invoice afterwards. Special cases (facilities 07/08,
 buyers without NPWP) are left to Coretax itself.
 
 Purchase returns: since 2025 the buyer creates the nota retur in Coretax DJP and the seller
@@ -29,6 +30,7 @@ from xml.etree import ElementTree as ET
 
 from django.utils.translation import gettext as _
 
+from apps.contacts.models import VatCollector
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO
 
@@ -194,7 +196,16 @@ def month_returns(organization, year: int, month: int):
 
 # --- Faktur Pajak Keluaran (sales invoices) ----------------------------------------
 
-STANDARD, OTHER_TAX_BASE = "01", "04"  # transaction codes (template sheet REF-General)
+STANDARD, GOVERNMENT_COLLECTOR, OTHER_COLLECTOR, OTHER_TAX_BASE = "01", "02", "03", "04"  # template sheet REF-General
+COLLECTOR_CODES = {VatCollector.GOVERNMENT: GOVERNMENT_COLLECTOR, VatCollector.OTHER: OTHER_COLLECTOR}
+
+
+def transaction_code(invoice: Invoice, uses_other_tax_base: bool) -> str:
+    """02/03 for a buyer that collects the PPN (whatever the tax base; DPP nilai lain stays in
+    its own column), else 04 for DPP nilai lain or 01."""
+    if invoice.buyer_vat_collector:
+        return COLLECTOR_CODES[invoice.buyer_vat_collector]
+    return OTHER_TAX_BASE if uses_other_tax_base else STANDARD
 HEAD_OFFICE = "000000"  # NITKU suffix of the head office
 
 
@@ -260,7 +271,7 @@ def build_invoices_xml(organization, invoices: Iterable[Invoice]) -> bytes:
         element = ET.SubElement(listing, "TaxInvoice")
         for tag, value in [
             ("TaxInvoiceDate", f"{invoice.date:%Y-%m-%d}"), ("TaxInvoiceOpt", "Normal"),
-            ("TrxCode", OTHER_TAX_BASE if uses_other else STANDARD), ("AddInfo", ""), ("CustomDoc", ""),
+            ("TrxCode", transaction_code(invoice, uses_other)), ("AddInfo", ""), ("CustomDoc", ""),
             ("CustomDocMonthYear", ""), ("RefDesc", invoice.number), ("FacilityStamp", ""),
             ("SellerIDTKU", nitku(organization.npwp)), ("BuyerTin", tin(invoice.party_npwp)), ("BuyerDocument", "TIN"),
             ("BuyerCountry", "IDN"), ("BuyerDocumentNumber", "-"), ("BuyerName", invoice.party_name),
