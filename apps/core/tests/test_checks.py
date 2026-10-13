@@ -1,14 +1,17 @@
 """Deploy checks (manage.py check --deploy)."""
 
+import base64
 import importlib
 import sys
 
 import environ
 import pytest
+from cryptography.fernet import Fernet
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 
 from apps.core.checks import check_billing_seller
+from config.settings.base import development_field_key
 
 
 @pytest.mark.parametrize(("npwp", "address", "warned"), [
@@ -25,12 +28,13 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
         assert [w.id for w in check_billing_seller(None)] == (["core.W003"] if warned else [])
 
 
-LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"  # assembled so no key-shaped literal sits in the repo
+LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"
+FIELD_KEY, NEXT_FIELD_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()  # fresh per run, never committed  # assembled so no key-shaped literal sits in the repo
 PRODUCTION_ENV = {
     "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
     "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
     "SITE_URL": "https://app.example.com",
-    "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": "x",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": FIELD_KEY,
     "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
 }
@@ -95,3 +99,23 @@ def test_production_requires_real_email_settings(monkeypatch, name, value):
 def test_production_accepts_encrypted_or_local_smtp(monkeypatch, url):
     prod = load_production_settings(monkeypatch, EMAIL_URL=url)
     assert prod.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+
+
+ZERO_KEY = base64.urlsafe_b64encode(bytes(32)).decode()
+
+
+@pytest.mark.parametrize("value", [
+    None, "", " , ", "x", "not-base64-at-all!", ZERO_KEY,
+    f"{FIELD_KEY},{FIELD_KEY}",  # listed twice
+    "DEV",  # the development key derived from DJANGO_SECRET_KEY
+])
+def test_production_requires_real_encryption_keys(monkeypatch, value):
+    if value == "DEV":
+        value = development_field_key(PRODUCTION_ENV["DJANGO_SECRET_KEY"])
+    with pytest.raises(ImproperlyConfigured, match="FIELD_ENCRYPTION_KEYS"):
+        load_production_settings(monkeypatch, FIELD_ENCRYPTION_KEYS=value)
+
+
+def test_production_accepts_rotated_keys(monkeypatch):
+    prod = load_production_settings(monkeypatch, FIELD_ENCRYPTION_KEYS=f"{NEXT_FIELD_KEY},{FIELD_KEY}")
+    assert prod.FIELD_ENCRYPTION_KEYS == [NEXT_FIELD_KEY, FIELD_KEY]

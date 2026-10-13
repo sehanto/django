@@ -381,7 +381,9 @@ The database never holds a usable 2FA secret:
 | Backup codes | HMAC-SHA256 with a secret key ("pepper"), one-way. Each code has only 40 random bits, so a plain hash could be brute-forced; without the key it can't. |
 
 The key is `FIELD_ENCRYPTION_KEYS`, a list of Fernet keys with the newest first. It is deliberately
-separate from `SECRET_KEY` and **required in production**. Generate one with:
+separate from `SECRET_KEY` and **required in production**. Production refuses to start if a key isn't
+a valid Fernet key, is trivially weak (one repeated byte), is listed twice, or is the development key
+derived from `SECRET_KEY`. Generate one with:
 
 ```bash
 .venv/bin/python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"

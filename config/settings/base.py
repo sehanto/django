@@ -222,6 +222,9 @@ TWO_FACTOR_REMEMBER_DAYS = 30  # "don't ask again on this device"
 # Fernet keys, newest first. Separate from SECRET_KEY. Production must set them
 # (generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())").
 # Outside production a stable development key is derived from SECRET_KEY.
-FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[]) or [
-    base64.urlsafe_b64encode(hashlib.sha256(f"dev-field-key:{SECRET_KEY}".encode()).digest()).decode()
-]
+def development_field_key(secret_key: str) -> str:
+    """The key used outside production; production refuses it (prod.py)."""
+    return base64.urlsafe_b64encode(hashlib.sha256(f"dev-field-key:{secret_key}".encode()).digest()).decode()
+
+
+FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[]) or [development_field_key(SECRET_KEY)]

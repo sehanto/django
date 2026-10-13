@@ -85,5 +85,34 @@ CAPTCHA_BACKEND = "turnstile"
 TURNSTILE_SITE_KEY = _turnstile_key("TURNSTILE_SITE_KEY")
 TURNSTILE_SECRET_KEY = _turnstile_key("TURNSTILE_SECRET_KEY")
 
-# Database field encryption keys are required in production (never derived from SECRET_KEY).
-FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS")  # noqa: F405
+# Database field encryption keys (2FA secrets, backup-code hashes): required, each a real
+# Fernet key, never the development key derived from SECRET_KEY. Errors name the
+# position, never the key.
+def _field_encryption_keys() -> list[str]:
+    import base64
+    import binascii
+
+    from cryptography.fernet import Fernet
+
+    keys = [key.strip() for key in env.list("FIELD_ENCRYPTION_KEYS", default=[]) if key.strip()]  # noqa: F405
+    if not keys:
+        raise ImproperlyConfigured(
+            "Set FIELD_ENCRYPTION_KEYS (generate one with: python -c \"from cryptography.fernet import Fernet; "
+            "print(Fernet.generate_key().decode())\")."
+        )
+    if len(set(keys)) != len(keys):
+        raise ImproperlyConfigured("FIELD_ENCRYPTION_KEYS lists the same key twice.")
+    for position, key in enumerate(keys, start=1):
+        try:
+            Fernet(key)
+            raw = base64.urlsafe_b64decode(key)
+        except (ValueError, binascii.Error):
+            raise ImproperlyConfigured(f"FIELD_ENCRYPTION_KEYS key {position} is not a Fernet key (32 bytes, url-safe base64).") from None
+        if len(set(raw)) == 1:
+            raise ImproperlyConfigured(f"FIELD_ENCRYPTION_KEYS key {position} is not random (one repeated byte).")
+        if key == development_field_key(SECRET_KEY):  # noqa: F405
+            raise ImproperlyConfigured(f"FIELD_ENCRYPTION_KEYS key {position} is the development key derived from DJANGO_SECRET_KEY.")
+    return keys
+
+
+FIELD_ENCRYPTION_KEYS = _field_encryption_keys()
