@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 20:44+0700\n"
+"POT-Creation-Date: 2026-10-13 20:59+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -104,7 +104,7 @@ msgstr ""
 "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
 
 #: apps/accounts/models.py:42 apps/contacts/models.py:66
-#: apps/tenants/models.py:62
+#: apps/tenants/models.py:62 apps/tenants/models.py:135
 msgid "email"
 msgstr "email"
 
@@ -122,7 +122,7 @@ msgstr "bahasa antarmuka"
 
 #: apps/accounts/models.py:48 apps/contacts/models.py:85
 #: apps/invoicing/models.py:66 apps/ledger/models.py:29
-#: apps/taxes/models.py:38 apps/tenants/models.py:138
+#: apps/taxes/models.py:38 apps/tenants/models.py:171
 msgid "active"
 msgstr "aktif"
 
@@ -154,11 +154,11 @@ msgstr "perangkat"
 msgid "remembered on"
 msgstr "diingat pada"
 
-#: apps/accounts/models.py:89
+#: apps/accounts/models.py:89 apps/api/models.py:20
 msgid "last used"
 msgstr "terakhir dipakai"
 
-#: apps/accounts/models.py:90
+#: apps/accounts/models.py:90 apps/tenants/models.py:139
 msgid "expires"
 msgstr "berlaku sampai"
 
@@ -327,6 +327,56 @@ msgstr ""
 "Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata "
 "sandi."
 
+#: apps/api/apps.py:7
+msgid "API"
+msgstr "API"
+
+#: apps/api/models.py:16
+msgid "created by"
+msgstr "dibuat oleh"
+
+#: apps/api/models.py:17 apps/assets/models.py:30 apps/contacts/models.py:47
+#: apps/invoicing/models.py:39 apps/taxes/models.py:18
+#: apps/tenants/models.py:20 apps/tenants/models.py:164
+msgid "name"
+msgstr "nama"
+
+#: apps/api/models.py:17 apps/api/pages.py:22
+msgid "What it is for, e.g. the online shop."
+msgstr "Untuk apa, mis. toko online."
+
+#: apps/api/models.py:18
+msgid "key starts with"
+msgstr "awalan kunci"
+
+#: apps/api/models.py:21 apps/tenants/models.py:142
+msgid "revoked"
+msgstr "dicabut"
+
+#: apps/api/models.py:25
+msgid "API key"
+msgstr "Kunci API"
+
+#: apps/api/models.py:26 templates/api/keys.html:2 templates/api/keys.html:4
+#: templates/partials/sidebar.html:49
+msgid "API keys"
+msgstr "Kunci API"
+
+#: apps/api/pages.py:22 templates/api/keys.html:14
+#: templates/assets/asset_list.html:23 templates/contacts/contact_list.html:14
+#: templates/invoicing/item_list.html:10 templates/taxes/taxrate_list.html:12
+#: templates/tenants/members.html:8 templates/tenants/settings.html:24
+msgid "Name"
+msgstr "Nama"
+
+#: apps/api/pages.py:53
+msgid "API key revoked."
+msgstr "Kunci API dicabut."
+
+#: apps/api/services.py:22
+msgid "Give the key a name."
+msgstr "Beri nama kunci ini."
+
 #: apps/assets/apps.py:7 apps/ledger/domain.py:46
 #: apps/reports/statements.py:256 templates/assets/asset_list.html:2
 #: templates/partials/sidebar.html:38 templates/reports/notes.html:34
@@ -459,12 +509,6 @@ msgstr "Misalnya mesin akan dipakai dua tahun lebih lama dari perkiraan."
 msgid "number"
 msgstr "nomor"
 
-#: apps/assets/models.py:30 apps/contacts/models.py:47
-#: apps/invoicing/models.py:39 apps/taxes/models.py:18
-#: apps/tenants/models.py:20 apps/tenants/models.py:131
-msgid "name"
-msgstr "nama"
-
 #: apps/assets/models.py:31 apps/ledger/models.py:28 apps/ledger/models.py:66
 #: apps/ledger/models.py:134
 msgid "description"
@@ -548,9 +592,10 @@ msgstr ""
 "sudah ada di saldo awal dan tidak dijurnal lagi."
 
 #: apps/assets/models.py:57 apps/billing/models.py:54
-#: apps/invoicing/models.py:132 apps/invoicing/models.py:477
-#: apps/invoicing/models.py:524 apps/ledger/models.py:68
-#: apps/taxes/models.py:81 apps/taxes/models.py:122 apps/taxes/models.py:163
+#: apps/billing/models.py:111 apps/invoicing/models.py:132
+#: apps/invoicing/models.py:477 apps/invoicing/models.py:524
+#: apps/ledger/models.py:68 apps/taxes/models.py:81 apps/taxes/models.py:122
+#: apps/taxes/models.py:163
 msgid "status"
 msgstr "status"
 
@@ -880,34 +925,50 @@ msgid "Member removed"
 msgstr "Anggota dihapus"
 
 #: apps/audit/domain.py:38
+msgid "Member invited"
+msgstr "Anggota diundang"
+
+#: apps/audit/domain.py:39
+msgid "Invitation revoked"
+msgstr "Undangan dicabut"
+
+#: apps/audit/domain.py:40
+msgid "API key created"
+msgstr "Kunci API dibuat"
+
+#: apps/audit/domain.py:41
+msgid "API key revoked"
+msgstr "Kunci API dicabut"
+
+#: apps/audit/domain.py:42
 msgid "Books exported"
 msgstr "Pembukuan diekspor"
 
-#: apps/audit/domain.py:39
+#: apps/audit/domain.py:43
 msgid "Account added to the chart of accounts"
 msgstr "Akun ditambahkan ke bagan akun"
 
-#: apps/audit/domain.py:40
+#: apps/audit/domain.py:44
 msgid "Chart of accounts entry changed"
 msgstr "Akun di bagan akun diubah"
 
-#: apps/audit/domain.py:41
+#: apps/audit/domain.py:45
 msgid "Account removed from the chart of accounts"
 msgstr "Akun dihapus dari bagan akun"
 
-#: apps/audit/domain.py:42
+#: apps/audit/domain.py:46
 msgid "Organization deleted"
 msgstr "Organisasi dihapus"
 
-#: apps/audit/domain.py:44
+#: apps/audit/domain.py:48
 msgid "Subscription plan changed"
 msgstr "Paket langganan diubah"
 
-#: apps/audit/domain.py:45
+#: apps/audit/domain.py:49
 msgid "Payment confirmed manually"
 msgstr "Pembayaran dikonfirmasi manual"
 
-#: apps/audit/domain.py:47
+#: apps/audit/domain.py:51
 msgid "Encryption keys rotated"
 msgstr "Kunci enkripsi dirotasi"
 
@@ -923,7 +984,8 @@ msgstr "tindakan"
 msgid "user email"
 msgstr "email pengguna"
 
-#: apps/audit/models.py:23 apps/billing/models.py:30 apps/core/models.py:29
+#: apps/audit/models.py:23 apps/billing/models.py:30
+#: apps/billing/models.py:108 apps/core/models.py:29
 #: apps/tenants/models.py:114
 msgid "organization"
 msgstr "organisasi"
@@ -1003,7 +1065,8 @@ msgstr "Tahunan"
 msgid "Free plan"
 msgstr "Paket gratis"
 
-#: apps/billing/domain.py:35 templates/taxes/taxrate_list.html:16
+#: apps/billing/domain.py:35 apps/billing/models.py:104
+#: templates/taxes/taxrate_list.html:16
 msgid "Active"
 msgstr "Aktif"
 
@@ -1027,21 +1090,26 @@ msgstr "Simulasi (pengembangan)"
 msgid "Plan credit"
 msgstr "Kredit paket"
 
-#: apps/billing/gateways/xendit.py:56
+#: apps/billing/gateways/xendit.py:84
 msgid "The payment provider is not reachable right now. Please try again."
 msgstr "Penyedia pembayaran sedang tidak dapat dihubungi. Silakan coba lagi."
 
-#: apps/billing/gateways/xendit.py:59
+#: apps/billing/gateways/xendit.py:87
 msgid "The payment provider rejected the request. Please try again later."
 msgstr "Penyedia pembayaran menolak permintaan. Silakan coba lagi nanti."
 
-#: apps/billing/gateways/xendit.py:79 apps/billing/services.py:183
+#: apps/billing/gateways/xendit.py:107 apps/billing/gateways/xendit.py:151
+#: apps/billing/services.py:185 apps/billing/services.py:399
 msgid "The payment provider did not return a payment link."
 msgstr "Penyedia pembayaran tidak mengembalikan tautan pembayaran."
 
-#: apps/billing/gateways/xendit.py:90
+#: apps/billing/gateways/xendit.py:119 apps/billing/gateways/xendit.py:125
 msgid "Unknown payment status from the payment provider."
 msgstr "Status pembayaran dari penyedia pembayaran tidak dikenal."
+
+#: apps/billing/gateways/xendit.py:178
+msgid "The payment provider did not accept the charge."
+msgstr "Penyedia pembayaran tidak menerima penagihan."
 
 #: apps/billing/models.py:21
 msgid "Awaiting payment"
@@ -1067,7 +1135,7 @@ msgstr "Gagal"
 msgid "plan"
 msgstr "paket"
 
-#: apps/billing/models.py:33
+#: apps/billing/models.py:33 apps/billing/models.py:110
 msgid "billing period"
 msgstr "periode tagihan"
 
@@ -1126,7 +1194,7 @@ msgstr "PPN"
 msgid "total"
 msgstr "total"
 
-#: apps/billing/models.py:55
+#: apps/billing/models.py:55 apps/billing/models.py:112
 msgid "payment gateway"
 msgstr "payment gateway"
 
@@ -1170,30 +1238,58 @@ msgstr "tagihan langganan"
 msgid "subscription invoices"
 msgstr "tagihan langganan"
 
-#: apps/billing/services.py:148
+#: apps/billing/models.py:103
+msgid "Waiting for the payment method"
+msgstr "Menunggu metode pembayaran"
+
+#: apps/billing/models.py:105
+msgid "Turned off"
+msgstr "Nonaktif"
+
+#: apps/billing/models.py:116
+msgid "failed attempts"
+msgstr "percobaan gagal"
+
+#: apps/billing/models.py:117
+msgid "last error"
+msgstr "kesalahan terakhir"
+
+#: apps/billing/models.py:118
+msgid "activated"
+msgstr "diaktifkan"
+
+#: apps/billing/models.py:126
+msgid "automatic renewal"
+msgstr "perpanjangan otomatis"
+
+#: apps/billing/models.py:127
+msgid "automatic renewals"
+msgstr "perpanjangan otomatis"
+
+#: apps/billing/services.py:150
 msgid "This plan is free and needs no payment."
 msgstr "Paket ini gratis dan tidak perlu dibayar."
 
-#: apps/billing/services.py:167
+#: apps/billing/services.py:169 apps/billing/services.py:474
 #, python-format
 msgid "%(seller)s %(plan)s plan (%(period)s), incl. PPN"
 msgstr "%(seller)s paket %(plan)s (%(period)s), termasuk PPN"
 
-#: apps/billing/services.py:209
+#: apps/billing/services.py:211
 msgid "The paid amount does not match the invoice. Our team will review it."
 msgstr ""
 "Jumlah yang dibayar tidak sesuai dengan tagihan. Tim kami akan memeriksanya."
 
-#: apps/billing/services.py:292
+#: apps/billing/services.py:301
 msgid "This invoice is already paid."
 msgstr "Tagihan ini sudah lunas."
 
-#: apps/billing/services.py:353
+#: apps/billing/services.py:366
 #, python-format
 msgid "Your %(plan)s plan for %(organization)s ends on %(date)s"
 msgstr "Paket %(plan)s untuk %(organization)s berakhir pada %(date)s"
 
-#: apps/billing/services.py:355
+#: apps/billing/services.py:368
 #, python-format
 msgid ""
 "Hello,\n"
@@ -1210,7 +1306,43 @@ msgstr ""
 "\n"
 "Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa tenggang singkat."
 
-#: apps/billing/views.py:62
+#: apps/billing/services.py:388
+msgid "The free plan needs no renewal. Choose a paid plan first."
+msgstr ""
+"Paket gratis tidak perlu diperpanjang. Pilih paket berbayar terlebih dahulu."
+
+#: apps/billing/services.py:394
+#, python-format
+msgid "Automatic renewal of the %(seller)s %(plan)s plan"
+msgstr "Perpanjangan otomatis paket %(seller)s %(plan)s"
+
+#: apps/billing/services.py:437
+#, python-format
+msgid ""
+"Hello,\n"
+"\n"
+"The automatic renewal of the %(plan)s plan for %(organization)s could not be charged (%(error)s). Please renew it here to keep your plan:\n"
+"%(url)s"
+msgstr ""
+"Halo,\n"
+"\n"
+"Perpanjangan otomatis paket %(plan)s untuk %(organization)s tidak dapat ditagih (%(error)s). Silakan perpanjang di sini agar paket Anda tetap aktif:\n"
+"%(url)s"
+
+#: apps/billing/services.py:441
+msgid ""
+"Automatic renewal has been turned off after repeated failures; you can turn "
+"it on again with another payment method."
+msgstr ""
+"Perpanjangan otomatis dinonaktifkan setelah beberapa kali gagal; Anda dapat "
+"mengaktifkannya lagi dengan metode pembayaran lain."
+
+#: apps/billing/services.py:443
+#, python-format
+msgid "Automatic renewal of %(organization)s failed"
+msgstr "Perpanjangan otomatis %(organization)s gagal"
+
+#: apps/billing/views.py:64
 #, python-format
 msgid ""
 "Switched to the %(plan)s plan, paid with your remaining credit. Active until"
@@ -1219,18 +1351,36 @@ msgstr ""
 "Beralih ke paket %(plan)s, dibayar dengan sisa kredit Anda. Aktif sampai "
 "%(date)s."
 
-#: apps/billing/views.py:104
+#: apps/billing/views.py:106
 #, python-format
 msgid "Payment received. Your %(plan)s plan is active until %(date)s."
 msgstr "Pembayaran diterima. Paket %(plan)s Anda aktif sampai %(date)s."
 
-#: apps/billing/views.py:108
+#: apps/billing/views.py:110
 msgid ""
 "We have not received the payment yet. This page updates once it is "
 "confirmed."
 msgstr ""
 "Pembayaran belum kami terima. Halaman ini akan diperbarui setelah pembayaran"
 " terkonfirmasi."
+
+#: apps/billing/views.py:201
+msgid ""
+"Automatic renewal is on. Your plan will be renewed with the saved payment "
+"method."
+msgstr ""
+"Perpanjangan otomatis aktif. Paket Anda akan diperpanjang dengan metode "
+"pembayaran yang disimpan."
+
+#: apps/billing/views.py:203
+msgid "The payment method hasn't been confirmed yet. Check again in a moment."
+msgstr "Metode pembayaran belum terkonfirmasi. Periksa lagi sebentar lagi."
+
+#: apps/billing/views.py:210
+msgid "Automatic renewal turned off. Renew manually before your plan ends."
+msgstr ""
+"Perpanjangan otomatis dinonaktifkan. Perpanjang secara manual sebelum paket "
+"berakhir."
 
 #: apps/contacts/apps.py:7 templates/contacts/contact_list.html:2
 #: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:35
@@ -1345,12 +1495,12 @@ msgid "phone"
 msgstr "telepon"
 
 #: apps/contacts/models.py:68 apps/tenants/models.py:59
-#: apps/tenants/models.py:136
+#: apps/tenants/models.py:169
 msgid "address"
 msgstr "alamat"
 
 #: apps/contacts/models.py:69 apps/tenants/models.py:60
-#: apps/tenants/models.py:137
+#: apps/tenants/models.py:170
 msgid "city/regency"
 msgstr "kota/kabupaten"
 
@@ -1543,7 +1693,7 @@ msgid "Item"
 msgstr "Barang/Jasa"
 
 #: apps/inventory/forms.py:14 apps/inventory/forms.py:37
-#: apps/taxes/views.py:231 templates/billing/overview.html:70
+#: apps/taxes/views.py:231 templates/billing/overview.html:93
 #: templates/inventory/stock_card.html:14
 #: templates/invoicing/_invoice_body.html:12
 #: templates/invoicing/invoice_list.html:19
@@ -2265,7 +2415,7 @@ msgstr "tanggal dokumen pendukung"
 msgid "type of delivery"
 msgstr "jenis penyerahan"
 
-#: apps/invoicing/models.py:130 apps/tenants/models.py:142
+#: apps/invoicing/models.py:130 apps/tenants/models.py:175
 msgid "place of business"
 msgstr "tempat kegiatan usaha"
 
@@ -4240,7 +4390,7 @@ msgstr "Email pengguna"
 msgid "Role"
 msgstr "Peran"
 
-#: apps/tenants/forms.py:65 apps/tenants/models.py:133
+#: apps/tenants/forms.py:65 apps/tenants/models.py:166
 #: templates/tenants/settings.html:24
 msgid "NITKU"
 msgstr "NITKU"
@@ -4423,11 +4573,27 @@ msgstr "Hari terakhir yang tercakup pembayaran; kosong untuk paket gratis."
 msgid "organizations"
 msgstr "organisasi"
 
-#: apps/tenants/models.py:131
+#: apps/tenants/models.py:136 apps/tenants/models.py:196
+msgid "role"
+msgstr "peran"
+
+#: apps/tenants/models.py:140
+msgid "accepted"
+msgstr "diterima"
+
+#: apps/tenants/models.py:146
+msgid "invitation"
+msgstr "undangan"
+
+#: apps/tenants/models.py:147
+msgid "invitations"
+msgstr "undangan"
+
+#: apps/tenants/models.py:164
 msgid "E.g. Cabang Sleman."
 msgstr "Mis. Cabang Sleman."
 
-#: apps/tenants/models.py:134
+#: apps/tenants/models.py:167
 msgid ""
 "22 digits: the organization's 16-digit NPWP followed by the 6 digits of this"
 " place, as registered in Coretax."
@@ -4435,19 +4601,15 @@ msgstr ""
 "22 digit: NPWP 16 digit organisasi diikuti 6 digit tempat ini, sesuai yang "
 "terdaftar di Coretax."
 
-#: apps/tenants/models.py:143
+#: apps/tenants/models.py:176
 msgid "places of business"
 msgstr "tempat kegiatan usaha"
 
-#: apps/tenants/models.py:163
-msgid "role"
-msgstr "peran"
-
-#: apps/tenants/models.py:169
+#: apps/tenants/models.py:202
 msgid "member"
 msgstr "anggota"
 
-#: apps/tenants/models.py:170
+#: apps/tenants/models.py:203
 msgid "members"
 msgstr "anggota"
 
@@ -4467,7 +4629,7 @@ msgstr "Akuntan / Staf Keuangan"
 msgid "View only"
 msgstr "Hanya Lihat"
 
-#: apps/tenants/services.py:68
+#: apps/tenants/services.py:70
 #, python-format
 msgid ""
 "The %(plan)s plan allows only %(limit)s user. Please upgrade your plan."
@@ -4477,29 +4639,46 @@ msgstr[0] ""
 "Paket %(plan)s hanya mengizinkan %(limit)s pengguna. Silakan tingkatkan "
 "paket Anda."
 
-#: apps/tenants/services.py:80
+#: apps/tenants/services.py:82
 msgid "No user with that email is registered yet. Ask them to sign up first."
 msgstr ""
 "Pengguna dengan email tersebut belum terdaftar. Minta mereka mendaftar "
 "terlebih dahulu."
 
-#: apps/tenants/services.py:82
+#: apps/tenants/services.py:84
 msgid "This user is already a member of the organization."
 msgstr "Pengguna sudah menjadi anggota organisasi ini."
 
-#: apps/tenants/services.py:84
+#: apps/tenants/services.py:86 apps/tenants/services.py:98
 msgid "The owner role cannot be given to a new member."
 msgstr "Peran pemilik tidak dapat diberikan melalui undangan."
 
-#: apps/tenants/services.py:93
+#: apps/tenants/services.py:126
+msgid "This invitation is no longer valid. Ask for a new one."
+msgstr "Undangan ini sudah tidak berlaku. Mintalah undangan baru."
+
+#: apps/tenants/services.py:129
+#, python-format
+msgid ""
+"This invitation was sent to %(email)s. Sign in with that address to accept "
+"it."
+msgstr ""
+"Undangan ini dikirim ke %(email)s. Masuk dengan alamat itu untuk "
+"menerimanya."
+
+#: apps/tenants/services.py:132
+msgid "You are already a member of this organization."
+msgstr "Anda sudah menjadi anggota organisasi ini."
+
+#: apps/tenants/services.py:153
 msgid "The organization owner cannot be removed."
 msgstr "Pemilik organisasi tidak dapat dihapus."
 
-#: apps/tenants/services.py:95
+#: apps/tenants/services.py:155
 msgid "You cannot remove yourself."
 msgstr "Anda tidak dapat menghapus diri sendiri."
 
-#: apps/tenants/services.py:106
+#: apps/tenants/services.py:166
 #, python-format
 msgid ""
 "The organization has %(count)s user, more than the %(plan)s plan allows "
@@ -4536,11 +4715,25 @@ msgstr "Tempat kegiatan usaha disimpan."
 msgid "Organization %(name)s created."
 msgstr "Organisasi %(name)s berhasil dibuat."
 
-#: apps/tenants/views.py:117
+#: apps/tenants/views.py:116
+#, python-format
+msgid "Invitation sent to %(email)s."
+msgstr "Undangan dikirim ke %(email)s."
+
+#: apps/tenants/views.py:122
 msgid "Member added."
 msgstr "Anggota berhasil ditambahkan."
 
-#: apps/tenants/views.py:129
+#: apps/tenants/views.py:131
+msgid "Invitation revoked."
+msgstr "Undangan dicabut."
+
+#: apps/tenants/views.py:155
+#, python-format
+msgid "Welcome to %(organization)s."
+msgstr "Selamat datang di %(organization)s."
+
+#: apps/tenants/views.py:167
 msgid "Member removed."
 msgstr "Anggota dihapus."
 
@@ -4856,6 +5049,7 @@ msgstr[0] "Kode cadangan (tersisa %(count)s)"
 
 #: templates/accounts/security.html:21
 #: templates/accounts/two_factor_disable.html:16
+#: templates/billing/overview.html:34
 msgid "Turn off"
 msgstr "Matikan"
 
@@ -5047,6 +5241,7 @@ msgstr ""
 "konfirmasi."
 
 #: templates/accounts/two_factor_setup.html:18
+#: templates/billing/overview.html:38
 msgid "Turn on"
 msgstr "Aktifkan"
 
@@ -5065,7 +5260,7 @@ msgstr ""
 
 #: templates/accounts/two_factor_verify_session.html:12
 #: templates/accounts/verify_email_pending.html:23
-#: templates/partials/sidebar.html:56
+#: templates/partials/sidebar.html:57
 msgid "Sign out"
 msgstr "Keluar"
 
@@ -5103,6 +5298,56 @@ msgstr "Salah alamat email?"
 #: templates/accounts/verify_email_pending.html:18
 msgid "Update and send link"
 msgstr "Perbarui dan kirim tautan"
+
+#: templates/api/keys.html:7
+msgid "Copy the key now: it won't be shown again."
+msgstr "Salin kunci sekarang: kunci tidak akan ditampilkan lagi."
+
+#: templates/api/keys.html:14
+msgid "Key"
+msgstr "Kunci"
+
+#: templates/api/keys.html:14
+msgid "Created by"
+msgstr "Dibuat oleh"
+
+#: templates/api/keys.html:14
+msgid "Last used"
+msgstr "Terakhir dipakai"
+
+#: templates/api/keys.html:18
+msgid "Revoke this key? Programs using it stop working."
+msgstr "Cabut kunci ini? Program yang memakainya akan berhenti berfungsi."
+
+#: templates/api/keys.html:18 templates/tenants/members.html:24
+msgid "Revoke"
+msgstr "Cabut"
+
+#: templates/api/keys.html:19
+msgid "No API keys yet."
+msgstr "Belum ada kunci API."
+
+#: templates/api/keys.html:21
+msgid ""
+"The REST API lives at /api/v1/ (accounts, contacts, items, tax-rates, "
+"invoices, journal-entries, reports/trial-balance). Send the key as "
+"<code>Authorization: Bearer &lt;key&gt;</code>. A key acts with the role of "
+"the member who created it, and stops working when that member leaves the "
+"organization."
+msgstr ""
+"REST API tersedia di /api/v1/ (accounts, contacts, items, tax-rates, "
+"invoices, journal-entries, reports/trial-balance). Kirim kunci sebagai "
+"<code>Authorization: Bearer &lt;kunci&gt;</code>. Kunci bertindak dengan "
+"peran anggota yang membuatnya, dan berhenti berfungsi saat anggota itu "
+"keluar dari organisasi."
+
+#: templates/api/keys.html:25
+msgid "New key"
+msgstr "Kunci baru"
+
+#: templates/api/keys.html:26
+msgid "Create key"
+msgstr "Buat kunci"
 
 #: templates/assets/asset_detail.html:9
 #: templates/contacts/contact_list.html:23
@@ -5292,24 +5537,18 @@ msgstr "Penyusutan dijurnal otomatis setiap malam, atau sekarang:"
 msgid "Post depreciation"
 msgstr "Jurnal penyusutan"
 
-#: templates/assets/asset_list.html:23 templates/billing/overview.html:70
+#: templates/assets/asset_list.html:23 templates/billing/overview.html:93
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:15
 msgid "Number"
 msgstr "Nomor"
 
-#: templates/assets/asset_list.html:23 templates/contacts/contact_list.html:14
-#: templates/invoicing/item_list.html:10 templates/taxes/taxrate_list.html:12
-#: templates/tenants/members.html:8 templates/tenants/settings.html:24
-msgid "Name"
-msgstr "Nama"
-
 #: templates/assets/asset_list.html:23
 msgid "Acquired"
 msgstr "Diperoleh"
 
-#: templates/assets/asset_list.html:23 templates/billing/overview.html:70
+#: templates/assets/asset_list.html:23 templates/billing/overview.html:93
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:15 templates/taxes/taxrate_list.html:12
@@ -5361,7 +5600,7 @@ msgstr ""
 
 #: templates/audit/organization_activity.html:2
 #: templates/audit/organization_activity.html:4
-#: templates/partials/sidebar.html:49
+#: templates/partials/sidebar.html:50
 msgid "Activity log"
 msgstr "Log aktivitas"
 
@@ -5448,8 +5687,24 @@ msgstr "Simulasikan pembayaran berhasil"
 msgid "Simulate expired link"
 msgstr "Simulasikan tautan kedaluwarsa"
 
+#: templates/billing/fake_save.html:2
+msgid "Test payment method"
+msgstr "Metode pembayaran uji coba"
+
+#: templates/billing/fake_save.html:5
+msgid ""
+"Test page: no real payment method is saved. In production, customers save a "
+"card or e-wallet on Xendit's hosted page instead."
+msgstr ""
+"Halaman uji coba: tidak ada metode pembayaran sungguhan yang disimpan. Di "
+"produksi, pelanggan menyimpan kartu atau e-wallet di halaman Xendit."
+
+#: templates/billing/fake_save.html:8
+msgid "Simulate saving a payment method"
+msgstr "Simulasikan penyimpanan metode pembayaran"
+
 #: templates/billing/invoice_detail.html:6 templates/billing/overview.html:2
-#: templates/billing/overview.html:4 templates/partials/sidebar.html:50
+#: templates/billing/overview.html:4 templates/partials/sidebar.html:51
 msgid "Subscription plan"
 msgstr "Paket Langganan"
 
@@ -5534,7 +5789,7 @@ msgstr "DPP (11/12)"
 msgid "PPN 12%%"
 msgstr "PPN 12%%"
 
-#: templates/billing/invoice_detail.html:62 templates/billing/overview.html:70
+#: templates/billing/invoice_detail.html:62 templates/billing/overview.html:93
 #: templates/inventory/stock_list.html:24
 #: templates/invoicing/_invoice_body.html:32
 #: templates/invoicing/invoice_list.html:19
@@ -5560,7 +5815,7 @@ msgid ""
 "Coretax."
 msgstr "Faktur Pajak resmi diterbitkan terpisah melalui Coretax."
 
-#: templates/billing/overview.html:8 templates/billing/overview.html:27
+#: templates/billing/overview.html:8 templates/billing/overview.html:50
 msgid "Current plan"
 msgstr "Paket saat ini"
 
@@ -5573,61 +5828,107 @@ msgstr "Dibayar sampai %(date)s"
 msgid "No payment needed"
 msgstr "Tidak perlu pembayaran"
 
+#: templates/billing/overview.html:23
+msgid "Automatic renewal"
+msgstr "Perpanjangan otomatis"
+
+#: templates/billing/overview.html:25
+#, python-format
+msgid ""
+"On: the plan is renewed %(period)s with your saved payment method, shortly "
+"before %(date)s."
+msgstr ""
+"Aktif: paket diperpanjang %(period)s dengan metode pembayaran yang disimpan,"
+" sesaat sebelum %(date)s."
+
+#: templates/billing/overview.html:26
+#, python-format
+msgid "The last attempt failed (%(error)s)."
+msgstr "Percobaan terakhir gagal (%(error)s)."
+
+#: templates/billing/overview.html:28
+msgid "Waiting for your payment method to be saved."
+msgstr "Menunggu metode pembayaran Anda disimpan."
+
+#: templates/billing/overview.html:28
+msgid "Open the page again"
+msgstr "Buka halamannya lagi"
+
+#: templates/billing/overview.html:28
+msgid "Check again"
+msgstr "Periksa lagi"
+
 #: templates/billing/overview.html:30
+msgid ""
+"Save a card or e-wallet with our payment partner and your plan renews by "
+"itself; you can turn it off any time."
+msgstr ""
+"Simpan kartu atau e-wallet di mitra pembayaran kami dan paket Anda "
+"diperpanjang dengan sendirinya; dapat dinonaktifkan kapan saja."
+
+#: templates/billing/overview.html:34
+msgid "Turn off automatic renewal?"
+msgstr "Nonaktifkan perpanjangan otomatis?"
+
+#: templates/billing/overview.html:37 templates/billing/overview.html:93
+msgid "Billing period"
+msgstr "Periode tagihan"
+
+#: templates/billing/overview.html:53
 msgid "Free"
 msgstr "Gratis"
 
-#: templates/billing/overview.html:32
+#: templates/billing/overview.html:55
 msgid "/month"
 msgstr "/bulan"
 
-#: templates/billing/overview.html:33
+#: templates/billing/overview.html:56
 #, python-format
 msgid "or %(price)s/year (2 months free)"
 msgstr "atau %(price)s/tahun (gratis 2 bulan)"
 
-#: templates/billing/overview.html:33
+#: templates/billing/overview.html:56
 msgid "excl. PPN"
 msgstr "belum termasuk PPN"
 
-#: templates/billing/overview.html:35
+#: templates/billing/overview.html:58
 #, python-format
 msgid "You have %(credit)s credit for unused %(plan)s time"
 msgstr "Anda punya kredit %(credit)s dari sisa masa paket %(plan)s"
 
-#: templates/billing/overview.html:39
+#: templates/billing/overview.html:62
 #, python-format
 msgid "%(count)s user"
 msgid_plural "%(count)s users"
 msgstr[0] "%(count)s pengguna"
 
-#: templates/billing/overview.html:39
+#: templates/billing/overview.html:62
 msgid "Unlimited users"
 msgstr "Pengguna tak terbatas"
 
-#: templates/billing/overview.html:40
+#: templates/billing/overview.html:63
 #, python-format
 msgid "%(count)s invoice/month"
 msgid_plural "%(count)s invoices/month"
 msgstr[0] "%(count)s faktur/bulan"
 
-#: templates/billing/overview.html:40
+#: templates/billing/overview.html:63
 msgid "Unlimited invoices"
 msgstr "Faktur tak terbatas"
 
-#: templates/billing/overview.html:41
+#: templates/billing/overview.html:64
 msgid "SAK EMKM financial reports"
 msgstr "Laporan keuangan SAK EMKM"
 
-#: templates/billing/overview.html:42
+#: templates/billing/overview.html:65
 msgid "PPN & MSME PPh Final"
 msgstr "PPN & PPh Final UMKM"
 
-#: templates/billing/overview.html:47
+#: templates/billing/overview.html:70
 msgid "Upgrade any time; no card needed."
 msgstr "Tingkatkan paket kapan saja; tidak perlu kartu kredit."
 
-#: templates/billing/overview.html:47
+#: templates/billing/overview.html:70
 #, python-format
 msgid ""
 "If your paid plan is not renewed, you move to this plan %(days)s days after "
@@ -5636,11 +5937,11 @@ msgstr ""
 "Jika paket berbayar tidak diperpanjang, Anda pindah ke paket ini %(days)s "
 "hari setelah paket berakhir."
 
-#: templates/billing/overview.html:53
+#: templates/billing/overview.html:76
 msgid "Amounts include PPN."
 msgstr "Jumlah sudah termasuk PPN."
 
-#: templates/billing/overview.html:61
+#: templates/billing/overview.html:84
 #, python-format
 msgid ""
 "Prices exclude PPN of 12%% on a tax base of 11/12 (effectively 11%%). Paying"
@@ -5658,19 +5959,15 @@ msgstr ""
 " virtual account bank, e-wallet, atau kartu melalui mitra pembayaran kami, "
 "Xendit."
 
-#: templates/billing/overview.html:68
+#: templates/billing/overview.html:91
 msgid "Billing history"
 msgstr "Riwayat tagihan"
 
-#: templates/billing/overview.html:70
+#: templates/billing/overview.html:93
 msgid "Plan"
 msgstr "Paket"
 
-#: templates/billing/overview.html:70
-msgid "Billing period"
-msgstr "Periode tagihan"
-
-#: templates/billing/overview.html:75
+#: templates/billing/overview.html:98
 msgid "No subscription payments yet."
 msgstr "Belum ada pembayaran langganan."
 
@@ -7336,6 +7633,43 @@ msgstr "Bagan akun standar SAK EMKM dan tarif PPN akan dibuat otomatis."
 msgid "Create"
 msgstr "Buat"
 
+#: templates/tenants/emails/invitation.txt:1
+msgid "Hello,"
+msgstr "Halo,"
+
+#: templates/tenants/emails/invitation.txt:3
+#, python-format
+msgid ""
+"%(invited_by)s invited you to join %(organization)s on %(site_name)s as "
+"%(role)s."
+msgstr ""
+"%(invited_by)s mengundang Anda bergabung dengan %(organization)s di "
+"%(site_name)s sebagai %(role)s."
+
+#: templates/tenants/emails/invitation.txt:5
+#, python-format
+msgid ""
+"If you have no account yet, sign up with this email address (%(email)s) and "
+"confirm it:"
+msgstr ""
+"Jika belum punya akun, daftar dengan alamat email ini (%(email)s) lalu "
+"konfirmasikan:"
+
+#: templates/tenants/emails/invitation.txt:8
+#, python-format
+msgid "Then open this link to join (valid for %(days)s day):"
+msgid_plural "Then open this link to join (valid for %(days)s days):"
+msgstr[0] "Lalu buka tautan ini untuk bergabung (berlaku %(days)s hari):"
+
+#: templates/tenants/emails/invitation.txt:11
+msgid "If you didn't expect this invitation, you can ignore this email."
+msgstr "Jika Anda tidak mengharapkan undangan ini, abaikan email ini."
+
+#: templates/tenants/emails/invitation_subject.txt:1
+#, python-format
+msgid "You are invited to %(organization)s on %(site_name)s"
+msgstr "Anda diundang ke %(organization)s di %(site_name)s"
+
 #: templates/tenants/emails/two_factor_required.txt:3
 #, python-format
 msgid ""
@@ -7362,6 +7696,36 @@ msgstr ""
 msgid "%(organization)s now requires two-factor authentication"
 msgstr "%(organization)s kini mewajibkan autentikasi dua faktor"
 
+#: templates/tenants/invitation.html:2
+msgid "Invitation"
+msgstr "Undangan"
+
+#: templates/tenants/invitation.html:6
+#, python-format
+msgid "Join %(organization)s"
+msgstr "Bergabung dengan %(organization)s"
+
+#: templates/tenants/invitation.html:7
+#, python-format
+msgid "You are invited as %(role)s. The invitation is for %(email)s."
+msgstr "Anda diundang sebagai %(role)s. Undangan ini untuk %(email)s."
+
+#: templates/tenants/invitation.html:8
+msgid "Accept invitation"
+msgstr "Terima undangan"
+
+#: templates/tenants/invitation.html:10
+msgid "Invitation not valid"
+msgstr "Undangan tidak berlaku"
+
+#: templates/tenants/invitation.html:11
+msgid ""
+"This invitation has expired, was revoked or has already been used. Ask the "
+"organization for a new one."
+msgstr ""
+"Undangan ini sudah kedaluwarsa, dicabut, atau sudah dipakai. Mintalah "
+"undangan baru kepada organisasi."
+
 #: templates/tenants/members.html:8
 msgid "2FA"
 msgstr "2FA"
@@ -7375,25 +7739,42 @@ msgid "Remove"
 msgstr "Hapus"
 
 #: templates/tenants/members.html:20
+msgid "Pending invitations"
+msgstr "Undangan tertunda"
+
+#: templates/tenants/members.html:23
+#, python-format
+msgid "valid until %(date)s"
+msgstr "berlaku sampai %(date)s"
+
+#: templates/tenants/members.html:24
+msgid "Revoke this invitation?"
+msgstr "Cabut undangan ini?"
+
+#: templates/tenants/members.html:28
 #, python-format
 msgid "%(name)s plan: up to %(count)s user."
 msgid_plural "%(name)s plan: up to %(count)s users."
 msgstr[0] "Paket %(name)s: maks. %(count)s pengguna."
 
-#: templates/tenants/members.html:22
+#: templates/tenants/members.html:30
 #, python-format
 msgid "%(name)s plan: unlimited users."
 msgstr "Paket %(name)s: pengguna tak terbatas."
 
-#: templates/tenants/members.html:27
+#: templates/tenants/members.html:35
 msgid "Add member"
 msgstr "Tambah anggota"
 
-#: templates/tenants/members.html:28
-msgid "The user must already have a EA-System account."
-msgstr "Pengguna harus sudah mendaftar akun EA-System."
+#: templates/tenants/members.html:36
+msgid ""
+"Someone with an account is added at once; anyone else gets an invitation by "
+"email."
+msgstr ""
+"Pengguna yang sudah punya akun langsung ditambahkan; yang lain menerima "
+"undangan lewat email."
 
-#: templates/tenants/members.html:31
+#: templates/tenants/members.html:39
 msgid "Add"
 msgstr "Tambahkan"
 

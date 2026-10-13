@@ -90,3 +90,47 @@ class SubscriptionInvoice(TimeStampedModel):
             and bool(self.payment_url)
             and (self.expires_at is None or self.expires_at > timezone.now())
         )
+
+
+class AutoRenewal(TimeStampedModel):
+    """An organization's standing order to renew its plan with a saved payment method.
+
+    Set up on the gateway's hosted page (nothing charged then); afterwards the nightly billing
+    job charges the saved method shortly before the paid period ends. The token is stored
+    encrypted (``apps.core.crypto``)."""
+
+    class Status(models.TextChoices):
+        SETUP = "setup", _("Waiting for the payment method")
+        ACTIVE = "active", _("Active")
+        CANCELED = "canceled", _("Turned off")
+
+    organization = models.OneToOneField(
+        "tenants.Organization", on_delete=models.CASCADE, related_name="auto_renewal", verbose_name=_("organization"),
+    )
+    billing_period = models.CharField(_("billing period"), max_length=10, choices=BillingPeriod.choices)
+    status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.SETUP)
+    gateway = models.CharField(_("payment gateway"), max_length=20, choices=GatewayName.choices)
+    setup_reference = models.CharField(max_length=64, blank=True)
+    setup_url = models.URLField(max_length=500, blank=True)
+    payment_token = models.TextField(blank=True, editable=False)  # encrypted
+    failed_attempts = models.PositiveSmallIntegerField(_("failed attempts"), default=0)
+    last_error = models.CharField(_("last error"), max_length=255, blank=True)
+    activated_at = models.DateTimeField(_("activated"), null=True, blank=True)
+    # The paid-until date last charged for: one charge per period, however often the job runs.
+    last_charged_for = models.DateField(null=True, blank=True, editable=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    MAX_FAILED_ATTEMPTS = 3
+
+    class Meta:
+        verbose_name = _("automatic renewal")
+        verbose_name_plural = _("automatic renewals")
+
+    def __str__(self):
+        return f"{self.organization} ({self.get_status_display()})"
+
+    @property
+    def last_error_label(self) -> str:
+        """The last failed charge's invoice status (``last_error`` holds its value)."""
+        values = SubscriptionInvoice.Status.values
+        return SubscriptionInvoice.Status(self.last_error).label if self.last_error in values else self.last_error

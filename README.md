@@ -8,7 +8,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 
 | Area | What it does |
 |---|---|
-| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Subscription plans (Gratis / Usaha / Pro) limit users and invoices per month, paid monthly or yearly through Xendit (see [Subscription billing](#subscription-billing)). |
+| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Owners and admins add registered users directly and invite anyone else by email: a one-time link (valid 7 days, stored only as a keyed hash) adds them after they sign up with that address; pending invitations can be revoked. Subscription plans (Gratis / Usaha / Pro) limit users and invoices per month, paid monthly or yearly through Xendit (see [Subscription billing](#subscription-billing)). |
 | **Bagan akun (SAK EMKM)** | Every new organization gets a default chart of accounts that follows the SAK EMKM statement structure, including contra accounts and *system roles* used by automated postings. |
 | **Double-entry ledger** | Manual journals (draft → posted), immutable posted entries, reversal instead of deletion, and a period lock date (*tanggal kunci*). |
 | **Penjualan & Pembelian** | Sales invoices and purchase bills: draft → issued → partially paid / paid, or void. Issuing posts the journal and voiding reverses it. Numbering is gap-free in the Indonesian style (`INV/2026/10/0001`). Items catalog and printable invoices are included. |
@@ -322,6 +322,32 @@ consistent snapshot (`REPEATABLE READ`) and is limited to `BOOKS_EXPORTS_PER_HOU
 
 ```bash
 .venv/bin/python manage.py export_books <organization id> books.zip --language id
+```
+
+## REST API
+
+`/api/v1/` serves JSON for integrations (an online shop, a POS). Owners and admins create keys under
+**Settings → API keys**; a key (`eas_…`) is shown once and stored only as a keyed hash. Send it as
+`Authorization: Bearer eas_…`. A key acts with the role of the member who created it: viewers can
+only read, and the key stops working when that member leaves or the key is revoked. Requests are
+limited to `API_REQUESTS_PER_HOUR` (default 1000) per key; responses and errors are English JSON.
+
+| Endpoint | Methods | |
+|---|---|---|
+| `accounts/` | GET | chart of accounts |
+| `contacts/` | GET, POST | `?kind=customer\|supplier`; POST takes the contact form's fields |
+| `items/`, `tax-rates/` | GET | |
+| `invoices/` | GET, POST | `?kind=`, `?status=`; POST `{"kind", "contact", "date", "lines": [{"account": "4-1000", "description", "quantity", "unit_price", "tax_rate", "item"}], "issue": true}` |
+| `invoices/<id>/` | GET, POST | POST `{"action": "issue"}` issues a draft |
+| `invoices/<id>/payments/` | POST | `{"date", "amount", "cash_account": "1-1100", "method"}` |
+| `journal-entries/` | GET | `?from=`, `?to=` |
+| `reports/trial-balance/` | GET | `?as_of=` |
+
+Lists take `?limit=` (max 100) and `?offset=`. Writes go through the same services as the web
+pages, so every business rule and database guard applies.
+
+```bash
+curl -H "Authorization: Bearer $EA_SYSTEM_KEY" https://app.example.com/api/v1/invoices/?status=issued
 ```
 
 ## Tests
@@ -655,6 +681,18 @@ activated only when that session is `COMPLETED` for the exact invoice amount. Ac
 idempotent, so Xendit's webhook retries are harmless. The customer can also press
 **Check payment status**, which runs the same check.
 
+**Automatic renewal (optional).** On the plan page an owner can turn on automatic renewal (monthly
+or yearly). The customer saves a card or e-wallet on a Xendit Payment Session in SAVE mode
+(`session_type=SAVE`, nothing is charged); once the session completes, its `payment_token_id`
+is stored encrypted. The nightly `process_billing` job then charges it
+`BILLING_AUTO_RENEW_DAYS_BEFORE` days (default 1) before the paid period ends, with a
+merchant-initiated Payment Request (`POST /v3/payment_requests`, `payment_token_id`, header
+`api-version: XENDIT_PAYMENT_REQUEST_API_VERSION`). The renewal is a normal subscription invoice,
+confirmed the same way (re-fetched, exact amount), and charged once per period. A declined charge
+emails the owners and admins with the manual link; after 3 failures automatic renewal turns
+itself off. Organizations that renew automatically get no reminder emails. Verify the request
+fields against your Xendit account in test mode before going live.
+
 ### Setting up Xendit
 
 1. In the Xendit Dashboard, create a **secret API key** with write permission for accepting payments,
@@ -777,7 +815,5 @@ Static files are served by WhiteNoise.
 
 ## Possible next steps
 
-- Automatic renewal via Xendit `SUBSCRIPTION` sessions for customers who want to save a card or e-wallet
-- Issue the Faktur Pajak for subscriptions through the Coretax API
 - PPh 21 on salaries (needs a payroll module)
-- Email invitations for team members, REST API (the service layer is already delivery-agnostic)
+- Write endpoints for more documents in the REST API (bills' payments with withholding, returns, journals)

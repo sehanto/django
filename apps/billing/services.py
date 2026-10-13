@@ -30,8 +30,10 @@ from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subsc
 
 from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, coverage_for_payment, switch_quote, unused_credit
 from .gateways import get_gateway
-from .gateways.base import CheckoutRequest, GatewayError, GatewayName, PaymentStatus
-from .models import SubscriptionInvoice
+from apps.core.crypto import decrypt, encrypt
+
+from .gateways.base import ChargeRequest, CheckoutRequest, GatewayError, GatewayName, PaymentStatus, SaveRequest
+from .models import AutoRenewal, SubscriptionInvoice
 
 logger = logging.getLogger(__name__)
 Status = SubscriptionInvoice.Status
@@ -255,8 +257,8 @@ def sync_payment(invoice: SubscriptionInvoice) -> SubscriptionInvoice:
     payment = gateway.fetch_payment(invoice.gateway_reference)
     if payment.status == PaymentStatus.PAID:
         return _record_payment(invoice.pk, amount=payment.amount, payment_id=payment.payment_id)
-    if payment.status in (PaymentStatus.EXPIRED, PaymentStatus.CANCELED):
-        closed = Status.EXPIRED if payment.status == PaymentStatus.EXPIRED else Status.CANCELED
+    if payment.status in (PaymentStatus.EXPIRED, PaymentStatus.CANCELED, PaymentStatus.FAILED):
+        closed = {PaymentStatus.EXPIRED: Status.EXPIRED, PaymentStatus.CANCELED: Status.CANCELED}.get(payment.status, Status.FAILED)
         SubscriptionInvoice.objects.filter(pk=invoice.pk, status=Status.PENDING).update(status=closed, updated_at=timezone.now())
     invoice.refresh_from_db()
     return invoice
@@ -281,6 +283,13 @@ def handle_webhook(*, headers, payload: dict) -> SubscriptionInvoice | None:
         if references else None
     )
     if invoice is None:
+        renewal = (
+            AutoRenewal.objects.filter(gateway=gateway.name, status=AutoRenewal.Status.SETUP, setup_reference__in=references).first()
+            if references else None
+        )
+        if renewal is not None:  # the customer saved a payment method
+            sync_auto_renewal(renewal)
+            return None
         logger.info("Ignoring %s webhook for unknown references %s", gateway.name, references)
         return None
     return sync_payment(invoice)
@@ -334,10 +343,14 @@ def _billing_contacts(organization):
 
 
 def send_renewal_reminders(*, today: date | None = None) -> int:
-    """Email owners/admins once per paid period when it is about to end (each in their language)."""
+    """Email owners/admins once per paid period when it is about to end (each in their language).
+    Organizations that renew automatically are charged instead."""
     today = today or timezone.localdate()
     window_end = today + timedelta(days=settings.BILLING_REMINDER_DAYS)
-    due = Organization.objects.filter(plan_paid_until__gte=today, plan_paid_until__lte=window_end).select_related("plan")
+    due = (
+        Organization.objects.filter(plan_paid_until__gte=today, plan_paid_until__lte=window_end)
+        .exclude(auto_renewal__status=AutoRenewal.Status.ACTIVE).select_related("plan")
+    )
     billing_url = settings.SITE_URL.rstrip("/") + reverse("billing:overview")
     sent = 0
     for organization in due:
@@ -363,3 +376,123 @@ def send_renewal_reminders(*, today: date | None = None) -> int:
         organization.renewal_reminder_sent_for = organization.plan_paid_until
         organization.save(update_fields=["renewal_reminder_sent_for"])
     return sent
+
+
+# --- Automatic renewal ----------------------------------------------------------------------
+
+
+def start_auto_renewal(*, organization: Organization, period: str, created_by, return_url: str = "") -> AutoRenewal:
+    """Send the customer to the gateway's page to save a payment method for renewals."""
+    period = BillingPeriod(period)
+    if price_for(organization.plan, period) <= 0:
+        raise ValidationFailed(_("The free plan needs no renewal. Choose a paid plan first."))
+    gateway = get_gateway()
+    checkout = gateway.create_save_session(SaveRequest(
+        reference=f"AR-{organization.pk}-{uuid.uuid4().hex[:12]}", customer_reference=f"org-{organization.pk}",
+        customer_name=getattr(created_by, "full_name", "") or organization.name,
+        customer_email=organization.email or getattr(created_by, "email", ""),
+        description=_("Automatic renewal of the %(seller)s %(plan)s plan") % {"seller": settings.BILLING_SELLER_NAME, "plan": organization.plan.name},
+        expires_at=timezone.now() + timedelta(hours=settings.BILLING_CHECKOUT_HOURS),
+        locale=translation.get_language() or settings.LANGUAGE_CODE, return_url=return_url,
+    ))
+    if not _is_safe_payment_url(checkout.payment_url) or not REFERENCE_PATTERN.match(checkout.gateway_reference):
+        raise GatewayError(_("The payment provider did not return a payment link."))
+    renewal, _created = AutoRenewal.objects.update_or_create(organization=organization, defaults={
+        "billing_period": period, "status": AutoRenewal.Status.SETUP, "gateway": gateway.name,
+        "setup_reference": checkout.gateway_reference, "setup_url": checkout.payment_url, "payment_token": "",
+        "failed_attempts": 0, "last_error": "", "activated_at": None, "created_by": created_by,
+    })
+    return renewal
+
+
+def sync_auto_renewal(renewal: AutoRenewal) -> AutoRenewal:
+    """Activate the renewal once the gateway confirms the saved payment method."""
+    if renewal.status != AutoRenewal.Status.SETUP or not renewal.setup_reference:
+        return renewal
+    gateway = get_gateway()
+    if gateway.name != renewal.gateway:
+        return renewal
+    token = gateway.fetch_saved_token(renewal.setup_reference)
+    if token:
+        renewal.payment_token = encrypt(token.encode())
+        renewal.status, renewal.activated_at = AutoRenewal.Status.ACTIVE, timezone.now()
+        renewal.save(update_fields=["payment_token", "status", "activated_at", "updated_at"])
+    return renewal
+
+
+def cancel_auto_renewal(*, organization: Organization) -> AutoRenewal | None:
+    renewal = AutoRenewal.objects.filter(organization=organization).first()
+    if renewal is not None and renewal.status != AutoRenewal.Status.CANCELED:
+        renewal.status, renewal.payment_token = AutoRenewal.Status.CANCELED, ""
+        renewal.save(update_fields=["status", "payment_token", "updated_at"])
+    return renewal
+
+
+def _notify_renewal_failed(organization: Organization, error: str, stopped: bool) -> None:
+    billing_url = settings.SITE_URL.rstrip("/") + reverse("billing:overview")
+    for user in _billing_contacts(organization):
+        with translation.override(user.language):
+            context = {"plan": organization.plan.name, "organization": organization.name, "url": billing_url, "error": Status(error).label}
+            message = _(
+                "Hello,\n\nThe automatic renewal of the %(plan)s plan for %(organization)s could not be charged (%(error)s). "
+                "Please renew it here to keep your plan:\n%(url)s"
+            ) % context
+            if stopped:
+                message += "\n\n" + _("Automatic renewal has been turned off after repeated failures; you can turn it on again with another payment method.")
+            send_mail(
+                subject=_("Automatic renewal of %(organization)s failed") % context, message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email],
+            )
+
+
+def charge_auto_renewals(*, today: date | None = None) -> tuple[int, int]:
+    """Charge active automatic renewals whose paid period ends within
+    ``BILLING_AUTO_RENEW_DAYS_BEFORE`` days, once per period. Returns (charged, failed)."""
+    today = today or timezone.localdate()
+    due_by = today + timedelta(days=settings.BILLING_AUTO_RENEW_DAYS_BEFORE)
+    gateway = get_gateway()
+    charged = failed = 0
+    renewals = AutoRenewal.objects.filter(
+        status=AutoRenewal.Status.ACTIVE, gateway=gateway.name,
+        organization__plan_paid_until__lte=due_by,
+        organization__plan_paid_until__gte=today - timedelta(days=settings.BILLING_GRACE_DAYS),
+    ).select_related("organization__plan")
+    for renewal in renewals:
+        organization = renewal.organization
+        plan, period, paid_until = organization.plan, BillingPeriod(renewal.billing_period), organization.plan_paid_until
+        if renewal.last_charged_for == paid_until or price_for(plan, period) <= 0:
+            continue
+        with transaction.atomic():
+            invoice = _new_invoice(
+                organization, plan, period, quote_for(organization, plan, period, today=today),
+                switch_credit(organization, plan, today=today), gateway=gateway.name, created_by=None,
+                expires_at=timezone.now() + timedelta(days=3),
+            )
+        try:
+            charge = gateway.charge(ChargeRequest(
+                reference=invoice.number, amount=invoice.total, payment_token=decrypt(renewal.payment_token).decode(),
+                description=_("%(seller)s %(plan)s plan (%(period)s), incl. PPN") % {
+                    "seller": settings.BILLING_SELLER_NAME, "plan": plan.name, "period": period.label,
+                },
+                metadata={"invoice": invoice.number, "organization_id": str(organization.pk), "auto_renewal": "1"},
+            ))
+            invoice.gateway_reference = charge.gateway_reference
+            invoice.save(update_fields=["gateway_reference", "updated_at"])
+            invoice = sync_payment(invoice)
+        except (GatewayError, PaymentAmountMismatch) as exc:
+            logger.warning("Automatic renewal of organization %s failed: %s", organization.pk, exc)
+            SubscriptionInvoice.objects.filter(pk=invoice.pk, status=Status.PENDING).update(status=Status.FAILED, updated_at=timezone.now())
+            invoice.refresh_from_db()
+        if invoice.status in (Status.PAID, Status.PENDING):  # pending: the webhook or a later sync settles it
+            renewal.last_charged_for, renewal.failed_attempts, renewal.last_error = paid_until, 0, ""
+            charged += 1
+        else:
+            failed += 1
+            renewal.failed_attempts += 1
+            renewal.last_error = invoice.status  # shown as its label, in the reader's language
+            stopped = renewal.failed_attempts >= AutoRenewal.MAX_FAILED_ATTEMPTS
+            if stopped:
+                renewal.status, renewal.payment_token = AutoRenewal.Status.CANCELED, ""
+            _notify_renewal_failed(organization, renewal.last_error, stopped)
+        renewal.save()
+    return charged, failed

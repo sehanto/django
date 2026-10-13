@@ -27,6 +27,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("account/", include("apps.accounts.urls")),
     path("organization/activity/", include("apps.audit.urls")),
+    path("organization/api-keys/", include("apps.api.page_urls")),
     path("organization/", include("apps.tenants.urls")),
     path("ledger/", include("apps.ledger.urls")),
     path("contacts/", include("apps.contacts.urls")),
@@ -35,6 +36,7 @@ urlpatterns = [
     path("fixed-assets/", include("apps.assets.urls")),
     path("inventory/", include("apps.inventory.urls")),
     path("billing/", include("apps.billing.urls")),
+    path("api/v1/", include("apps.api.urls")),
     # Invoicing lives at the root: /sales/, /purchases/, /payments/, /items/.
     path("", include("apps.invoicing.urls")),
     path("", include("apps.dashboard.urls")),

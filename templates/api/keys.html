@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "API keys" %}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">{% translate "API keys" %}</h1>
+{% if secret %}
+<div class="alert alert-success">
+  <div class="fw-semibold mb-1">{% translate "Copy the key now: it won't be shown again." %}</div>
+  <code class="user-select-all fs-6">{{ secret }}</code>
+</div>
+{% endif %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+      <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Key" %}</th><th>{% translate "Created by" %}</th><th>{% translate "Last used" %}</th><th></th></tr></thead>
+      <tbody>{% for key in keys %}<tr class="{% if not key.is_active %}text-secondary text-decoration-line-through{% endif %}">
+        <td>{{ key.name }}</td><td class="font-monospace small">{{ key.prefix }}…</td><td class="small">{{ key.user.email }}</td>
+        <td class="small">{{ key.last_used_at|date:"d/m/Y H:i"|default:"—" }}</td>
+        <td class="text-end">{% if key.is_active %}<form method="post" action="{% url 'api_keys:revoke' key.pk %}" data-confirm="{% translate 'Revoke this key? Programs using it stop working.' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Revoke" %}</button></form>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "No API keys yet." %}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+    <p class="small text-secondary mt-2">{% blocktranslate trimmed %}The REST API lives at /api/v1/ (accounts, contacts, items, tax-rates, invoices, journal-entries, reports/trial-balance). Send the key as <code>Authorization: Bearer &lt;key&gt;</code>. A key acts with the role of the member who created it, and stops working when that member leaves the organization.{% endblocktranslate %}</p>
+  </div>
+  <div class="col-lg-4">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">{% translate "New key" %}</h2>
+      <form method="post">{% csrf_token %}{% include "partials/form_fields.html" with col="col-12" %}<button class="btn btn-primary mt-3">{% translate "Create key" %}</button></form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

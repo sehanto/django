@@ -1,6 +1,7 @@
 """Use cases for organizations (tenants), memberships and subscriptions."""
 
-from datetime import date
+import secrets
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -8,17 +9,18 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
+from apps.core.crypto import keyed_hash, keyed_hash_candidates
 from apps.core.exceptions import PlanLimitExceeded, ValidationFailed
 from apps.ledger.services import seed_chart_of_accounts
 from apps.taxes.services import seed_tax_rates
 
-from .models import Membership, Organization, Plan
+from .models import Invitation, Membership, Organization, Plan
 from .roles import Role
 
 User = get_user_model()
@@ -84,6 +86,64 @@ def add_member(*, organization: Organization, email: str, role: str) -> Membersh
         raise ValidationFailed(_("The owner role cannot be given to a new member."))
     _ensure_user_capacity(organization)
     return Membership.objects.create(organization=organization, user=user, role=role)
+
+
+@transaction.atomic
+def invite_member(*, organization: Organization, email: str, role: str, invited_by) -> Membership | Invitation:
+    """Add a registered user at once; email anyone else an invitation link (valid for
+    ``Invitation.VALID_FOR_DAYS``) that adds them once they sign up with that address."""
+    if User.objects.filter(email__iexact=email).exists():
+        return add_member(organization=organization, email=email, role=role)
+    if role == Role.OWNER:
+        raise ValidationFailed(_("The owner role cannot be given to a new member."))
+    _ensure_user_capacity(organization)
+    now = timezone.now()
+    Invitation.objects.filter(organization=organization, email__iexact=email, accepted_at=None, revoked_at=None).update(revoked_at=now)
+    token = secrets.token_urlsafe(32)
+    invitation = Invitation.objects.create(
+        organization=organization, email=email.strip().lower(), role=role, token_hash=keyed_hash(token), invited_by=invited_by,
+        expires_at=now + timedelta(days=Invitation.VALID_FOR_DAYS),
+    )
+    url = settings.SITE_URL.rstrip("/") + reverse("tenants:invitation", args=[token])
+    context = {
+        "organization": organization.name, "invited_by": invited_by.get_full_name(), "role": Role(role).label, "url": url,
+        "days": Invitation.VALID_FOR_DAYS, "email": invitation.email, "site_name": settings.SITE_NAME,
+        "signup_url": settings.SITE_URL.rstrip("/") + reverse("accounts:signup"),
+    }
+    subject = "".join(render_to_string("tenants/emails/invitation_subject.txt", context).splitlines())
+    send_mail(subject, render_to_string("tenants/emails/invitation.txt", context), settings.DEFAULT_FROM_EMAIL, [invitation.email])
+    return invitation
+
+
+def find_invitation(token: str) -> Invitation | None:
+    return Invitation.objects.select_related("organization").filter(token_hash__in=keyed_hash_candidates(token)).first()
+
+
+@transaction.atomic
+def accept_invitation(*, token: str, user) -> Membership:
+    invitation = find_invitation(token)
+    if invitation is None or not invitation.is_pending:
+        raise ValidationFailed(_("This invitation is no longer valid. Ask for a new one."))
+    invitation = Invitation.objects.select_for_update().get(pk=invitation.pk)
+    if user.email.lower() != invitation.email.lower():
+        raise ValidationFailed(_("This invitation was sent to %(email)s. Sign in with that address to accept it.") % {"email": invitation.email})
+    organization = invitation.organization
+    if Membership.objects.filter(organization=organization, user=user).exists():
+        raise ValidationFailed(_("You are already a member of this organization."))
+    _ensure_user_capacity(organization)
+    membership = Membership.objects.create(organization=organization, user=user, role=invitation.role)
+    invitation.accepted_at, invitation.accepted_by = timezone.now(), user
+    invitation.save(update_fields=["accepted_at", "accepted_by", "updated_at"])
+    return membership
+
+
+@transaction.atomic
+def revoke_invitation(*, organization: Organization, invitation_id: int) -> Invitation:
+    invitation = Invitation.objects.select_for_update().get(organization=organization, pk=invitation_id)
+    if invitation.is_pending:
+        invitation.revoked_at = timezone.now()
+        invitation.save(update_fields=["revoked_at", "updated_at"])
+    return invitation
 
 
 @transaction.atomic

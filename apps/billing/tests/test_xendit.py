@@ -96,3 +96,26 @@ def test_webhook_token_and_references():
 def test_missing_configuration_fails_fast():
     with pytest.raises(ValueError):
         XenditGateway(secret_key="", callback_token="")
+
+
+def test_saving_and_charging_a_payment_method():
+    from apps.billing.gateways.base import ChargeRequest, SaveRequest
+
+    xendit, http = gateway(
+        FakeResponse(201, {"payment_session_id": "ps-1", "payment_link_url": "https://checkout.xendit.co/ps-1", "expires_at": None}),
+        FakeResponse(200, {"status": "COMPLETED", "payment_token_id": "pt-9"}),
+        FakeResponse(201, {"payment_request_id": "pr-7", "status": "PENDING"}),
+        FakeResponse(200, {"payment_request_id": "pr-7", "status": "SUCCEEDED", "request_amount": 109890, "latest_payment_id": "py-3"}),
+    )
+    checkout = xendit.create_save_session(SaveRequest(
+        reference="AR-1-abc", customer_reference="org-1", customer_name="Rina", customer_email="rina@example.com",
+        description="Renewal", expires_at=datetime(2026, 10, 20, tzinfo=UTC), locale="id", return_url="https://app.example.com/back/",
+    ))
+    body = http.calls[0][2]["json"]
+    assert (body["session_type"], body["mode"], body["amount"], checkout.gateway_reference) == ("SAVE", "PAYMENT_LINK", 0, "ps-1")
+    assert xendit.fetch_saved_token("ps-1") == "pt-9"
+    charge = xendit.charge(ChargeRequest(reference="SUB-1", amount=Decimal("109890.00"), payment_token="pt-9", description="x", metadata={}))
+    method, url, kwargs = http.calls[2]
+    assert url.endswith("/v3/payment_requests") and kwargs["json"]["payment_token_id"] == "pt-9" and kwargs["headers"]["api-version"]
+    payment = xendit.fetch_payment(charge.gateway_reference)
+    assert (payment.status, payment.amount, payment.payment_id) == (PaymentStatus.PAID, Decimal("109890"), "py-3")

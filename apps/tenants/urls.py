@@ -12,4 +12,6 @@ urlpatterns = [
     path("<int:pk>/switch/", views.SwitchOrganizationView.as_view(), name="switch"),
     path("members/", views.MembersView.as_view(), name="members"),
     path("members/<int:pk>/remove/", views.RemoveMemberView.as_view(), name="remove_member"),
+    path("invitations/<int:pk>/revoke/", views.RevokeInvitationView.as_view(), name="revoke_invitation"),
+    path("invitations/<str:token>/", views.InvitationView.as_view(), name="invitation"),
 ]

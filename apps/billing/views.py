@@ -23,7 +23,7 @@ from . import services
 from .domain import BillingPeriod, SubscriptionState
 from .gateways import get_gateway
 from .gateways.base import GatewayError, GatewayName, PaymentStatus
-from .models import SubscriptionInvoice
+from .models import AutoRenewal, SubscriptionInvoice
 from .selectors import invoices_for, plan_offers, state_of
 
 logger = logging.getLogger(__name__)
@@ -40,6 +40,8 @@ class OverviewView(ManageMixin, TemplateView):
             grace_days=settings.BILLING_GRACE_DAYS,
             states=SubscriptionState,
             periods=BillingPeriod,
+            renewal=AutoRenewal.objects.filter(organization=self.organization).first(),
+            renewal_statuses=AutoRenewal.Status,
             **kwargs,
         )
 
@@ -164,3 +166,67 @@ class FakeCheckoutView(ManageMixin, TemplateView):
         get_gateway().simulate(reference, outcome)
         services.handle_webhook(headers={}, payload={"reference": reference})  # what the real webhook would do
         return redirect(reverse("billing:invoice", args=[invoice.pk]) + "?returned=1")
+
+
+class AutoRenewalStartView(ManageMixin, View):
+    """Turn on automatic renewal: the customer saves a payment method on the gateway's page."""
+
+    def post(self, request):
+        period = choice_param(request.POST, "period", BillingPeriod.values)
+        if not period:
+            return HttpResponseBadRequest()
+        try:
+            renewal = services.start_auto_renewal(
+                organization=self.organization, period=period, created_by=request.user,
+                return_url=request.build_absolute_uri(reverse("billing:auto_renewal_return")),
+            )
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+            return redirect("billing:overview")
+        return redirect(renewal.setup_url)
+
+
+class AutoRenewalReturnView(ManageMixin, View):
+    """Back from the gateway's page (or "check again"): confirm the saved payment method."""
+
+    def get(self, request):
+        renewal = AutoRenewal.objects.filter(organization=self.organization).first()
+        if renewal is not None:
+            try:
+                renewal = services.sync_auto_renewal(renewal)
+            except DomainError as exc:
+                flash_domain_error(request, exc)
+                return redirect("billing:overview")
+            if renewal.status == AutoRenewal.Status.ACTIVE:
+                messages.success(request, _("Automatic renewal is on. Your plan will be renewed with the saved payment method."))
+            elif renewal.status == AutoRenewal.Status.SETUP:
+                messages.info(request, _("The payment method hasn't been confirmed yet. Check again in a moment."))
+        return redirect("billing:overview")
+
+
+class AutoRenewalCancelView(ManageMixin, View):
+    def post(self, request):
+        services.cancel_auto_renewal(organization=self.organization)
+        messages.success(request, _("Automatic renewal turned off. Renew manually before your plan ends."))
+        return redirect("billing:overview")
+
+
+class FakeSaveView(ManageMixin, TemplateView):
+    """Development stand-in for the gateway's "save payment method" page (fake gateway only)."""
+
+    template_name = "billing/fake_save.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if settings.BILLING_GATEWAY != GatewayName.FAKE:
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, reference):
+        get_object_or_404(AutoRenewal, organization=self.organization, setup_reference=reference)
+        return super().get(request, reference=reference)
+
+    def post(self, request, reference):
+        get_object_or_404(AutoRenewal, organization=self.organization, setup_reference=reference)
+        get_gateway().save_method(reference)
+        services.handle_webhook(headers={}, payload={"reference": reference})  # what the real webhook would do
+        return redirect("billing:auto_renewal_return")

@@ -16,6 +16,14 @@
       {% endfor %}
       </tbody>
     </table></div>
+    {% if invitations %}
+    <h2 class="h6 mt-4">{% translate "Pending invitations" %}</h2>
+    <div class="card"><table class="table mb-0 align-middle">
+      <tbody>{% for i in invitations %}<tr><td>{{ i.email }}</td><td>{{ i.get_role_display }}</td>
+        <td class="small text-secondary">{% blocktranslate trimmed with date=i.expires_at|date:"d/m/Y" %}valid until {{ date }}{% endblocktranslate %}</td>
+        <td class="text-end"><form method="post" action="{% url 'tenants:revoke_invitation' i.pk %}" data-confirm="{% translate 'Revoke this invitation?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Revoke" %}</button></form></td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
     <p class="small text-secondary mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
       {% blocktranslate trimmed with name=plan.name count count=plan.max_users %}{{ name }} plan: up to {{ count }} user.{% plural %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}
     {% else %}
@@ -25,7 +33,7 @@
   <div class="col-lg-5">
     <div class="card"><div class="card-body">
       <h2 class="h6">{% translate "Add member" %}</h2>
-      <p class="small text-secondary">{% translate "The user must already have a EA-System account." %}</p>
+      <p class="small text-secondary">{% translate "Someone with an account is added at once; anyone else gets an invitation by email." %}</p>
       <form method="post">{% csrf_token %}
         {% include "partials/form_fields.html" with col="col-12" %}
         <button class="btn btn-primary mt-3">{% translate "Add" %}</button>

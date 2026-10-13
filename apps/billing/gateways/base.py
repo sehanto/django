@@ -25,6 +25,7 @@ class PaymentStatus(StrEnum):
     PAID = "paid"
     EXPIRED = "expired"
     CANCELED = "canceled"
+    FAILED = "failed"  # a charge of a saved payment method was declined
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,31 @@ class GatewayPayment:
     payment_id: str = ""
 
 
+@dataclass(frozen=True)
+class SaveRequest:
+    """Ask the customer to save a payment method for automatic renewals (no charge now)."""
+
+    reference: str
+    customer_reference: str
+    customer_name: str
+    customer_email: str
+    description: str
+    expires_at: datetime
+    locale: str
+    return_url: str
+
+
+@dataclass(frozen=True)
+class ChargeRequest:
+    """Charge a saved payment method (merchant-initiated, recurring)."""
+
+    reference: str  # our invoice number
+    amount: Decimal
+    payment_token: str
+    description: str
+    metadata: dict
+
+
 class GatewayError(DomainError):
     """The payment provider could not be reached or rejected the request."""
 
@@ -64,6 +90,18 @@ class PaymentGateway(Protocol):
     def fetch_payment(self, gateway_reference: str) -> GatewayPayment: ...
 
     def verify_webhook(self, headers) -> bool: ...
+
+    def create_save_session(self, request: SaveRequest) -> Checkout:
+        """A hosted page where the customer saves a payment method."""
+        ...
+
+    def fetch_saved_token(self, gateway_reference: str) -> str:
+        """The saved payment method's token once the customer completed the page, else ""."""
+        ...
+
+    def charge(self, request: ChargeRequest) -> Checkout:
+        """Charge a saved token; ``fetch_payment`` on the returned reference tells the outcome."""
+        ...
 
     def webhook_references(self, payload: dict) -> list[str]:
         """Identifiers in a webhook payload that may match ``gateway_reference`` or our invoice number."""

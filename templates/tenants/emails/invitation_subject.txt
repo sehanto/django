@@ -1,0 +1,1 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed %}You are invited to {{ organization }} on {{ site_name }}{% endblocktranslate %}{% endautoescape %}

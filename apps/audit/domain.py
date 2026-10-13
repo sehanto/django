@@ -35,6 +35,10 @@ class AuditAction(models.TextChoices):
     BUSINESS_PLACE_SAVED = "business_place_saved", _("Place of business saved")
     MEMBER_ADDED = "member_added", _("Member added")
     MEMBER_REMOVED = "member_removed", _("Member removed")
+    MEMBER_INVITED = "member_invited", _("Member invited")
+    INVITATION_REVOKED = "invitation_revoked", _("Invitation revoked")
+    API_KEY_CREATED = "api_key_created", _("API key created")
+    API_KEY_REVOKED = "api_key_revoked", _("API key revoked")
     BOOKS_EXPORTED = "books_exported", _("Books exported")
     ACCOUNT_CREATED = "account_created", _("Account added to the chart of accounts")
     ACCOUNT_CHANGED = "account_changed", _("Chart of accounts entry changed")
@@ -60,7 +64,7 @@ ACTION_CATEGORY = {
         AuditCategory.ACCOUNT,
     ),
     **dict.fromkeys(
-        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.BUSINESS_PLACE_SAVED, A.MEMBER_ADDED, A.MEMBER_REMOVED,
+        [A.ORGANIZATION_CREATED, A.ORGANIZATION_SETTINGS_CHANGED, A.BUSINESS_PLACE_SAVED, A.MEMBER_ADDED, A.MEMBER_REMOVED, A.MEMBER_INVITED, A.INVITATION_REVOKED, A.API_KEY_CREATED, A.API_KEY_REVOKED,
          A.BOOKS_EXPORTED, A.ORGANIZATION_DELETED, A.ACCOUNT_CREATED, A.ACCOUNT_CHANGED, A.ACCOUNT_DELETED],
         AuditCategory.ORGANIZATION,
     ),

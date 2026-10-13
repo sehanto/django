@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -14,7 +14,7 @@ from apps.core.views import DomainErrorFormMixin, flash_domain_error
 
 from . import services
 from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm
-from .models import BusinessPlace
+from .models import BusinessPlace, Invitation
 from .mixins import ManageMixin
 from .selectors import members_of, organizations_for_user
 from .session import set_current_organization
@@ -106,16 +106,54 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
     success_url = reverse_lazy("tenants:members")
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(members=members_of(self.organization), **kwargs)
+        invitations = [i for i in Invitation.objects.filter(organization=self.organization, accepted_at=None, revoked_at=None) if i.is_pending]
+        return super().get_context_data(members=members_of(self.organization), invitations=invitations, **kwargs)
 
     def perform(self, form):
-        membership = services.add_member(organization=self.organization, **form.cleaned_data)
-        audit.record(
-            AuditAction.MEMBER_ADDED, request=self.request, organization=self.organization,
-            target=membership.user.email, role=membership.role,
-        )
-        messages.success(self.request, _("Member added."))
+        result = services.invite_member(organization=self.organization, invited_by=self.request.user, **form.cleaned_data)
+        if isinstance(result, Invitation):
+            audit.record(AuditAction.MEMBER_INVITED, request=self.request, organization=self.organization, target=result.email, role=result.role)
+            messages.success(self.request, _("Invitation sent to %(email)s.") % {"email": result.email})
+        else:
+            audit.record(
+                AuditAction.MEMBER_ADDED, request=self.request, organization=self.organization,
+                target=result.user.email, role=result.role,
+            )
+            messages.success(self.request, _("Member added."))
         return redirect(self.success_url)
+
+
+class RevokeInvitationView(ManageMixin, View):
+    def post(self, request, pk):
+        invitation = get_object_or_404(Invitation, organization=self.organization, pk=pk)
+        services.revoke_invitation(organization=self.organization, invitation_id=invitation.pk)
+        audit.record(AuditAction.INVITATION_REVOKED, request=request, organization=self.organization, target=invitation.email)
+        messages.success(request, _("Invitation revoked."))
+        return redirect("tenants:members")
+
+
+class InvitationView(LoginRequiredMixin, View):
+    """The link in an invitation email: shows the invitation and accepts it."""
+
+    template_name = "tenants/invitation.html"
+
+    def get(self, request, token):
+        invitation = services.find_invitation(token)
+        return render(request, self.template_name, {"invitation": invitation if invitation and invitation.is_pending else None})
+
+    def post(self, request, token):
+        try:
+            membership = services.accept_invitation(token=token, user=request.user)
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+            return redirect("tenants:invitation", token=token)
+        audit.record(
+            AuditAction.MEMBER_ADDED, request=request, organization=membership.organization,
+            target=request.user.email, role=membership.role, via="invitation",
+        )
+        set_current_organization(request, membership.organization)
+        messages.success(request, _("Welcome to %(organization)s.") % {"organization": membership.organization.name})
+        return redirect("dashboard:home")
 
 
 class RemoveMemberView(ManageMixin, View):

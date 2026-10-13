@@ -123,6 +123,39 @@ class Organization(TimeStampedModel):
         return self.legal_form == self.LegalForm.PERORANGAN
 
 
+class Invitation(TimeStampedModel):
+    """An invitation by email to join an organization, for someone without an account yet.
+
+    The link carries a random token; only its keyed hash is stored. It is accepted once, by
+    the user who signed up with the invited email address, before it expires."""
+
+    VALID_FOR_DAYS = 7
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invitations")
+    email = models.EmailField(_("email"))
+    role = models.CharField(_("role"), max_length=20, choices=Role.choices)
+    token_hash = models.CharField(max_length=64, unique=True, editable=False)
+    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
+    expires_at = models.DateTimeField(_("expires"))
+    accepted_at = models.DateTimeField(_("accepted"), null=True, blank=True)
+    accepted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    revoked_at = models.DateTimeField(_("revoked"), null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = _("invitation")
+        verbose_name_plural = _("invitations")
+
+    def __str__(self):
+        return f"{self.email} → {self.organization}"
+
+    @property
+    def is_pending(self) -> bool:
+        from django.utils import timezone
+
+        return self.accepted_at is None and self.revoked_at is None and self.expires_at > timezone.now()
+
+
 class BusinessPlace(TenantOwnedModel):
     """A branch or other place of business (tempat kegiatan usaha) registered with DJP under
     its own NITKU. A sales invoice made from it carries that NITKU and address; invoices

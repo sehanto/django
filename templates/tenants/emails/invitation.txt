@@ -1,0 +1,14 @@
+{% load i18n %}{% autoescape off %}{% translate "Hello," %}
+
+{% blocktranslate trimmed %}{{ invited_by }} invited you to join {{ organization }} on {{ site_name }} as {{ role }}.{% endblocktranslate %}
+
+{% blocktranslate trimmed %}If you have no account yet, sign up with this email address ({{ email }}) and confirm it:{% endblocktranslate %}
+{{ signup_url }}
+
+{% blocktranslate trimmed count days=days %}Then open this link to join (valid for {{ days }} day):{% plural %}Then open this link to join (valid for {{ days }} days):{% endblocktranslate %}
+{{ url }}
+
+{% translate "If you didn't expect this invitation, you can ignore this email." %}
+
+{{ site_name }}
+{% endautoescape %}
