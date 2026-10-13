@@ -77,6 +77,8 @@ SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # noqa: F405
+if any(not origin.startswith("https://") for origin in CSRF_TRUSTED_ORIGINS):
+    raise ImproperlyConfigured("DJANGO_CSRF_TRUSTED_ORIGINS entries must be https:// origins.")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -122,6 +124,30 @@ SITE_URL = _required("SITE_URL", "links in emails are built from it")
 _site = urlsplit(SITE_URL)
 if _site.scheme != "https" or not _site.hostname or _site.hostname in _LOCAL_HOSTS:
     raise ImproperlyConfigured("SITE_URL must be the public https:// address, e.g. https://app.example.com.")
+
+# The public host names the app answers to (Django's Host-header protection). The
+# development default (localhost) would answer every real visitor with "Bad Request".
+_NOT_PUBLIC_HOSTS = ("localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0", "testserver")
+_RESERVED_SUFFIXES = (".localhost", ".example", ".test", ".invalid", "example.com", "example.net", "example.org")
+
+
+def _allowed_hosts() -> list[str]:
+    hosts = [host.strip().lower() for host in env.list("DJANGO_ALLOWED_HOSTS", default=[]) if host.strip()]  # noqa: F405
+    if not hosts:
+        raise ImproperlyConfigured("Set DJANGO_ALLOWED_HOSTS to the site's public host names, e.g. app.bukuumkm.id.")
+    for host in hosts:
+        name = host.lstrip(".")
+        if host in ("*", ".") or not name:
+            raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must list real host names, not a catch-all (*).")
+        if name in _NOT_PUBLIC_HOSTS or name.endswith(_RESERVED_SUFFIXES):
+            raise ImproperlyConfigured(f"DJANGO_ALLOWED_HOSTS contains {host}, which is local or a reserved example domain.")
+    site_host = _site.hostname.lower()
+    if not any(site_host == host or (host.startswith(".") and (site_host == host[1:] or site_host.endswith(host))) for host in hosts):
+        raise ImproperlyConfigured(f"SITE_URL's host {site_host} must be in DJANGO_ALLOWED_HOSTS: links in emails point there.")
+    return hosts
+
+
+ALLOWED_HOSTS = _allowed_hosts()
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
 
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).

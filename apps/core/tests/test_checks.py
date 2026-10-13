@@ -39,7 +39,7 @@ PRODUCTION_ENV = {
     "DATABASE_OWNER_URL": f"postgres://msme_user:{OWNER_DB_PASSWORD}@db.internal:5432/msme_db",
     "DJANGO_SECRET_KEY": SECRET_KEY, "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
     "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
-    "SITE_URL": "https://app.example.com",
+    "SITE_URL": "https://app.bukuumkm.id", "DJANGO_ALLOWED_HOSTS": "app.bukuumkm.id",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": FIELD_KEY,
     "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
@@ -158,3 +158,25 @@ def test_production_requires_real_database_passwords(monkeypatch, name, url):
 def test_production_without_an_owner_url_still_checks_the_app_url(monkeypatch):
     prod = load_production_settings(monkeypatch, DATABASE_OWNER_URL=None)
     assert prod.DATABASE_OWNER is None and prod.DATABASES["default"]["PASSWORD"] == APP_DB_PASSWORD
+
+
+@pytest.mark.parametrize(("overrides", "message"), [
+    ({"DJANGO_ALLOWED_HOSTS": None}, "DJANGO_ALLOWED_HOSTS"),
+    ({"DJANGO_ALLOWED_HOSTS": " , "}, "DJANGO_ALLOWED_HOSTS"),
+    ({"DJANGO_ALLOWED_HOSTS": "*"}, "catch-all"),
+    ({"DJANGO_ALLOWED_HOSTS": "app.bukuumkm.id,localhost"}, "localhost"),
+    ({"DJANGO_ALLOWED_HOSTS": "127.0.0.1"}, "127.0.0.1"),
+    ({"DJANGO_ALLOWED_HOSTS": "app.example.com", "SITE_URL": "https://app.example.com"}, "example"),
+    ({"DJANGO_ALLOWED_HOSTS": "shop.test"}, "shop.test"),
+    ({"DJANGO_ALLOWED_HOSTS": "other.bukuumkm.id"}, "SITE_URL"),  # email links would be rejected
+    ({"DJANGO_CSRF_TRUSTED_ORIGINS": "http://app.bukuumkm.id"}, "DJANGO_CSRF_TRUSTED_ORIGINS"),
+])
+def test_production_requires_real_allowed_hosts(monkeypatch, overrides, message):
+    with pytest.raises(ImproperlyConfigured, match=message):
+        load_production_settings(monkeypatch, **overrides)
+
+
+@pytest.mark.parametrize("hosts", ["app.bukuumkm.id", ".bukuumkm.id", "bukuumkm.id,app.bukuumkm.id", "APP.BUKUUMKM.ID"])
+def test_production_accepts_public_hosts(monkeypatch, hosts):
+    prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS="https://app.bukuumkm.id")
+    assert prod.ALLOWED_HOSTS
