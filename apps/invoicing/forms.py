@@ -188,3 +188,7 @@ class ReturnForm(OrganizationFormMixin, BaseForm):
             "date": data["date"], "reason": data["reason"], "cash_account": data.get("cash_account"),
             "lines": [ReturnLineInput(line, data[name]) for line, name, _a in self.returnable if data.get(name)],
         }
+
+
+class TaxInvoiceNumberForm(BaseForm):
+    number = forms.CharField(label=_("Faktur Pajak number"), max_length=30, help_text=_("As issued by Coretax, e.g. 04002600000012345."))

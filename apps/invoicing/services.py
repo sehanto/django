@@ -550,3 +550,19 @@ def void_return(*, note: ReturnNote, on: date, voided_by=None) -> ReturnNote:
     invoice.amount_credited -= note.credited
     _refresh_payment_status(invoice)
     return note
+
+
+@transaction.atomic
+def record_tax_invoice_number(*, invoice: Invoice, number: str) -> Invoice:
+    """Record the Faktur Pajak number Coretax assigned to an issued invoice (once)."""
+    invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
+    if invoice.status in (Invoice.Status.DRAFT, Invoice.Status.VOID):
+        raise InvalidStateTransition(_("Only an issued invoice takes a Faktur Pajak number this way."))
+    if invoice.tax_invoice_number:
+        raise InvalidStateTransition(_("This invoice already has its Faktur Pajak number."))
+    digits = "".join(ch for ch in number if ch.isdigit())
+    if len(digits) not in (16, 17):
+        raise ValidationFailed(_("A Faktur Pajak number has 17 digits (16 for fakturs from before 2025)."))
+    invoice.tax_invoice_number = digits
+    invoice.save(update_fields=["tax_invoice_number", "updated_at"])
+    return invoice

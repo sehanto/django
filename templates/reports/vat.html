@@ -10,7 +10,7 @@
   <tbody>{% for r in rows %}
     <tr><td>{{ r.month|stringformat:"02d" }}/{{ year }}</td><td class="num">{{ r.output_base|rupiah }}</td><td class="num">{{ r.output|rupiah }}</td>
       <td class="num">{{ r.input_base|rupiah }}</td><td class="num">{{ r.input|rupiah }}</td><td class="num fw-semibold {% if r.net < 0 %}text-success{% endif %}">{{ r.net|rupiah }}</td>
-      <td class="no-print text-end">{% if r.month in return_months %}<a href="{% url 'invoicing:month_coretax' year r.month %}" class="small text-nowrap" title="{% translate 'Purchase returns of the month as a Coretax import file' %}"><i class="bi bi-filetype-xml"></i> {% translate "Retur PM" %}</a>{% endif %}</td></tr>
+      <td class="no-print text-end">{% if r.month in sales_months %}<a href="{% url 'invoicing:month_invoices_coretax' year r.month %}" class="small text-nowrap me-2" title="{% translate 'Sales invoices of the month as a Coretax import file' %}"><i class="bi bi-filetype-xml"></i> {% translate "Faktur PK" %}</a>{% endif %}{% if r.month in return_months %}<a href="{% url 'invoicing:month_coretax' year r.month %}" class="small text-nowrap" title="{% translate 'Purchase returns of the month as a Coretax import file' %}"><i class="bi bi-filetype-xml"></i> {% translate "Retur PM" %}</a>{% endif %}</td></tr>
   {% endfor %}</tbody>
   <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td><td class="num">{{ totals.output_base|rupiah }}</td><td class="num">{{ totals.output|rupiah }}</td><td class="num">{{ totals.input_base|rupiah }}</td><td class="num">{{ totals.input|rupiah }}</td><td class="num">{{ totals.net|rupiah }}</td><td class="no-print"></td></tr></tfoot>
 </table></div></div>

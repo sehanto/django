@@ -1,10 +1,20 @@
-"""Coretax XML for purchase returns (nota retur, "Retur Pajak Masukan").
+"""Coretax DJP XML import files: Faktur Pajak Keluaran for sales invoices, and nota retur
+("Retur Pajak Masukan") for purchase returns.
 
-Since 2025 the buyer creates the nota retur in Coretax DJP and the seller approves it, so
-only *purchase* returns are exported; a customer files our sales returns themselves.
+Both follow DJP's samples and Excel templates shipped with converter v1.6 (pajak.go.id,
+Template XML dan Converter Excel ke XML).
 
-The layout follows DJP's "Sample Retur Faktur PM Template v.1.1" (converter v1.6,
-pajak.go.id, Template XML dan Converter Excel ke XML): the faktur number and seller NPWP,
+Sales invoices ("Sample Faktur PK Template v.1.4", rules from template v.1.6.1): one
+TaxInvoice per invoice, dated YYYY-MM-DD, "Normal", transaction code 04 when the lines use
+DPP nilai lain (11/12, the standard 12% rate since 2025) or 01 with the full DPP (luxury
+goods), seller and buyer NITKU as the 16-digit NPWP plus 000000 (head office), buyer
+identified by NPWP, and one GoodService per taxed line. Coretax issues the faktur number;
+record it on the invoice afterwards. Special cases (collectors 02/03, facilities 07/08,
+buyers without NPWP) are left to Coretax itself.
+
+Purchase returns: since 2025 the buyer creates the nota retur in Coretax DJP and the seller
+approves it, so only *purchase* returns are exported; a customer files our sales returns
+themselves. The layout follows "Sample Retur Faktur PM Template v.1.1": the faktur number and seller NPWP,
 the return date (DD-MM-YYYY), DPP, DPP nilai lain, PPN and PPnBM, then one row per line of
 the returned faktur. Rows not returned are included with quantity 0, because Coretax
 refuses rows that differ from the original faktur. Amounts are computed per row with
@@ -22,7 +32,7 @@ from django.utils.translation import gettext as _
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO
 
-from .models import InvoiceKind, Item, ReturnNote
+from .models import Invoice, InvoiceKind, Item, ReturnNote
 
 CENTS = Decimal("0.01")
 HUNDRED = Decimal("100")
@@ -167,8 +177,8 @@ def build_xml(organization, notes: Iterable[ReturnNote]) -> bytes:
     return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
 
 
-def filename(organization, label: str) -> str:
-    return f"retur-pajak-masukan-{tin(organization.npwp)}-{label}.xml"
+def filename(organization, label: str, kind: str = "retur-pajak-masukan") -> str:
+    return f"{kind}-{tin(organization.npwp)}-{label}.xml"
 
 
 def month_returns(organization, year: int, month: int):
@@ -179,4 +189,99 @@ def month_returns(organization, year: int, month: int):
         ReturnNote.objects.for_organization(organization)
         .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__gte=start, date__lt=end)
         .select_related("invoice", "organization").prefetch_related("lines").order_by("date", "id")
+    )
+
+
+# --- Faktur Pajak Keluaran (sales invoices) ----------------------------------------
+
+STANDARD, OTHER_TAX_BASE = "01", "04"  # transaction codes (template sheet REF-General)
+HEAD_OFFICE = "000000"  # NITKU suffix of the head office
+
+
+def nitku(npwp: str) -> str:
+    return tin(npwp) + HEAD_OFFICE
+
+
+def _taxed_lines(invoice: Invoice):
+    return [line for line in invoice.lines.select_related("item").order_by("id") if line.tax_rate_percent is not None]
+
+
+def invoice_problem(invoice: Invoice) -> str | None:
+    """Why this invoice can't go to Coretax as a Faktur Pajak Keluaran, or None."""
+    organization = invoice.organization
+    if invoice.kind != InvoiceKind.SALES:
+        return _("Only sales invoices become a Faktur Pajak Keluaran.")
+    if invoice.status not in (Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID):
+        return _("Only issued invoices are reported.")
+    if not organization.is_pkp:
+        return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
+    if len(tin(organization.npwp)) != 16:
+        return _("Enter the organization's NPWP in the settings.")
+    if len(tin(invoice.party_npwp)) != 16:
+        return _("The customer had no NPWP when the invoice was issued. Create this faktur in Coretax directly (buyer by NIK or other ID).")
+    lines = _taxed_lines(invoice)
+    if not lines:
+        return _("The invoice carries no PPN.")
+    if len({line.tax_dpp_numerator != line.tax_dpp_denominator for line in lines}) > 1:
+        return _("The invoice mixes the 11/12 tax base with the full tax base; Coretax needs a separate faktur for each.")
+    return None
+
+
+def _good_service(parent, line) -> None:
+    gross = line.unit_price * line.quantity
+    discount = _round(gross * line.discount_percent / HUNDRED)
+    base = _round(gross - discount)
+    other = _round(base * line.tax_dpp_numerator / line.tax_dpp_denominator)
+    element = ET.SubElement(parent, "GoodService")
+    for tag, value in [
+        ("Opt", SERVICES if line.item_id and line.item.type == Item.Type.SERVICE else GOODS), ("Code", "000000"),
+        ("Name", line.description), ("Unit", unit_code(line.item.unit if line.item_id else "")),
+        ("Price", _number(line.unit_price)), ("Qty", _quantity(line.quantity)), ("TotalDiscount", _number(discount)),
+        ("TaxBase", _number(base)), ("OtherTaxBase", _number(other)), ("VATRate", _quantity(line.tax_rate_percent)),
+        ("VAT", _number(_round(other * line.tax_rate_percent / HUNDRED))), ("STLGRate", "0"), ("STLG", "0"),
+    ]:
+        _text(element, tag, value)
+
+
+def build_invoices_xml(organization, invoices: Iterable[Invoice]) -> bytes:
+    """One Coretax "Faktur Pajak Keluaran" import file for the given sales invoices."""
+    # As in DJP's sample: the schema reference on the root element.
+    root = ET.Element("TaxInvoiceBulk", {
+        "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "xsi:noNamespaceSchemaLocation": "TaxInvoice.xsd",
+    })
+    _text(root, "TIN", tin(organization.npwp))
+    listing = ET.SubElement(root, "ListOfTaxInvoice")
+    for invoice in invoices:
+        problem = invoice_problem(invoice)
+        if problem:
+            raise ValidationFailed(f"{invoice.number}: {problem}")
+        lines = _taxed_lines(invoice)
+        uses_other = lines[0].tax_dpp_numerator != lines[0].tax_dpp_denominator
+        element = ET.SubElement(listing, "TaxInvoice")
+        for tag, value in [
+            ("TaxInvoiceDate", f"{invoice.date:%Y-%m-%d}"), ("TaxInvoiceOpt", "Normal"),
+            ("TrxCode", OTHER_TAX_BASE if uses_other else STANDARD), ("AddInfo", ""), ("CustomDoc", ""),
+            ("CustomDocMonthYear", ""), ("RefDesc", invoice.number), ("FacilityStamp", ""),
+            ("SellerIDTKU", nitku(organization.npwp)), ("BuyerTin", tin(invoice.party_npwp)), ("BuyerDocument", "TIN"),
+            ("BuyerCountry", "IDN"), ("BuyerDocumentNumber", "-"), ("BuyerName", invoice.party_name),
+            ("BuyerAdress", ", ".join(part for part in (invoice.party_address, invoice.party_city) if part) or "-"),
+            ("BuyerEmail", invoice.contact.email), ("BuyerIDTKU", nitku(invoice.party_npwp)),
+        ]:
+            _text(element, tag, value)
+        goods = ET.SubElement(element, "ListOfGoodService")
+        for line in lines:
+            _good_service(goods, line)
+    ET.indent(root, space="\t")
+    return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
+
+
+def month_invoices(organization, year: int, month: int):
+    """Issued sales invoices of a month, oldest first."""
+    start = date(year, month, 1)
+    end = date(year + (month == 12), month % 12 + 1, 1)
+    return (
+        Invoice.objects.for_organization(organization)
+        .filter(kind=InvoiceKind.SALES, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
+                date__gte=start, date__lt=end)
+        .select_related("organization", "contact").order_by("date", "id")
     )

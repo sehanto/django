@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 16:08+0700\n"
+"POT-Creation-Date: 2026-10-13 16:12+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -1528,7 +1528,7 @@ msgstr "Stok disesuaikan dan dijurnal."
 msgid "Sales & Purchases"
 msgstr "Penjualan & Pembelian"
 
-#: apps/invoicing/coretax.py:109
+#: apps/invoicing/coretax.py:119
 msgid ""
 "Your customer records a sales return in Coretax; you approve it under Retur "
 "Pajak Keluaran."
@@ -1536,29 +1536,61 @@ msgstr ""
 "Pelanggan Anda yang membuat retur penjualan di Coretax; Anda menyetujuinya "
 "di menu Retur Pajak Keluaran."
 
-#: apps/invoicing/coretax.py:111
+#: apps/invoicing/coretax.py:121
 msgid "A voided return is not reported."
 msgstr "Retur yang dibatalkan tidak dilaporkan."
 
-#: apps/invoicing/coretax.py:113
+#: apps/invoicing/coretax.py:123
 msgid "Only a VAT-registered business (PKP) reports returns of input VAT."
 msgstr "Hanya PKP yang melaporkan retur pajak masukan."
 
-#: apps/invoicing/coretax.py:115
+#: apps/invoicing/coretax.py:125 apps/invoicing/coretax.py:219
 msgid "Enter the organization's NPWP in the settings."
 msgstr "Isi NPWP organisasi di pengaturan."
 
-#: apps/invoicing/coretax.py:117
+#: apps/invoicing/coretax.py:127
 msgid "The supplier's NPWP was not on the bill when it was issued."
 msgstr "NPWP pemasok tidak tercantum pada tagihan saat diterbitkan."
 
-#: apps/invoicing/coretax.py:119
+#: apps/invoicing/coretax.py:129
 msgid "The bill has no Faktur Pajak number from the supplier."
 msgstr "Tagihan tidak memiliki nomor Faktur Pajak dari pemasok."
 
-#: apps/invoicing/coretax.py:121
+#: apps/invoicing/coretax.py:131
 msgid "The returned lines carry no PPN."
 msgstr "Baris yang diretur tidak dikenai PPN."
+
+#: apps/invoicing/coretax.py:213
+msgid "Only sales invoices become a Faktur Pajak Keluaran."
+msgstr "Hanya faktur penjualan yang menjadi Faktur Pajak Keluaran."
+
+#: apps/invoicing/coretax.py:215
+msgid "Only issued invoices are reported."
+msgstr "Hanya faktur yang sudah diterbitkan yang dilaporkan."
+
+#: apps/invoicing/coretax.py:217
+msgid "Only a VAT-registered business (PKP) issues a Faktur Pajak."
+msgstr "Hanya PKP yang membuat Faktur Pajak."
+
+#: apps/invoicing/coretax.py:221
+msgid ""
+"The customer had no NPWP when the invoice was issued. Create this faktur in "
+"Coretax directly (buyer by NIK or other ID)."
+msgstr ""
+"Pelanggan belum memiliki NPWP saat faktur diterbitkan. Buat faktur ini "
+"langsung di Coretax (pembeli dengan NIK atau identitas lain)."
+
+#: apps/invoicing/coretax.py:224
+msgid "The invoice carries no PPN."
+msgstr "Faktur ini tidak dikenai PPN."
+
+#: apps/invoicing/coretax.py:226
+msgid ""
+"The invoice mixes the 11/12 tax base with the full tax base; Coretax needs a"
+" separate faktur for each."
+msgstr ""
+"Faktur ini mencampur DPP 11/12 dengan DPP penuh; Coretax memerlukan faktur "
+"terpisah untuk masing-masing."
 
 #: apps/invoicing/domain.py:19 apps/ledger/domain.py:99
 msgid "Draft"
@@ -1714,6 +1746,14 @@ msgstr "Paling banyak %(quantity)s"
 #: apps/invoicing/forms.py:182 apps/invoicing/services.py:441
 msgid "Enter the quantity returned for at least one line."
 msgstr "Isi kuantitas yang diretur untuk paling sedikit satu baris."
+
+#: apps/invoicing/forms.py:194 templates/invoicing/invoice_detail.html:31
+msgid "Faktur Pajak number"
+msgstr "Nomor Faktur Pajak"
+
+#: apps/invoicing/forms.py:194
+msgid "As issued by Coretax, e.g. 04002600000012345."
+msgstr "Sesuai yang diterbitkan Coretax, misalnya 04002600000012345."
 
 #: apps/invoicing/models.py:18 templates/partials/sidebar.html:30
 msgid "Sales"
@@ -2140,6 +2180,22 @@ msgstr ""
 msgid "This return has already been voided."
 msgstr "Retur ini sudah dibatalkan."
 
+#: apps/invoicing/services.py:560
+msgid "Only an issued invoice takes a Faktur Pajak number this way."
+msgstr ""
+"Hanya faktur yang sudah diterbitkan yang dapat diberi nomor Faktur Pajak "
+"dengan cara ini."
+
+#: apps/invoicing/services.py:562
+msgid "This invoice already has its Faktur Pajak number."
+msgstr "Faktur ini sudah memiliki nomor Faktur Pajak."
+
+#: apps/invoicing/services.py:565
+msgid "A Faktur Pajak number has 17 digits (16 for fakturs from before 2025)."
+msgstr ""
+"Nomor Faktur Pajak terdiri dari 17 digit (16 digit untuk faktur sebelum "
+"2025)."
+
 #: apps/invoicing/views.py:24 apps/ledger/domain.py:105
 #: templates/dashboard/home.html:7
 msgid "Sales invoice"
@@ -2206,57 +2262,71 @@ msgstr "%(document)s %(number)s diterbitkan."
 msgid "Draft saved."
 msgstr "Draf disimpan."
 
-#: apps/invoicing/views.py:214
+#: apps/invoicing/views.py:217
 #, python-format
 msgid "Invoice %(number)s issued and posted to the ledger."
 msgstr "Faktur %(number)s diterbitkan dan dijurnal."
 
-#: apps/invoicing/views.py:223
+#: apps/invoicing/views.py:226
 #, python-format
 msgid "Invoice %(number)s voided; its journal entry was reversed."
 msgstr "Faktur %(number)s dibatalkan; jurnal telah dibalik."
 
-#: apps/invoicing/views.py:230
+#: apps/invoicing/views.py:233
 msgid "Draft deleted."
 msgstr "Draf dihapus."
 
-#: apps/invoicing/views.py:239
+#: apps/invoicing/views.py:242
 #, python-format
 msgid "Invalid payment data: %(errors)s"
 msgstr "Data pembayaran tidak valid: %(errors)s"
 
-#: apps/invoicing/views.py:241
+#: apps/invoicing/views.py:244
 #, python-format
 msgid "Payment %(number)s recorded."
 msgstr "Pembayaran %(number)s dicatat."
 
-#: apps/invoicing/views.py:267
+#: apps/invoicing/views.py:270
 #, python-format
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:294
+#: apps/invoicing/views.py:297
 msgid "Item saved."
 msgstr "Barang/jasa disimpan."
 
-#: apps/invoicing/views.py:338
+#: apps/invoicing/views.py:341
 #, python-format
 msgid "Return %(number)s recorded and posted to the ledger."
 msgstr "Retur %(number)s dicatat dan dijurnal."
 
-#: apps/invoicing/views.py:360
+#: apps/invoicing/views.py:363
 msgid "Invalid void date."
 msgstr "Tanggal pembatalan tidak valid."
 
-#: apps/invoicing/views.py:364
+#: apps/invoicing/views.py:367
 msgid "Return voided: its journal entry and stock were reversed."
 msgstr "Retur dibatalkan: jurnal dan stoknya dibalik."
 
-#: apps/invoicing/views.py:396
+#: apps/invoicing/views.py:399
 #, python-format
 msgid "No purchase return of %(period)s can be reported to Coretax."
 msgstr ""
 "Tidak ada retur pembelian masa %(period)s yang dapat dilaporkan ke Coretax."
+
+#: apps/invoicing/views.py:425
+#, python-format
+msgid "No sales invoice of %(period)s can be reported to Coretax."
+msgstr ""
+"Tidak ada faktur penjualan masa %(period)s yang dapat dilaporkan ke Coretax."
+
+#: apps/invoicing/views.py:438
+msgid "Faktur Pajak number recorded."
+msgstr "Nomor Faktur Pajak dicatat."
+
+#: apps/invoicing/views.py:442
+msgid "Enter the Faktur Pajak number."
+msgstr "Isi nomor Faktur Pajak."
 
 #: apps/ledger/apps.py:7
 msgid "General Ledger"
@@ -2718,7 +2788,7 @@ msgstr "Faktur"
 #: apps/reports/exports.py:174 apps/reports/exports.py:190
 #: apps/reports/exports.py:222 apps/reports/exports.py:229
 #: apps/reports/exports.py:237 templates/assets/asset_detail.html:50
-#: templates/invoicing/invoice_detail.html:27
+#: templates/invoicing/invoice_detail.html:36
 #: templates/invoicing/return_detail.html:42
 msgid "Journal entry"
 msgstr "Jurnal"
@@ -3005,7 +3075,7 @@ msgstr "Umur Piutang"
 msgid "Payables aging"
 msgstr "Umur Utang"
 
-#: apps/reports/views.py:181
+#: apps/reports/views.py:189
 msgid "Too many exports in the last hour. Please try again later."
 msgstr ""
 "Terlalu banyak ekspor dalam satu jam terakhir. Silakan coba lagi nanti."
@@ -4095,7 +4165,7 @@ msgstr "Perbarui dan kirim tautan"
 
 #: templates/assets/asset_detail.html:9
 #: templates/contacts/contact_list.html:23
-#: templates/invoicing/invoice_detail.html:14
+#: templates/invoicing/invoice_detail.html:15
 #: templates/invoicing/item_list.html:14 templates/ledger/account_list.html:20
 #: templates/ledger/journal_detail.html:11
 #: templates/taxes/taxrate_list.html:16
@@ -4116,7 +4186,7 @@ msgstr "Hapus aset ini dari daftar?"
 
 #: templates/assets/asset_detail.html:12
 #: templates/contacts/contact_list.html:24
-#: templates/invoicing/invoice_detail.html:15
+#: templates/invoicing/invoice_detail.html:16
 #: templates/ledger/account_list.html:21
 #: templates/ledger/journal_detail.html:12
 msgid "Delete"
@@ -4202,7 +4272,7 @@ msgid "Scheduled"
 msgstr "Terjadwal"
 
 #: templates/assets/asset_detail.html:64 templates/assets/asset_detail.html:74
-#: templates/invoicing/invoice_detail.html:65
+#: templates/invoicing/invoice_detail.html:74
 #: templates/invoicing/return_detail.html:46
 #: templates/partials/messages.html:5 templates/taxes/pph_final.html:63
 msgid "Close"
@@ -4924,77 +4994,103 @@ msgid "Overdue %(days)s day"
 msgid_plural "Overdue %(days)s days"
 msgstr[0] "Jatuh tempo %(days)s hari"
 
-#: templates/invoicing/invoice_detail.html:15
+#: templates/invoicing/invoice_detail.html:12
+msgid "Import under e-Faktur > Pajak Keluaran > Impor Data in Coretax"
+msgstr "Impor di Coretax: e-Faktur > Pajak Keluaran > Impor Data"
+
+#: templates/invoicing/invoice_detail.html:12
+#: templates/invoicing/return_detail.html:9
+msgid "Coretax XML"
+msgstr "XML Coretax"
+
+#: templates/invoicing/invoice_detail.html:16
 #: templates/ledger/journal_detail.html:12
 msgid "Delete this draft?"
 msgstr "Hapus draf?"
 
-#: templates/invoicing/invoice_detail.html:16
+#: templates/invoicing/invoice_detail.html:17
 msgid "Issue"
 msgstr "Terbitkan"
 
-#: templates/invoicing/invoice_detail.html:18
+#: templates/invoicing/invoice_detail.html:19
 #: templates/invoicing/return_detail.html:15
 #: templates/invoicing/return_form.html:2
 msgid "Sales return"
 msgstr "Retur penjualan"
 
-#: templates/invoicing/invoice_detail.html:18
+#: templates/invoicing/invoice_detail.html:19
 #: templates/invoicing/return_detail.html:15
 #: templates/invoicing/return_form.html:2
 msgid "Purchase return"
 msgstr "Retur pembelian"
 
-#: templates/invoicing/invoice_detail.html:19
-#: templates/invoicing/invoice_detail.html:68
+#: templates/invoicing/invoice_detail.html:20
+#: templates/invoicing/invoice_detail.html:77
 msgid "Void invoice"
 msgstr "Batalkan Faktur"
 
+#: templates/invoicing/invoice_detail.html:28
+#, python-format
+msgid "Faktur Pajak %(number)s."
+msgstr "Faktur Pajak %(number)s."
+
+#: templates/invoicing/invoice_detail.html:28
+msgid ""
+"Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue "
+"the faktur there, then record its number below."
+msgstr ""
+"Impor XML Coretax di e-Faktur > Pajak Keluaran > Impor Data, terbitkan "
+"fakturnya di sana, lalu catat nomornya di bawah."
+
 #: templates/invoicing/invoice_detail.html:32
+msgid "Record number"
+msgstr "Catat nomor"
+
+#: templates/invoicing/invoice_detail.html:41
 msgid "Receive payment"
 msgstr "Terima Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:32
+#: templates/invoicing/invoice_detail.html:41
 msgid "Pay bill"
 msgstr "Bayar Tagihan"
 
-#: templates/invoicing/invoice_detail.html:35
+#: templates/invoicing/invoice_detail.html:44
 msgid "Record payment"
 msgstr "Catat Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:40
+#: templates/invoicing/invoice_detail.html:49
 msgid "Payment history"
 msgstr "Riwayat Pembayaran"
 
-#: templates/invoicing/invoice_detail.html:45
+#: templates/invoicing/invoice_detail.html:54
 msgid "Void this payment?"
 msgstr "Batalkan pembayaran?"
 
-#: templates/invoicing/invoice_detail.html:45
+#: templates/invoicing/invoice_detail.html:54
 msgid "void"
 msgstr "batalkan"
 
-#: templates/invoicing/invoice_detail.html:48
+#: templates/invoicing/invoice_detail.html:57
 #: templates/invoicing/payment_list.html:21
 msgid "No payments yet."
 msgstr "Belum ada pembayaran."
 
-#: templates/invoicing/invoice_detail.html:52
+#: templates/invoicing/invoice_detail.html:61
 msgid "Returns"
 msgstr "Retur"
 
-#: templates/invoicing/invoice_detail.html:56
+#: templates/invoicing/invoice_detail.html:65
 #, python-format
 msgid "%(amount)s refunded"
 msgstr "%(amount)s dikembalikan"
 
-#: templates/invoicing/invoice_detail.html:65
+#: templates/invoicing/invoice_detail.html:74
 #: templates/invoicing/return_detail.html:46
 #, python-format
 msgid "Void %(number)s"
 msgstr "Batalkan %(number)s"
 
-#: templates/invoicing/invoice_detail.html:66
+#: templates/invoicing/invoice_detail.html:75
 msgid ""
 "The invoice's journal entry will be reversed on the void date. This cannot "
 "be undone."
@@ -5109,10 +5205,6 @@ msgstr "Penerimaan & pengeluaran"
 #: templates/invoicing/payment_list.html:11
 msgid "Method"
 msgstr "Metode"
-
-#: templates/invoicing/return_detail.html:9
-msgid "Coretax XML"
-msgstr "XML Coretax"
 
 #: templates/invoicing/return_detail.html:10
 #: templates/invoicing/return_detail.html:49
@@ -5840,6 +5932,14 @@ msgstr "PPN Masukan"
 #: templates/reports/vat.html:9
 msgid "Payable/(overpaid)"
 msgstr "Kurang/(Lebih) Bayar"
+
+#: templates/reports/vat.html:13
+msgid "Sales invoices of the month as a Coretax import file"
+msgstr "Faktur penjualan bulan ini sebagai file impor Coretax"
+
+#: templates/reports/vat.html:13
+msgid "Faktur PK"
+msgstr "Faktur PK"
 
 #: templates/reports/vat.html:13
 msgid "Purchase returns of the month as a Coretax import file"

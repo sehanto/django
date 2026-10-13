@@ -14,7 +14,7 @@ from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import coretax, services
-from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, VoidForm, line_inputs
+from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, TaxInvoiceNumberForm, VoidForm, line_inputs
 from .models import Invoice, InvoiceKind, InvoiceStatusFilter
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
@@ -170,7 +170,10 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
         invoice = self.object
         today = timezone.localdate()
         returns = list(invoice.returns.all())
+        show_coretax = invoice.is_sales and invoice.organization.is_pkp and invoice.can_return
         return super().get_context_data(
+            coretax_problem=coretax.invoice_problem(invoice) if show_coretax else None,
+            show_coretax=show_coretax,
             payment_form=PaymentForm(
                 organization=self.organization, initial={"date": max(today, invoice.date), "amount": invoice.balance_due}
             ),
@@ -396,3 +399,45 @@ class MonthCoretaxView(OrganizationMixin, View):
             messages.info(request, _("No purchase return of %(period)s can be reported to Coretax.") % {"period": f"{month:02d}/{year}"})
             return redirect(f"{reverse('reports:vat')}?year={year}")
         return _xml_download(coretax.build_xml(self.organization, notes), coretax.filename(self.organization, f"{year}-{month:02d}"))
+
+
+class InvoiceCoretaxView(InvoiceKindMixin, OrganizationMixin, View):
+    """A sales invoice as a Coretax "Faktur Pajak Keluaran" import file."""
+
+    def get(self, request, kind, pk):
+        invoice = get_object_or_404(invoice_detail(self.organization, pk).filter(kind=self.kind))
+        problem = coretax.invoice_problem(invoice)
+        if problem:
+            messages.error(request, problem)
+            return redirect("invoicing:detail", self.kind, invoice.pk)
+        name = coretax.filename(self.organization, invoice.number.replace("/", "-"), kind="faktur-pajak-keluaran")
+        return _xml_download(coretax.build_invoices_xml(self.organization, [invoice]), name)
+
+
+class MonthInvoicesCoretaxView(OrganizationMixin, View):
+    """A month's sales invoices in one Coretax import file; invoices that can't be reported are left out."""
+
+    def get(self, request, year, month):
+        if not 1 <= month <= 12:
+            raise Http404
+        invoices = [i for i in coretax.month_invoices(self.organization, year, month) if not coretax.invoice_problem(i)]
+        if not invoices:
+            messages.info(request, _("No sales invoice of %(period)s can be reported to Coretax.") % {"period": f"{month:02d}/{year}"})
+            return redirect(f"{reverse('reports:vat')}?year={year}")
+        name = coretax.filename(self.organization, f"{year}-{month:02d}", kind="faktur-pajak-keluaran")
+        return _xml_download(coretax.build_invoices_xml(self.organization, invoices), name)
+
+
+class TaxInvoiceNumberView(InvoiceKindMixin, WriteMixin, View):
+    def post(self, request, kind, pk):
+        invoice = get_object_or_404(invoice_detail(self.organization, pk).filter(kind=self.kind))
+        form = TaxInvoiceNumberForm(request.POST)
+        if form.is_valid():
+            try:
+                services.record_tax_invoice_number(invoice=invoice, number=form.cleaned_data["number"])
+                messages.success(request, _("Faktur Pajak number recorded."))
+            except DomainError as exc:
+                flash_domain_error(request, exc)
+        else:
+            messages.error(request, _("Enter the Faktur Pajak number."))
+        return redirect("invoicing:detail", self.kind, invoice.pk)

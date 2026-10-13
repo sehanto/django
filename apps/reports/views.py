@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 
 from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
-from apps.invoicing.models import InvoiceKind, ReturnNote
+from apps.invoicing.models import Invoice, InvoiceKind, ReturnNote
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
 from apps.accounts.throttle import ThrottleScope, allow
@@ -166,7 +166,15 @@ class VatReportView(OrganizationMixin, TemplateView):
             ReturnNote.objects.for_organization(self.organization)
             .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year).values_list("date__month", flat=True)
         )
-        return super().get_context_data(year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, **kwargs)
+        sales_months = set(
+            Invoice.objects.for_organization(self.organization)
+            .filter(kind=InvoiceKind.SALES, tax_amount__gt=0, date__year=year,
+                    status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+            .values_list("date__month", flat=True)
+        ) if self.organization.is_pkp else set()
+        return super().get_context_data(
+            year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, sales_months=sales_months, **kwargs
+        )
 
 
 class ExportBooksView(ManageMixin, TemplateView):
