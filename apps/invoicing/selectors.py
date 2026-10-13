@@ -153,6 +153,20 @@ def vat_summary(organization, year: int) -> list[dict]:
             target["luxury"] += sign * row["luxury"]
     for row, sign in [*((r, 1) for r in collected), *((r, -1) for r in collected_returns)]:
         months[row["date__month"]]["collected"] += sign * row["tax"]
+    # A retailer's sales to end consumers without an NPWP or identity document are reported in
+    # one monthly total (digunggung) instead of individual fakturs: shown here as a breakdown.
+    for month in months.values():
+        month["aggregated_base"] = month["aggregated"] = ZERO
+    if organization.is_retailer:
+        anonymous = (
+            Invoice.objects.for_organization(organization)
+            .filter(date__year=year, kind=InvoiceKind.SALES, contact_npwp="", contact_id_number="",
+                    status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+            .values("date__month").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
+        )
+        for row in anonymous:
+            months[row["date__month"]]["aggregated_base"] += row["base"]
+            months[row["date__month"]]["aggregated"] += row["tax"]
     for month in months.values():
         month["net"] = month["output"] - month["collected"] - month["input"]
     return list(months.values())

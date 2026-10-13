@@ -66,6 +66,10 @@ class Organization(TimeStampedModel):
         default=False,
         help_text=_("Enable if the business is registered as a PKP and must charge PPN (VAT)."),
     )
+    is_retailer = models.BooleanField(
+        _("retailer (PKP pedagang eceran)"), default=False,
+        help_text=_("Sells to end consumers: sales to customers with neither an NPWP nor an identity document are reported as a monthly total (digunggung) in the SPT Masa PPN, without individual fakturs."),
+    )
     uses_pph_final = models.BooleanField(
         _("uses MSME final income tax (PPh Final)"),
         default=True,

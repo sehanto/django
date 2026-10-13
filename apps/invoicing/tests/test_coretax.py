@@ -485,3 +485,23 @@ def test_branches_use_their_nitku(books, customer, account):
     customer.nitku, customer.id_type, customer.id_number = "", "National ID", "123"
     with pytest.raises(ValidationError, match="16 digits"):
         customer.full_clean()
+
+
+def test_a_retailers_sales_to_anonymous_buyers_are_reported_in_total(books, customer, account):
+    from apps.invoicing.selectors import vat_summary
+
+    customer.npwp = ""
+    customer.save()
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    invoice = services.issue_invoice(invoice=services.create_invoice(
+        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("2"), D("60000"), tax_rate=ppn)],
+    ))
+    assert "Coretax directly" in coretax.invoice_problem(invoice)
+    assert vat_summary(books, 2026)[2]["aggregated_base"] == 0
+    books.is_retailer = True
+    books.save(update_fields=["is_retailer"])
+    invoice.refresh_from_db()
+    assert "digunggung" in coretax.invoice_problem(invoice)
+    march = vat_summary(books, 2026)[2]
+    assert (march["aggregated_base"], march["aggregated"], march["output"]) == (D("120000"), D("13200"), D("13200"))

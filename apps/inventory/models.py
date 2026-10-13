@@ -43,6 +43,7 @@ class StockMovement(TenantOwnedModel):
                         kind__in=["sale", "purchase_reversal", "decrease", "purchase_return", "sale_return_voided"],
                         quantity__lt=0, value__lte=0,
                     )
+                    | models.Q(kind="write_down", quantity=0, value__lt=0)
                 ),
             ),
         ]

@@ -9,7 +9,10 @@ they were posted:
   first; weighted average at the average cost of everything in stock, after which the
   stock is one layer at that average (a moving average);
 * a voided purchase or sales return removes its own layer, which must still be whole;
-  a voided purchase return brings its goods back as a new layer at the cost they left at.
+  a voided purchase return brings its goods back as a new layer at the cost they left at;
+* a write-down to net realisable value lowers the value of the stock on hand without
+  changing its quantity, spread over the layers in proportion to their value (the layers
+  are then no longer whole).
 
 Costs are kept to the cent and every issue reduces the stock value by exactly its cost,
 so the stock value always equals the inventory postings.
@@ -43,6 +46,7 @@ class MovementKind(models.TextChoices):
     PURCHASE_RETURN_VOIDED = "purchase_return_voided", _("Purchase return voided")
     INCREASE = "increase", _("Stock increase")
     DECREASE = "decrease", _("Stock decrease")
+    WRITE_DOWN = "write_down", _("Write-down to net realisable value")
 
     @property
     def is_issue(self) -> bool:
@@ -115,6 +119,18 @@ class Stock:
                 self.layers[0] = Layer(layer.quantity - needed, layer.value - part)  # no longer whole
                 needed = Decimal("0")
         return cost
+
+    def write_down(self, amount: Decimal) -> None:
+        """Lower the stock's value by ``amount`` (to its net realisable value), keeping the quantities."""
+        amount = quantize(amount)
+        if amount <= 0 or amount > self.value:
+            raise ValueError("a write-down takes off part of the stock's value")
+        total = self.value
+        remaining = amount
+        for index, layer in enumerate(self.layers):
+            share = remaining if index == len(self.layers) - 1 else min(quantize(amount * layer.value / total), remaining)
+            self.layers[index] = Layer(layer.quantity, layer.value - share)  # no longer whole
+            remaining -= share
 
     def can_remove(self, source: int, quantity: Decimal, value: Decimal) -> bool:
         return any(l.source == source and l.quantity == quantity and l.value == quantize(value) for l in self.layers)

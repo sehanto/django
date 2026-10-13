@@ -21,7 +21,7 @@ class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
         model = Organization
         fields = [
             "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email",
-            "is_pkp", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
+            "is_pkp", "is_retailer", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
             "lock_date", "require_two_factor",
         ]
         widgets = {

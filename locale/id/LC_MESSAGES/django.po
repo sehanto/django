@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 20:20+0700\n"
+"POT-Creation-Date: 2026-10-13 20:34+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -122,7 +122,7 @@ msgstr "bahasa antarmuka"
 
 #: apps/accounts/models.py:48 apps/contacts/models.py:85
 #: apps/invoicing/models.py:66 apps/ledger/models.py:29
-#: apps/taxes/models.py:38 apps/tenants/models.py:134
+#: apps/taxes/models.py:38 apps/tenants/models.py:138
 msgid "active"
 msgstr "aktif"
 
@@ -443,7 +443,8 @@ msgstr ""
 "Saldo menurun dilanjutkan dengan tarif dua kali tarif sisa umur manfaat."
 
 #: apps/assets/forms.py:110 apps/inventory/forms.py:27
-#: apps/invoicing/forms.py:294 templates/assets/asset_detail.html:39
+#: apps/inventory/forms.py:46 apps/invoicing/forms.py:294
+#: templates/assets/asset_detail.html:39
 #: templates/invoicing/return_detail.html:25 templates/reports/notes.html:62
 msgid "Reason"
 msgstr "Alasan"
@@ -460,7 +461,7 @@ msgstr "nomor"
 
 #: apps/assets/models.py:30 apps/contacts/models.py:47
 #: apps/invoicing/models.py:39 apps/taxes/models.py:18
-#: apps/tenants/models.py:20 apps/tenants/models.py:127
+#: apps/tenants/models.py:20 apps/tenants/models.py:131
 msgid "name"
 msgstr "nama"
 
@@ -522,7 +523,7 @@ msgstr ""
 "perpajakan)."
 
 #: apps/assets/models.py:44 apps/assets/models.py:149
-#: apps/tenants/models.py:86
+#: apps/tenants/models.py:90
 msgid "depreciation method"
 msgstr "metode penyusutan"
 
@@ -920,7 +921,7 @@ msgid "user email"
 msgstr "email pengguna"
 
 #: apps/audit/models.py:23 apps/billing/models.py:30 apps/core/models.py:29
-#: apps/tenants/models.py:110
+#: apps/tenants/models.py:114
 msgid "organization"
 msgstr "organisasi"
 
@@ -1059,7 +1060,7 @@ msgstr "Dibatalkan"
 msgid "Failed"
 msgstr "Gagal"
 
-#: apps/billing/models.py:32 apps/tenants/models.py:101
+#: apps/billing/models.py:32 apps/tenants/models.py:105
 msgid "plan"
 msgstr "paket"
 
@@ -1339,12 +1340,12 @@ msgid "phone"
 msgstr "telepon"
 
 #: apps/contacts/models.py:68 apps/tenants/models.py:59
-#: apps/tenants/models.py:132
+#: apps/tenants/models.py:136
 msgid "address"
 msgstr "alamat"
 
 #: apps/contacts/models.py:69 apps/tenants/models.py:60
-#: apps/tenants/models.py:133
+#: apps/tenants/models.py:137
 msgid "city/regency"
 msgstr "kota/kabupaten"
 
@@ -1481,58 +1482,63 @@ msgstr "Dasbor"
 msgid "Inventory"
 msgstr "Persediaan"
 
-#: apps/inventory/domain.py:32
+#: apps/inventory/domain.py:35
 msgid "First in, first out (FIFO)"
 msgstr "Masuk pertama, keluar pertama (FIFO)"
 
-#: apps/inventory/domain.py:33
+#: apps/inventory/domain.py:36
 msgid "Weighted average"
 msgstr "Rata-rata tertimbang"
 
-#: apps/inventory/domain.py:37 apps/invoicing/models.py:23
+#: apps/inventory/domain.py:40 apps/invoicing/models.py:23
 msgid "Purchase"
 msgstr "Pembelian"
 
-#: apps/inventory/domain.py:38
+#: apps/inventory/domain.py:41
 msgid "Sale"
 msgstr "Penjualan"
 
-#: apps/inventory/domain.py:39
+#: apps/inventory/domain.py:42
 msgid "Sale voided or returned"
 msgstr "Penjualan dibatalkan atau diretur"
 
-#: apps/inventory/domain.py:40
+#: apps/inventory/domain.py:43
 msgid "Purchase voided"
 msgstr "Pembelian dibatalkan"
 
-#: apps/inventory/domain.py:41
+#: apps/inventory/domain.py:44
 msgid "Returned to supplier"
 msgstr "Diretur ke pemasok"
 
-#: apps/inventory/domain.py:42
+#: apps/inventory/domain.py:45
 msgid "Sales return voided"
 msgstr "Retur penjualan dibatalkan"
 
-#: apps/inventory/domain.py:43
+#: apps/inventory/domain.py:46
 msgid "Purchase return voided"
 msgstr "Retur pembelian dibatalkan"
 
-#: apps/inventory/domain.py:44
+#: apps/inventory/domain.py:47
 msgid "Stock increase"
 msgstr "Penambahan stok"
 
-#: apps/inventory/domain.py:45
+#: apps/inventory/domain.py:48
 msgid "Stock decrease"
 msgstr "Pengurangan stok"
 
-#: apps/inventory/forms.py:13 apps/invoicing/forms.py:132
-#: apps/reports/exports.py:141 templates/inventory/stock_list.html:10
+#: apps/inventory/domain.py:49
+msgid "Write-down to net realisable value"
+msgstr "Penurunan ke nilai realisasi neto"
+
+#: apps/inventory/forms.py:13 apps/inventory/forms.py:36
+#: apps/invoicing/forms.py:132 apps/reports/exports.py:141
+#: templates/inventory/stock_list.html:10
 #: templates/invoicing/invoice_form.html:19
 msgid "Item"
 msgstr "Barang/Jasa"
 
-#: apps/inventory/forms.py:14 templates/billing/overview.html:70
-#: templates/inventory/stock_card.html:13
+#: apps/inventory/forms.py:14 apps/inventory/forms.py:37
+#: templates/billing/overview.html:70 templates/inventory/stock_card.html:14
 #: templates/invoicing/_invoice_body.html:12
 #: templates/invoicing/invoice_list.html:19
 #: templates/invoicing/payment_list.html:11
@@ -1541,7 +1547,7 @@ msgstr "Barang/Jasa"
 msgid "Date"
 msgstr "Tanggal"
 
-#: apps/inventory/forms.py:16 templates/inventory/stock_card.html:13
+#: apps/inventory/forms.py:16 templates/inventory/stock_card.html:14
 #: templates/invoicing/return_detail.html:28
 msgid "Quantity"
 msgstr "Kuantitas"
@@ -1554,7 +1560,7 @@ msgstr ""
 "Positif untuk menambah stok (misalnya stok awal, kelebihan saat stock "
 "opname), negatif untuk mengurangi (susut, rusak)."
 
-#: apps/inventory/forms.py:20 templates/inventory/stock_card.html:13
+#: apps/inventory/forms.py:20 templates/inventory/stock_card.html:14
 msgid "Unit cost"
 msgstr "Harga pokok per unit"
 
@@ -1577,6 +1583,30 @@ msgid ""
 msgstr ""
 "Misalnya Modal Pemilik untuk stok awal, Beban Pokok Penjualan atau beban "
 "lain-lain untuk susut."
+
+#: apps/inventory/forms.py:39
+msgid "Net realisable value of the stock on hand"
+msgstr "Nilai realisasi neto stok yang ada"
+
+#: apps/inventory/forms.py:40
+msgid ""
+"What all of this item's stock can still be sold for, less the costs to sell "
+"it. Must be below its cost."
+msgstr ""
+"Harga jual seluruh stok barang ini yang masih dapat diperoleh, dikurangi "
+"biaya untuk menjualnya. Harus di bawah harga perolehannya."
+
+#: apps/inventory/forms.py:43
+msgid "Loss account"
+msgstr "Akun kerugian"
+
+#: apps/inventory/forms.py:44
+msgid "E.g. Beban Pokok Penjualan, or an other expense."
+msgstr "Mis. Beban Pokok Penjualan, atau beban lain-lain."
+
+#: apps/inventory/forms.py:46
+msgid "E.g. damaged, expired, out of fashion."
+msgstr "Mis. rusak, kedaluwarsa, ketinggalan zaman."
 
 #: apps/inventory/models.py:20 apps/invoicing/models.py:80
 #: apps/invoicing/models.py:358
@@ -1614,7 +1644,7 @@ msgstr "mutasi stok"
 msgid "stock movements"
 msgstr "mutasi stok"
 
-#: apps/inventory/services.py:70
+#: apps/inventory/services.py:73
 #, python-format
 msgid ""
 "Not enough %(item)s in stock: %(available)s %(unit)s available. Record the "
@@ -1623,7 +1653,7 @@ msgstr ""
 "Stok %(item)s tidak cukup: tersedia %(available)s %(unit)s. Catat pembelian "
 "atau penambahan stok terlebih dahulu."
 
-#: apps/inventory/services.py:124
+#: apps/inventory/services.py:127
 #, python-format
 msgid ""
 "Some of the %(item)s from this bill has already left stock, so the bill "
@@ -1632,7 +1662,7 @@ msgstr ""
 "Sebagian %(item)s dari tagihan ini sudah keluar dari stok, sehingga tagihan "
 "tidak dapat dibatalkan. Catat pengurangan stok sebagai gantinya."
 
-#: apps/inventory/services.py:191
+#: apps/inventory/services.py:194
 #, python-format
 msgid ""
 "Some of the returned %(item)s has already left stock again, so the return "
@@ -1641,38 +1671,68 @@ msgstr ""
 "Sebagian %(item)s yang diretur sudah keluar lagi dari stok, sehingga retur "
 "tidak dapat dibatalkan. Catat pengurangan stok sebagai gantinya."
 
-#: apps/inventory/services.py:238
+#: apps/inventory/services.py:241 apps/inventory/services.py:285
 msgid "Choose an item whose stock is tracked."
 msgstr "Pilih barang yang stoknya dicatat."
 
-#: apps/inventory/services.py:240
+#: apps/inventory/services.py:243
 msgid ""
 "Choose the account for the other side of the adjustment (not an inventory "
 "account)."
 msgstr "Pilih akun lawan penyesuaian (bukan akun persediaan)."
 
-#: apps/inventory/services.py:242
+#: apps/inventory/services.py:245
 msgid "Give the reason for the adjustment."
 msgstr "Isi alasan penyesuaian."
 
-#: apps/inventory/services.py:246
+#: apps/inventory/services.py:249
 msgid "Enter the quantity to add (positive) or remove (negative)."
 msgstr "Isi kuantitas yang ditambah (positif) atau dikurangi (negatif)."
 
-#: apps/inventory/services.py:252
+#: apps/inventory/services.py:255
 msgid "The unit cost can't be negative."
 msgstr "Harga pokok per unit tidak boleh negatif."
 
-#: apps/inventory/services.py:264
+#: apps/inventory/services.py:267
 msgid ""
 "The adjustment has no value, so there is nothing to post. Enter a unit cost."
 msgstr ""
 "Penyesuaian tidak bernilai, sehingga tidak ada yang dijurnal. Isi harga "
 "pokok per unit."
 
+#: apps/inventory/services.py:289
+msgid ""
+"Choose an expense account for the loss (cost of goods sold or another "
+"expense)."
+msgstr ""
+"Pilih akun beban untuk kerugiannya (beban pokok penjualan atau beban lain)."
+
+#: apps/inventory/services.py:291
+msgid "Give the reason for the write-down."
+msgstr "Isi alasan penurunan nilai."
+
+#: apps/inventory/services.py:297
+#, python-format
+msgid "%(item)s has no stock to write down."
+msgstr "%(item)s tidak memiliki stok untuk diturunkan nilainya."
+
+#: apps/inventory/services.py:300
+#, python-format
+msgid ""
+"Enter a net realisable value below the stock's cost (%(value)s); inventory "
+"is never written up above cost."
+msgstr ""
+"Masukkan nilai realisasi neto di bawah harga perolehan stok (%(value)s); "
+"persediaan tidak pernah dinaikkan di atas harga perolehan."
+
 #: apps/inventory/views.py:56
 msgid "Stock adjusted and posted to the ledger."
 msgstr "Stok disesuaikan dan dijurnal."
+
+#: apps/inventory/views.py:76
+msgid ""
+"Stock written down to its net realisable value and posted to the ledger."
+msgstr "Nilai stok diturunkan ke nilai realisasi neto dan dijurnal."
 
 #: apps/invoicing/apps.py:7
 msgid "Sales & Purchases"
@@ -1694,7 +1754,7 @@ msgstr "Retur yang dibatalkan tidak dilaporkan."
 msgid "Only a VAT-registered business (PKP) reports returns of input VAT."
 msgstr "Hanya PKP yang melaporkan retur pajak masukan."
 
-#: apps/invoicing/coretax.py:134 apps/invoicing/coretax.py:275
+#: apps/invoicing/coretax.py:134 apps/invoicing/coretax.py:281
 msgid "Enter the organization's NPWP in the settings."
 msgstr "Isi NPWP organisasi di pengaturan."
 
@@ -1710,31 +1770,43 @@ msgstr "Tagihan tidak memiliki nomor Faktur Pajak dari pemasok."
 msgid "The returned lines carry no PPN."
 msgstr "Baris yang diretur tidak dikenai PPN."
 
-#: apps/invoicing/coretax.py:269
+#: apps/invoicing/coretax.py:275
 msgid "Only sales invoices become a Faktur Pajak Keluaran."
 msgstr "Hanya faktur penjualan yang menjadi Faktur Pajak Keluaran."
 
-#: apps/invoicing/coretax.py:271
+#: apps/invoicing/coretax.py:277
 msgid "Only issued invoices are reported."
 msgstr "Hanya faktur yang sudah diterbitkan yang dilaporkan."
 
-#: apps/invoicing/coretax.py:273
+#: apps/invoicing/coretax.py:279
 msgid "Only a VAT-registered business (PKP) issues a Faktur Pajak."
 msgstr "Hanya PKP yang membuat Faktur Pajak."
 
-#: apps/invoicing/coretax.py:277
+#: apps/invoicing/coretax.py:283
+msgid ""
+"A retail sale to a customer without an NPWP or identity document: it is "
+"reported in the month's total (digunggung) in the SPT Masa PPN, not as its "
+"own faktur."
+msgstr ""
+"Penjualan eceran kepada pelanggan tanpa NPWP atau dokumen identitas: "
+"dilaporkan dalam jumlah bulanan (digunggung) pada SPT Masa PPN, bukan "
+"sebagai faktur tersendiri."
+
+#: apps/invoicing/coretax.py:285
 msgid ""
 "The customer had neither an NPWP nor an identity document (NIK, passport) "
-"when the invoice was issued. Create this faktur in Coretax directly."
+"when the invoice was issued. Enter one on the contact for future invoices, "
+"or create this faktur in Coretax directly."
 msgstr ""
 "Pelanggan belum memiliki NPWP maupun dokumen identitas (NIK, paspor) saat "
-"faktur diterbitkan. Buat faktur ini langsung di Coretax."
+"faktur diterbitkan. Isi pada data kontak untuk faktur berikutnya, atau buat "
+"faktur ini langsung di Coretax."
 
-#: apps/invoicing/coretax.py:280
+#: apps/invoicing/coretax.py:288
 msgid "The invoice carries no PPN."
 msgstr "Faktur ini tidak dikenai PPN."
 
-#: apps/invoicing/coretax.py:282
+#: apps/invoicing/coretax.py:290
 msgid ""
 "The invoice mixes the 11/12 tax base with the full tax base; Coretax needs a"
 " separate faktur for each."
@@ -1742,7 +1814,7 @@ msgstr ""
 "Faktur ini mencampur DPP 11/12 dengan DPP penuh; Coretax memerlukan faktur "
 "terpisah untuk masing-masing."
 
-#: apps/invoicing/coretax.py:284
+#: apps/invoicing/coretax.py:292
 msgid ""
 "The invoice mixes PPN besaran tertentu or a rate other than 12% with other "
 "PPN; Coretax needs a separate faktur for each."
@@ -2149,7 +2221,7 @@ msgstr "tanggal dokumen pendukung"
 msgid "type of delivery"
 msgstr "jenis penyerahan"
 
-#: apps/invoicing/models.py:130 apps/tenants/models.py:138
+#: apps/invoicing/models.py:130 apps/tenants/models.py:142
 msgid "place of business"
 msgstr "tempat kegiatan usaha"
 
@@ -3475,7 +3547,7 @@ msgstr "Setoran PPh Final UMKM."
 msgid "Field"
 msgstr "Kolom"
 
-#: apps/reports/exports.py:276 templates/inventory/stock_card.html:13
+#: apps/reports/exports.py:276 templates/inventory/stock_card.html:14
 #: templates/inventory/stock_list.html:10
 msgid "Value"
 msgstr "Nilai"
@@ -3960,7 +4032,7 @@ msgstr "Email pengguna"
 msgid "Role"
 msgstr "Peran"
 
-#: apps/tenants/forms.py:65 apps/tenants/models.py:129
+#: apps/tenants/forms.py:65 apps/tenants/models.py:133
 #: templates/tenants/settings.html:24
 msgid "NITKU"
 msgstr "NITKU"
@@ -4056,30 +4128,44 @@ msgstr ""
 "Aktifkan jika usaha telah dikukuhkan sebagai PKP dan wajib memungut PPN."
 
 #: apps/tenants/models.py:70
+msgid "retailer (PKP pedagang eceran)"
+msgstr "PKP pedagang eceran"
+
+#: apps/tenants/models.py:71
+msgid ""
+"Sells to end consumers: sales to customers with neither an NPWP nor an "
+"identity document are reported as a monthly total (digunggung) in the SPT "
+"Masa PPN, without individual fakturs."
+msgstr ""
+"Menjual kepada konsumen akhir: penjualan kepada pelanggan tanpa NPWP maupun "
+"dokumen identitas dilaporkan sebagai jumlah bulanan (digunggung) pada SPT "
+"Masa PPN, tanpa faktur tersendiri."
+
+#: apps/tenants/models.py:74
 msgid "uses MSME final income tax (PPh Final)"
 msgstr "menggunakan PPh Final UMKM"
 
-#: apps/tenants/models.py:73
+#: apps/tenants/models.py:77
 #, no-python-format
 msgid "PP 55/2022: 0.5% final income tax on gross turnover."
 msgstr "PP 55/2022: PPh final 0,5% dari peredaran bruto."
 
-#: apps/tenants/models.py:76
+#: apps/tenants/models.py:80
 msgid "require two-factor authentication"
 msgstr "wajibkan autentikasi dua faktor"
 
-#: apps/tenants/models.py:78
+#: apps/tenants/models.py:82
 msgid ""
 "Every member must use two-factor authentication to open this organization."
 msgstr ""
 "Setiap anggota wajib memakai autentikasi dua faktor untuk membuka organisasi"
 " ini."
 
-#: apps/tenants/models.py:81
+#: apps/tenants/models.py:85
 msgid "inventory cost formula"
 msgstr "rumus biaya persediaan"
 
-#: apps/tenants/models.py:83
+#: apps/tenants/models.py:87
 msgid ""
 "How the cost of inventory sold is determined (SAK EMKM). Stated in the notes"
 " to the financial statements."
@@ -4087,7 +4173,7 @@ msgstr ""
 "Cara menentukan biaya persediaan yang terjual (SAK EMKM). Dicantumkan dalam "
 "catatan atas laporan keuangan."
 
-#: apps/tenants/models.py:88
+#: apps/tenants/models.py:92
 msgid ""
 "How fixed assets other than land are depreciated (SAK EMKM). Stated in the "
 "notes to the financial statements."
@@ -4095,11 +4181,11 @@ msgstr ""
 "Cara menyusutkan aset tetap selain tanah (SAK EMKM). Dicantumkan dalam "
 "catatan atas laporan keuangan."
 
-#: apps/tenants/models.py:91
+#: apps/tenants/models.py:95
 msgid "additional information for the notes"
 msgstr "informasi tambahan untuk catatan"
 
-#: apps/tenants/models.py:92
+#: apps/tenants/models.py:96
 msgid ""
 "Material matters the financial statements don't show, e.g. commitments, "
 "guarantees or events after the reporting date. Printed in the notes to the "
@@ -4109,31 +4195,31 @@ msgstr ""
 "jaminan, atau peristiwa setelah tanggal pelaporan. Dicetak dalam catatan "
 "atas laporan keuangan."
 
-#: apps/tenants/models.py:95
+#: apps/tenants/models.py:99
 msgid "period lock date"
 msgstr "tanggal kunci periode"
 
-#: apps/tenants/models.py:98
+#: apps/tenants/models.py:102
 msgid "Transactions on or before this date cannot be changed."
 msgstr "Transaksi pada atau sebelum tanggal ini tidak dapat diubah."
 
-#: apps/tenants/models.py:103
+#: apps/tenants/models.py:107
 msgid "plan paid until"
 msgstr "paket dibayar sampai"
 
-#: apps/tenants/models.py:103
+#: apps/tenants/models.py:107
 msgid "Last day covered by payment; empty for the free plan."
 msgstr "Hari terakhir yang tercakup pembayaran; kosong untuk paket gratis."
 
-#: apps/tenants/models.py:111
+#: apps/tenants/models.py:115
 msgid "organizations"
 msgstr "organisasi"
 
-#: apps/tenants/models.py:127
+#: apps/tenants/models.py:131
 msgid "E.g. Cabang Sleman."
 msgstr "Mis. Cabang Sleman."
 
-#: apps/tenants/models.py:130
+#: apps/tenants/models.py:134
 msgid ""
 "22 digits: the organization's 16-digit NPWP followed by the 6 digits of this"
 " place, as registered in Coretax."
@@ -4141,19 +4227,19 @@ msgstr ""
 "22 digit: NPWP 16 digit organisasi diikuti 6 digit tempat ini, sesuai yang "
 "terdaftar di Coretax."
 
-#: apps/tenants/models.py:139
+#: apps/tenants/models.py:143
 msgid "places of business"
 msgstr "tempat kegiatan usaha"
 
-#: apps/tenants/models.py:159
+#: apps/tenants/models.py:163
 msgid "role"
 msgstr "peran"
 
-#: apps/tenants/models.py:165
+#: apps/tenants/models.py:169
 msgid "member"
 msgstr "anggota"
 
-#: apps/tenants/models.py:166
+#: apps/tenants/models.py:170
 msgid "members"
 msgstr "anggota"
 
@@ -4717,6 +4803,7 @@ msgstr ""
 #: templates/accounts/two_factor_setup.html:17
 #: templates/assets/asset_form.html:12 templates/contacts/contact_form.html:9
 #: templates/inventory/adjustment_form.html:10
+#: templates/inventory/write_down_form.html:10
 #: templates/invoicing/invoice_form.html:33
 #: templates/invoicing/item_form.html:9
 #: templates/invoicing/return_form.html:33
@@ -5253,7 +5340,7 @@ msgstr "PPN 12%%"
 #: templates/invoicing/return_detail.html:37
 #: templates/ledger/journal_detail.html:38 templates/reports/aging.html:7
 #: templates/reports/aging.html:13 templates/reports/notes.html:54
-#: templates/reports/vat.html:15
+#: templates/reports/vat.html:15 templates/reports/vat.html:23
 msgid "Total"
 msgstr "Total"
 
@@ -5412,7 +5499,7 @@ msgid "Filter"
 msgstr "Filter"
 
 #: templates/contacts/contact_list.html:14
-#: templates/inventory/stock_card.html:13
+#: templates/inventory/stock_card.html:14
 #: templates/invoicing/item_list.html:10
 msgid "Type"
 msgstr "Jenis"
@@ -5514,7 +5601,8 @@ msgstr "Belum ada tagihan pembelian."
 
 #: templates/inventory/adjustment_form.html:2
 #: templates/inventory/adjustment_form.html:4
-#: templates/inventory/stock_card.html:9 templates/inventory/stock_list.html:6
+#: templates/inventory/stock_card.html:10
+#: templates/inventory/stock_list.html:6
 msgid "Stock adjustment"
 msgstr "Penyesuaian stok"
 
@@ -5535,21 +5623,25 @@ msgstr "Jurnal penyesuaian"
 msgid "Stock card: %(item)s"
 msgstr "Kartu stok: %(item)s"
 
-#: templates/inventory/stock_card.html:13
+#: templates/inventory/stock_card.html:9
+msgid "Write down"
+msgstr "Turunkan nilai"
+
+#: templates/inventory/stock_card.html:14
 msgid "Document"
 msgstr "Dokumen"
 
-#: templates/inventory/stock_card.html:13
+#: templates/inventory/stock_card.html:14
 #: templates/inventory/stock_list.html:10
 msgid "On hand"
 msgstr "Tersedia"
 
-#: templates/inventory/stock_card.html:13
+#: templates/inventory/stock_card.html:14
 #: templates/inventory/stock_list.html:29
 msgid "Stock value"
 msgstr "Nilai stok"
 
-#: templates/inventory/stock_card.html:27
+#: templates/inventory/stock_card.html:28
 msgid ""
 "No stock movements yet. Purchases, sales and stock adjustments of this item "
 "appear here."
@@ -5594,6 +5686,31 @@ msgstr ""
 "Selisih berarti ada persediaan yang dijurnal di luar kartu stok, misalnya "
 "lewat jurnal umum atau pembelian barang yang stoknya tidak dicatat, atau "
 "saldo awal yang belum dicatat sebagai penyesuaian stok."
+
+#: templates/inventory/write_down_form.html:2
+msgid "Write down stock"
+msgstr "Turunkan nilai stok"
+
+#: templates/inventory/write_down_form.html:4
+msgid "Write down stock to net realisable value"
+msgstr "Turunkan nilai stok ke nilai realisasi neto"
+
+#: templates/inventory/write_down_form.html:7
+msgid ""
+"When goods can no longer be sold for what they cost (damaged, expired, "
+"obsolete), their stock is carried at the lower net realisable value. The "
+"difference is a loss of the period; quantities don't change, and later sales"
+" take their cost from the lower value."
+msgstr ""
+"Jika barang tidak lagi dapat dijual seharga perolehannya (rusak, "
+"kedaluwarsa, usang), stoknya dicatat sebesar nilai realisasi neto yang lebih"
+" rendah. Selisihnya menjadi kerugian periode berjalan; kuantitas tidak "
+"berubah, dan penjualan berikutnya mengambil harga pokok dari nilai yang "
+"lebih rendah."
+
+#: templates/inventory/write_down_form.html:10
+msgid "Post write-down"
+msgstr "Jurnal penurunan nilai"
 
 #: templates/invoicing/_invoice_body.html:4
 msgid "From supplier"
@@ -6486,14 +6603,18 @@ msgid ""
 "sold is determined using the %(formula)s formula. Stock is recorded "
 "perpetually: purchases are added to inventory, and the cost of goods sold is"
 " recognised when each sale is invoiced. Goods bought without stock records "
-"are expensed when purchased."
+"are expensed when purchased. Inventory that can no longer be sold for its "
+"cost is written down to its net realisable value, and the loss is recognised"
+" in the period."
 msgstr ""
 "Persediaan diukur sebesar biaya perolehan: harga beli dan biaya lain untuk "
 "membawa persediaan ke lokasi dan kondisi saat ini. Biaya persediaan yang "
 "terjual ditentukan dengan rumus %(formula)s. Stok dicatat secara perpetual: "
 "pembelian menambah persediaan, dan harga pokok penjualan diakui saat setiap "
 "penjualan difakturkan. Barang yang dibeli tanpa catatan stok dibebankan saat"
-" dibeli."
+" dibeli. Persediaan yang tidak lagi dapat dijual seharga perolehannya "
+"diturunkan ke nilai realisasi neto, dan kerugiannya diakui pada periode "
+"berjalan."
 
 #: templates/reports/notes.html:35
 #, python-format
@@ -6627,15 +6748,16 @@ msgstr "Rekap PPN %(year)s"
 msgid "Year"
 msgstr "Tahun"
 
-#: templates/reports/vat.html:9 templates/taxes/pph_final.html:23
+#: templates/reports/vat.html:9 templates/reports/vat.html:21
+#: templates/taxes/pph_final.html:23
 msgid "Period"
 msgstr "Masa"
 
-#: templates/reports/vat.html:9
+#: templates/reports/vat.html:9 templates/reports/vat.html:21
 msgid "Sales value"
 msgstr "Nilai Penjualan"
 
-#: templates/reports/vat.html:9
+#: templates/reports/vat.html:9 templates/reports/vat.html:21
 msgid "Output PPN"
 msgstr "PPN Keluaran"
 
@@ -6675,7 +6797,21 @@ msgstr "Retur pembelian bulan ini sebagai file impor Coretax"
 msgid "Retur PM"
 msgstr "Retur PM"
 
-#: templates/reports/vat.html:17
+#: templates/reports/vat.html:18
+msgid "Retail sales reported in total (digunggung)"
+msgstr "Penjualan eceran yang dilaporkan secara digunggung"
+
+#: templates/reports/vat.html:19
+msgid ""
+"Included above. Sales to customers without an NPWP or identity document: "
+"report each month's total in the SPT Masa PPN instead of individual fakturs;"
+" they are left out of the Coretax files."
+msgstr ""
+"Sudah termasuk di atas. Penjualan kepada pelanggan tanpa NPWP atau dokumen "
+"identitas: laporkan jumlah tiap bulan pada SPT Masa PPN, bukan faktur satu "
+"per satu; penjualan ini tidak dimasukkan ke berkas Coretax."
+
+#: templates/reports/vat.html:26
 msgid ""
 "Calculated from issued invoices (excluding voided ones), less returns in the"
 " month of the return. PPN on sales to VAT collectors (codes 02/03) is "
@@ -6691,7 +6827,7 @@ msgstr ""
 "ditampilkan tersendiri (pemungut PPN juga memungutnya); PPnBM tidak pernah "
 "dikreditkan. Hanya PKP yang dapat mengkreditkan PPN masukan."
 
-#: templates/reports/vat.html:17
+#: templates/reports/vat.html:26
 msgid "This organization is not a PKP yet."
 msgstr "Organisasi ini belum PKP."
 

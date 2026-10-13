@@ -257,7 +257,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
 )
 ORGANIZATION_FIELDS = (
-    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "uses_pph_final",
+    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "is_retailer", "uses_pph_final",
     "inventory_cost_formula", "depreciation_method", "additional_notes", "lock_date",
 )
 ORGANIZATION_FILE = "organization.csv"

@@ -172,3 +172,35 @@ def test_deleting_an_organization_removes_its_stock(organization, coffee, buy, s
     sell(coffee, "2")
     call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
     assert not StockMovement.objects.exists()
+
+
+def test_stock_is_written_down_to_net_realisable_value(organization, account, user):
+    from datetime import date as day
+    from decimal import Decimal as Dec
+
+    from apps.inventory import services as inv
+    from apps.inventory.domain import CostFormula
+    from apps.invoicing.models import Item
+    from apps.ledger.selectors import account_balance
+
+    item = Item.objects.create(
+        organization=organization, name="Kain batik", unit="m", track_inventory=True,
+        inventory_account=account("1-1300"), cogs_account=account("5-1000"),
+    )
+    organization.inventory_cost_formula = CostFormula.FIFO
+    organization.save()
+    for cost in ("10000", "14000"):
+        inv.adjust_stock(organization=organization, item=item, on=day(2026, 3, 1), quantity=Dec("10"), unit_cost=Dec(cost),
+                         counter_account=account("3-1000"), reason="Stok awal")
+    with pytest.raises(ValidationFailed, match="below the stock's cost"):
+        inv.write_down_stock(organization=organization, item=item, on=day(2026, 3, 31), net_realisable_value=Dec("240000"),
+                             expense_account=account("5-1000"), reason="Luntur")
+    inv.write_down_stock(organization=organization, item=item, on=day(2026, 3, 31), net_realisable_value=Dec("120000"),
+                         expense_account=account("5-1000"), reason="Luntur")
+    stock = inv.stock_of(item)
+    assert (stock.quantity, stock.value) == (Dec("20"), Dec("120000"))
+    assert account_balance(organization, account("1-1300")) == Dec("120000")
+    # Spread by value: the 100.000 layer becomes 50.000, the 140.000 layer 70.000; FIFO sells the first.
+    decrease = inv.adjust_stock(organization=organization, item=item, on=day(2026, 4, 1), quantity=Dec("-10"),
+                                counter_account=account("5-1000"), reason="Rusak")
+    assert decrease.value == Dec("-50000")

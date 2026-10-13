@@ -32,6 +32,12 @@ def adjustment_accounts(organization) -> QuerySet[Account]:
     return accounts_for(organization, active_only=True).exclude(category__in=[AccountCategory.INVENTORY, AccountCategory.CASH_BANK])
 
 
+def write_down_accounts(organization) -> QuerySet[Account]:
+    return accounts_for(organization, active_only=True).filter(
+        category__in=[AccountCategory.COST_OF_SALES, AccountCategory.OPERATING_EXPENSE, AccountCategory.OTHER_EXPENSE]
+    )
+
+
 @dataclass(frozen=True)
 class StockRow:
     item: object

@@ -262,6 +262,12 @@ def _taxed_lines(invoice: Invoice):
     return [line for line in invoice.lines.select_related("item").order_by("id") if line.tax_rate_percent is not None]
 
 
+def is_aggregated(invoice: Invoice) -> bool:
+    """A PKP retailer's sale to an end consumer without an NPWP or identity document: reported
+    in the month's total (Faktur Pajak digunggung) in the SPT Masa PPN instead of uploaded."""
+    return invoice.is_sales and invoice.organization.is_retailer and buyer_identity(invoice) is None
+
+
 def invoice_problem(invoice: Invoice) -> str | None:
     """Why this invoice can't go to Coretax as a Faktur Pajak Keluaran, or None."""
     organization = invoice.organization
@@ -273,8 +279,10 @@ def invoice_problem(invoice: Invoice) -> str | None:
         return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
     if len(tin(organization.npwp)) != 16:
         return _("Enter the organization's NPWP in the settings.")
+    if is_aggregated(invoice):
+        return _("A retail sale to a customer without an NPWP or identity document: it is reported in the month's total (digunggung) in the SPT Masa PPN, not as its own faktur.")
     if buyer_identity(invoice) is None:
-        return _("The customer had neither an NPWP nor an identity document (NIK, passport) when the invoice was issued. Create this faktur in Coretax directly.")
+        return _("The customer had neither an NPWP nor an identity document (NIK, passport) when the invoice was issued. Enter one on the contact for future invoices, or create this faktur in Coretax directly.")
     lines = _taxed_lines(invoice)
     if not lines:
         return _("The invoice carries no PPN.")

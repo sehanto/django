@@ -164,7 +164,7 @@ class VatReportView(OrganizationMixin, TemplateView):
         rows = vat_summary(self.organization, year)
         totals = {
             key: sum(r[key] for r in rows)
-            for key in ("output_base", "output", "luxury", "not_collected", "collected", "input_base", "input", "net")
+            for key in ("output_base", "output", "luxury", "not_collected", "collected", "input_base", "input", "net", "aggregated_base", "aggregated")
         }
         return_months = set(
             ReturnNote.objects.for_organization(self.organization)

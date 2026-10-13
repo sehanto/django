@@ -10,7 +10,7 @@ from apps.core.params import int_param
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
-from .forms import AdjustmentForm
+from .forms import AdjustmentForm, WriteDownForm
 from .selectors import reconcile, stock_card, stock_summary, tracked_items
 
 
@@ -54,4 +54,24 @@ class AdjustmentView(WriteMixin, FormView):
             form.add_error(None, str(exc))
             return self.form_invalid(form)
         messages.success(self.request, _("Stock adjusted and posted to the ledger."))
+        return redirect("inventory:card", movement.item_id)
+
+
+class WriteDownView(WriteMixin, FormView):
+    template_name = "inventory/write_down_form.html"
+    form_class = WriteDownForm
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organization": self.organization}
+
+    def get_initial(self):
+        return {"on": timezone.localdate(), "item": int_param(self.request.GET, "item", minimum=1)}
+
+    def form_valid(self, form):
+        try:
+            movement = services.write_down_stock(organization=self.organization, created_by=self.request.user, **form.cleaned_data)
+        except DomainError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Stock written down to its net realisable value and posted to the ledger."))
         return redirect("inventory:card", movement.item_id)

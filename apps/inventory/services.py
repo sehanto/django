@@ -10,6 +10,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from apps.core.exceptions import ValidationFailed
+from apps.core.formatting import localized_rupiah
 from apps.core.money import quantize
 from apps.core.validators import ensure_business_date
 from apps.ledger.domain import AccountCategory
@@ -32,6 +33,8 @@ def replay(movements: Iterable[StockMovement]) -> Stock:
             stock.receive(m.quantity, m.value, source=m.pk if m.kind in VOIDABLE_RECEIPTS else None)
         elif MovementKind(m.kind).removes_a_layer:
             stock.remove(m.reverses_id, -m.quantity, -m.value)
+        elif m.kind == MovementKind.WRITE_DOWN:
+            stock.write_down(-m.value)
         else:
             stock.issue(-m.quantity, m.cost_formula)
     return stock
@@ -268,3 +271,39 @@ def adjust_stock(
         source=JournalEntry.Source.INVENTORY, created_by=created_by, lines=lines,
     )
     return record([planned], entry=entry, on=on, created_by=created_by, reason=reason.strip())[0]
+
+
+@transaction.atomic
+def write_down_stock(
+    *, organization, item, on: date, net_realisable_value: Decimal, expense_account: Account, reason: str, created_by=None,
+) -> StockMovement:
+    """Lower the value of an item's stock on hand to its net realisable value (the estimated
+    selling price less the costs to sell), when that is below cost: damaged, obsolete or
+    slow-moving goods. The loss goes to ``expense_account`` (cost of goods sold or an other
+    expense); quantities don't change, and later issues take their cost from the lower value."""
+    if item.organization_id != organization.pk or not item.track_inventory:
+        raise ValidationFailed(_("Choose an item whose stock is tracked."))
+    if expense_account.organization_id != organization.pk or not expense_account.is_active or expense_account.category not in (
+        AccountCategory.COST_OF_SALES, AccountCategory.OPERATING_EXPENSE, AccountCategory.OTHER_EXPENSE,
+    ):
+        raise ValidationFailed(_("Choose an expense account for the loss (cost of goods sold or another expense)."))
+    if not reason.strip():
+        raise ValidationFailed(_("Give the reason for the write-down."))
+    ensure_business_date(on)
+    _lock([item])
+    stock = stock_of(item)
+    net_realisable_value = quantize(Decimal(net_realisable_value))
+    if stock.quantity <= 0:
+        raise ValidationFailed(_("%(item)s has no stock to write down.") % {"item": item.name})
+    if net_realisable_value < 0 or net_realisable_value >= stock.value:
+        raise ValidationFailed(
+            _("Enter a net realisable value below the stock's cost (%(value)s); inventory is never written up above cost.")
+            % {"value": localized_rupiah(stock.value)}
+        )
+    loss = stock.value - net_realisable_value
+    entry = create_journal_entry(
+        organization=organization, date=on, description=f"Penurunan nilai persediaan {item.name}: {reason.strip()}"[:255],
+        source=JournalEntry.Source.INVENTORY, created_by=created_by,
+        lines=[JournalLineInput(expense_account, debit=loss), JournalLineInput(item.inventory_account, credit=loss)],
+    )
+    return record([Planned(item, MovementKind.WRITE_DOWN, Decimal("0"), -loss)], entry=entry, on=on, created_by=created_by, reason=reason.strip())[0]

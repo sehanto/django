@@ -6,7 +6,8 @@
     <div class="text-secondary">{% if item.code %}{{ item.code }} · {% endif %}{{ item.inventory_account }}</div></div>
   <div class="d-flex gap-2">
     <a href="{% url 'inventory:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
-    {% if can_write %}<a href="{% url 'inventory:adjust' %}?item={{ item.pk }}" class="btn btn-primary">{% translate "Stock adjustment" %}</a>{% endif %}
+    {% if can_write %}{% if last and last.quantity > 0 %}<a href="{% url 'inventory:write_down' %}?item={{ item.pk }}" class="btn btn-outline-secondary">{% translate "Write down" %}</a>{% endif %}
+      <a href="{% url 'inventory:adjust' %}?item={{ item.pk }}" class="btn btn-primary">{% translate "Stock adjustment" %}</a>{% endif %}
   </div>
 </div>
 <div class="card"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
