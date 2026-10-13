@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{% translate "1721-A1" %} {{ year }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><a href="{% url 'payroll:index' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a>
+    <h1 class="h4 mb-0">{% blocktranslate trimmed %}Annual PPh 21 statements (1721-A1) {{ year }}{% endblocktranslate %}</h1></div>
+  {% if statements %}<a href="{% url 'payroll:annual_csv' year %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>CSV</a>{% endif %}
+</div>
+<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Months" %}</th><th class="num">{% translate "Gross income" %}</th><th class="num">{% translate "Taxable income" %}</th><th class="num">{% translate "PPh 21 for the year" %}</th><th class="num">{% translate "PPh 21 withheld" %}</th><th></th></tr></thead>
+  <tbody>{% for st in statements %}<tr>
+    <td>{{ st.employee.name }}<div class="small text-secondary">{{ st.employee.tin|default:st.employee.id_label }}</div></td>
+    <td>{{ st.first_month|stringformat:"02d" }}–{{ st.last_month|stringformat:"02d" }}</td>
+    <td class="num">{{ st.gross|rupiah }}</td><td class="num">{{ st.annual.taxable|rupiah }}</td><td class="num">{{ st.tax|rupiah }}</td><td class="num">{{ st.withheld|rupiah }}</td>
+    <td class="text-end">{% if st.is_final %}<a href="{% url 'payroll:a1' year st.employee.pk %}" class="small">{% translate "Open" %}</a>{% else %}<span class="badge text-bg-secondary">{% translate "Year not closed" %}</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No permanent employee was paid this year." %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
+<p class="small text-secondary mt-2">{% translate "Permanent employees get their 1721-A1 for the year by the end of January, or within a month of leaving. It is the bukti potong of their last period (December or the month they left), created in Coretax eBupot; record its number on that payroll." %}</p>
+{% endblock %}

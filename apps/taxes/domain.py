@@ -49,7 +49,15 @@ class PayerWithholding(models.TextChoices):
     PPH_23 = "pph23", _("PPh 23 (e.g. 2% on services)")
     # xgettext:no-python-format
     PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
-    PPH_21 = "pph21", _("PPh 21 (salaries)")
+    PPH_21 = "pph21", _("PPh 21 (salaries and fees)")
+    PPH_26 = "pph26", _("PPh 26 (non-resident employees)")
+
+
+# How deposits name them in journal descriptions (stored records stay Indonesian).
+PAYER_WITHHOLDING_NAMES = {
+    PayerWithholding.PPH_23: "PPh 23", PayerWithholding.PPH_4_2: "PPh Pasal 4 ayat (2)", PayerWithholding.PPH_21: "PPh 21",
+    PayerWithholding.PPH_26: "PPh 26",
+}
 
 
 # The usual rate of each, suggested on the payment form.

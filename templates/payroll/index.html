@@ -5,17 +5,18 @@
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}Payroll {{ year }}{% endblocktranslate %}</h1>
   <div class="d-flex gap-2">
     <a href="{% url 'payroll:employees' %}" class="btn btn-outline-secondary"><i class="bi bi-people me-1"></i>{% translate "Employees" %}</a>
+    <a href="{% url 'payroll:annual' year %}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-text me-1"></i>{% translate "1721-A1" %}</a>
     {% if can_manage %}<a href="{% url 'payroll:settings' %}" class="btn btn-outline-secondary"><i class="bi bi-gear"></i></a>{% endif %}
     <form method="get"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
   </div>
 </div>
 {% if not has_employees %}<div class="alert alert-info">{% url 'payroll:employee_create' as url %}{% blocktranslate trimmed %}Add your employees first: <a href="{{ url }}">new employee</a>.{% endblocktranslate %}</div>{% endif %}
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
-  <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Salaries and allowances" %}</th><th class="num">{% translate "PPh 21" %}</th><th class="num">{% translate "BPJS" %}</th><th class="num">{% translate "Net pay" %}</th><th>{% translate "Paid" %}</th><th></th></tr></thead>
+  <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Salaries and allowances" %}</th><th class="num">{% translate "PPh 21/26" %}</th><th class="num">{% translate "BPJS" %}</th><th class="num">{% translate "Net pay" %}</th><th>{% translate "Paid" %}</th><th></th></tr></thead>
   <tbody>{% for month, run in months %}<tr>
     <td>{{ month.label }} {{ year }}</td>
     {% if run %}
-      <td class="num">{{ run.gross|rupiah }}</td><td class="num">{{ run.pph21|rupiah }}</td>
+      <td class="num">{{ run.gross|rupiah }}</td><td class="num">{{ run.income_tax|rupiah }}</td>
       <td class="num">{{ run.employer_contributions|add:run.employee_contributions|rupiah }}</td><td class="num fw-semibold">{{ run.net_pay|rupiah }}</td>
       <td>{% if run.paid_on %}<span class="badge text-bg-success">{{ run.paid_on|date:"d/m/Y" }}</span>{% else %}<span class="badge text-bg-warning">{% translate "Not paid yet" %}</span>{% endif %}</td>
       <td class="text-end"><a href="{% url 'payroll:run' run.pk %}" class="small">{% translate "Open" %}</a></td>
@@ -24,5 +25,5 @@
     {% endif %}
   </tr>{% endfor %}</tbody>
 </table></div></div>
-<p class="small text-secondary mt-2">{% translate "PPh 21 (PP 58/2023): January to November use the monthly effective rate (TER) of the employee's category on gross income, including the JKK, JKM and BPJS Kesehatan premiums the employer pays; the last month of the year (December, or the month an employee leaves) uses the Article 17 rates on the year's income, less what was withheld before. Deposit the PPh 21 under Taxes → PPh 21, 23 & 4(2) by the 15th of the next month." %}</p>
+<p class="small text-secondary mt-2">{% translate "PPh 21 (PP 58/2023): January to November use the monthly effective rate (TER) of the employee's category on gross income, including the JKK, JKM and BPJS Kesehatan premiums the employer pays; the last month of the year (December, or the month an employee leaves) uses the Article 17 rates on the year's income, less what was withheld before. Non-permanent workers: the monthly TER, or the daily rates for those paid by the day. Non-resident foreigners: 20% PPh 26. Without an NPWP (or NIK), PPh 21 is 20% higher. Deposit under Taxes → Withheld income tax by the 15th of the next month." %}</p>
 {% endblock %}

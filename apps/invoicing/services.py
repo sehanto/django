@@ -411,7 +411,8 @@ def _refresh_payment_status(invoice: Invoice) -> None:
 @dataclass(frozen=True)
 class IncomeTaxInput:
     """Income tax withheld from a payment, with its bukti potong: by the customer from a receipt
-    (``amount``), or by us from a payment to a supplier (``base`` x ``rate``, rounded down)."""
+    (``amount``), or by us from a payment to a supplier (``base`` x ``rate``, rounded down; PPh
+    21 on a non-employee's fee is Art. 17 on 50% of ``base``, without a rate)."""
 
     kind: str = IncomeTaxWithheld.NONE
     amount: Decimal = ZERO
@@ -424,7 +425,10 @@ class IncomeTaxInput:
 NO_INCOME_TAX = IncomeTaxInput()
 
 # The liability for income tax we withheld from suppliers, until the monthly deposit.
-PAYER_ROLES = {IncomeTaxWithheld.PPH_23: SystemRole.PPH_23_PAYABLE, IncomeTaxWithheld.PPH_4_2: SystemRole.PPH_4_2_PAYABLE}
+PAYER_ROLES = {
+    IncomeTaxWithheld.PPH_23: SystemRole.PPH_23_PAYABLE, IncomeTaxWithheld.PPH_4_2: SystemRole.PPH_4_2_PAYABLE,
+    IncomeTaxWithheld.PPH_21: SystemRole.PPH_21_PAYABLE,
+}
 
 
 def _deposited_pph_final(organization, on: date) -> bool:
@@ -472,7 +476,7 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
     if income_tax.kind not in allowed:
         if invoice.is_sales:
             raise ValidationFailed(_("Choose which income tax the buyer withheld."))
-        raise ValidationFailed(_("Choose PPh 23 or PPh 4(2) for income tax withheld from a supplier."))
+        raise ValidationFailed(_("Choose PPh 23, PPh 4(2) or PPh 21 for income tax withheld from a supplier."))
     if invoice.is_sales:
         withheld = income_tax.amount
     else:
@@ -481,9 +485,14 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
                 _("The base of the withholding must be more than zero and at most the bill's subtotal (%(amount)s).")
                 % {"amount": localized_rupiah(invoice.subtotal)}
             )
-        if income_tax.rate is None or not ZERO < income_tax.rate <= Decimal("100"):
-            raise ValidationFailed(_("Enter the withholding rate (%)."))
-        withheld = round_down_rupiah(income_tax.base * income_tax.rate / Decimal("100"))
+        if income_tax.kind == IncomeTaxWithheld.PPH_21:
+            from apps.payroll.domain import non_employee_pph21  # pure rules
+
+            withheld = non_employee_pph21(income_tax.base, has_tin=invoice.party_has_tin)
+        else:
+            if income_tax.rate is None or not ZERO < income_tax.rate <= Decimal("100"):
+                raise ValidationFailed(_("Enter the withholding rate (%)."))
+            withheld = round_down_rupiah(income_tax.base * income_tax.rate / Decimal("100"))
     if withheld <= 0 or withheld > amount:
         raise ValidationFailed(_("The income tax withheld must be more than zero and at most %(amount)s.") % {"amount": localized_rupiah(amount)})
     ensure_period_open(invoice, income_tax.kind, on)
@@ -581,7 +590,8 @@ def record_payment(
         income_tax_kind=income_tax.kind if income_tax_line else IncomeTaxWithheld.NONE,
         income_tax_withheld=withheld_income_tax,
         income_tax_account=income_tax_line.account if income_tax_line and invoice.is_sales else None,
-        income_tax_base=income_tax.base if payer else ZERO, income_tax_rate=income_tax.rate if payer else None,
+        income_tax_base=income_tax.base if payer else ZERO,
+        income_tax_rate=income_tax.rate if payer and income_tax.kind != IncomeTaxWithheld.PPH_21 else None,
         withholding_slip=income_tax.slip if income_tax_line else "", created_by=created_by,
     )
     invoice.amount_paid += amount

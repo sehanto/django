@@ -81,8 +81,8 @@ def pph_final_accruals(organization, year: int) -> dict[int, PphFinalAccrual]:
 
 
 def withholding_due(organization, year: int) -> dict[tuple[str, int], Decimal]:
-    """Income tax withheld from suppliers per (kind, month) of the payment, less what refunds
-    of the month gave back: the deposit due for that month."""
+    """Income tax withheld per (kind, month): from suppliers (by the payment's month, less what
+    refunds of the month gave back) and from salaries: the deposit due for that month."""
     from apps.invoicing.models import InvoiceKind, Payment, ReturnNote  # invoicing depends on taxes
 
     due: dict[tuple[str, int], Decimal] = {}
@@ -99,21 +99,23 @@ def withholding_due(organization, year: int) -> dict[tuple[str, int], Decimal]:
     from apps.payroll.models import PayrollRun  # PPh 21 withheld from salaries
 
     for run in PayrollRun.objects.for_organization(organization).filter(year=year, status=PayrollRun.Status.POSTED):
-        key = (PayerWithholding.PPH_21.value, run.month)
-        due[key] = due.get(key, ZERO) + run.pph21
+        for kind, amount in ((PayerWithholding.PPH_21, run.pph21), (PayerWithholding.PPH_26, run.pph26)):
+            if amount:
+                due[(kind.value, run.month)] = due.get((kind.value, run.month), ZERO) + amount
     return due
 
 
-def withholdings(organization, year: int, month: int):
-    """Payments to suppliers with income tax withheld in a month: one bukti potong each."""
+def withholdings_in_year(organization, year: int):
+    """Payments to suppliers with income tax withheld in a year: one bukti potong each."""
     from apps.invoicing.models import InvoiceKind, Payment
 
-    return (
-        Payment.objects.for_organization(organization)
-        .filter(status=Payment.Status.POSTED, invoice__kind=InvoiceKind.PURCHASE, income_tax_kind__in=PayerWithholding.values,
-                date__year=year, date__month=month)
-        .select_related("invoice", "invoice__contact").order_by("date", "id")
+    return Payment.objects.for_organization(organization).filter(
+        status=Payment.Status.POSTED, invoice__kind=InvoiceKind.PURCHASE, income_tax_kind__in=PayerWithholding.values, date__year=year,
     )
+
+
+def withholdings(organization, year: int, month: int):
+    return withholdings_in_year(organization, year).filter(date__month=month).select_related("invoice", "invoice__contact").order_by("date", "id")
 
 
 def withholding_deposits(organization, year: int) -> dict[tuple[str, int], WithholdingDeposit]:

@@ -13,16 +13,20 @@ from .services import PayInput
 
 
 class EmployeeForm(OrganizationFormMixin, BaseModelForm):
-    nik = DigitsField(label=_("NIK"), max_length=16, validators=[nik_validator], help_text=Employee._meta.get_field("nik").help_text)
+    nik = DigitsField(label=_("NIK"), max_length=16, required=False, validators=[nik_validator], help_text=Employee._meta.get_field("nik").help_text)
     npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator])
 
     class Meta:
         model = Employee
         fields = [
-            "name", "nik", "npwp", "email", "position", "ptkp_status", "start_date", "end_date", "base_salary",
+            "name", "kind", "pay_basis", "nationality", "nik", "passport_number", "npwp", "is_resident", "resident_since",
+            "gender", "address", "email", "position", "ptkp_status", "start_date", "end_date", "leaves_indonesia", "base_salary",
             "fixed_allowance", "bpjs_employment", "bpjs_health", "is_active",
         ]
-        field_classes = {"start_date": BusinessDateField, "end_date": BusinessDateField}
+        field_classes = {"start_date": BusinessDateField, "end_date": BusinessDateField, "resident_since": BusinessDateField}
+
+    def clean_nationality(self):
+        return (self.cleaned_data.get("nationality") or "").upper()
 
 
 class PayrollSettingsForm(OrganizationFormMixin, BaseModelForm):
@@ -50,20 +54,28 @@ class PayrollRunForm(OrganizationFormMixin, BaseForm):
         super().__init__(*args, **kwargs)
         self.employees = list(employees)
         for e in self.employees:
-            self.fields[f"base_{e.pk}"] = _money(_("Base salary"), e.base_salary)
+            # Daily workers: the month's wages, or the days worked at their daily wage.
+            self.fields[f"base_{e.pk}"] = _money(_("Base salary"), None if e.is_daily else e.base_salary)
             self.fields[f"allowance_{e.pk}"] = _money(_("Allowances"), e.fixed_allowance)
             self.fields[f"bonus_{e.pk}"] = _money(_("Bonus / THR"), 0)
+            if e.is_daily:
+                self.fields[f"days_{e.pk}"] = forms.IntegerField(label=_("Days worked"), min_value=0, max_value=31, required=False)
 
     @property
     def rows(self):
-        return [(e, self[f"base_{e.pk}"], self[f"allowance_{e.pk}"], self[f"bonus_{e.pk}"]) for e in self.employees]
-
-    def pays(self) -> list[PayInput]:
-        data = self.cleaned_data
         return [
-            PayInput(e, data.get(f"base_{e.pk}") or 0, data.get(f"allowance_{e.pk}") or 0, data.get(f"bonus_{e.pk}") or 0)
+            (e, self[f"base_{e.pk}"], self[f"allowance_{e.pk}"], self[f"bonus_{e.pk}"], self[f"days_{e.pk}"] if e.is_daily else None)
             for e in self.employees
         ]
+
+    def pays(self) -> list[PayInput]:
+        data, pays = self.cleaned_data, []
+        for e in self.employees:
+            base, days = data.get(f"base_{e.pk}"), data.get(f"days_{e.pk}") if e.is_daily else None
+            if base is None and days:
+                base = e.base_salary * days
+            pays.append(PayInput(e, base or 0, data.get(f"allowance_{e.pk}") or 0, data.get(f"bonus_{e.pk}") or 0, days))
+        return pays
 
 
 class PayForm(OrganizationFormMixin, BaseForm):

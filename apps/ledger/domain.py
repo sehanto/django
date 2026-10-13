@@ -97,6 +97,7 @@ class SystemRole(models.TextChoices):
     PPH_23_PAYABLE = "pph23_payable", _("Withheld PPh 23 payable")
     PPH_4_2_PAYABLE = "pph4_2_payable", _("Withheld PPh 4(2) payable")
     PPH_21_PAYABLE = "pph21_payable", _("Withheld PPh 21 payable")
+    PPH_26_PAYABLE = "pph26_payable", _("Withheld PPh 26 payable")
     BPJS_PAYABLE = "bpjs_payable", _("BPJS contributions payable")
 
 

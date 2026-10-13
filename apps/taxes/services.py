@@ -12,7 +12,7 @@ from apps.ledger.domain import SystemRole
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
-from .domain import Month, PayerWithholding
+from .domain import PAYER_WITHHOLDING_NAMES, Month, PayerWithholding
 from .models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
 from .selectors import pph_final_schedule, pph_final_withheld, withholding_due
 
@@ -177,7 +177,7 @@ def cancel_pph_final_payment(*, payment: PphFinalPayment, on: date, created_by=N
 
 PAYER_ROLES = {
     PayerWithholding.PPH_23: SystemRole.PPH_23_PAYABLE, PayerWithholding.PPH_4_2: SystemRole.PPH_4_2_PAYABLE,
-    PayerWithholding.PPH_21: SystemRole.PPH_21_PAYABLE,
+    PayerWithholding.PPH_21: SystemRole.PPH_21_PAYABLE, PayerWithholding.PPH_26: SystemRole.PPH_26_PAYABLE,
 }
 
 
@@ -185,8 +185,8 @@ PAYER_ROLES = {
 def record_withholding_deposit(
     *, organization, kind: str, year: int, month: Month, paid_on: date, cash_account, ntpn: str = "", created_by=None,
 ) -> WithholdingDeposit:
-    """Deposit (setoran) of the PPh 23 or 4(2) withheld from suppliers in a month: it settles
-    the withheld tax payable. Due by the 15th of the next month."""
+    """Deposit (setoran) of the PPh 23, 4(2), 21 or 26 withheld in a month: it settles the
+    withheld tax payable. Due by the 15th of the next month."""
     month = Month(month)
     kind = PayerWithholding(kind)
     if not cash_account.is_cash or cash_account.organization_id != organization.pk:
@@ -196,7 +196,7 @@ def record_withholding_deposit(
     amount = withholding_due(organization, year).get((kind, month), ZERO)
     if amount <= 0:
         raise ValidationFailed(_("No %(tax)s was withheld in %(period)s.") % {"tax": kind.label, **_period(month, year)})
-    tax = {PayerWithholding.PPH_23: "PPh 23", PayerWithholding.PPH_4_2: "PPh Pasal 4 ayat (2)", PayerWithholding.PPH_21: "PPh 21"}[kind]
+    tax = PAYER_WITHHOLDING_NAMES[kind]
     entry = create_journal_entry(
         organization=organization, date=paid_on, description=f"Setoran {tax} masa {month.tax_period(year)}", reference=ntpn,
         source=JournalEntry.Source.TAX, created_by=created_by,

@@ -16,7 +16,8 @@ from apps.core.views import flash_domain_error
 from apps.taxes.domain import Month
 from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
-from . import services
+from . import selectors, services
+from .domain import TaxScheme
 from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm
 from .models import Employee, PayrollRun, PayrollSettings, Payslip
 
@@ -109,7 +110,7 @@ class PayrollRunView(OrganizationMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            payslips=self.object.payslips.select_related("employee"),
+            payslips=self.object.payslips.select_related("employee"), schemes=TaxScheme,
             pay_form=PayForm(organization=self.organization, initial={"paid_on": timezone.localdate()}), **kwargs,
         )
 
@@ -125,15 +126,71 @@ class PayrollRunView(OrganizationMixin, DetailView):
         response.write("﻿")
         writer = csv.writer(response, delimiter=";")
         writer.writerow([
-            _("Name"), _("NIK"), _("NPWP"), _("PTKP status"), _("TER category"), _("Gross income"), _("Rate (%)"),
-            _("Last period of the year"), _("PPh 21"), _("Bukti potong no."),
+            _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("TER category"), _("Tax computed as"),
+            _("Days worked"), _("Gross income"), _("Rate (%)"),
+            # xgettext:no-python-format
+            _("Without NPWP (20% higher)"),
+            _("Tax withheld"), _("Bukti potong no."),
         ])
         for p in context["payslips"]:
+            e = p.employee
             writer.writerow([csv_safe(cell) for cell in (
-                p.employee.name, p.employee.nik, p.employee.npwp, p.ptkp_status, p.ter_category, p.taxable_gross,
-                p.ter_rate if p.ter_rate is not None else "", _("yes") if p.is_final_period else "", p.pph21, p.withholding_slip,
+                e.name, e.nik, e.passport_number, e.nationality, e.npwp, p.ptkp_status, p.ter_category, p.get_tax_scheme_display(),
+                p.days_worked or "", p.taxable_gross, p.ter_rate if p.ter_rate is not None else "", _("yes") if p.without_tin else "",
+                p.pph21, p.withholding_slip,
             )])
         return response
+
+
+class AnnualView(OrganizationMixin, TemplateView):
+    """The year's 1721-A1 statements of permanent employees (give them out by the end of January)."""
+
+    template_name = "payroll/annual.html"
+
+    def get_context_data(self, **kwargs):
+        year = self.kwargs["year"]
+        for name in ("year", "csv"):  # the URL's, replaced below
+            kwargs.pop(name, None)
+        return super().get_context_data(year=year, statements=selectors.annual_statements(self.organization, year), **kwargs)
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.kwargs.get("csv"):
+            return self.csv(context)
+        return super().render_to_response(context, **response_kwargs)
+
+    def csv(self, context):
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="1721-a1-{context["year"]}.csv"'
+        response.write("\ufeff")
+        writer = csv.writer(response, delimiter=";")
+        writer.writerow([
+            _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("First month"), _("Last month"),
+            _("Gross income"), _("Occupational costs"), _("Pension contributions"), _("Net income"), _("Net income for the year (annualised)"),
+            _("PTKP"), _("Taxable income"), _("PPh 21 for the year"), _("PPh 21 withheld"), _("Bukti potong no."),
+        ])
+        for st in context["statements"]:
+            if not st.is_final:
+                continue
+            e, a = st.employee, st.annual
+            writer.writerow([csv_safe(cell) for cell in (
+                e.name, e.nik, e.passport_number, e.nationality, e.npwp, st.final_slip.ptkp_status, st.first_month, st.last_month,
+                st.gross, a.occupational_costs, a.contributions, a.net, a.annual_net, a.ptkp, a.taxable, st.tax, st.withheld,
+                st.final_slip.withholding_slip,
+            )])
+        return response
+
+
+class AnnualStatementView(OrganizationMixin, TemplateView):
+    """Form 1721-A1 of one employee, to print."""
+
+    template_name = "payroll/a1.html"
+
+    def get_context_data(self, **kwargs):
+        employee = get_object_or_404(Employee.objects.for_organization(self.organization), pk=self.kwargs["pk"])
+        statement = selectors.annual_statement(employee, self.kwargs["year"])
+        if statement is None:
+            raise Http404
+        return super().get_context_data(st=statement, **kwargs)
 
 
 class PayslipView(OrganizationMixin, DetailView):

@@ -213,7 +213,11 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
             kinds.help_text = _("If you withhold income tax from this supplier: you deposit it and give them a bukti potong.")
             self.fields["income_tax_base"].required = False
             self.fields["income_tax_base"].help_text = _("The gross amount the tax is on (the services or rent, without PPN).")
-            self.fields["income_tax_rate"].help_text = _("Usually 2% for PPh 23 on services, 10% for PPh 4(2) on rent of land or buildings.")
+            self.fields["income_tax_rate"].help_text = _(
+                # xgettext:no-python-format
+                "Usually 2% for PPh 23 on services, 10% for PPh 4(2) on rent of land or buildings. "
+                "PPh 21 on an individual's fee needs no rate: it is the Art. 17 rates on 50% of the base (20% more without an NPWP or NIK)."
+            )
             self.initial.setdefault("income_tax_base", invoice.subtotal)
             self.initial.setdefault("income_tax_rate", PAYER_WITHHOLDING_RATES[PayerWithholding.PPH_23])
             self.fields["withholding_slip"].help_text = _("The bukti potong number, if Coretax has issued it already; it can be added later.")
@@ -245,7 +249,7 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
         if "income_tax_base" in self.fields:  # we withhold from a supplier
             if kind and not cleaned.get("income_tax_base"):
                 self.add_error("income_tax_base", _("Enter the amount the tax is withheld on."))
-            if kind and not cleaned.get("income_tax_rate"):
+            if kind and kind != IncomeTaxWithheld.PPH_21 and not cleaned.get("income_tax_rate"):
                 self.add_error("income_tax_rate", _("Enter the withholding rate (%)."))
             return cleaned
         amount = cleaned.get("income_tax_withheld")

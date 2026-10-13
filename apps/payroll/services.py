@@ -17,7 +17,10 @@ from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
-from .domain import TER_CATEGORY, PtkpStatus, annual_pph21, contributions, monthly_pph21
+from .domain import (
+    TER_CATEGORY, AnnualTax, EmployeeKind, PtkpStatus, TaxScheme, annual_pph21, contributions, daily_pph21, monthly_pph21, pph26,
+    with_surcharge,
+)
 from .models import Employee, PayrollRun, PayrollSettings, Payslip
 
 DEFAULT_ACCOUNTS = {"salary_expense_account": "6-1000", "benefits_expense_account": "6-1000", "salaries_payable_account": "2-1300"}
@@ -54,9 +57,21 @@ def month_end(year: int, month: int) -> date:
 
 
 def is_final_period(employee: Employee, year: int, month: int) -> bool:
-    """December, or the month the employee leaves: PPh 21 is then computed for the year."""
+    """For a permanent, resident employee: December, or the month they leave. PPh 21 is then
+    computed for the year."""
+    if employee.kind != EmployeeKind.PERMANENT or not employee.is_resident:
+        return False
     end = employee.end_date
     return month == 12 or (end is not None and (end.year, end.month) == (year, month))
+
+
+def annualizes(employee: Employee, year: int, month: int) -> bool:
+    """Tax residence began after January or ends before December: the year-end tax is computed
+    on annualised income (PMK 168/2023)."""
+    since, end = employee.resident_since, employee.end_date
+    arrived = since is not None and since.year == year and since.month > 1
+    leaving = employee.leaves_indonesia and end is not None and (end.year, end.month) == (year, month) and month < 12
+    return arrived or leaving
 
 
 @dataclass(frozen=True)
@@ -65,46 +80,71 @@ class PayInput:
     base_salary: Decimal
     allowances: Decimal = ZERO
     bonus: Decimal = ZERO  # bonus, THR and other irregular pay (no BPJS on it)
+    days: int | None = None  # days worked, for workers paid by the day
+
+
+def year_end_tax(employee: Employee, year: int, slips: list[Payslip], *, annualize: bool) -> AnnualTax:
+    """The year's PPh 21 of a permanent employee from their payslips of the year (the last one
+    included): Art. 17 on the year's net income less PTKP (status of the last payslip)."""
+    slips = [s for s in slips if s.tax_scheme in (TaxScheme.TER_MONTHLY, TaxScheme.ANNUAL)]
+    gross = sum((s.taxable_gross for s in slips), ZERO)
+    pension = sum((s.jht_employee + s.jp_employee for s in slips), ZERO)
+    return annual_pph21(slips[-1].ptkp_status, gross, pension, len(slips), annualize=annualize)
+
+
+def _earlier_slips(employee: Employee, year: int, month: int):
+    return list(Payslip.objects.filter(
+        employee=employee, run__year=year, run__month__lt=month, run__status=PayrollRun.Status.POSTED,
+    ).order_by("run__month"))
 
 
 def compute_payslip(settings: PayrollSettings, employee: Employee, year: int, month: int, pay: PayInput) -> Payslip:
-    """The employee's payslip for the month (unsaved): BPJS, PPh 21 and net pay."""
+    """The employee's payslip for the month (unsaved): BPJS, PPh 21 (or PPh 26) and net pay."""
     if min(pay.base_salary, pay.allowances, pay.bonus) < 0:
         raise ValidationFailed(_("Pay amounts can't be negative."))
     status = PtkpStatus(employee.ptkp_status)
     wage = pay.base_salary + pay.allowances
     c = contributions(wage, settings.rates(), employment=employee.bpjs_employment, health=employee.bpjs_health)
     gross = wage + pay.bonus + c.taxable_premiums
+    has_tin = bool(employee.tin)
     slip = Payslip(
         employee=employee, ptkp_status=status, base_salary=pay.base_salary, allowances=pay.allowances, bonus=pay.bonus,
         jkk=c.jkk, jkm=c.jkm, jht_employer=c.jht_employer, jp_employer=c.jp_employer, health_employer=c.health_employer,
         jht_employee=c.jht_employee, jp_employee=c.jp_employee, health_employee=c.health_employee,
         taxable_gross=gross, ter_category=TER_CATEGORY[status], is_final_period=is_final_period(employee, year, month),
+        without_tin=not has_tin and employee.is_resident,
     )
-    if slip.is_final_period:
-        earlier = Payslip.objects.filter(
-            employee=employee, run__year=year, run__month__lt=month, run__status=PayrollRun.Status.POSTED,
-        )
-        months = earlier.values("run__month").distinct().count() + 1
-        earlier_gross = sum((p.taxable_gross for p in earlier), ZERO)
-        earlier_contributions = sum((p.jht_employee + p.jp_employee for p in earlier), ZERO)
-        withheld = sum((p.pph21 for p in earlier), ZERO)
-        annual = annual_pph21(status, earlier_gross + gross, earlier_contributions + c.jht_employee + c.jp_employee, months)
-        slip.ter_rate, slip.pph21 = None, annual.tax - withheld  # negative: a refund to the employee
+    if not employee.is_resident:
+        slip.tax_scheme, slip.ter_rate, slip.pph21 = TaxScheme.PPH_26, None, pph26(gross)
+    elif employee.is_daily:
+        if not pay.days or pay.days < 1 or pay.days > 31:
+            raise ValidationFailed(_("Enter the days %(name)s worked in the month.") % {"name": employee.name})
+        slip.days_worked = pay.days
+        slip.tax_scheme, slip.ter_rate, tax = daily_pph21(gross, pay.days)
+        slip.pph21 = with_surcharge(tax, has_tin)
+    elif slip.is_final_period:
+        earlier = _earlier_slips(employee, year, month)
+        slip.tax_scheme, slip.ter_rate, slip.annualized = TaxScheme.ANNUAL, None, annualizes(employee, year, month)
+        annual = year_end_tax(employee, year, [*earlier, slip], annualize=slip.annualized)
+        withheld = sum((p.pph21 for p in earlier if p.tax_scheme == TaxScheme.TER_MONTHLY), ZERO)
+        slip.pph21 = with_surcharge(annual.tax, has_tin) - withheld  # negative: a refund to the employee
     else:
-        slip.ter_rate, slip.pph21 = monthly_pph21(status, gross)
+        slip.ter_rate, tax = monthly_pph21(status, gross)
+        slip.tax_scheme, slip.pph21 = TaxScheme.TER_MONTHLY, with_surcharge(tax, has_tin)
     slip.net_pay = wage + pay.bonus - c.employee - slip.pph21
     return slip
 
 
-def _ensure_pph21_open(organization, year: int, month: int) -> None:
+def _ensure_pph21_open(organization, year: int, month: int, *, pph26: bool = False) -> None:
     from apps.taxes.models import WithholdingDeposit  # taxes reads payroll lazily too
 
-    if WithholdingDeposit.objects.for_organization(organization).filter(
-        kind=WithholdingDeposit.Kind.PPH_21, year=year, month=month, status=WithholdingDeposit.Status.POSTED,
-    ).exists():
+    kinds = [WithholdingDeposit.Kind.PPH_21] + ([WithholdingDeposit.Kind.PPH_26] if pph26 else [])
+    for kind in WithholdingDeposit.objects.for_organization(organization).filter(
+        kind__in=kinds, year=year, month=month, status=WithholdingDeposit.Status.POSTED,
+    ).values_list("kind", flat=True):
         raise InvalidStateTransition(
-            _("The PPh 21 for %(period)s has already been deposited. Cancel that deposit first.") % {"period": f"{month:02d}/{year}"}
+            _("The %(tax)s for %(period)s has already been deposited. Cancel that deposit first.")
+            % {"tax": WithholdingDeposit.Kind(kind).label, "period": f"{month:02d}/{year}"}
         )
 
 
@@ -137,13 +177,17 @@ def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], cr
     pay_total = sum((s.pay for s in slips), ZERO)
     employer = sum((s.employer_contributions for s in slips), ZERO)
     employee_part = sum((s.employee_contributions for s in slips), ZERO)
-    pph21 = sum((s.pph21 for s in slips), ZERO)
+    pph21 = sum((s.pph21 for s in slips if not s.is_pph26), ZERO)
+    pph26_total = sum((s.pph21 for s in slips if s.is_pph26), ZERO)
+    if pph26_total:
+        _ensure_pph21_open(organization, year, month, pph26=True)
     net = sum((s.net_pay for s in slips), ZERO)
     pph21_account = get_system_account(organization, SystemRole.PPH_21_PAYABLE)
     lines = [
         JournalLineInput(settings.salary_expense_account, debit=pay_total),
         JournalLineInput(settings.benefits_expense_account, debit=employer),
         JournalLineInput(pph21_account, credit=pph21) if pph21 >= 0 else JournalLineInput(pph21_account, debit=-pph21),
+        JournalLineInput(get_system_account(organization, SystemRole.PPH_26_PAYABLE), credit=pph26_total),
         JournalLineInput(get_system_account(organization, SystemRole.BPJS_PAYABLE), credit=employer + employee_part),
         JournalLineInput(settings.salaries_payable_account, credit=net),
     ]
@@ -153,7 +197,7 @@ def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], cr
     )
     run = PayrollRun.objects.create(
         organization=organization, year=year, month=month, gross=pay_total, employer_contributions=employer,
-        employee_contributions=employee_part, pph21=pph21, net_pay=net, journal_entry=entry, created_by=created_by,
+        employee_contributions=employee_part, pph21=pph21, pph26=pph26_total, net_pay=net, journal_entry=entry, created_by=created_by,
     )
     for slip in slips:
         slip.run = run
@@ -216,7 +260,7 @@ def void_payroll(*, run: PayrollRun, on: date, voided_by=None) -> PayrollRun:
         raise InvalidStateTransition(_("Salaries or BPJS of this payroll have been paid; it can't be voided."))
     if PayrollRun.objects.for_organization(run.organization).filter(year=run.year, month__gt=run.month, status=PayrollRun.Status.POSTED).exists():
         raise InvalidStateTransition(_("Later payrolls of the year build on this one. Void them first."))
-    _ensure_pph21_open(run.organization, run.year, run.month)
+    _ensure_pph21_open(run.organization, run.year, run.month, pph26=bool(run.pph26))
     reverse_journal_entry(entry=run.journal_entry, date=max(on, run.journal_entry.date), created_by=voided_by,
                           description=f"Pembatalan gaji masa {run.period}")
     run.status = PayrollRun.Status.VOID

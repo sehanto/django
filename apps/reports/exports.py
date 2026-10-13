@@ -266,24 +266,26 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
     (
         Table("employees.csv", gettext_lazy("Employees."), (
-            C("name"), C("nik"), C("npwp"), C("email"), C("position"), C("ptkp_status"), C("start_date"), C("end_date"),
-            C("base_salary"), C("fixed_allowance"), C("bpjs_employment"), C("bpjs_health"), C("is_active"),
+            C("name"), C("kind"), C("pay_basis"), C("nationality"), C("nik"), C("passport_number"), C("npwp"), C("is_resident"),
+            C("resident_since"), C("leaves_indonesia"), C("gender"), C("address"), C("email"), C("position"), C("ptkp_status"),
+            C("start_date"), C("end_date"), C("base_salary"), C("fixed_allowance"), C("bpjs_employment"), C("bpjs_health"), C("is_active"),
         )),
         Employee, "organization", ("name", "id"),
     ),
     (
         Table("payroll_runs.csv", gettext_lazy("Monthly payroll runs."), (
             C("year"), C("month"), C("status"), C("gross"), C("employer_contributions"), C("employee_contributions"), C("pph21"),
-            C("net_pay"), C("journal_entry__number", gettext_lazy("Journal entry")), C("paid_on"), C("bpjs_paid_on"),
+            C("pph26"), C("net_pay"), C("journal_entry__number", gettext_lazy("Journal entry")), C("paid_on"), C("bpjs_paid_on"),
         )),
         PayrollRun, "organization", ("year", "month", "id"),
     ),
     (
-        Table("payslips.csv", gettext_lazy("Payslips, with their PPh 21."), (
+        Table("payslips.csv", gettext_lazy("Payslips, with their PPh 21 or PPh 26."), (
             C("run__year", gettext_lazy("Year")), C("run__month", gettext_lazy("Month")), C("employee__name", gettext_lazy("Employee")),
             C("employee__nik", gettext_lazy("NIK")), C("ptkp_status"), C("base_salary"), C("allowances"), C("bonus"), C("jkk"), C("jkm"),
             C("jht_employer"), C("jp_employer"), C("health_employer"), C("jht_employee"), C("jp_employee"), C("health_employee"),
-            C("taxable_gross"), C("ter_category"), C("ter_rate"), C("is_final_period"), C("pph21"), C("net_pay"), C("withholding_slip"),
+            C("taxable_gross"), C("ter_category"), C("ter_rate"), C("is_final_period"), C("tax_scheme"), C("days_worked"), C("annualized"),
+            C("without_tin"), C("pph21"), C("net_pay"), C("withholding_slip"),
         )),
         Payslip, "run__organization", ("run__year", "run__month", "employee__name", "id"),
     ),

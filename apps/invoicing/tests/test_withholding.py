@@ -206,7 +206,7 @@ def test_each_side_withholds_its_own_income_taxes(cv, cv_invoice, account, organ
         organization=organization, kind=InvoiceKind.PURCHASE, contact=supplier, date=date(2026, 3, 5),
         lines=[InvoiceLineInput("Sewa", account("6-1100"), D("1"), D("1000000"))],
     ))
-    with pytest.raises(ValidationFailed, match="PPh 23 or PPh 4"):  # PPh 22 is withheld by buyers, not from suppliers
+    with pytest.raises(ValidationFailed, match="PPh 23, PPh 4"):  # PPh 22 is withheld by buyers, not from suppliers
         services.record_payment(
             invoice=bill, date=date(2026, 3, 20), amount=D("1000000"), cash_account=account("1-1100"),
             income_tax=IncomeTaxInput(IncomeTaxWithheld.PPH_22, base=D("1000000"), rate=D("1.5")),

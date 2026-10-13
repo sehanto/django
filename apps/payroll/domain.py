@@ -1,11 +1,24 @@
-"""Payroll rules (pure functions): BPJS contributions and PPh 21 for permanent employees.
+"""Payroll rules (pure functions): BPJS contributions, PPh 21 and PPh 26.
 
-PPh 21 (PP 58/2023, PMK 168/2023): in every month but the last of the year the employer
-withholds the monthly effective rate (TER) of the employee's category on the month's gross
-income, which includes the JKK, JKM and BPJS Kesehatan premiums the employer pays. In the
-last month (December, or the month the employee leaves) the year's tax is computed with the
-Art. 17 rates on the year's net income less PTKP, and the withholding is that tax less what
-was withheld in the earlier months (it can be negative: a refund to the employee).
+PPh 21 (PP 58/2023, PMK 168/2023):
+
+* Permanent employees: in every month but the last of the year the employer withholds the
+  monthly effective rate (TER) of the employee's category on the month's gross income, which
+  includes the JKK, JKM and BPJS Kesehatan premiums the employer pays. In the last month
+  (December, or the month the employee leaves) the year's tax is computed with the Art. 17
+  rates on the year's net income less PTKP, and the withholding is that tax less what was
+  withheld in the earlier months (it can be negative: a refund to the employee). When the
+  employee became an Indonesian tax resident after January, or stops being one before
+  December, the net income is annualised and the tax prorated to the months (``annualize``).
+* Non-permanent employees paid monthly: the monthly TER every month, with no year-end step.
+  Paid by the day: the daily TER on the average daily gross (0% up to Rp450.000, 0.5% up to
+  Rp2,5 juta); above that, Art. 17 on 50% of each day's gross.
+* Non-employees (fees for services, ``non_employee_pph21``): Art. 17 on 50% of the gross,
+  per payment (not cumulative).
+* Without an NPWP (or a NIK that serves as one) the PPh 21 is 20% higher (Art. 21(5a) UU PPh).
+
+PPh 26: 20% of the gross pay of an employee who is not an Indonesian tax resident (final;
+a tax treaty may lower it, which this doesn't handle).
 """
 
 from dataclasses import dataclass
@@ -39,6 +52,28 @@ PTKP = {
     PtkpStatus.TK3: Decimal("67500000"), PtkpStatus.K0: Decimal("58500000"), PtkpStatus.K1: Decimal("63000000"),
     PtkpStatus.K2: Decimal("67500000"), PtkpStatus.K3: Decimal("72000000"),
 }
+
+
+class EmployeeKind(models.TextChoices):
+    PERMANENT = "permanent", _("Permanent employee (pegawai tetap)")
+    NON_PERMANENT = "non_permanent", _("Non-permanent / casual worker (pegawai tidak tetap)")
+
+
+class PayBasis(models.TextChoices):
+    MONTHLY = "monthly", _("Monthly")
+    DAILY = "daily", _("Daily")
+
+
+class TaxScheme(models.TextChoices):
+    """How a payslip's withholding was computed (shown on the payslip and bukti potong)."""
+
+    TER_MONTHLY = "ter_monthly", _("PPh 21, monthly TER")
+    ANNUAL = "annual", _("PPh 21, year-end (Art. 17)")
+    TER_DAILY = "ter_daily", _("PPh 21, daily TER")
+    # xgettext:no-python-format
+    DAILY_ARTICLE_17 = "daily_art17", _("PPh 21, 50% of daily gross at Art. 17 rates")
+    # xgettext:no-python-format
+    PPH_26 = "pph26", _("PPh 26 (non-resident, 20%)")
 
 
 class TerCategory(models.TextChoices):
@@ -85,6 +120,12 @@ TER = {
     """),
 }
 
+# Lampiran PP 58/2023: daily TER for non-permanent workers not paid monthly, by gross per day.
+DAILY_TER = [(Decimal("450000"), Decimal("0")), (Decimal("2500000"), Decimal("0.5"))]
+NON_EMPLOYEE_BASE = Decimal("50")  # % of gross: the base of PPh 21 for non-employees and high daily pay
+NO_TIN_SURCHARGE = Decimal("120")  # % of the tax, without an NPWP
+PPH_26_RATE = Decimal("20")
+
 # Art. 17(1)(a) UU PPh as amended by UU HPP: layers of taxable income (PKP) per year.
 ARTICLE_17 = [
     (Decimal("60000000"), Decimal("5")), (Decimal("250000000"), Decimal("15")), (Decimal("500000000"), Decimal("25")),
@@ -124,24 +165,57 @@ def article_17(taxable: Decimal) -> Decimal:
     return _whole(tax)
 
 
+def with_surcharge(tax: Decimal, has_tin: bool) -> Decimal:
+    """PPh 21 of a recipient without an NPWP is 20% higher."""
+    return tax if has_tin or tax <= 0 else _whole(tax * NO_TIN_SURCHARGE / HUNDRED)
+
+
+def daily_pph21(gross: Decimal, days: int) -> tuple[str, Decimal | None, Decimal]:
+    """(scheme, daily TER %, PPh 21) on ``gross`` earned in ``days`` days by a worker paid by the day."""
+    per_day = gross / days
+    for upper, rate in DAILY_TER:
+        if per_day <= upper:
+            return TaxScheme.TER_DAILY, rate, _whole(gross * rate / HUNDRED)
+    return TaxScheme.DAILY_ARTICLE_17, None, article_17(per_day * NON_EMPLOYEE_BASE / HUNDRED) * days
+
+
+def non_employee_pph21(gross: Decimal, *, has_tin: bool = True) -> Decimal:
+    """PPh 21 on a fee paid to a non-employee: Art. 17 on 50% of the gross, per payment."""
+    return with_surcharge(article_17(gross * NON_EMPLOYEE_BASE / HUNDRED), has_tin)
+
+
+def pph26(gross: Decimal) -> Decimal:
+    return _whole(gross * PPH_26_RATE / HUNDRED)
+
+
 @dataclass(frozen=True)
 class AnnualTax:
     gross: Decimal
     occupational_costs: Decimal
     contributions: Decimal  # the employee's own JHT and JP
-    net: Decimal
+    net: Decimal  # of the months worked
+    annual_net: Decimal  # the same, or annualised
     ptkp: Decimal
     taxable: Decimal  # PKP, rounded down to a thousand rupiah
-    tax: Decimal
+    annual_tax: Decimal  # Art. 17 on the PKP
+    tax: Decimal  # the year's PPh 21 (prorated when annualised)
+    months: int
+    annualized: bool
 
 
-def annual_pph21(status: str, gross: Decimal, contributions: Decimal, months: int) -> AnnualTax:
-    """The year's PPh 21 of a permanent employee who worked ``months`` months of it."""
+def annual_pph21(status: str, gross: Decimal, contributions: Decimal, months: int, *, annualize: bool = False) -> AnnualTax:
+    """The year's PPh 21 of a permanent employee who worked ``months`` months of it. With
+    ``annualize`` (tax residence began or ended during the year) the net income is annualised
+    and the tax prorated to the months."""
     occupational = min(quantize(gross * OCCUPATIONAL_RATE / HUNDRED), OCCUPATIONAL_MONTHLY_CAP * months)
     net = max(gross - occupational - contributions, ZERO)
+    annualize = annualize and months < 12
+    annual_net = quantize(net * 12 / months) if annualize else net
     ptkp = PTKP[PtkpStatus(status)]
-    taxable = (max(net - ptkp, ZERO) / THOUSAND).quantize(Decimal("1"), rounding=ROUND_FLOOR) * THOUSAND
-    return AnnualTax(gross, occupational, contributions, net, ptkp, taxable, article_17(taxable))
+    taxable = (max(annual_net - ptkp, ZERO) / THOUSAND).quantize(Decimal("1"), rounding=ROUND_FLOOR) * THOUSAND
+    annual_tax = article_17(taxable)
+    tax = _whole(annual_tax * months / 12) if annualize else annual_tax
+    return AnnualTax(gross, occupational, contributions, net, annual_net, ptkp, taxable, annual_tax, tax, months, annualize)
 
 
 @dataclass(frozen=True)

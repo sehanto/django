@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Bukti potong" %}{% endblock %}
 {% block content %}
-<a href="{% url 'taxes:withholding' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "PPh 23 & 4(2) withheld" %}</a>
+<a href="{% url 'taxes:withholding' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "Withheld income tax" %}</a>
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed with period=month.label %}Bukti potong {{ period }} {{ year }}{% endblocktranslate %}</h1>
   {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>CSV</a>{% endif %}
@@ -11,12 +11,13 @@
   <tbody>{% for p in payments %}
     <tr><td>{{ p.date|date:"d/m/Y" }}<div class="small"><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></div></td>
       <td>{{ p.invoice.party_name }}{% if p.invoice.party_npwp %}<div class="small text-secondary">{{ p.invoice.party_npwp }}</div>{% endif %}</td>
-      <td>{{ p.get_income_tax_kind_display }}</td><td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{{ p.income_tax_rate|floatformat:"-2" }}%</td>
+      <td>{{ p.get_income_tax_kind_display }}</td><td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span class="small">{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
       <td class="num fw-semibold">{{ p.income_tax_withheld|rupiah }}</td>
       <td>{% if p.withholding_slip %}{{ p.withholding_slip }}{% elif can_write %}
         <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="d-flex gap-1">{% csrf_token %}<input type="hidden" name="next" value="withholding">
           <input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'Bukti potong no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No income tax was withheld from suppliers this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
+{% if run %}<p class="mt-3 mb-0">{% url 'payroll:run' run.pk as url %}{% blocktranslate trimmed with period=run.period %}PPh 21 and PPh 26 withheld from salaries: <a href="{{ url }}">payroll {{ period }}</a>.{% endblocktranslate %}</p>{% endif %}
 <p class="small text-secondary mt-2">{% translate "Create each bukti potong in Coretax (eBupot) from this list, then record its number here." %}</p>
 {% endblock %}

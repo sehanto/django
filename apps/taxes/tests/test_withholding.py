@@ -62,7 +62,7 @@ def test_we_withhold_pph_23_and_deposit_it(organization, bill, account):
 
 
 def test_withholding_is_checked(organization, bill, account):
-    with pytest.raises(ValidationFailed, match="PPh 23 or PPh 4"):
+    with pytest.raises(ValidationFailed, match="PPh 23, PPh 4"):
         services.record_payment(invoice=bill, date=date(2026, 3, 10), amount=D("5000000"), cash_account=account("1-1100"),
                                 income_tax=IncomeTaxInput(IncomeTaxWithheld.PPH_FINAL, base=D("1"), rate=D("1")))
     with pytest.raises(ValidationFailed, match="subtotal"):

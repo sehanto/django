@@ -24,7 +24,7 @@ from .forms import PphFinalPaymentForm, TaxRateForm, WithholdingDepositForm
 from .models import PphFinalAccrual, PphFinalPayment, WithholdingDeposit
 from .selectors import (
     pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, tax_rates_for, withholding_deposits,
-    withholding_due, withholdings,
+    withholding_due, withholdings, withholdings_in_year,
 )
 
 
@@ -194,10 +194,15 @@ class WithholdingView(OrganizationMixin, TemplateView):
 
         runs = {r.month: r.pk for r in PayrollRun.objects.for_organization(self.organization).filter(year=year, status=PayrollRun.Status.POSTED)}
 
+        from_suppliers = set(
+            withholdings_in_year(self.organization, year).values_list("income_tax_kind", "date__month").distinct()
+        )
+
         def detail_url(kind, month):
-            if kind == PayerWithholding.PPH_21:
-                return reverse("payroll:run", args=[runs[month]]) if month in runs else ""
-            return reverse("taxes:withholding_month", args=[year, month])
+            """The month's bukti potong: supplier payments (with a link to payroll), or the payroll run."""
+            if (kind, month) in from_suppliers or kind not in (PayerWithholding.PPH_21, PayerWithholding.PPH_26):
+                return reverse("taxes:withholding_month", args=[year, month])
+            return reverse("payroll:run", args=[runs[month]]) if month in runs else ""
 
         rows = [
             WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)), detail_url(kind, month))
@@ -222,8 +227,11 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
             raise Http404
         for name in ("year", "month", "csv"):  # the URL's, replaced below
             kwargs.pop(name, None)
+        from apps.payroll.models import PayrollRun  # payroll depends on taxes
+
+        run = PayrollRun.objects.for_organization(self.organization).filter(year=year, month=month, status=PayrollRun.Status.POSTED).first()
         return super().get_context_data(
-            year=year, month=Month(month), payments=withholdings(self.organization, year, month), **kwargs,
+            year=year, month=Month(month), payments=withholdings(self.organization, year, month), run=run, **kwargs,
         )
 
     def render_to_response(self, context, **response_kwargs):
@@ -245,7 +253,8 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
             invoice = p.invoice
             writer.writerow([csv_safe(cell) for cell in (
                 p.date.isoformat(), p.number, invoice.number, invoice.party_name, invoice.party_tin, invoice.party_id_number,
-                p.get_income_tax_kind_display(), p.income_tax_base, p.income_tax_rate, p.income_tax_withheld, p.withholding_slip,
+                p.get_income_tax_kind_display(), p.income_tax_base,
+                p.income_tax_rate if p.income_tax_rate is not None else _("50% × Art. 17"), p.income_tax_withheld, p.withholding_slip,
             )])
         return response
 

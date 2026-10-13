@@ -235,6 +235,11 @@ class Invoice(TenantOwnedModel):
         return self._party("contact_id_number", self.contact.id_number)
 
     @property
+    def party_has_tin(self) -> bool:
+        """An NPWP, or the NIK that serves as one: without either, PPh 21 is 20% higher."""
+        return bool(self.party_tin) or (self.party_id_type == BuyerIdType.NATIONAL_ID and len(self.party_id_number) == 16)
+
+    @property
     def party_id_label(self) -> str:
         return BuyerIdType(self.party_id_type).label if self.party_id_type else ""
 
@@ -426,11 +431,12 @@ class IncomeTaxWithheld(models.TextChoices):
     PPH_FINAL = "pph_final", _("PPh Final 0.5% (PP 55/2022, with a Surat Keterangan)")
     # xgettext:no-python-format
     PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
+    PPH_21 = "pph21", _("PPh 21 (fee to an individual who is not an employee)")
 
 
 # Which the customer withholds from us (receipts), and which we withhold from suppliers (disbursements).
 RECEIPT_WITHHOLDING = (IncomeTaxWithheld.PPH_22, IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_FINAL)
-PAYER_WITHHOLDING = (IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_4_2)
+PAYER_WITHHOLDING = (IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_4_2, IncomeTaxWithheld.PPH_21)
 
 
 class Payment(TenantOwnedModel):

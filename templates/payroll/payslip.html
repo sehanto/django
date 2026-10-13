@@ -5,7 +5,7 @@
 <div class="card mt-2" style="max-width: 720px;"><div class="card-body">
   <div class="d-flex justify-content-between"><div><div class="fw-semibold">{{ current_organization.name }}</div><div class="h5 mb-0">{% translate "Payslip" %} {{ slip.run.period }}</div></div>
     <button class="btn btn-outline-secondary no-print" onclick="window.print()"><i class="bi bi-printer"></i></button></div>
-  <p class="mt-3 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="small text-secondary">NIK {{ slip.employee.nik }} · {{ slip.ptkp_status }}</span></p>
+  <p class="mt-3 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="small text-secondary">{% if slip.employee.nik %}NIK {{ slip.employee.nik }}{% else %}{% translate "Passport" %} {{ slip.employee.passport_number }} ({{ slip.employee.nationality }}){% endif %} · {{ slip.ptkp_status }}</span></p>
   <table class="table table-sm mb-0">
     <tr><td>{% translate "Base salary" %}</td><td class="num">{{ slip.base_salary|rupiah }}</td></tr>
     <tr><td>{% translate "Allowances" %}</td><td class="num">{{ slip.allowances|rupiah }}</td></tr>
@@ -14,7 +14,7 @@
     {% if slip.jht_employee %}<tr><td>{% translate "JHT (employee)" %}</td><td class="num">−{{ slip.jht_employee|rupiah }}</td></tr>{% endif %}
     {% if slip.jp_employee %}<tr><td>{% translate "JP (employee)" %}</td><td class="num">−{{ slip.jp_employee|rupiah }}</td></tr>{% endif %}
     {% if slip.health_employee %}<tr><td>{% translate "BPJS Kesehatan (employee)" %}</td><td class="num">−{{ slip.health_employee|rupiah }}</td></tr>{% endif %}
-    <tr><td>{% translate "PPh 21" %}{% if slip.is_final_period %} ({% translate "annual calculation" %}){% else %} ({{ slip.ter_rate|floatformat:"-2" }}% × {{ slip.taxable_gross|rupiah }}){% endif %}</td><td class="num">−{{ slip.pph21|rupiah }}</td></tr>
+    <tr><td>{% if slip.is_pph26 %}PPh 26{% else %}PPh 21{% endif %} ({{ slip.get_tax_scheme_display }}{% if slip.ter_rate is not None %}: {{ slip.ter_rate|floatformat:"-2" }}% × {{ slip.taxable_gross|rupiah }}{% endif %}{% if slip.annualized %}, {% translate "annualised" %}{% endif %}{% if slip.without_tin %}, {% translate "20% higher without an NPWP" %}{% endif %})</td><td class="num">−{{ slip.pph21|rupiah }}</td></tr>
     <tr class="fw-bold"><td>{% translate "Net pay" %}</td><td class="num">{{ slip.net_pay|rupiah }}</td></tr>
   </table>
   <p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
