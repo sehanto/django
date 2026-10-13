@@ -9,13 +9,9 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BEGIN="# >>> EA-System ($PROJECT_DIR) >>>"
 END="# <<< EA-System ($PROJECT_DIR) <<<"
-# Blocks installed before the rename from BukuUMKM are replaced too.
-LEGACY_BEGIN="# >>> BukuUMKM ($PROJECT_DIR) >>>"
-LEGACY_END="# <<< BukuUMKM ($PROJECT_DIR) <<<"
 
 current="$(crontab -l 2>/dev/null || true)"
-others="$(printf '%s\n' "$current" | awk -v b="$BEGIN" -v e="$END" -v lb="$LEGACY_BEGIN" -v le="$LEGACY_END" \
-    '$0 == b || $0 == lb {skip = 1; next} $0 == e || $0 == le {skip = 0; next} !skip')"
+others="$(printf '%s\n' "$current" | awk -v b="$BEGIN" -v e="$END" '$0 == b {skip = 1; next} $0 == e {skip = 0; next} !skip')"
 
 if [ "${1:-}" = "--remove" ]; then
     printf '%s\n' "$others" | sed '/./,$!d' | crontab -
