@@ -460,7 +460,8 @@ many addresses *and* accounts still needs an IP-reputation service at the proxy.
 
 ### Login CAPTCHA
 
-The sign-in, sign-up, password-reset and "send the confirmation link again" forms use
+The sign-in, sign-up, password-reset, "send the confirmation link again" and "wrong email
+address?" forms use
 [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/).
 
 **Sign-up and password reset** always show it. Turnstile usually passes without a puzzle.
@@ -470,8 +471,10 @@ the form says nothing else and does nothing:
 - bots can't send reset emails to strangers;
 - bots can't use up the per-email and per-IP reset limits of real users.
 
-**Resending the email confirmation link** always shows it too. Nothing is sent, and the
-hourly email limit isn't used up, until it is solved.
+**Resending the email confirmation link** and **correcting the address** (on the
+confirm-your-email page) always show it too. Nothing is checked or sent, and the hourly
+email limit isn't used up, until it is solved. This also means the correction form can't
+be used to test whether a password is right.
 
 **Sign-in** shows it only after repeated failures, so normal users never see it:
 
@@ -482,8 +485,8 @@ hourly email limit isn't used up, until it is solved.
   token (`apps/accounts/captcha.py`, server-side `siteverify`). Bots therefore can't keep
   testing passwords. If Cloudflare can't be reached, every protected form fails closed
   with "complete the security check". Each token is bound to its form (Turnstile
-  `action` `login`, `signup`, `password_reset` or `resend_verification`), so a token solved
-  on one form is refused on the others.
+  `action` `login`, `signup`, `password_reset`, `resend_verification` or `change_email`), so a
+  token solved on one form is refused on the others.
 - A correct sign-in, or a password reset, clears the email's count. The address's count
   runs until the window ends.
 - django-axes still locks the email+IP pair after 5 failures, even for someone who solves

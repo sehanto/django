@@ -251,6 +251,7 @@ def _pending_context(request, change_form=None) -> dict:
         "change_form": change_form or ChangeEmailForm(user=request.user),
         "lifetime": timedelta(seconds=settings.EMAIL_VERIFICATION_TIMEOUT),
         "captcha": captcha.widget(captcha.CaptchaAction.RESEND_VERIFICATION),
+        "change_captcha": captcha.widget(captcha.CaptchaAction.CHANGE_EMAIL),
     }
 
 
@@ -284,7 +285,7 @@ class ResendVerificationView(LoginRequiredMixin, View):
 
 class ChangeEmailView(LoginRequiredMixin, View):
     def post(self, request):
-        form = ChangeEmailForm(request.POST, user=request.user)
+        form = ChangeEmailForm(request.POST, user=request.user, request=request)
         if form.is_valid():
             try:
                 previous = request.user.email

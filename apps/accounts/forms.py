@@ -97,8 +97,11 @@ class NewPasswordForm(SanitizedFormMixin, SetPasswordForm):
     """Choose a new password (passwords are never sanitized; Django uses ``strip=False``)."""
 
 
-class ChangeEmailForm(BaseForm):
-    """Correct a mistyped address before it is confirmed (requires the current password)."""
+class ChangeEmailForm(CaptchaFirstFormMixin, BaseForm):
+    """Correct a mistyped address before it is confirmed (requires the current password).
+    The CAPTCHA comes first, so the form can't be used to test passwords or to email strangers."""
+
+    captcha_action = captcha.CaptchaAction.CHANGE_EMAIL
 
     email = forms.EmailField(label=_("Correct email address"), max_length=254)
     password = forms.CharField(label=_("Current password"), widget=forms.PasswordInput, strip=False)

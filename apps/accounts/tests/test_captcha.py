@@ -147,6 +147,20 @@ def test_resending_the_confirmation_link_needs_a_solved_captcha(client, db):
     assert len(mail.outbox) == 2  # the hourly limit was not used up
 
 
+def test_correcting_the_address_needs_a_solved_captcha_before_the_password_is_checked(client, db):
+    sign_up(client, email="dewi@exmaple.com", token=FAKE_PASSING_TOKEN)
+    page = client.get(reverse("accounts:verify_email_pending")).content.decode()
+    assert 'data-action="change_email"' in page and 'data-action="resend_verification"' in page
+
+    change = reverse("accounts:verify_email_change")
+    wrong = client.post(change, {"email": "dewi@example.com", "password": "nope"})
+    assert list(wrong.context["change_form"].errors) == ["__all__"]  # no "password is incorrect" without it
+    assert User.objects.filter(email="dewi@exmaple.com").exists() and len(mail.outbox) == 1
+
+    client.post(change, {"email": "dewi@example.com", "password": "Kuat-Sekali-99", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert User.objects.filter(email="dewi@example.com").exists()
+
+
 # --- Talking to Cloudflare -------------------------------------------------------------
 
 

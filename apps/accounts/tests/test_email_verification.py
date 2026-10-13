@@ -100,11 +100,11 @@ def test_resend_is_throttled(client, site):
 
 def test_mistyped_address_can_be_corrected(client, site, django_capture_on_commit_callbacks):
     sign_up(client, email="dewi@exmaple.com")
-    wrong_password = client.post(reverse("accounts:verify_email_change"), {"email": "dewi@example.com", "password": "nope"})
+    wrong_password = client.post(reverse("accounts:verify_email_change"), {"email": "dewi@example.com", "password": "nope", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert wrong_password.status_code == 200 and wrong_password.context["change_form"].errors["password"]
 
     with django_capture_on_commit_callbacks(execute=True):  # the email is sent after the change commits
-        client.post(reverse("accounts:verify_email_change"), {"email": " Dewi@Example.com ", "password": PASSWORD})
+        client.post(reverse("accounts:verify_email_change"), {"email": " Dewi@Example.com ", "password": PASSWORD, RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     user = User.objects.get(pk=User.objects.get(email="dewi@example.com").pk)
     assert mail.outbox[-1].to == ["dewi@example.com"]
     old_link, new_link = link_in(mail.outbox[0]), link_in(mail.outbox[-1])
@@ -116,7 +116,7 @@ def test_mistyped_address_can_be_corrected(client, site, django_capture_on_commi
 
 def test_cannot_switch_to_an_address_already_registered(client, site, user):
     sign_up(client)
-    response = client.post(reverse("accounts:verify_email_change"), {"email": user.email, "password": PASSWORD})
+    response = client.post(reverse("accounts:verify_email_change"), {"email": user.email, "password": PASSWORD, RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert response.context["change_form"].errors["email"]
 
 

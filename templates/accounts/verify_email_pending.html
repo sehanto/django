@@ -14,6 +14,7 @@
   <summary class="small">{% translate "Wrong email address?" %}</summary>
   <form method="post" action="{% url 'accounts:verify_email_change' %}" class="mt-2">{% csrf_token %}
     {% include "partials/form_fields.html" with form=change_form col="col-12" %}
+    {% include "accounts/_captcha.html" with captcha=change_captcha %}
     <button class="btn btn-outline-primary w-100 mt-3">{% translate "Update and send link" %}</button>
   </form>
 </details>
