@@ -103,6 +103,8 @@ def test_production_requires_encryption_keys(monkeypatch):
     monkeypatch.setenv("XENDIT_SECRET_KEY", "xnd_" + "production_" + "NOT-A-REAL-KEY")
     monkeypatch.setenv("XENDIT_CALLBACK_TOKEN", "x")
     monkeypatch.setenv("EMAIL_URL", "smtp://localhost:25")
+    monkeypatch.setenv("DEFAULT_FROM_EMAIL", "BukuUMKM <noreply@example.com>")
+    monkeypatch.setenv("SITE_URL", "https://app.example.com")
     monkeypatch.setenv("TURNSTILE_SITE_KEY", "x")
     monkeypatch.setenv("TURNSTILE_SECRET_KEY", "x")
     for name in ("BILLING_SELLER_NAME", "BILLING_SELLER_NPWP", "BILLING_SELLER_ADDRESS"):

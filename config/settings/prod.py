@@ -1,4 +1,8 @@
-from django.core.exceptions import ImproperlyConfigured
+from email.utils import parseaddr
+from urllib.parse import urlsplit
+
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.validators import validate_email
 
 from .base import *  # noqa: F403
 
@@ -44,8 +48,28 @@ BILLING_SELLER_NAME = _required("BILLING_SELLER_NAME", "it is printed on subscri
 BILLING_SELLER_NPWP = _required("BILLING_SELLER_NPWP", "it is printed on subscription receipts")
 BILLING_SELLER_ADDRESS = _required("BILLING_SELLER_ADDRESS", "it is printed on subscription receipts")
 
-# SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
-vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
+# Email must really go out: password resets, address confirmations, security notices and
+# renewal reminders. SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
+_LOCAL_HOSTS = ("localhost", "127.0.0.1", "::1")
+_email = env.email_url_config(_required("EMAIL_URL", "emails (password reset, confirmations) must be delivered"))  # noqa: F405
+if _email.get("EMAIL_BACKEND") != "django.core.mail.backends.smtp.EmailBackend" or not _email.get("EMAIL_HOST"):
+    raise ImproperlyConfigured("EMAIL_URL must be an SMTP server (smtp://, smtp+tls:// or smtps://); other backends deliver nothing.")
+if _email["EMAIL_HOST"] not in _LOCAL_HOSTS and not (_email.get("EMAIL_USE_TLS") or _email.get("EMAIL_USE_SSL")):
+    raise ImproperlyConfigured("EMAIL_URL must use TLS (smtp+tls:// or smtps://) for a remote server, or the password travels in clear text.")
+vars().update(_email)
+
+DEFAULT_FROM_EMAIL = _required("DEFAULT_FROM_EMAIL", "it is the sender of every email")
+_from_address = parseaddr(DEFAULT_FROM_EMAIL)[1]
+try:
+    validate_email(_from_address)
+except ValidationError:
+    raise ImproperlyConfigured("DEFAULT_FROM_EMAIL must be an address, e.g. BukuUMKM <noreply@example.com>.") from None
+
+# Links in emails are built from SITE_URL (never the request's Host header).
+SITE_URL = _required("SITE_URL", "links in emails are built from it")
+_site = urlsplit(SITE_URL)
+if _site.scheme != "https" or not _site.hostname or _site.hostname in _LOCAL_HOSTS:
+    raise ImproperlyConfigured("SITE_URL must be the public https:// address, e.g. https://app.example.com.")
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
 
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).

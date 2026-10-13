@@ -27,7 +27,9 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
 
 LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"  # assembled so no key-shaped literal sits in the repo
 PRODUCTION_ENV = {
-    "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x", "EMAIL_URL": "smtp://localhost:25",
+    "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x",
+    "EMAIL_URL": "smtp+tls://user:pass@smtp.example.com:587", "DEFAULT_FROM_EMAIL": "BukuUMKM <noreply@example.com>",
+    "SITE_URL": "https://app.example.com",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": "x",
     "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
@@ -74,3 +76,22 @@ def test_production_requires_real_turnstile_keys(monkeypatch, name, value):
 def test_production_requires_live_xendit_keys(monkeypatch, name, value):
     with pytest.raises(ImproperlyConfigured, match=name):
         load_production_settings(monkeypatch, **{name: value})
+
+
+@pytest.mark.parametrize(("name", "value"), [
+    ("EMAIL_URL", None), ("EMAIL_URL", ""), ("EMAIL_URL", "consolemail://"), ("EMAIL_URL", "dummymail://"),
+    ("EMAIL_URL", "filemail:///tmp/mail"), ("EMAIL_URL", "memorymail://"),
+    ("EMAIL_URL", "smtp://user:pass@smtp.example.com:25"),  # remote without TLS: password in clear text
+    ("DEFAULT_FROM_EMAIL", None), ("DEFAULT_FROM_EMAIL", " "), ("DEFAULT_FROM_EMAIL", "BukuUMKM"),
+    ("SITE_URL", None), ("SITE_URL", "http://app.example.com"), ("SITE_URL", "https://localhost:8000"),
+    ("SITE_URL", "https://127.0.0.1"),
+])
+def test_production_requires_real_email_settings(monkeypatch, name, value):
+    with pytest.raises(ImproperlyConfigured, match=name):
+        load_production_settings(monkeypatch, **{name: value})
+
+
+@pytest.mark.parametrize("url", ["smtps://user:pass@smtp.example.com:465", "smtp://localhost:25"])
+def test_production_accepts_encrypted_or_local_smtp(monkeypatch, url):
+    prod = load_production_settings(monkeypatch, EMAIL_URL=url)
+    assert prod.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"

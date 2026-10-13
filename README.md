@@ -678,7 +678,10 @@ placeholder values), `TURNSTILE_SITE_KEY` and
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
 and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above. Production refuses to start
 without a live Xendit secret key (`xnd_production_…`; development keys take no real
-payments) and the Xendit callback token.
+payments) and the Xendit callback token. Email must really be delivered: `EMAIL_URL`
+has to be SMTP (encrypted with `smtp+tls://` or `smtps://`, unless it is a relay on
+localhost), `DEFAULT_FROM_EMAIL` a valid address, and `SITE_URL` the public `https://`
+address (links in emails are built from it).
 
 Throttling needs a cache shared by all workers. The default in production is Django's
 database cache (set `CACHE_URL` to a Redis URL to use Redis instead); create its table once:
