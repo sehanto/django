@@ -25,8 +25,9 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
         assert [w.id for w in check_billing_seller(None)] == (["core.W003"] if warned else [])
 
 
+LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"  # assembled so no key-shaped literal sits in the repo
 PRODUCTION_ENV = {
-    "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": "x", "XENDIT_CALLBACK_TOKEN": "x", "EMAIL_URL": "smtp://localhost:25",
+    "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": LIVE_KEY, "XENDIT_CALLBACK_TOKEN": "x", "EMAIL_URL": "smtp://localhost:25",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": "x",
     "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
@@ -62,5 +63,14 @@ def test_production_starts_with_seller_details(monkeypatch):
 @pytest.mark.parametrize("name", ["TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"])
 @pytest.mark.parametrize("value", [None, "", "1x00000000000000000000AA", "2x0000000000000000000000000000000AA", "3x00000000000000000000FF"])
 def test_production_requires_real_turnstile_keys(monkeypatch, name, value):
+    with pytest.raises(ImproperlyConfigured, match=name):
+        load_production_settings(monkeypatch, **{name: value})
+
+
+@pytest.mark.parametrize(("name", "value"), [
+    ("XENDIT_SECRET_KEY", None), ("XENDIT_SECRET_KEY", ""), ("XENDIT_SECRET_KEY", "xnd_development_NOT-A-REAL-KEY"),
+    ("XENDIT_SECRET_KEY", "x"), ("XENDIT_CALLBACK_TOKEN", None), ("XENDIT_CALLBACK_TOKEN", "  "),
+])
+def test_production_requires_live_xendit_keys(monkeypatch, name, value):
     with pytest.raises(ImproperlyConfigured, match=name):
         load_production_settings(monkeypatch, **{name: value})

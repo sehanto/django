@@ -144,6 +144,7 @@ BILLING_GATEWAY = env("BILLING_GATEWAY", default="fake")  # "xendit" in producti
 XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY", default="")
 XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN", default="")
 XENDIT_API_URL = env("XENDIT_API_URL", default="https://api.xendit.co")
+XENDIT_LIVE_KEY_PREFIX = "xnd_production_"  # live secret keys; production refuses others (prod.py)
 BILLING_CHECKOUT_HOURS = env.int("BILLING_CHECKOUT_HOURS", default=24)  # payment link lifetime
 BILLING_REMINDER_DAYS = env.int("BILLING_REMINDER_DAYS", default=7)  # remind this many days before expiry
 BILLING_GRACE_DAYS = env.int("BILLING_GRACE_DAYS", default=7)  # keep the plan this long after expiry

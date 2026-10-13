@@ -1,4 +1,15 @@
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *  # noqa: F403
+
+
+def _required(name: str, why: str) -> str:
+    """A setting production can't run without: missing or blank stops the start."""
+    value = env.str(name, default="").strip()  # noqa: F405
+    if not value:
+        raise ImproperlyConfigured(f"Set {name}: {why}.")
+    return value
+
 
 DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")  # noqa: F405 - fail fast if missing
@@ -17,24 +28,21 @@ LOGGING = {
     "root": {"handlers": ["console"], "level": "INFO"},
 }
 
-# Real payments only: fail fast if Xendit is not configured.
+# Real payments only: a live Xendit secret key (a development key would make every
+# checkout a test payment that never charges anyone) and the webhook verification token.
 BILLING_GATEWAY = "xendit"
-XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY")  # noqa: F405
-XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
-# The seller printed on every subscription receipt: required and non-blank in production
-# (check --deploy, core.W003, also flags placeholder values).
-def _required(name: str) -> str:
-    value = env.str(name, default="").strip()  # noqa: F405
-    if not value:
-        from django.core.exceptions import ImproperlyConfigured
+XENDIT_SECRET_KEY = _required("XENDIT_SECRET_KEY", "subscriptions are paid through Xendit")
+if not XENDIT_SECRET_KEY.startswith(XENDIT_LIVE_KEY_PREFIX):  # noqa: F405
+    raise ImproperlyConfigured(
+        f"XENDIT_SECRET_KEY must be a live key ({XENDIT_LIVE_KEY_PREFIX}...); development keys take no real payments."  # noqa: F405
+    )
+XENDIT_CALLBACK_TOKEN = _required("XENDIT_CALLBACK_TOKEN", "it verifies Xendit's payment webhooks")
 
-        raise ImproperlyConfigured(f"Set {name}: it is printed on subscription receipts.")
-    return value
-
-
-BILLING_SELLER_NAME = _required("BILLING_SELLER_NAME")
-BILLING_SELLER_NPWP = _required("BILLING_SELLER_NPWP")
-BILLING_SELLER_ADDRESS = _required("BILLING_SELLER_ADDRESS")
+# The seller printed on every subscription receipt (check --deploy, core.W003, also flags
+# placeholder values).
+BILLING_SELLER_NAME = _required("BILLING_SELLER_NAME", "it is printed on subscription receipts")
+BILLING_SELLER_NPWP = _required("BILLING_SELLER_NPWP", "it is printed on subscription receipts")
+BILLING_SELLER_ADDRESS = _required("BILLING_SELLER_ADDRESS", "it is printed on subscription receipts")
 
 # SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
 vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
@@ -43,10 +51,8 @@ CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).
 # Cloudflare's public test keys would let every visitor through, so they are refused.
 def _turnstile_key(name: str) -> str:
-    value = _required(name)
+    value = _required(name, "the login CAPTCHA needs it")
     if value.startswith(TURNSTILE_TEST_KEY_PREFIXES):  # noqa: F405
-        from django.core.exceptions import ImproperlyConfigured
-
         raise ImproperlyConfigured(f"{name} is one of Cloudflare's test keys; set the key of your Turnstile widget.")
     return value
 

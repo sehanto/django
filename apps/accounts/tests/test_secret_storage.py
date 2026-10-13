@@ -100,7 +100,7 @@ def test_production_requires_encryption_keys(monkeypatch):
     import environ
 
     monkeypatch.setenv("DJANGO_SECRET_KEY", "x")
-    monkeypatch.setenv("XENDIT_SECRET_KEY", "x")
+    monkeypatch.setenv("XENDIT_SECRET_KEY", "xnd_" + "production_" + "NOT-A-REAL-KEY")
     monkeypatch.setenv("XENDIT_CALLBACK_TOKEN", "x")
     monkeypatch.setenv("EMAIL_URL", "smtp://localhost:25")
     monkeypatch.setenv("TURNSTILE_SITE_KEY", "x")

@@ -676,7 +676,9 @@ placeholder values), `TURNSTILE_SITE_KEY` and
 `TURNSTILE_SECRET_KEY` (see [Login CAPTCHA](#login-captcha)), `FIELD_ENCRYPTION_KEYS` (see
 [How 2FA secrets are stored](#how-2fa-secrets-are-stored)), `SITE_URL` (the public
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
-and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above.
+and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above. Production refuses to start
+without a live Xendit secret key (`xnd_production_…`; development keys take no real
+payments) and the Xendit callback token.
 
 Throttling needs a cache shared by all workers. The default in production is Django's
 database cache (set `CACHE_URL` to a Redis URL to use Redis instead); create its table once:
