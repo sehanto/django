@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.utils import ErrorDict
 from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
@@ -21,7 +22,7 @@ class LoginForm(SanitizedFormMixin, AuthenticationForm):
 
     def clean(self):
         # After repeated failures, the password is only checked once the CAPTCHA is solved.
-        if captcha.is_required(self.request, self.data.get("username")) and not captcha.verify(self.request):
+        if captcha.is_required(self.request, self.data.get("username")) and not captcha.verify(self.request, captcha.CaptchaAction.LOGIN):
             raise forms.ValidationError(self.error_messages["captcha"], code="captcha")
         return super().clean()
 
@@ -38,6 +39,22 @@ class SignUpForm(BaseForm):
     password = forms.CharField(label=_("Password"), widget=forms.PasswordInput, strip=False)
     organization_name = forms.CharField(label=_("Business name"), max_length=200)
     legal_form = forms.ChoiceField(label=_("Legal form"), choices=Organization.LegalForm.choices)
+
+    def __init__(self, *args, request=None, **kwargs):
+        self.request = request
+        super().__init__(*args, **kwargs)
+
+    def full_clean(self):
+        # The CAPTCHA comes first and alone: without it, no field is validated, so the
+        # "already registered" message can't be used to probe for accounts.
+        if self.is_bound and not captcha.verify(self.request, captcha.CaptchaAction.SIGNUP):
+            self._errors = ErrorDict()
+            self.cleaned_data = {}
+            self.add_error(None, forms.ValidationError(
+                _("Please complete the security check, then submit the form again."), code="captcha"
+            ))
+            return
+        super().full_clean()
 
     def clean_email(self):
         email = self.cleaned_data["email"].lower()

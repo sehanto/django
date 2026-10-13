@@ -460,16 +460,22 @@ many addresses *and* accounts still needs an IP-reputation service at the proxy.
 
 ### Login CAPTCHA
 
-The sign-in page uses [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/),
-but only after repeated failures, so normal users never see it:
+The sign-in and sign-up pages use [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/).
+
+**Sign-up** always shows it. Turnstile usually passes without a puzzle. It is checked
+before any other field: without a solved CAPTCHA the form says nothing else, so bots
+can't use "This email is already registered" to find out who has an account.
+
+**Sign-in** shows it only after repeated failures, so normal users never see it:
 
 - After `LOGIN_CAPTCHA_AFTER_FAILURES` (2) failed sign-ins from one IP address **or** for
   one email within `LOGIN_CAPTCHA_WINDOW_MINUTES` (60), the form shows the widget.
   Turnstile usually passes without a puzzle.
 - While the CAPTCHA is required, the password is not checked until Cloudflare confirms the
   token (`apps/accounts/captcha.py`, server-side `siteverify`). Bots therefore can't keep
-  testing passwords. If Cloudflare can't be reached, sign-in fails closed with "complete
-  the security check".
+  testing passwords. If Cloudflare can't be reached, sign-in (and sign-up) fail closed
+  with "complete the security check". Each token is bound to its form (Turnstile
+  `action` `login` or `signup`), so a token solved on one page is refused on the other.
 - A correct sign-in, or a password reset, clears the email's count. The address's count
   runs until the window ends.
 - django-axes still locks the email+IP pair after 5 failures, even for someone who solves

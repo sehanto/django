@@ -7,6 +7,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import translation
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts.models import User
 from apps.core.exceptions import PeriodLocked
 from apps.invoicing.models import Invoice
@@ -76,7 +77,7 @@ def test_signup_keeps_the_language_being_browsed(client, db):
     client.post(SET_LANGUAGE, {"language": "en", "next": "/"})
     client.post(reverse("accounts:signup"), {
         "full_name": "Made Wirawan", "email": "made@example.com", "password": "Kuat-Sekali-99",
-        "organization_name": "Warung Made", "legal_form": "perorangan",
+        "organization_name": "Warung Made", "legal_form": "perorangan", RESPONSE_FIELD: FAKE_PASSING_TOKEN,
     })
     assert User.objects.get(email="made@example.com").language == "en"
 
@@ -127,7 +128,7 @@ def test_password_with_surrounding_spaces_works_for_sign_up_and_login(client, db
     password = " Kuat-Sekali-99 "
     client.post(reverse("accounts:signup"), {
         "full_name": "Ayu", "email": "ayu@example.com", "password": password,
-        "organization_name": "Warung Ayu", "legal_form": "perorangan",
+        "organization_name": "Warung Ayu", "legal_form": "perorangan", RESPONSE_FIELD: FAKE_PASSING_TOKEN,
     })
     client.logout()
     response = client.post(reverse("accounts:login"), {"username": "ayu@example.com", "password": password})

@@ -63,7 +63,7 @@ class LoginView(auth_views.LoginView):
     def get_context_data(self, **kwargs):
         # After a failed POST the failure is already counted, so the widget appears right away.
         email = self.request.POST.get("username", "") if self.request.method == "POST" else ""
-        return super().get_context_data(captcha=captcha.widget(self.request, email), **kwargs)
+        return super().get_context_data(captcha=captcha.login_widget(self.request, email), **kwargs)
 
     def form_valid(self, form):
         user = form.get_user()
@@ -95,6 +95,12 @@ class LogoutView(auth_views.LogoutView):
 class SignUpView(FormView):
     template_name = "accounts/signup.html"
     form_class = SignUpForm
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "request": self.request}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(captcha=captcha.widget(captcha.CaptchaAction.SIGNUP), **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:

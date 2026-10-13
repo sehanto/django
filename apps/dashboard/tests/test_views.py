@@ -8,6 +8,7 @@ import pytest
 from django.core import mail
 from django.urls import reverse
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.contacts.models import Contact
 from apps.invoicing import services as invoicing
 from apps.invoicing.models import Invoice, InvoiceKind
@@ -68,7 +69,7 @@ def test_anonymous_redirected_to_login(client, db):
 def test_signup_creates_organization_and_requires_email_confirmation(client, db):
     response = client.post(reverse("accounts:signup"), {
         "full_name": "Dewi Lestari", "email": "dewi@example.com", "password": "Kuat-Sekali-99",
-        "organization_name": "Batik Dewi", "legal_form": "perorangan",
+        "organization_name": "Batik Dewi", "legal_form": "perorangan", RESPONSE_FIELD: FAKE_PASSING_TOKEN,
     })
     assert response["Location"] == reverse("accounts:verify_email_pending")
     assert client.get(reverse("dashboard:home"))["Location"] == reverse("accounts:verify_email_pending")

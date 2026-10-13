@@ -11,6 +11,7 @@ from django.urls import reverse
 
 from apps.accounts import captcha
 from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
+from apps.accounts.models import User
 from apps.core.checks import check_captcha_keys
 
 LOGIN = reverse("accounts:login")
@@ -31,7 +32,7 @@ def fail(client, email, times, ip="203.0.113.20"):
 
 
 def shows_widget(response) -> bool:
-    return 'class="cf-turnstile"' in response.content.decode()
+    return 'class="cf-turnstile' in response.content.decode()
 
 
 def test_normal_sign_in_never_sees_a_captcha(client, user):
@@ -76,6 +77,40 @@ def test_widget_follows_the_interface_language(client, user, language):
     assert f'data-language="{language}"' in client.get(LOGIN, REMOTE_ADDR="203.0.113.20").content.decode()
 
 
+# --- Sign-up: always required ----------------------------------------------------------
+
+SIGNUP = reverse("accounts:signup")
+
+
+def sign_up(client, email="dewi@example.com", token=None):
+    data = {"full_name": "Dewi Lestari", "email": email, "password": "Kuat-Sekali-99",
+            "organization_name": "Batik Dewi", "legal_form": "perorangan"}
+    if token:
+        data[RESPONSE_FIELD] = token
+    return client.post(SIGNUP, data)
+
+
+def test_sign_up_always_shows_the_captcha(client, db):
+    html = client.get(SIGNUP).content.decode()
+    assert 'class="cf-turnstile' in html and 'data-action="signup"' in html and captcha.SCRIPT_URL in html
+
+
+def test_sign_up_needs_a_solved_captcha(client, db):
+    for token in (None, "forged"):
+        response = sign_up(client, token=token)
+        assert response.status_code == 200 and not User.objects.filter(email="dewi@example.com").exists()
+    assert sign_up(client, token=FAKE_PASSING_TOKEN).status_code == 302
+    assert User.objects.filter(email="dewi@example.com").exists()
+
+
+def test_sign_up_reveals_nothing_about_existing_accounts_without_the_captcha(client, user):
+    response = sign_up(client, email=user.email)
+    errors = response.context["form"].errors
+    assert list(errors) == ["__all__"]  # only the security check, no "already registered"
+    assert "already registered" not in str(errors) and "sudah terdaftar" not in str(errors)
+    assert "email" in sign_up(client, email=user.email, token=FAKE_PASSING_TOKEN).context["form"].errors
+
+
 # --- Talking to Cloudflare -------------------------------------------------------------
 
 
@@ -88,13 +123,13 @@ def turnstile_request(token="token-from-widget"):
     ({"success": True, "action": "login"}, True),
     ({"success": True}, True),
     ({"success": False, "error-codes": ["invalid-input-response"]}, False),
-    ({"success": True, "action": "signup"}, False),
+    ({"success": True, "action": "signup"}, False),  # solved for the sign-up form
     (["not", "an", "object"], False),
 ])
 def test_turnstile_verification(reply, accepted):
     with mock.patch("apps.accounts.captcha.requests.post") as post:
         post.return_value.json.return_value = reply
-        assert captcha.verify(turnstile_request()) is accepted
+        assert captcha.verify(turnstile_request(), captcha.CaptchaAction.LOGIN) is accepted
     post.assert_called_once()
     assert post.call_args.kwargs["data"] == {"secret": "secret-key", "response": "token-from-widget", "remoteip": "203.0.113.5"}
 
@@ -102,10 +137,10 @@ def test_turnstile_verification(reply, accepted):
 @override_settings(CAPTCHA_BACKEND="turnstile")
 def test_turnstile_fails_closed():
     with mock.patch("apps.accounts.captcha.requests.post", side_effect=requests.ConnectionError):
-        assert captcha.verify(turnstile_request()) is False
+        assert captcha.verify(turnstile_request(), captcha.CaptchaAction.LOGIN) is False
     with mock.patch("apps.accounts.captcha.requests.post") as post:
-        assert captcha.verify(turnstile_request("")) is False
-        assert captcha.verify(turnstile_request("x" * 2049)) is False
+        assert captcha.verify(turnstile_request(""), captcha.CaptchaAction.LOGIN) is False
+        assert captcha.verify(turnstile_request("x" * 2049), captcha.CaptchaAction.LOGIN) is False
     post.assert_not_called()
 
 

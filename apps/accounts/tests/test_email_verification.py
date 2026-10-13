@@ -8,6 +8,7 @@ from django.core import mail, signing
 from django.core.cache import cache
 from django.urls import reverse
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import services
 from apps.accounts.models import User
 
@@ -30,7 +31,7 @@ def site(settings, db):
 def sign_up(client, email="dewi@example.com", **extra):
     return client.post(SIGNUP, {
         "full_name": "Dewi Lestari", "email": email, "password": PASSWORD,
-        "organization_name": "Batik Dewi", "legal_form": "perorangan", **extra,
+        "organization_name": "Batik Dewi", "legal_form": "perorangan", RESPONSE_FIELD: FAKE_PASSING_TOKEN, **extra,
     })
 
 

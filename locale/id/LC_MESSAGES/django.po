@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 06:59+0700\n"
+"POT-Creation-Date: 2026-10-13 07:22+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -34,65 +34,69 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:16 apps/accounts/forms.py:36
-#: apps/accounts/forms.py:63 templates/accounts/profile.html:6
+#: apps/accounts/forms.py:17 apps/accounts/forms.py:37
+#: apps/accounts/forms.py:80 templates/accounts/profile.html:6
 #: templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
 
-#: apps/accounts/forms.py:19
+#: apps/accounts/forms.py:20
 msgid "Please complete the security check, then sign in again."
 msgstr "Selesaikan pemeriksaan keamanan, lalu masuk kembali."
 
-#: apps/accounts/forms.py:35
+#: apps/accounts/forms.py:36
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: apps/accounts/forms.py:38 templates/accounts/security.html:49
+#: apps/accounts/forms.py:39 templates/accounts/security.html:49
 msgid "Password"
 msgstr "Kata sandi"
 
-#: apps/accounts/forms.py:39 apps/tenants/forms.py:47
+#: apps/accounts/forms.py:40 apps/tenants/forms.py:47
 msgid "Business name"
 msgstr "Nama usaha"
 
-#: apps/accounts/forms.py:40 apps/tenants/forms.py:48
+#: apps/accounts/forms.py:41 apps/tenants/forms.py:48
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:45 apps/accounts/services.py:87
+#: apps/accounts/forms.py:54
+msgid "Please complete the security check, then submit the form again."
+msgstr "Selesaikan pemeriksaan keamanan, lalu kirim formulir kembali."
+
+#: apps/accounts/forms.py:62 apps/accounts/services.py:87
 msgid "This email is already registered."
 msgstr "Email sudah terdaftar."
 
-#: apps/accounts/forms.py:77
+#: apps/accounts/forms.py:94
 msgid "Correct email address"
 msgstr "Alamat email yang benar"
 
-#: apps/accounts/forms.py:78 apps/accounts/forms.py:122
+#: apps/accounts/forms.py:95 apps/accounts/forms.py:139
 msgid "Current password"
 msgstr "Kata sandi saat ini"
 
-#: apps/accounts/forms.py:87 apps/accounts/forms.py:131
+#: apps/accounts/forms.py:104 apps/accounts/forms.py:148
 msgid "Your password is incorrect."
 msgstr "Kata sandi Anda salah."
 
-#: apps/accounts/forms.py:96
+#: apps/accounts/forms.py:113
 msgid "Authentication code"
 msgstr "Kode autentikasi"
 
-#: apps/accounts/forms.py:97
+#: apps/accounts/forms.py:114
 msgid ""
 "The 6-digit code from your authenticator app, or one of your backup codes."
 msgstr ""
 "Kode 6 digit dari aplikasi autentikator Anda, atau salah satu kode cadangan "
 "Anda."
 
-#: apps/accounts/forms.py:113
+#: apps/accounts/forms.py:130
 #, python-format
 msgid "Don't ask for a code on this device for %(days)s days"
 msgstr "Jangan minta kode di perangkat ini selama %(days)s hari"
 
-#: apps/accounts/forms.py:114
+#: apps/accounts/forms.py:131
 msgid "Only on your own device, never on a shared or public computer."
 msgstr ""
 "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
@@ -213,30 +217,30 @@ msgstr ""
 "Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak"
 " akan diminta kode selama %(days)s hari: %(device)s."
 
-#: apps/accounts/views.py:133
+#: apps/accounts/views.py:139
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:144
+#: apps/accounts/views.py:150
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
-#: apps/accounts/views.py:262
+#: apps/accounts/views.py:268
 #, python-format
 msgid "We sent a new confirmation link to %(email)s."
 msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
 
-#: apps/accounts/views.py:264
+#: apps/accounts/views.py:270
 msgid "Too many emails were requested. Please wait an hour and try again."
 msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
 
-#: apps/accounts/views.py:276
+#: apps/accounts/views.py:282
 #, python-format
 msgid "Email address updated. We sent a confirmation link to %(email)s."
 msgstr ""
 "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
 
-#: apps/accounts/views.py:293
+#: apps/accounts/views.py:299
 msgid ""
 "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has "
 "been set up."
@@ -244,40 +248,40 @@ msgstr ""
 "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah"
 " disiapkan."
 
-#: apps/accounts/views.py:295
+#: apps/accounts/views.py:301
 msgid "Email address confirmed. You can sign in now."
 msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
-#: apps/accounts/views.py:305
+#: apps/accounts/views.py:311
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
 msgstr[0] ""
 "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
-#: apps/accounts/views.py:324
+#: apps/accounts/views.py:330
 msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
-#: apps/accounts/views.py:336 apps/accounts/views.py:427
-#: apps/accounts/views.py:524
+#: apps/accounts/views.py:342 apps/accounts/views.py:433
+#: apps/accounts/views.py:530
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr ""
 "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba "
 "lagi."
 
-#: apps/accounts/views.py:338
+#: apps/accounts/views.py:344
 msgid "Too many wrong codes. Please sign in again."
 msgstr "Terlalu banyak kode salah. Silakan masuk kembali."
 
-#: apps/accounts/views.py:356
+#: apps/accounts/views.py:362
 #, python-format
 msgid "You signed in with a backup code. %(count)s backup code is left."
 msgid_plural ""
 "You signed in with a backup code. %(count)s backup codes are left."
 msgstr[0] "Anda masuk dengan kode cadangan. Tersisa %(count)s kode cadangan."
 
-#: apps/accounts/views.py:390
+#: apps/accounts/views.py:396
 #, python-format
 msgid ""
 "%(count)s remembered device forgotten. It will be asked for a code at the "
@@ -289,22 +293,22 @@ msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi "
 "saat masuk berikutnya."
 
-#: apps/accounts/views.py:459
+#: apps/accounts/views.py:465
 msgid ""
 "That code is not valid. Check that the time on your phone is correct and try"
 " again."
 msgstr ""
 "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:465
+#: apps/accounts/views.py:471
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:494
+#: apps/accounts/views.py:500
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:516 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:522 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid ""
 "You can't turn off two-factor authentication while %(organizations)s "
@@ -313,7 +317,7 @@ msgstr ""
 "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s "
 "mewajibkannya."
 
-#: apps/accounts/views.py:530
+#: apps/accounts/views.py:536
 msgid ""
 "Two-factor authentication is off. Your account is protected by your password"
 " only."
@@ -2567,7 +2571,7 @@ msgstr "Kembali ke halaman masuk"
 #: templates/accounts/login.html:2 templates/accounts/login.html:4
 #: templates/accounts/login.html:12
 #: templates/accounts/password_reset_complete.html:6
-#: templates/accounts/signup.html:9
+#: templates/accounts/signup.html:10
 msgid "Sign in"
 msgstr "Masuk"
 
@@ -2807,7 +2811,7 @@ msgstr ""
 msgid "No activity recorded yet."
 msgstr "Belum ada aktivitas yang tercatat."
 
-#: templates/accounts/signup.html:2 templates/accounts/signup.html:7
+#: templates/accounts/signup.html:2 templates/accounts/signup.html:8
 msgid "Sign up"
 msgstr "Daftar"
 
@@ -2815,7 +2819,7 @@ msgstr "Daftar"
 msgid "Sign up and create your business"
 msgstr "Daftar & buat usaha Anda"
 
-#: templates/accounts/signup.html:9
+#: templates/accounts/signup.html:10
 msgid "Already have an account?"
 msgstr "Sudah punya akun?"
 

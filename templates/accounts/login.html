@@ -6,7 +6,7 @@
   {% include "partials/form_fields.html" with col="col-12" %}
   {% if captcha %}
     <p class="small text-secondary mt-3 mb-2">{% translate "Several sign-in attempts failed. Please confirm you are not a robot." %}</p>
-    <div class="cf-turnstile" data-sitekey="{{ captcha.site_key }}" data-action="{{ captcha.action }}" data-language="{{ captcha.language }}" data-theme="auto" data-size="flexible"></div>
+    {% include "accounts/_captcha.html" %}
   {% endif %}
   <div class="text-end small mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
   <button class="btn btn-primary w-100 mt-3">{% translate "Sign in" %}</button>
