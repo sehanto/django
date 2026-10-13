@@ -79,7 +79,9 @@ def test_archive_holds_the_complete_books(books, other_organization):
     assert len(journal[0]) == len(ENTRY_LINES.columns)
     assert len(journal) - 1 == JournalLine.objects.filter(entry__organization=books).count() == 6
     assert ["JU/2026/01/0001", "2026-01-02", "Posted", "General journal", "Setoran modal awal"] == journal[1][:5]
-    assert journal[1][-2:] == ["10000000.00", "0.00"]
+    row = dict(zip(journal[0], journal[1]))
+    assert (row["Debit"], row["Credit"]) == ("10000000.00", "0.00")
+    assert row["Posting sequence"] == "1" and len(row["Entry hash"]) == 64
 
     invoice = files["invoices.csv"][1]
     assert invoice[1:4] == ["Sales", "INV/2026/01/0001", "PT Pelanggan"] and "250001.00" in invoice
@@ -98,7 +100,7 @@ def test_headers_follow_the_language_and_data_stays_as_recorded(books):
     assert files["journal_entries.csv"][0][:2] == ["Nomor", "Tanggal"]
     assert files["journal_entries.csv"][1][2] == "Diposting"
     assert files["journal_entries.csv"][1][4] == "Setoran modal awal"
-    assert files["journal_entries.csv"][1][-2] == "10000000.00"  # no locale separators in amounts
+    assert files["journal_entries.csv"][1][11] == "10000000.00"  # no locale separators in amounts
 
 
 def test_spreadsheet_formulas_are_neutralized(organization):

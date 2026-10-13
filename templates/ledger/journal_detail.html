@@ -18,6 +18,11 @@
   </div>{% endif %}
 </div>
 <p>{{ entry.description }}</p>
+{% if entry.is_posted %}<p class="small text-secondary">
+  {% if entry.posted_by %}{% blocktranslate trimmed with user=entry.posted_by.full_name when=entry.posted_at|date:"d M Y H:i" %}Posted by {{ user }} on {{ when }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with when=entry.posted_at|date:"d M Y H:i" %}Posted on {{ when }}{% endblocktranslate %}{% endif %}
+  · {% blocktranslate trimmed with sequence=entry.posting_sequence %}ledger entry #{{ sequence }}{% endblocktranslate %}
+  · <span title="{% translate 'SHA-256 of this entry and the previous one: any later change breaks the chain.' %}">{% translate "hash" %} <code>{{ entry.entry_hash|slice:":12" }}</code></span>
+</p>{% endif %}
 {% if entry.reversal_of %}{% url 'ledger:journal_detail' entry.reversal_of.pk as original_url %}
   <div class="alert alert-info">{% blocktranslate trimmed with url=original_url number=entry.reversal_of.number %}This entry reverses <a href="{{ url }}">{{ number }}</a>.{% endblocktranslate %}</div>
 {% endif %}

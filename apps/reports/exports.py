@@ -24,7 +24,7 @@ from apps.contacts.models import Contact
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
 from apps.ledger.models import Account, JournalLine
-from apps.ledger.selectors import account_balances
+from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import PphFinalPayment, TaxRate
 from apps.tenants.models import Organization
 
@@ -102,6 +102,7 @@ ENTRY_LINES = Table(
         C("entry__reversal_of__number", gettext_lazy("Reverses entry")), C("entry__posted_at"),
         C("account__code", gettext_lazy("Account code")), C("account__name"),
         C("description", gettext_lazy("Line description")), C("debit"), C("credit"),
+        C("entry__posted_by__email", gettext_lazy("Posted by")), C("entry__posting_sequence"), C("entry__entry_hash"),
     ),
 )
 TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
@@ -193,6 +194,7 @@ def _organization_rows(organization: Organization) -> Iterator[list[str]]:
 
 
 def _readme(organization: Organization, exported_at: datetime, exported_by, as_of: date) -> str:
+    head = chain_head(organization)
     files = [
         (ORGANIZATION_FILE, _("Business profile.")),
         *((table.filename, str(table.description)) for table, *_rest in TABLES),
@@ -212,6 +214,11 @@ def _readme(organization: Organization, exported_at: datetime, exported_by, as_o
           "separator; dates are YYYY-MM-DD. Account names, descriptions and other business data are exported as "
           "recorded."),
         _("Indonesian taxpayers must keep their books and records for 10 years (UU KUP Art. 28(11))."),
+        "",
+        _("Ledger chain head: %(head)s") % {"head": head or "-"},
+        _("Each posted journal entry carries a SHA-256 hash that includes the previous entry's hash. Keep this "
+          "head: if any posted entry is later changed or removed, the chain no longer leads to it "
+          "(manage.py verify_ledger --expect-head)."),
     ]
     return "\r\n".join(lines) + "\r\n"
 

@@ -71,6 +71,15 @@ class JournalEntry(TenantOwnedModel):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
+    posted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
+        verbose_name=_("posted by"),
+    )
+    # Tamper-evident chain of posted entries per organization, written by the database
+    # when an entry is posted (ledger migration 0006); verify with manage.py verify_ledger.
+    posting_sequence = models.PositiveIntegerField(_("posting sequence"), null=True, blank=True, editable=False)
+    previous_hash = models.CharField(_("previous hash"), max_length=64, blank=True, editable=False)
+    entry_hash = models.CharField(_("entry hash"), max_length=64, blank=True, editable=False)
 
     class Meta:
         ordering = ["-date", "-id"]
@@ -86,6 +95,15 @@ class JournalEntry(TenantOwnedModel):
             models.CheckConstraint(
                 condition=Q(reversal_of__isnull=True) | Q(source=JournalSource.REVERSAL),
                 name="journal_reversal_link_only_on_reversals",
+            ),
+            models.CheckConstraint(
+                condition=Q(status=JournalStatus.DRAFT, posting_sequence__isnull=True, entry_hash="")
+                | Q(status=JournalStatus.POSTED, posting_sequence__isnull=False) & ~Q(entry_hash=""),
+                name="journal_chained_when_posted",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "posting_sequence"], condition=Q(posting_sequence__isnull=False),
+                name="unique_journal_posting_sequence",
             ),
         ]
         indexes = [models.Index(fields=["organization", "status", "date"])]

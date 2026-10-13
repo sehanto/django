@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 
+from django.db import connection
 from django.db.models import Q, QuerySet, Sum
 
 from apps.core.money import ZERO
@@ -22,7 +23,7 @@ def cash_accounts(organization) -> QuerySet[Account]:
 
 
 def journal_entries_for(organization) -> QuerySet[JournalEntry]:
-    return JournalEntry.objects.for_organization(organization).prefetch_related("lines__account")
+    return JournalEntry.objects.for_organization(organization).select_related("posted_by").prefetch_related("lines__account")
 
 
 def posted_lines(organization, *, date_from: date | None = None, date_to: date | None = None) -> QuerySet[JournalLine]:
@@ -169,3 +170,56 @@ def purchase_accounts(organization) -> QuerySet[Account]:
             AccountCategory.FIXED_ASSET,
         ]
     )
+
+
+# --- Hash chain of posted entries (ledger migration 0006) ---------------------------
+
+
+@dataclass(frozen=True)
+class ChainHead:
+    sequence: int
+    entry_hash: str
+
+    def __str__(self):
+        return f"{self.sequence}:{self.entry_hash}"
+
+
+@dataclass(frozen=True)
+class ChainProblem:
+    sequence: int | None
+    number: str
+    problem: str
+
+
+def chain_head(organization) -> ChainHead | None:
+    """The last posted entry's place in the chain: record it somewhere else to detect a rewrite later."""
+    row = (
+        JournalEntry.objects.for_organization(organization)
+        .filter(posting_sequence__isnull=False)
+        .order_by("-posting_sequence")
+        .values_list("posting_sequence", "entry_hash")
+        .first()
+    )
+    return ChainHead(*row) if row else None
+
+
+def verify_chain(organization) -> list[ChainProblem]:
+    """Recompute every posted entry's hash in the database (``ledger_verify_chain``); empty means intact."""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT out_sequence, out_number, out_problem FROM ledger_verify_chain(%s)", [organization.pk])
+        return [ChainProblem(*row) for row in cursor.fetchall()]
+
+
+def head_mismatch(organization, expected: ChainHead) -> str | None:
+    """Compare with a head recorded earlier: entries removed from the end, or a rewritten chain."""
+    recorded = (
+        JournalEntry.objects.for_organization(organization)
+        .filter(posting_sequence=expected.sequence)
+        .values_list("entry_hash", flat=True)
+        .first()
+    )
+    if recorded is None:
+        return f"entry {expected.sequence} of the recorded head is missing"
+    if recorded != expected.entry_hash:
+        return f"entry {expected.sequence} no longer has the recorded hash: the chain was rewritten"
+    return None

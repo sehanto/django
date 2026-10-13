@@ -8,7 +8,9 @@ The database enforces the same invariants independently (triggers in
 ``ledger/migrations/0004_immutable_ledger.py``): entries are inserted as drafts,
 become posted only through a balanced ``draft -> posted`` update, and posted
 entries and their lines can never be updated or deleted. The only exception is
-``purge_organization_ledger`` (tenant offboarding, migration 0005).
+``purge_organization_ledger`` (tenant offboarding, migration 0005). Posting also
+appends the entry to the organization's hash chain (migration 0006), which
+``manage.py verify_ledger`` checks.
 """
 
 from collections.abc import Sequence
@@ -177,14 +179,17 @@ def create_journal_entry(
     )
     _write_lines(entry, lines)
     if post:
-        _mark_posted(entry)
+        _mark_posted(entry, posted_by=created_by)
     return entry
 
 
-def _mark_posted(entry: JournalEntry) -> None:
+def _mark_posted(entry: JournalEntry, *, posted_by) -> None:
     entry.status = JournalEntry.Status.POSTED
     entry.posted_at = timezone.now()
-    entry.save(update_fields=["status", "posted_at", "updated_at"])
+    entry.posted_by = posted_by
+    entry.save(update_fields=["status", "posted_at", "posted_by", "updated_at"])
+    # The database trigger appended the entry to the organization's hash chain.
+    entry.refresh_from_db(fields=["posting_sequence", "previous_hash", "entry_hash"])
 
 
 def _ensure_editable_manual_draft(entry: JournalEntry) -> None:
@@ -208,13 +213,13 @@ def update_draft_journal_entry(
 
 
 @transaction.atomic
-def post_journal_entry(*, entry: JournalEntry) -> JournalEntry:
+def post_journal_entry(*, entry: JournalEntry, posted_by=None) -> JournalEntry:
     entry = JournalEntry.objects.select_for_update().get(pk=entry.pk)
     if entry.status != JournalEntry.Status.DRAFT:
         raise InvalidStateTransition(_("The journal entry is already posted."))
     lines = [JournalLineInput(l.account, l.debit, l.credit, l.description) for l in entry.lines.select_related("account")]
     _validate(entry.organization, entry.date, lines, posting=True)
-    _mark_posted(entry)
+    _mark_posted(entry, posted_by=posted_by)
     return entry
 
 

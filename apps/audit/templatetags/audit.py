@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from apps.audit.domain import AuditAction
+from apps.ledger.models import Account
 from apps.tenants.models import Organization
 from apps.tenants.roles import Role
 
@@ -17,11 +18,14 @@ def _show(value) -> str:
     return str(value)
 
 
-def _setting_label(name: str) -> str:
+def _field_label(model, name: str) -> str:
     try:
-        return str(Organization._meta.get_field(name).verbose_name)
+        return str(model._meta.get_field(name).verbose_name)
     except Exception:  # a field that no longer exists
         return name
+
+
+CHANGED_MODEL = {AuditAction.ORGANIZATION_SETTINGS_CHANGED: Organization, AuditAction.ACCOUNT_CHANGED: Account}
 
 
 def _role(value) -> str:
@@ -32,9 +36,12 @@ def _role(value) -> str:
 def audit_summary(event) -> str:
     """One readable line for an event's target and details (never secrets: none are recorded)."""
     details, action = event.details or {}, event.action
-    if action == AuditAction.ORGANIZATION_SETTINGS_CHANGED:
+    if action in CHANGED_MODEL:
         changes = details.get("changes", {})
-        return "; ".join(f"{_setting_label(name)}: {_show(old)} → {_show(new)}" for name, (old, new) in changes.items())
+        summary = "; ".join(
+            f"{_field_label(CHANGED_MODEL[action], name)}: {_show(old)} → {_show(new)}" for name, (old, new) in changes.items()
+        )
+        return f"{event.target}: {summary}" if event.target else summary
     if action in (AuditAction.MEMBER_ADDED, AuditAction.MEMBER_REMOVED):
         return f"{event.target} ({_role(details.get('role'))})"
     if action == AuditAction.LOGIN_FAILED and details.get("step") == "two_factor":

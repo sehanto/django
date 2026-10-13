@@ -74,6 +74,14 @@ Key design decisions:
   works only for the owner. A role that owns the tables can disable triggers
   anyway, so the app connects as a data-only role
   (see [Database roles](#database-roles)).
+- **Tamper-evident audit trail.** Posting records who posted (`posted_by`). The database
+  (migration `ledger/0006_hash_chain`) also gives each posted entry a gap-free
+  `posting_sequence` per organization and a SHA-256 `entry_hash` over its content, its
+  lines and the previous entry's hash. `manage.py verify_ledger` (daily in cron)
+  recomputes the chain, so even owner-level edits or deletions that bypass the triggers
+  are reported. `--expect-head SEQ:HASH` compares against a head recorded earlier; the
+  books export README includes it, which catches a fully rewritten chain.
+  Chart-of-accounts changes are in the audit log.
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -590,6 +598,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
+| `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain; failures are mailed (`MAILTO`) |
 | `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's

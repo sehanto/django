@@ -6,6 +6,8 @@ from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
+from apps.audit import services as audit
+from apps.audit.domain import AuditAction
 from apps.core.exceptions import DomainError
 from apps.core.params import choice_param, text_param
 from apps.core.views import flash_domain_error
@@ -55,7 +57,8 @@ class AccountFormMixin(WriteMixin):
 
 class AccountCreateView(AccountFormMixin, CreateView):
     def save(self, data):
-        services.create_account(organization=self.organization, **data)
+        account = services.create_account(organization=self.organization, **data)
+        audit.record(AuditAction.ACCOUNT_CREATED, request=self.request, organization=self.organization, target=str(account))
 
 
 class AccountUpdateView(AccountFormMixin, UpdateView):
@@ -66,14 +69,23 @@ class AccountUpdateView(AccountFormMixin, UpdateView):
         return kwargs
 
     def save(self, data):
-        services.update_account(account=self.object, **data)
+        # Renaming or recoding an account changes how its history reads in every report.
+        changes = {name: [getattr(self.object, name), value] for name, value in data.items() if getattr(self.object, name) != value}
+        account = services.update_account(account=self.object, **data)
+        if changes:
+            audit.record(
+                AuditAction.ACCOUNT_CHANGED, request=self.request, organization=self.organization,
+                target=str(account), changes=changes,
+            )
 
 
 class AccountDeleteView(WriteMixin, View):
     def post(self, request, pk):
         account = get_object_or_404(accounts_for(self.organization), pk=pk)
         try:
+            target = str(account)
             services.delete_account(account=account)
+            audit.record(AuditAction.ACCOUNT_DELETED, request=request, organization=self.organization, target=target)
             messages.success(request, _("Account deleted."))
         except DomainError as exc:
             flash_domain_error(request, exc)
@@ -170,7 +182,7 @@ class JournalUpdateView(JournalFormView):
     def save(self, entry, header, lines, post):
         entry = services.update_draft_journal_entry(entry=entry, lines=lines, **header)
         if post:
-            entry = services.post_journal_entry(entry=entry)
+            entry = services.post_journal_entry(entry=entry, posted_by=self.request.user)
         return entry
 
 
@@ -189,7 +201,7 @@ class JournalActionView(WriteMixin, View):
 
 class JournalPostView(JournalActionView):
     def act(self, entry):
-        services.post_journal_entry(entry=entry)
+        services.post_journal_entry(entry=entry, posted_by=self.request.user)
         messages.success(self.request, _("Journal entry %(number)s posted.") % {"number": entry.number})
         return reverse("ledger:journal_detail", args=[entry.pk])
 
