@@ -47,3 +47,42 @@ def check_captcha_keys(app_configs, **kwargs):
             )
         ]
     return []
+
+
+PLACEHOLDER_WORDS = ("contoh", "example", "placeholder", "dummy", "change_me", "changeme")
+
+
+def _seller_problems() -> list[str]:
+    from apps.contacts.validators import normalize_npwp  # checks load early; import at use
+
+    problems = []
+    name = (settings.BILLING_SELLER_NAME or "").strip()
+    npwp = normalize_npwp(settings.BILLING_SELLER_NPWP)
+    address = (settings.BILLING_SELLER_ADDRESS or "").strip()
+    if not name:
+        problems.append("BILLING_SELLER_NAME is empty")
+    if len(npwp) not in (15, 16):
+        problems.append("BILLING_SELLER_NPWP is not a 15- or 16-digit NPWP")
+    elif len(set(npwp)) == 1:
+        problems.append(f"BILLING_SELLER_NPWP looks like a placeholder ({npwp})")
+    if not address:
+        problems.append("BILLING_SELLER_ADDRESS is empty")
+    elif any(word in address.lower() for word in PLACEHOLDER_WORDS):
+        problems.append("BILLING_SELLER_ADDRESS looks like a placeholder")
+    return problems
+
+
+@register(Tags.security, deploy=True)
+def check_billing_seller(app_configs, **kwargs):
+    """Subscription receipts print the seller's identity; it must be the company's real one."""
+    problems = _seller_problems()
+    if not problems:
+        return []
+    return [
+        Warning(
+            "Subscription receipts would show missing or placeholder seller details: " + "; ".join(problems) + ".",
+            hint="Set BILLING_SELLER_NAME, BILLING_SELLER_NPWP and BILLING_SELLER_ADDRESS to the company's "
+            "registered name, NPWP and address.",
+            id="core.W003",
+        )
+    ]
