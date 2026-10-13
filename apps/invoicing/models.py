@@ -188,6 +188,7 @@ class InvoiceLine(TimeStampedModel):
     tax_rate_percent = models.DecimalField(_("tax rate when issued (%)"), max_digits=5, decimal_places=2, null=True, blank=True, editable=False)
     tax_dpp_numerator = models.PositiveSmallIntegerField(_("DPP numerator when issued"), null=True, blank=True, editable=False)
     tax_dpp_denominator = models.PositiveSmallIntegerField(_("DPP denominator when issued"), null=True, blank=True, editable=False)
+    item_code = models.CharField(_("item code when issued"), max_length=50, blank=True, editable=False)  # migration 0008
 
     class Meta:
         ordering = ["id"]
@@ -200,6 +201,12 @@ class InvoiceLine(TimeStampedModel):
     @property
     def account_label(self) -> str:
         return f"{self.account_code} · {self.account_name}" if self.is_snapshot else str(self.account)
+
+    @property
+    def item_label(self) -> str:
+        if self.is_snapshot:
+            return self.item_code
+        return self.item.code if self.item_id else ""
 
     @property
     def tax_label(self) -> str:

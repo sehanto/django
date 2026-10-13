@@ -146,7 +146,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (
         Table("invoice_lines.csv", gettext_lazy("Invoice and bill lines (linked by invoice ID)."), (
             C("invoice__id", gettext_lazy("Invoice ID")), C("invoice__number", gettext_lazy("Invoice number")),
-            C("description"), C("item__code", gettext_lazy("Item code")),
+            C("description"), C("item_code", gettext_lazy("Item code")),
             C("account__code", gettext_lazy("Account code")), C("quantity"), C("unit_price"),
             C("discount_percent"), C("tax_rate__name", gettext_lazy("Tax")), C("amount"),
             C("account_code"), C("account_name"),

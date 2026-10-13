@@ -278,3 +278,15 @@ def test_issued_lines_keep_the_tax_rate_as_it_was(pkp_organization, customer, ac
     untaxed = services.issue_invoice(invoice=draft(organization, customer, account))
     plain = untaxed.lines.get()
     assert (plain.tax_name, plain.tax_rate_percent, plain.tax_label) == ("", None, "")
+
+
+def test_issued_lines_keep_the_item_code_as_it_was(organization, customer, account, item):
+    Item.objects.filter(pk=item.pk).update(code="KOPI-1KG")
+    invoice = draft(organization, customer, account, item=item)
+    assert invoice.lines.get().item_code == "" and invoice.lines.get().item_label == "KOPI-1KG"  # drafts: current code
+    services.issue_invoice(invoice=invoice)
+    Item.objects.filter(pk=item.pk).update(code="KOPI-1000G")  # items stay editable...
+    line = invoice.lines.get()
+    assert line.item_code == line.item_label == "KOPI-1KG"  # ...issued lines don't change
+    with refused():
+        InvoiceLine.objects.filter(pk=line.pk).update(item_code="X")

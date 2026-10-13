@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 09:42+0700\n"
+"POT-Creation-Date: 2026-10-13 09:44+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -595,7 +595,7 @@ msgid "Failed"
 msgstr "Gagal"
 
 #: apps/billing/models.py:27 apps/invoicing/models.py:66
-#: apps/invoicing/models.py:236 apps/ledger/models.py:64
+#: apps/invoicing/models.py:243 apps/ledger/models.py:64
 msgid "number"
 msgstr "nomor"
 
@@ -660,7 +660,7 @@ msgid "total"
 msgstr "total"
 
 #: apps/billing/models.py:54 apps/invoicing/models.py:75
-#: apps/invoicing/models.py:243 apps/ledger/models.py:68
+#: apps/invoicing/models.py:250 apps/ledger/models.py:68
 #: apps/taxes/models.py:70
 msgid "status"
 msgstr "status"
@@ -928,7 +928,7 @@ msgstr "Belum Dibayar"
 msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
-#: apps/invoicing/domain.py:23 apps/invoicing/models.py:234
+#: apps/invoicing/domain.py:23 apps/invoicing/models.py:241
 #: apps/taxes/models.py:51
 msgid "Void"
 msgstr "Dibatalkan"
@@ -1083,7 +1083,7 @@ msgstr "barang/jasa"
 msgid "items"
 msgstr "barang/jasa"
 
-#: apps/invoicing/models.py:68 apps/invoicing/models.py:238
+#: apps/invoicing/models.py:68 apps/invoicing/models.py:245
 #: apps/ledger/models.py:65
 msgid "date"
 msgstr "tanggal"
@@ -1148,7 +1148,7 @@ msgstr "alamat penjual"
 msgid "seller city"
 msgstr "kota penjual"
 
-#: apps/invoicing/models.py:100 apps/invoicing/models.py:237
+#: apps/invoicing/models.py:100 apps/invoicing/models.py:244
 msgid "invoice"
 msgstr "faktur"
 
@@ -1186,7 +1186,7 @@ msgstr "diskon (%)"
 msgid "tax"
 msgstr "pajak"
 
-#: apps/invoicing/models.py:181 apps/invoicing/models.py:239
+#: apps/invoicing/models.py:181 apps/invoicing/models.py:246
 msgid "amount"
 msgstr "jumlah"
 
@@ -1214,51 +1214,55 @@ msgstr "pembilang DPP saat diterbitkan"
 msgid "DPP denominator when issued"
 msgstr "penyebut DPP saat diterbitkan"
 
-#: apps/invoicing/models.py:220 templates/invoicing/invoice_list.html:29
+#: apps/invoicing/models.py:191
+msgid "item code when issued"
+msgstr "kode barang/jasa saat diterbitkan"
+
+#: apps/invoicing/models.py:227 templates/invoicing/invoice_list.html:29
 msgid "Overdue"
 msgstr "Jatuh tempo"
 
-#: apps/invoicing/models.py:226
+#: apps/invoicing/models.py:233
 msgid "Cash"
 msgstr "Tunai"
 
-#: apps/invoicing/models.py:227
+#: apps/invoicing/models.py:234
 msgid "Bank transfer"
 msgstr "Transfer Bank"
 
-#: apps/invoicing/models.py:228
+#: apps/invoicing/models.py:235
 msgid "QRIS"
 msgstr "QRIS"
 
-#: apps/invoicing/models.py:229
+#: apps/invoicing/models.py:236
 msgid "E-wallet"
 msgstr "E-Wallet"
 
-#: apps/invoicing/models.py:230
+#: apps/invoicing/models.py:237
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:233 apps/taxes/models.py:50
+#: apps/invoicing/models.py:240 apps/taxes/models.py:50
 msgid "Recorded"
 msgstr "Tercatat"
 
-#: apps/invoicing/models.py:240
+#: apps/invoicing/models.py:247
 msgid "cash/bank account"
 msgstr "akun kas/bank"
 
-#: apps/invoicing/models.py:241
+#: apps/invoicing/models.py:248
 msgid "method"
 msgstr "metode"
 
-#: apps/invoicing/models.py:242 apps/ledger/models.py:67
+#: apps/invoicing/models.py:249 apps/ledger/models.py:67
 msgid "reference"
 msgstr "referensi"
 
-#: apps/invoicing/models.py:249
+#: apps/invoicing/models.py:256
 msgid "payment"
 msgstr "pembayaran"
 
-#: apps/invoicing/models.py:250
+#: apps/invoicing/models.py:257
 msgid "payments"
 msgstr "pembayaran"
 
