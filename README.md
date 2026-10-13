@@ -669,6 +669,9 @@ few lines a day.
 
 ## Production
 
+Production always redirects plain HTTP to HTTPS (`DJANGO_SECURE_SSL_REDIRECT` may only be unset or true;
+behind a TLS proxy it relies on the proxy sending `X-Forwarded-Proto: https`).
+
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY` (a random value of at least
 50 characters: production refuses short, repetitive, `django-insecure-` or placeholder keys such as
 `change-me`),

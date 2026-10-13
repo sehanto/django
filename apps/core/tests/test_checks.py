@@ -232,3 +232,15 @@ def test_production_requires_real_csrf_trusted_origins(monkeypatch, origin):
 def test_production_accepts_trusted_origins_of_served_hosts(monkeypatch, hosts, origins):
     prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS=origins)
     assert prod.CSRF_TRUSTED_ORIGINS == (origins.split(",") if origins else [])
+
+
+@pytest.mark.parametrize("value", ["false", "0", "off", "no", "ture", "enabled", ""])
+def test_production_always_redirects_to_https(monkeypatch, value):
+    with pytest.raises(ImproperlyConfigured, match="DJANGO_SECURE_SSL_REDIRECT"):
+        load_production_settings(monkeypatch, DJANGO_SECURE_SSL_REDIRECT=value)
+
+
+@pytest.mark.parametrize("value", [None, "true", "True", "1", "yes", "on"])
+def test_production_redirect_accepts_true_values(monkeypatch, value):
+    prod = load_production_settings(monkeypatch, DJANGO_SECURE_SSL_REDIRECT=value)
+    assert prod.SECURE_SSL_REDIRECT is True and prod.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")

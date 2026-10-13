@@ -1,6 +1,7 @@
 from email.utils import parseaddr
 from urllib.parse import urlsplit
 
+import environ
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.validators import validate_email
 
@@ -70,7 +71,17 @@ def _secret_key() -> str:
 
 SECRET_KEY = _secret_key()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=True)  # noqa: F405
+# Always redirect plain HTTP to HTTPS. Behind a TLS proxy this is safe even if the proxy
+# redirects too: SECURE_PROXY_SSL_HEADER makes forwarded HTTPS requests count as secure,
+# so there is no loop. Turning it off, or a typo such as "ture" (which env.bool reads as
+# False), would serve pages unencrypted, so only true values (or leaving it unset) start.
+_ssl_redirect = env.str("DJANGO_SECURE_SSL_REDIRECT", default="true").strip().lower()  # noqa: F405
+if _ssl_redirect not in environ.Env.BOOLEAN_TRUE_STRINGS:
+    raise ImproperlyConfigured(
+        f"DJANGO_SECURE_SSL_REDIRECT is {_ssl_redirect!r}; production always redirects to HTTPS. Remove it or set it "
+        "to true (if the redirect loops, make the proxy send X-Forwarded-Proto: https)."
+    )
+SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
