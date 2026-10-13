@@ -669,8 +669,9 @@ few lines a day.
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` (the data-only app role) and
 `DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `BILLING_SELLER_NAME`, `BILLING_SELLER_NPWP` and
-`BILLING_SELLER_ADDRESS` (printed on subscription receipts; `check --deploy` warns,
-`core.W003`, if they are missing or placeholders), `TURNSTILE_SITE_KEY` and
+`BILLING_SELLER_ADDRESS` (printed on subscription receipts: production refuses to
+start if any is missing or blank, and `check --deploy` warns, `core.W003`, about
+placeholder values), `TURNSTILE_SITE_KEY` and
 `TURNSTILE_SECRET_KEY` (see [Login CAPTCHA](#login-captcha)), `FIELD_ENCRYPTION_KEYS` (see
 [How 2FA secrets are stored](#how-2fa-secrets-are-stored)), `SITE_URL` (the public
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)

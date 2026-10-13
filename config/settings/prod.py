@@ -21,6 +21,21 @@ LOGGING = {
 BILLING_GATEWAY = "xendit"
 XENDIT_SECRET_KEY = env("XENDIT_SECRET_KEY")  # noqa: F405
 XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
+# The seller printed on every subscription receipt: required and non-blank in production
+# (check --deploy, core.W003, also flags placeholder values).
+def _required(name: str) -> str:
+    value = env.str(name, default="").strip()  # noqa: F405
+    if not value:
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(f"Set {name}: it is printed on subscription receipts.")
+    return value
+
+
+BILLING_SELLER_NAME = _required("BILLING_SELLER_NAME")
+BILLING_SELLER_NPWP = _required("BILLING_SELLER_NPWP")
+BILLING_SELLER_ADDRESS = _required("BILLING_SELLER_ADDRESS")
+
 # SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587
 vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
