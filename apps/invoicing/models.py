@@ -315,10 +315,16 @@ class ReturnNote(TenantOwnedModel):
     invoice (``credited``); the rest is refunded in cash (``refunded``).
 
     Final once posted: inserted with its posted journal entry and never changed or deleted
-    (invoicing migration 0011).
+    (invoicing migration 0011); a mistake is undone by voiding it, which reverses its journal
+    entry and its stock (invoicing 0012).
     """
 
+    class Status(models.TextChoices):
+        POSTED = "posted", _("Recorded")
+        VOID = "void", _("Void")
+
     kind = models.CharField(_("type"), max_length=10, choices=InvoiceKind.choices, editable=False)
+    status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     number = models.CharField(_("number"), max_length=30)
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="returns", verbose_name=_("invoice"))
     date = models.DateField(_("date"))

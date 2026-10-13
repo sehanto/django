@@ -123,7 +123,7 @@ def vat_summary(organization, year: int) -> list[dict]:
         .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
     )
     returns = (
-        ReturnNote.objects.for_organization(organization).filter(date__year=year)
+        ReturnNote.objects.for_organization(organization).filter(date__year=year, status=ReturnNote.Status.POSTED)
         .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
     )
     months = {m: {"month": m, "output_base": ZERO, "output": ZERO, "input_base": ZERO, "input": ZERO} for m in range(1, 13)}

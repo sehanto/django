@@ -161,7 +161,7 @@ class ReturnForm(OrganizationFormMixin, BaseForm):
         self.invoice = invoice
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
         self.returnable = []
-        for line in invoice.lines.prefetch_related("returns").select_related("item"):
+        for line in invoice.lines.prefetch_related("returns__return_note").select_related("item"):
             available = returnable_quantity(line)
             if available <= 0:
                 continue

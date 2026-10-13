@@ -4,11 +4,15 @@
 {% with invoice=note.invoice %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3 no-print">
   <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="small text-decoration-none">&larr; {{ invoice.number }}</a>
-  <button type="button" onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</button>
+  <div class="d-flex gap-2">
+    <button type="button" onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</button>
+    {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#voidModal">{% translate "Void return" %}</button>{% endif %}
+  </div>
 </div>
 <div class="card" style="max-width: 960px;"><div class="card-body">
   <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
-    <div><h1 class="h4 mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}</h1>
+    <div><h1 class="h4 mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}
+      {% if note.status == note.Status.VOID %}<span class="badge align-middle text-bg-dark">{{ note.get_status_display }}</span>{% endif %}</h1>
       <div class="text-secondary">{% translate "Nota retur" %} · {{ note.date|date:"d F Y" }}</div></div>
     <div class="text-end small">
       <div class="fw-semibold">{{ invoice.seller.name }}</div>{% if invoice.seller.npwp %}<div>NPWP {{ invoice.seller.npwp|npwp }}</div>{% endif %}
@@ -35,5 +39,13 @@
   </table></div>
   <p class="small text-secondary mt-3 mb-0 no-print">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
 </div></div>
+{% if can_write and note.status == note.Status.POSTED %}
+<div class="modal fade" id="voidModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'invoicing:return_void' note.pk %}" class="modal-content">{% csrf_token %}
+  <div class="modal-header"><h5 class="modal-title">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
+  <div class="modal-body"><p>{% translate "The return's journal entry is reversed on the void date, including any refund; the invoice owes the credited amount again, and the stock goes back the way it came. This cannot be undone." %}</p>
+    <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-control' }}</div>
+  <div class="modal-footer"><button class="btn btn-danger">{% translate "Void return" %}</button></div>
+</form></div></div>
+{% endif %}
 {% endwith %}
 {% endblock %}

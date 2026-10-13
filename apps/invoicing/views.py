@@ -168,12 +168,14 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
     def get_context_data(self, **kwargs):
         invoice = self.object
         today = timezone.localdate()
+        returns = list(invoice.returns.all())
         return super().get_context_data(
             payment_form=PaymentForm(
                 organization=self.organization, initial={"date": max(today, invoice.date), "amount": invoice.balance_due}
             ),
             void_form=VoidForm(initial={"date": today}),
-            returns=list(invoice.returns.all()),
+            returns=returns,
+            has_posted_returns=any(r.status == r.Status.POSTED for r in returns),
             **kwargs,
         )
 
@@ -342,3 +344,21 @@ class ReturnDetailView(OrganizationMixin, DetailView):
 
     def get_queryset(self):
         return returns_for(self.organization).prefetch_related("lines__invoice_line")
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(void_form=VoidForm(initial={"date": timezone.localdate()}), **kwargs)
+
+
+class ReturnVoidView(WriteMixin, View):
+    def post(self, request, pk):
+        note = get_object_or_404(returns_for(self.organization), pk=pk)
+        form = VoidForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _("Invalid void date."))
+        else:
+            try:
+                services.void_return(note=note, on=form.cleaned_data["date"], voided_by=request.user)
+                messages.success(request, _("Return voided: its journal entry and stock were reversed."))
+            except DomainError as exc:
+                flash_domain_error(request, exc)
+        return redirect("invoicing:return_detail", note.pk)

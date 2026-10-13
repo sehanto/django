@@ -19,7 +19,9 @@ from apps.ledger.services import JournalLineInput, create_journal_entry
 from .domain import QUANTITY_PLACES, InsufficientStock, MovementKind, Stock
 from .models import StockMovement
 
-RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN, MovementKind.INCREASE)
+RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN, MovementKind.INCREASE, MovementKind.PURCHASE_RETURN_VOIDED)
+# Receipts that can be voided later, so their layer is remembered while it is whole.
+VOIDABLE_RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN)
 
 
 def replay(movements: Iterable[StockMovement]) -> Stock:
@@ -27,8 +29,8 @@ def replay(movements: Iterable[StockMovement]) -> Stock:
     stock = Stock()
     for m in movements:
         if m.kind in RECEIPTS:
-            stock.receive(m.quantity, m.value, source=m.pk if m.kind == MovementKind.PURCHASE else None)
-        elif m.kind == MovementKind.PURCHASE_REVERSAL:
+            stock.receive(m.quantity, m.value, source=m.pk if m.kind in VOIDABLE_RECEIPTS else None)
+        elif MovementKind(m.kind).removes_a_layer:
             stock.remove(m.reverses_id, -m.quantity, -m.value)
         else:
             stock.issue(-m.quantity, m.cost_formula)
@@ -136,7 +138,9 @@ def plan_sales_return(lines_and_quantities) -> list[Planned]:
         sale = StockMovement.objects.filter(invoice_line=line, kind=MovementKind.SALE).select_related("item").first()
         if sale is None:
             continue
-        earlier = StockMovement.objects.filter(invoice_line=line, kind=MovementKind.SALE_RETURN, return_line__isnull=False)
+        earlier = StockMovement.objects.filter(
+            invoice_line=line, kind=MovementKind.SALE_RETURN, return_line__isnull=False, reversed_by__isnull=True
+        )
         returned = sum((m.quantity for m in earlier), Decimal("0"))
         returned_value = sum((m.value for m in earlier), Decimal("0"))
         sold, cost = -sale.quantity, -sale.value
@@ -165,6 +169,31 @@ def plan_purchase_return(organization, lines_and_quantities) -> list[Planned]:
         except InsufficientStock as exc:
             raise _not_enough(receipt.item, exc.available) from None
         planned.append(Planned(receipt.item, MovementKind.PURCHASE_RETURN, -quantity, -cost, formula, invoice_line=line))
+    return planned
+
+
+def plan_return_void(note) -> list[Planned]:
+    """Undo a return's stock: a sales return's goods leave again at the cost they came back at
+    (only while that stock is untouched); a purchase return's goods come back at the cost they left at."""
+    movements = list(
+        StockMovement.objects.filter(return_line__return_note=note, reversed_by__isnull=True).select_related("item").order_by("id")
+    )
+    _lock(m.item for m in movements)
+    stocks, planned = {}, []
+    for m in movements:
+        if m.kind == MovementKind.PURCHASE_RETURN:
+            planned.append(Planned(m.item, MovementKind.PURCHASE_RETURN_VOIDED, -m.quantity, -m.value,
+                                   invoice_line=m.invoice_line, reverses=m, return_line=m.return_line))
+            continue
+        stock = stocks.setdefault(m.item_id, stock_of(m.item))
+        if not stock.can_remove(m.pk, m.quantity, m.value):
+            raise ValidationFailed(
+                _("Some of the returned %(item)s has already left stock again, so the return can't be voided. Record a stock decrease instead.")
+                % {"item": m.item.name}
+            )
+        stock.remove(m.pk, m.quantity, m.value)
+        planned.append(Planned(m.item, MovementKind.SALE_RETURN_VOIDED, -m.quantity, -m.value,
+                               invoice_line=m.invoice_line, reverses=m, return_line=m.return_line))
     return planned
 
 

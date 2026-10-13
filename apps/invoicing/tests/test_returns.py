@@ -207,3 +207,83 @@ def test_deleting_an_organization_removes_its_returns(organization, customer, ac
     give_back(invoice(organization, customer, account), "2")
     call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
     assert not ReturnNote.objects.exists() and not ReturnLine.objects.exists()
+
+
+# --- Voiding a return ----------------------------------------------------------------
+
+
+def test_voiding_a_return_restores_the_invoice_and_the_books(organization, customer, account):
+    inv = invoice(organization, customer, account)
+    services.record_payment(invoice=inv, date=ON, amount=D("600000"), cash_account=account("1-1000"))
+    note = give_back(inv, "5", cash_account=account("1-1000"))  # 400.000 credited, 100.000 refunded
+    services.void_return(note=note, on=date(2026, 3, 25))
+    note.refresh_from_db()
+    inv.refresh_from_db()
+    assert note.status == ReturnNote.Status.VOID
+    assert (inv.amount_credited, inv.balance_due, inv.status) == (0, D("400000"), Invoice.Status.PARTIAL)
+    assert balance(account, "4-1000") == D("1000000") and balance(account, "1-1000") == D("600000")
+    with pytest.raises(InvalidStateTransition, match="already been voided"):
+        services.void_return(note=note, on=date(2026, 3, 25))
+
+    give_back(inv, "10", cash_account=account("1-1000"))  # the voided return no longer counts
+    assert monthly_gross_turnover(organization, 2026)[2] == 0
+
+
+def test_a_voided_return_leaves_the_ppn_summary_and_frees_the_invoice(pkp_organization, customer, account):
+    ppn = TaxRate.objects.filter(organization=pkp_organization, dpp_numerator=11).first()
+    inv = invoice(pkp_organization, customer, account, tax_rate=ppn)
+    note = give_back(inv, "4", on=date(2026, 4, 2))
+    services.void_return(note=note, on=date(2026, 4, 3))
+    assert {m["month"]: m for m in vat_summary(pkp_organization, 2026)}[4]["output"] == 0
+    services.void_invoice(invoice=inv, on=date(2026, 4, 3))  # no posted returns left
+
+
+def test_voiding_a_sales_return_takes_its_stock_out_again(organization, customer, account, coffee):
+    adjust_stock(organization=organization, item=coffee, on=date(2026, 1, 1), quantity=D("3"), unit_cost=D("10000"),
+                 counter_account=account("3-1000"), reason="Stok awal")
+    inv = invoice(organization, customer, account, quantity="3", price="20000", item=coffee)
+    note = give_back(inv, "2")
+    services.void_return(note=note, on=date(2026, 3, 21))
+    voided = StockMovement.objects.get(kind=StockMovement.Kind.SALE_RETURN_VOIDED)
+    assert (voided.quantity, voided.value) == (D("-2"), D("-20000"))
+    assert balance(account, "5-1000") == D("30000") and stock_summary(organization)[0].quantity == 0
+    assert note.number in stock_card_page(organization, coffee)
+
+    again = give_back(inv, "2")
+    sell = services.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=ON,
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("20000"), item=coffee)],
+    )
+    services.issue_invoice(invoice=sell)  # weighted average: merges the returned layer
+    with pytest.raises(ValidationFailed, match="already left stock again"):
+        services.void_return(note=again, on=date(2026, 3, 22))
+
+
+def test_voiding_a_purchase_return_brings_its_stock_back(organization, supplier, account, coffee):
+    bill = invoice(organization, supplier, account, kind=InvoiceKind.PURCHASE, quantity="10", price="12000", item=coffee, code="1-1300")
+    note = give_back(bill, "4")
+    services.void_return(note=note, on=date(2026, 3, 21))
+    back = StockMovement.objects.get(kind=StockMovement.Kind.PURCHASE_RETURN_VOIDED)
+    assert (back.quantity, back.value) == (D("4"), D("48000"))
+    assert balance(account, "1-1300") == D("120000") and balance(account, "2-1000") == D("120000")
+
+
+def test_voiding_through_the_page(auth_client, organization, customer, account):
+    inv = invoice(organization, customer, account)
+    note = give_back(inv, "2")
+    auth_client.post(reverse("invoicing:return_void", args=[note.pk]), {"date": "2026-03-21"})
+    note.refresh_from_db()
+    assert note.status == ReturnNote.Status.VOID
+    with refused():  # void is final
+        ReturnNote.objects.filter(pk=note.pk).update(status=ReturnNote.Status.POSTED)
+
+
+def stock_card_page(organization, item):
+    from django.test import Client
+
+    from apps.tenants.models import Membership
+
+    client = Client()
+    client.force_login(Membership.objects.filter(organization=organization).first().user)
+    with translation.override("en"):  # the request activates the user's language; keep the test's
+        return client.get(reverse("inventory:card", args=[item.pk])).content.decode()

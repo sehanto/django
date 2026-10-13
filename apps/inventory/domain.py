@@ -8,7 +8,8 @@ they were posted:
 * an issue (sale, decrease) takes its cost from the layers: FIFO from the oldest layers
   first; weighted average at the average cost of everything in stock, after which the
   stock is one layer at that average (a moving average);
-* a reversed purchase removes its own layer, which must still be whole.
+* a voided purchase or sales return removes its own layer, which must still be whole;
+  a voided purchase return brings its goods back as a new layer at the cost they left at.
 
 Costs are kept to the cent and every issue reduces the stock value by exactly its cost,
 so the stock value always equals the inventory postings.
@@ -38,12 +39,19 @@ class MovementKind(models.TextChoices):
     SALE_RETURN = "sale_return", _("Sale voided or returned")
     PURCHASE_REVERSAL = "purchase_reversal", _("Purchase voided")
     PURCHASE_RETURN = "purchase_return", _("Returned to supplier")
+    SALE_RETURN_VOIDED = "sale_return_voided", _("Sales return voided")
+    PURCHASE_RETURN_VOIDED = "purchase_return_voided", _("Purchase return voided")
     INCREASE = "increase", _("Stock increase")
     DECREASE = "decrease", _("Stock decrease")
 
     @property
     def is_issue(self) -> bool:
         return self in (MovementKind.SALE, MovementKind.DECREASE, MovementKind.PURCHASE_RETURN)
+
+    @property
+    def removes_a_layer(self) -> bool:
+        """Takes a whole receipt back out (a voided purchase or sales return)."""
+        return self in (MovementKind.PURCHASE_REVERSAL, MovementKind.SALE_RETURN_VOIDED)
 
 
 class InsufficientStock(Exception):

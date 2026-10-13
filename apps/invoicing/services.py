@@ -297,7 +297,7 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
 @transaction.atomic
 def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
-    if invoice.returns.exists():
+    if invoice.returns.filter(status=ReturnNote.Status.POSTED).exists():
         raise InvalidStateTransition(_("This invoice has returns, so it can't be voided. Record a return for the rest instead."))
     if invoice.status in (Invoice.Status.PARTIAL, Invoice.Status.PAID):
         raise InvalidStateTransition(_("Void all payments on this invoice first."))
@@ -396,7 +396,7 @@ class ReturnLineInput:
 
 
 def returnable_quantity(line: InvoiceLine) -> Decimal:
-    returned = sum((r.quantity for r in line.returns.all()), Decimal("0"))
+    returned = sum((r.quantity for r in line.returns.all() if r.return_note.status == ReturnNote.Status.POSTED), Decimal("0"))
     return line.quantity - returned
 
 
@@ -529,3 +529,24 @@ def _return_journal_lines(invoice, lines, totals, credited, refunded, cash_accou
     if organization.is_pkp and totals.tax_total:
         result.append(JournalLineInput(get_system_account(organization, SystemRole.INPUT_VAT), credit=totals.tax_total))
     return result
+
+
+@transaction.atomic
+def void_return(*, note: ReturnNote, on: date, voided_by=None) -> ReturnNote:
+    """Undo a return: its journal entry is reversed (with any refund), the invoice owes the
+    credited amount again, and its stock goes back the way it came."""
+    note = ReturnNote.objects.select_for_update().get(pk=note.pk)
+    if note.status != ReturnNote.Status.POSTED:
+        raise InvalidStateTransition(_("This return has already been voided."))
+    invoice = Invoice.objects.select_for_update().get(pk=note.invoice_id)
+    stock = inventory.plan_return_void(note)
+    reversal = reverse_journal_entry(
+        entry=note.journal_entry, date=max(on, note.date), created_by=voided_by,
+        description=f"Pembatalan retur {note.number}",  # stored business records stay Indonesian
+    )
+    inventory.record(stock, entry=reversal, on=reversal.date, created_by=voided_by)
+    note.status = ReturnNote.Status.VOID  # kept as history: never deleted
+    note.save(update_fields=["status", "updated_at"])
+    invoice.amount_credited -= note.credited
+    _refresh_payment_status(invoice)
+    return note

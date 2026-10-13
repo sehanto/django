@@ -70,7 +70,7 @@ class CardRow:
 def stock_card(item) -> list[CardRow]:
     """The item's movements in posting order, with the running quantity and value (kartu stok)."""
     rows, quantity, value = [], Decimal("0"), ZERO
-    movements = StockMovement.objects.filter(item=item).select_related("journal_entry", "invoice_line__invoice").order_by("id")
+    movements = StockMovement.objects.filter(item=item).select_related("journal_entry", "invoice_line__invoice", "return_line__return_note").order_by("id")
     for m in movements:
         quantity += m.quantity
         value += m.value

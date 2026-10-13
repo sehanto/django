@@ -8,6 +8,7 @@ urlpatterns = [
     path("payments/", views.PaymentListView.as_view(), name="payments"),
     path("payments/<int:pk>/void/", views.PaymentVoidView.as_view(), name="payment_void"),
     path("returns/<int:pk>/", views.ReturnDetailView.as_view(), name="return_detail"),
+    path("returns/<int:pk>/void/", views.ReturnVoidView.as_view(), name="return_void"),
     path("items/", views.ItemListView.as_view(), name="items"),
     path("items/new/", views.ItemCreateView.as_view(), name="item_create"),
     path("items/<int:pk>/edit/", views.ItemUpdateView.as_view(), name="item_update"),

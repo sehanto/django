@@ -19,7 +19,7 @@ class StockMovement(TenantOwnedModel):
 
     item = models.ForeignKey("invoicing.Item", on_delete=models.PROTECT, related_name="stock_movements", verbose_name=_("item"))
     date = models.DateField(_("date"))
-    kind = models.CharField(_("type"), max_length=20, choices=MovementKind.choices)
+    kind = models.CharField(_("type"), max_length=30, choices=MovementKind.choices)
     quantity = models.DecimalField(_("quantity"), max_digits=14, decimal_places=3)
     value = money_field(_("value"))
     cost_formula = models.CharField(_("cost formula"), max_length=20, choices=CostFormula.choices, blank=True, help_text=_("For issues: how their cost was taken."))
@@ -38,8 +38,11 @@ class StockMovement(TenantOwnedModel):
             models.CheckConstraint(
                 name="stock_movement_sign_follows_kind",
                 condition=(
-                    models.Q(kind__in=["purchase", "sale_return", "increase"], quantity__gt=0, value__gte=0)
-                    | models.Q(kind__in=["sale", "purchase_reversal", "decrease", "purchase_return"], quantity__lt=0, value__lte=0)
+                    models.Q(kind__in=["purchase", "sale_return", "increase", "purchase_return_voided"], quantity__gt=0, value__gte=0)
+                    | models.Q(
+                        kind__in=["sale", "purchase_reversal", "decrease", "purchase_return", "sale_return_voided"],
+                        quantity__lt=0, value__lte=0,
+                    )
                 ),
             ),
         ]
