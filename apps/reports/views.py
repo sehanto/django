@@ -13,7 +13,7 @@ from django.views.generic import TemplateView
 
 from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
-from apps.invoicing.models import InvoiceKind
+from apps.invoicing.models import InvoiceKind, ReturnNote
 from apps.invoicing.selectors import aging_report, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger
 from apps.accounts.throttle import ThrottleScope, allow
@@ -162,7 +162,11 @@ class VatReportView(OrganizationMixin, TemplateView):
         year = year_param(self.request.GET)
         rows = vat_summary(self.organization, year)
         totals = {key: sum(r[key] for r in rows) for key in ("output_base", "output", "input_base", "input", "net")}
-        return super().get_context_data(year=year, years=year_choices(), rows=rows, totals=totals, **kwargs)
+        return_months = set(
+            ReturnNote.objects.for_organization(self.organization)
+            .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year).values_list("date__month", flat=True)
+        )
+        return super().get_context_data(year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, **kwargs)
 
 
 class ExportBooksView(ManageMixin, TemplateView):

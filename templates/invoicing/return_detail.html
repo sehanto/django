@@ -6,6 +6,7 @@
   <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="small text-decoration-none">&larr; {{ invoice.number }}</a>
   <div class="d-flex gap-2">
     <button type="button" onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</button>
+    {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary"><i class="bi bi-filetype-xml"></i> {% translate "Coretax XML" %}</a>{% endif %}
     {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#voidModal">{% translate "Void return" %}</button>{% endif %}
   </div>
 </div>
@@ -37,6 +38,7 @@
       {% if note.refunded %}<tr><td colspan="4" class="text-end">{% blocktranslate trimmed with account=note.cash_account.name %}Refunded through {{ account }}{% endblocktranslate %}</td><td class="num">{{ note.refunded|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>
+  {% if note.status == note.Status.POSTED %}<p class="small text-secondary mt-3 mb-0 no-print"><i class="bi bi-info-circle me-1"></i>{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
   <p class="small text-secondary mt-3 mb-0 no-print">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
 </div></div>
 {% if can_write and note.status == note.Status.POSTED %}

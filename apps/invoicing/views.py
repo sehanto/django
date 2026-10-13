@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.db import transaction
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone, translation
@@ -12,7 +13,7 @@ from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
-from . import services
+from . import coretax, services
 from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, VoidForm, line_inputs
 from .models import Invoice, InvoiceKind, InvoiceStatusFilter
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
@@ -346,7 +347,9 @@ class ReturnDetailView(OrganizationMixin, DetailView):
         return returns_for(self.organization).prefetch_related("lines__invoice_line")
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(void_form=VoidForm(initial={"date": timezone.localdate()}), **kwargs)
+        return super().get_context_data(
+            void_form=VoidForm(initial={"date": timezone.localdate()}), coretax_problem=coretax.exportable_problem(self.object), **kwargs
+        )
 
 
 class ReturnVoidView(WriteMixin, View):
@@ -362,3 +365,34 @@ class ReturnVoidView(WriteMixin, View):
             except DomainError as exc:
                 flash_domain_error(request, exc)
         return redirect("invoicing:return_detail", note.pk)
+
+
+def _xml_download(content: bytes, name: str) -> HttpResponse:
+    response = HttpResponse(content, content_type="application/xml; charset=utf-8")
+    response["Content-Disposition"] = f'attachment; filename="{name}"'
+    return response
+
+
+class ReturnCoretaxView(OrganizationMixin, View):
+    """A purchase return as a Coretax "Retur Pajak Masukan" import file."""
+
+    def get(self, request, pk):
+        note = get_object_or_404(returns_for(self.organization), pk=pk)
+        problem = coretax.exportable_problem(note)
+        if problem:
+            messages.error(request, problem)
+            return redirect("invoicing:return_detail", note.pk)
+        return _xml_download(coretax.build_xml(self.organization, [note]), coretax.filename(self.organization, note.number.replace("/", "-")))
+
+
+class MonthCoretaxView(OrganizationMixin, View):
+    """A month's purchase returns in one Coretax import file; returns that can't be reported are left out."""
+
+    def get(self, request, year, month):
+        if not 1 <= month <= 12:
+            raise Http404
+        notes = [n for n in coretax.month_returns(self.organization, year, month) if not coretax.exportable_problem(n)]
+        if not notes:
+            messages.info(request, _("No purchase return of %(period)s can be reported to Coretax.") % {"period": f"{month:02d}/{year}"})
+            return redirect(f"{reverse('reports:vat')}?year={year}")
+        return _xml_download(coretax.build_xml(self.organization, notes), coretax.filename(self.organization, f"{year}-{month:02d}"))
