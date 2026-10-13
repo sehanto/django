@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{{ invoice.number }}{% endblock %}
 {% block body %}
 <main class="container py-4" style="max-width: 860px;">
@@ -7,7 +7,7 @@
       {% with seller=invoice.seller %}
       <h2 class="h4 fw-bold mb-1">{{ seller.name }}</h2>
       <div class="small">{{ seller.address|linebreaksbr }}{% if seller.city %}, {{ seller.city }}{% endif %}</div>
-      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp }}</div>{% endif %}
+      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
       {% endwith %}
       {% if invoice.organization.phone %}<div class="small">{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
     </div>

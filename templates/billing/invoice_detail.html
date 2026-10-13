@@ -30,7 +30,7 @@
     <div>
       <div class="fw-bold fs-5">{{ seller.name }}</div>
       {% if seller.address %}<div class="small">{{ seller.address }}</div>{% endif %}
-      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp }}</div>{% endif %}
+      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
     </div>
     <div class="text-end">
       <div class="h5 text-uppercase mb-1">{% if invoice.status == invoice.Status.PAID %}{% translate "Receipt" %}{% else %}{% translate "Invoice" %}{% endif %}</div>
@@ -42,7 +42,7 @@
     <div class="small text-secondary">{% translate "Bill to" %}</div>
     <div class="fw-semibold">{{ invoice.buyer_name }}</div>
     {% if invoice.buyer_address %}<div class="small">{{ invoice.buyer_address }}</div>{% endif %}
-    {% if invoice.buyer_npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.buyer_npwp }}</div>{% endif %}
+    {% if invoice.buyer_npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.buyer_npwp|npwp }}</div>{% endif %}
   </div>
   <table class="table">
     <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>

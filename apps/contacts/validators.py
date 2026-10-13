@@ -30,8 +30,15 @@ def validate_npwp(value: str) -> str:
 
 
 def format_npwp(value: str) -> str:
-    """15 digit → ``01.234.567.8-901.000``; 16 digit is shown as-is."""
+    """15 digit → ``01.234.567.8-901.000``; 16 digit → ``0123 4567 8901 2345``.
+
+    The 16-digit NPWP (the NIK, or 0 + the old number) has no official punctuation; DJP
+    shows it as plain digits. Groups of four keep it readable without inventing one.
+    Anything else (an unexpected length) is shown as stored.
+    """
     digits = normalize_npwp(value)
     if len(digits) == 15:
         return f"{digits[0:2]}.{digits[2:5]}.{digits[5:8]}.{digits[8]}-{digits[9:12]}.{digits[12:15]}"
+    if len(digits) == 16:
+        return " ".join(digits[i:i + 4] for i in range(0, 16, 4))
     return digits

@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.timesince import timeuntil
 
 from apps.billing.models import SubscriptionInvoice
+from apps.contacts.validators import format_npwp
 from apps.invoicing.domain import InvoiceStatus
 from apps.invoicing.models import InvoiceStatusFilter, Payment
 from apps.ledger.models import JournalEntry
@@ -50,3 +51,9 @@ def timeuntil_delta(delta):
     """Render a timedelta as a localized duration, e.g. "15 minutes" / "15 menit"."""
     reference = timezone.now()
     return timeuntil(reference + delta, reference, depth=1)
+
+
+@register.filter
+def npwp(value) -> str:
+    """Display an NPWP: 15 digits dotted, 16 digits in groups of four (see ``format_npwp``)."""
+    return format_npwp(str(value)) if value else ""

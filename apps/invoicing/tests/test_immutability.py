@@ -301,3 +301,15 @@ def test_printed_lines_show_the_item_code(auth_client, organization, customer, a
     url = reverse("invoicing:print", args=[InvoiceKind.SALES, invoice.pk])
     page = auth_client.get(url).content.decode()
     assert "KOPI-1KG" in page and "KOPI-BARU" not in page  # the code as issued
+
+
+def test_printed_invoice_formats_both_npwps(auth_client, organization, customer, account):
+    from django.urls import reverse
+
+    organization.npwp = "0123456789012345"
+    organization.save()
+    customer.npwp = "012345678901000"
+    customer.save()
+    invoice = services.issue_invoice(invoice=draft(organization, customer, account))
+    page = auth_client.get(reverse("invoicing:print", args=[InvoiceKind.SALES, invoice.pk])).content.decode()
+    assert "0123 4567 8901 2345" in page and "01.234.567.8-901.000" in page
