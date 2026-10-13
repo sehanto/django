@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.assets.domain import DepreciationMethod
 from apps.contacts.validators import npwp_format_validator
 from apps.core.models import TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
@@ -36,13 +37,6 @@ class InventoryCostFormula(models.TextChoices):
 
     FIFO = "fifo", _("First in, first out (FIFO)")
     WEIGHTED_AVERAGE = "weighted_average", _("Weighted average")
-
-
-class DepreciationMethod(models.TextChoices):
-    """The depreciation methods SAK EMKM allows for fixed assets."""
-
-    STRAIGHT_LINE = "straight_line", _("Straight line")
-    DECLINING_BALANCE = "declining_balance", _("Declining balance")
 
 
 class Organization(TimeStampedModel):

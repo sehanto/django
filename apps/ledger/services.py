@@ -39,6 +39,7 @@ NUMBER_PREFIX = {
     Source.PURCHASE_INVOICE: "JB",
     Source.PAYMENT: "JK",
     Source.TAX: "JT",
+    Source.FIXED_ASSET: "JA",
     Source.REVERSAL: "JR",
 }
 

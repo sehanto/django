@@ -20,6 +20,7 @@ from django.utils.text import capfirst, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
+from apps.assets.models import DepreciationPosting, FixedAsset
 from apps.contacts.models import Contact
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
@@ -168,6 +169,24 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("name"), C("rate"), C("dpp_numerator"), C("dpp_denominator"), C("is_active"),
         )),
         TaxRate, "organization", ("name",),
+    ),
+    (
+        Table("fixed_assets.csv", gettext_lazy("The fixed asset register."), (
+            C("number"), C("name"), C("description"), C("asset_account__code", gettext_lazy("Fixed asset account code")),
+            C("acquisition_date"), C("cost"), C("is_depreciable"), C("residual_value"), C("useful_life_months"), C("method"),
+            C("accumulated_depreciation_account__code", gettext_lazy("Accumulated depreciation account code")),
+            C("depreciation_expense_account__code", gettext_lazy("Depreciation expense account code")),
+            C("depreciated_before_until"), C("status"), C("disposed_on"), C("disposal_proceeds"),
+            C("disposal_entry__number", gettext_lazy("Disposal journal entry")),
+        )),
+        FixedAsset, "organization", ("number",),
+    ),
+    (
+        Table("depreciation.csv", gettext_lazy("Depreciation posted per asset and month."), (
+            C("asset__number", gettext_lazy("Fixed asset")), C("year"), C("month"), C("amount"),
+            C("journal_entry__number", gettext_lazy("Journal entry")),
+        )),
+        DepreciationPosting, "organization", ("asset__number", "year", "month"),
     ),
     (
         Table("pph_final_expenses.csv", gettext_lazy("MSME PPh Final expenses, recognised at the end of each month."), (

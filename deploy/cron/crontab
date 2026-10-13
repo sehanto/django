@@ -6,6 +6,9 @@
 # Daily: close expired payment links, send renewal reminders, downgrade lapsed plans.
 15 1 * * * @PROJECT_DIR@/deploy/cron/run.sh process_billing
 
+# Daily: post the fixed asset depreciation of months that have ended (each month once).
+0 2 * * * @PROJECT_DIR@/deploy/cron/run.sh post_depreciation
+
 # Daily: recompute the hash chain of posted journal entries; a failure is mailed (MAILTO).
 0 4 * * * @PROJECT_DIR@/deploy/cron/run.sh verify_ledger
 

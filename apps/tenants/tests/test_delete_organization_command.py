@@ -48,6 +48,22 @@ def test_deletes_tax_records_too(other_organization):
     assert not PphFinalPayment.objects.filter(organization_id=org.pk).exists()
 
 
+def test_deletes_the_fixed_asset_register_too(organization, account):
+    from apps.assets import services as assets
+    from apps.assets.models import DepreciationPosting, FixedAsset
+
+    asset = assets.register_asset(
+        organization=organization, name="Mesin", description="", asset_account=account("1-2300"), acquisition_date=date(2026, 1, 5),
+        cost=Decimal("1200"), is_depreciable=True, useful_life_months=12, residual_value=Decimal("0"),
+        accumulated_depreciation_account=account("1-2900"), depreciation_expense_account=account("6-1600"), depreciated_before_until=None,
+    )
+    assets.post_depreciation(organization=organization, through=date(2026, 2, 28))
+    assets.dispose_asset(asset=asset, on=date(2026, 3, 2), gain_loss_account=account("7-1100"))
+    call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
+    assert not FixedAsset.objects.filter(organization_id=organization.pk).exists()
+    assert not DepreciationPosting.objects.filter(organization_id=organization.pk).exists()
+
+
 def test_asks_for_the_organization_name(books):
     with mock.patch("builtins.input", return_value="wrong"), pytest.raises(CommandError, match="nothing was deleted"):
         call_command("delete_organization", str(books.pk), "--skip-export")

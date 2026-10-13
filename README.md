@@ -15,6 +15,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **Pembayaran** | Receipts and disbursements per invoice through cash/bank accounts (Tunai, Transfer, QRIS, E-Wallet, Giro). A payment can be voided, which reverses its journal. |
 | **PPN** | Configurable rates, with defaults for PMK 131/2024: 12% on DPP 11/12 (effectively 11%) and 12% for luxury goods. Tax is computed per rate on the aggregated base and rounded down to whole rupiah. Only a PKP can charge output VAT. For a non-PKP, input VAT on purchases is capitalized into cost. |
 | **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Accrual basis: each month's tax is recorded as an expense on the month's last day (Beban PPh Final / Utang PPh Final), and the deposit (with its NTPN) settles the liability; recording a deposit records a missing expense first. Warns when turnover passes Rp4,8 miliar. |
+| **Aset tetap** | Fixed asset register (a sub-ledger of the fixed asset accounts): cost, useful life, residual value, straight-line or declining-balance depreciation per the organization's policy, land not depreciated. Depreciation is posted monthly (one entry per month, dated its last day, caught up automatically and nightly by cron); sales and write-offs post the gain or loss. The register reconciles with the ledger. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Catatan atas Laporan Keuangan, Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. See "SAK EMKM" below. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
 | **Bahasa** | Bahasa Indonesia or English, per user, with an ID/EN switch everywhere. Invoices print in each customer's or supplier's own document language. See [Languages](#languages). |
@@ -33,6 +34,7 @@ apps/
   contacts/             customers & suppliers, NPWP (15/16-digit) validation
   taxes/                PPN rates, PPh Final UMKM computation & deposits
   invoicing/            items, sales/purchase invoices, payments
+  assets/               fixed asset register, depreciation schedules and postings, disposals
   reports/              financial statements (pure builders over ledger balances)
   dashboard/            KPIs
 templates/  static/
@@ -85,6 +87,11 @@ Key design decisions:
   their journal entry is reversed (an expense only once its deposit is cancelled; a deposit must settle
   an expense of the same period and amount, `taxes/0009`). They are never deleted: cancelling a PPh Final payment
   keeps it as a void record. Only the owner's organization purge removes them.
+
+  The fixed asset register (migration `assets/0002`): depreciation postings are append-only
+  and must match a posted journal entry on the last day of their month; an asset's figures are
+  fixed once depreciation is posted, disposal is one step with its journal entry, and assets
+  with postings or a disposal can't be deleted. Only the name and description stay editable.
 
   Reference data stays editable for future documents but can't rewrite history
   (migrations `invoicing/0005`, `taxes/0007`, `ledger/0008`):
@@ -265,11 +272,13 @@ The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan 
 | Statement identification | Business name, date or period and "Amounts in Rupiah" on every statement. |
 | Comparative information | The position is compared with the previous year end; the income statement with the same period a year earlier (screen and CSV). |
 | Notes | Statement of compliance, basis of preparation, policies for revenue, receivables, inventory, fixed assets, liabilities, income tax and PPN (wording follows the organization's settings), one note per statement line group, and free-text additional information. |
+| Fixed assets | Cost less accumulated depreciation from the fixed asset register; land not depreciated; monthly depreciation from the month of acquisition; gain or loss on disposal. |
 | Policy choices | Inventory cost formula (FIFO or weighted average) and depreciation method (straight line or declining balance) are organization settings, stated in the notes. |
 | Income tax | Current tax only (PPh Final or regular); no deferred tax. |
 
-Not automated yet: a fixed asset register with scheduled depreciation, and inventory valuation
-(purchases post to *Beban Pokok Penjualan*; adjust inventory with a journal entry after a stock count).
+Not automated yet: inventory valuation (purchases post to *Beban Pokok Penjualan*; adjust
+inventory with a journal entry after a stock count), and revising an asset's useful life or
+residual value after depreciation has been posted (record the change as a journal entry).
 
 ### Exporting the books
 
@@ -660,6 +669,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | Job | When | What |
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
+| `post_depreciation` | Daily 02:00 | Post the fixed asset depreciation of months that have ended (each month once, missed months caught up; organizations with a locked month are skipped and reported) |
 | `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain; failures are mailed (`MAILTO`) |
 | `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 

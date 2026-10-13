@@ -15,6 +15,7 @@ from django.core.validators import validate_email
 from django.db import transaction
 from django.utils import timezone
 
+from apps.assets import services as assets
 from apps.contacts.models import Contact
 from apps.invoicing import services as invoicing
 from apps.invoicing.models import InvoiceKind, Item, Payment
@@ -125,5 +126,13 @@ class Command(BaseCommand):
                         organization=org, date=when, description=label, created_by=user,
                         lines=[JournalLineInput(acc(code), debit=D(amount)), JournalLineInput(acc("1-1100"), credit=D(amount))],
                     )
+
+        assets.register_asset(
+            organization=org, created_by=user, name="Mesin espresso 2 grup", description="", asset_account=acc("1-2300"),
+            acquisition_date=start + timedelta(days=2), cost=D("28000000"), is_depreciable=True, useful_life_months=48,
+            residual_value=D("0"), accumulated_depreciation_account=acc("1-2900"), depreciation_expense_account=acc("6-1600"),
+            depreciated_before_until=None,
+        )
+        assets.post_depreciation(organization=org, through=today, created_by=user)
 
         self.stdout.write(self.style.SUCCESS(f"Demo ready. Sign in with {email} / {password}"))

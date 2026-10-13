@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{{ asset.number }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h4 mb-0">{{ asset.name }}</h1><div class="text-secondary">{{ asset.number }} · {{ asset.get_status_display }}{% if asset.disposed_on %} {{ asset.disposed_on|date:"d/m/Y" }}{% endif %}</div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'assets:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
+    {% if can_write %}
+      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% translate "Edit" %}</a>
+      {% if asset.status == asset.Status.ACTIVE %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#disposeModal">{% translate "Sell or write off" %}</button>{% endif %}
+      {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash"></i></button></form>{% endif %}
+    {% endif %}
+  </div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Cost" %}</div><div class="stat-value">{{ asset.cost|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Accumulated depreciation" %}</div><div class="stat-value">{{ accumulated|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Book value" %}</div><div class="stat-value">{{ book_value|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Depreciation" %}</div><div class="stat-value fs-6 pt-2">
+    {% if asset.is_depreciable %}{% blocktranslate trimmed count months=asset.useful_life_months with method=asset.get_method_display %}{{ method }}, {{ months }} month{% plural %}{{ method }}, {{ months }} months{% endblocktranslate %}{% else %}{% translate "Not depreciated (land)" %}{% endif %}
+  </div></div></div></div>
+</div>
+<dl class="row small mb-4" style="max-width: 900px;">
+  <dt class="col-sm-4">{% translate "Acquisition date" %}</dt><dd class="col-sm-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
+  <dt class="col-sm-4">{% translate "Fixed asset account" %}</dt><dd class="col-sm-8">{{ asset.asset_account }}</dd>
+  {% if asset.is_depreciable %}
+  <dt class="col-sm-4">{% translate "Residual value" %}</dt><dd class="col-sm-8">{{ asset.residual_value|rupiah }}</dd>
+  <dt class="col-sm-4">{% translate "Accumulated depreciation account" %}</dt><dd class="col-sm-8">{{ asset.accumulated_depreciation_account }}</dd>
+  <dt class="col-sm-4">{% translate "Depreciation expense account" %}</dt><dd class="col-sm-8">{{ asset.depreciation_expense_account }}</dd>
+  {% if asset.depreciated_before_until %}<dt class="col-sm-4">{% translate "Already depreciated through" %}</dt><dd class="col-sm-8">{{ asset.depreciated_before_until|date:"F Y" }}</dd>{% endif %}
+  {% endif %}
+  {% if asset.disposal_entry %}<dt class="col-sm-4">{% translate "Disposal" %}</dt><dd class="col-sm-8">{{ asset.disposal_proceeds|rupiah }} · <a href="{% url 'ledger:journal_detail' asset.disposal_entry_id %}">{{ asset.disposal_entry.number }}</a></dd>{% endif %}
+  {% if asset.description %}<dt class="col-sm-4">{% translate "Description" %}</dt><dd class="col-sm-8">{{ asset.description }}</dd>{% endif %}
+</dl>
+{% if schedule %}
+<h2 class="h6">{% translate "Depreciation schedule" %}</h2>
+<div class="card" style="max-width: 900px;"><div class="table-responsive" style="max-height: 520px;"><table class="table table-sm mb-0 align-middle">
+  <thead class="sticky-top"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Depreciation" %}</th><th class="num">{% translate "Accumulated" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
+  <tbody>{% for month, posting, elsewhere in schedule %}
+    <tr class="{% if asset.disposed_on and month.period_end >= asset.disposed_on %}text-secondary text-decoration-line-through{% endif %}">
+      <td>{{ month.period_end|date:"F Y" }}</td><td class="num">{{ month.amount|rupiah }}</td><td class="num">{{ month.accumulated|rupiah }}</td><td class="num">{{ month.book_value|rupiah }}</td>
+      <td class="small">{% if posting %}<a href="{% url 'ledger:journal_detail' posting.journal_entry_id %}">{{ posting.journal_entry.number }}</a>
+        {% elif elsewhere %}<span class="text-secondary">{% translate "In opening balances" %}</span>
+        {% elif month.period_end <= today and asset.status == asset.Status.ACTIVE %}<span class="badge text-bg-warning">{% translate "Not posted yet" %}</span>
+        {% else %}<span class="text-secondary">{% translate "Scheduled" %}</span>{% endif %}</td>
+    </tr>
+  {% endfor %}</tbody>
+</table></div></div>
+{% endif %}
+{% if can_write and asset.status == asset.Status.ACTIVE %}
+<div class="modal fade" id="disposeModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'assets:dispose' asset.pk %}" class="modal-content">{% csrf_token %}
+  <div class="modal-header"><h5 class="modal-title">{% translate "Sell or write off" %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
+  <div class="modal-body">
+    {% include "partials/form_fields.html" with form=disposal_form col="col-12" %}
+    <p class="small text-secondary mt-3 mb-0">{% translate "Depreciation runs to the end of the month before the disposal and is posted first if it is still due. The entry removes the cost and accumulated depreciation, records the proceeds and books the difference as a gain or loss." %}</p>
+  </div>
+  <div class="modal-footer"><button class="btn btn-danger">{% translate "Dispose & post" %}</button></div>
+</form></div></div>
+{% endif %}
+{% endblock %}
