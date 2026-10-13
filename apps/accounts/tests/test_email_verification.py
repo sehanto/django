@@ -94,7 +94,7 @@ def test_invalid_links_are_refused(client, site, tamper):
 def test_resend_is_throttled(client, site):
     sign_up(client)  # first email
     for _ in range(settings.EMAIL_VERIFICATION_EMAILS_PER_HOUR + 1):
-        client.post(reverse("accounts:verify_email_resend"))
+        client.post(reverse("accounts:verify_email_resend"), {RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert len(mail.outbox) == settings.EMAIL_VERIFICATION_EMAILS_PER_HOUR
 
 

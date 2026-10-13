@@ -7,6 +7,7 @@
   after ``AXES_FAILURE_LIMIT`` failures.
 - Sign-up and password reset: always required, checked before any other field (so bots
   can't probe which emails are registered, send reset emails or use up the reset limits).
+- Resending the email confirmation link: always required before anything is sent.
 
 Tokens are verified server-side with ``siteverify`` and bound to their form's action.
 """
@@ -43,6 +44,7 @@ class CaptchaAction(StrEnum):
     LOGIN = "login"
     SIGNUP = "signup"
     PASSWORD_RESET = "password_reset"
+    RESEND_VERIFICATION = "resend_verification"
 
 
 def _window_seconds() -> int:

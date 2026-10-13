@@ -130,6 +130,23 @@ def test_password_reset_needs_a_solved_captcha_before_anything_happens(client, u
     assert response.status_code == 302 and len(mail.outbox) == 1  # the limit was not used up
 
 
+# --- Resending the confirmation link: always required ----------------------------------
+
+
+def test_resending_the_confirmation_link_needs_a_solved_captcha(client, db):
+    sign_up(client, token=FAKE_PASSING_TOKEN)  # signed in, email not confirmed yet; one email sent
+    page = client.get(reverse("accounts:verify_email_pending")).content.decode()
+    assert 'data-action="resend_verification"' in page and captcha.SCRIPT_URL in page
+
+    resend = reverse("accounts:verify_email_resend")
+    for _ in range(settings.EMAIL_VERIFICATION_EMAILS_PER_HOUR + 1):  # would exhaust the limit if counted
+        client.post(resend)
+    assert len(mail.outbox) == 1
+
+    client.post(resend, {RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert len(mail.outbox) == 2  # the hourly limit was not used up
+
+
 # --- Talking to Cloudflare -------------------------------------------------------------
 
 

@@ -250,6 +250,7 @@ def _pending_context(request, change_form=None) -> dict:
     return {
         "change_form": change_form or ChangeEmailForm(user=request.user),
         "lifetime": timedelta(seconds=settings.EMAIL_VERIFICATION_TIMEOUT),
+        "captcha": captcha.widget(captcha.CaptchaAction.RESEND_VERIFICATION),
     }
 
 
@@ -269,11 +270,15 @@ class VerifyEmailPendingView(LoginRequiredMixin, TemplateView):
 
 class ResendVerificationView(LoginRequiredMixin, View):
     def post(self, request):
-        if not request.user.is_email_verified:
-            if services.send_verification_email(request.user):
-                messages.success(request, _("We sent a new confirmation link to %(email)s.") % {"email": request.user.email})
-            else:
-                messages.error(request, _("Too many emails were requested. Please wait an hour and try again."))
+        if request.user.is_email_verified:
+            return redirect("accounts:verify_email_pending")
+        if not captcha.verify(request, captcha.CaptchaAction.RESEND_VERIFICATION):
+            # Nothing sent, and the hourly email limit is not used up.
+            messages.error(request, _("Please complete the security check, then submit the form again."))
+        elif services.send_verification_email(request.user):
+            messages.success(request, _("We sent a new confirmation link to %(email)s.") % {"email": request.user.email})
+        else:
+            messages.error(request, _("Too many emails were requested. Please wait an hour and try again."))
         return redirect("accounts:verify_email_pending")
 
 

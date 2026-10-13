@@ -5,8 +5,9 @@
 <p>{% blocktranslate trimmed with email=request.user.email %}We sent a confirmation link to <strong>{{ email }}</strong>. Open it to start using your account.{% endblocktranslate %}</p>
 <p class="small text-secondary">{% blocktranslate trimmed with lifetime=lifetime|timeuntil_delta %}The link is valid for {{ lifetime }}. If it doesn't arrive within a few minutes, check your spam folder.{% endblocktranslate %}</p>
 
-<form method="post" action="{% url 'accounts:verify_email_resend' %}" class="d-grid mb-3">{% csrf_token %}
-  <button class="btn btn-primary">{% translate "Send the link again" %}</button>
+<form method="post" action="{% url 'accounts:verify_email_resend' %}" class="mb-3">{% csrf_token %}
+  {% include "accounts/_captcha.html" %}
+  <button class="btn btn-primary w-100 mt-3">{% translate "Send the link again" %}</button>
 </form>
 
 <details class="mb-3" {% if change_form.is_bound %}open{% endif %}>
@@ -21,3 +22,4 @@
   <button class="btn btn-link btn-sm">{% translate "Sign out" %}</button>
 </form>
 {% endblock %}
+{% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}

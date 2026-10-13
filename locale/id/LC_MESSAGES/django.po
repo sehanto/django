@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BukuUMKM\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 07:26+0700\n"
+"POT-Creation-Date: 2026-10-13 07:29+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: BukuUMKM <noreply@bukuumkm.id>\n"
 "Language-Team: Indonesian\n"
@@ -44,7 +44,7 @@ msgstr "Email"
 msgid "Please complete the security check, then sign in again."
 msgstr "Selesaikan pemeriksaan keamanan, lalu masuk kembali."
 
-#: apps/accounts/forms.py:48
+#: apps/accounts/forms.py:48 apps/accounts/views.py:277
 msgid "Please complete the security check, then submit the form again."
 msgstr "Selesaikan pemeriksaan keamanan, lalu kirim formulir kembali."
 
@@ -224,22 +224,22 @@ msgstr "Profil diperbarui."
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
-#: apps/accounts/views.py:274
+#: apps/accounts/views.py:279
 #, python-format
 msgid "We sent a new confirmation link to %(email)s."
 msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
 
-#: apps/accounts/views.py:276
+#: apps/accounts/views.py:281
 msgid "Too many emails were requested. Please wait an hour and try again."
 msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
 
-#: apps/accounts/views.py:288
+#: apps/accounts/views.py:293
 #, python-format
 msgid "Email address updated. We sent a confirmation link to %(email)s."
 msgstr ""
 "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
 
-#: apps/accounts/views.py:305
+#: apps/accounts/views.py:310
 msgid ""
 "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has "
 "been set up."
@@ -247,38 +247,38 @@ msgstr ""
 "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah "
 "disiapkan."
 
-#: apps/accounts/views.py:307
+#: apps/accounts/views.py:312
 msgid "Email address confirmed. You can sign in now."
 msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
-#: apps/accounts/views.py:317
+#: apps/accounts/views.py:322
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
 msgstr[0] "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
-#: apps/accounts/views.py:336
+#: apps/accounts/views.py:341
 msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
-#: apps/accounts/views.py:348 apps/accounts/views.py:439
-#: apps/accounts/views.py:536
+#: apps/accounts/views.py:353 apps/accounts/views.py:444
+#: apps/accounts/views.py:541
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr ""
 "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba lagi."
 
-#: apps/accounts/views.py:350
+#: apps/accounts/views.py:355
 msgid "Too many wrong codes. Please sign in again."
 msgstr "Terlalu banyak kode salah. Silakan masuk kembali."
 
-#: apps/accounts/views.py:368
+#: apps/accounts/views.py:373
 #, python-format
 msgid "You signed in with a backup code. %(count)s backup code is left."
 msgid_plural ""
 "You signed in with a backup code. %(count)s backup codes are left."
 msgstr[0] "Anda masuk dengan kode cadangan. Tersisa %(count)s kode cadangan."
 
-#: apps/accounts/views.py:402
+#: apps/accounts/views.py:407
 #, python-format
 msgid ""
 "%(count)s remembered device forgotten. It will be asked for a code at the "
@@ -290,22 +290,22 @@ msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi "
 "saat masuk berikutnya."
 
-#: apps/accounts/views.py:471
+#: apps/accounts/views.py:476
 msgid ""
 "That code is not valid. Check that the time on your phone is correct and try "
 "again."
 msgstr ""
 "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:477
+#: apps/accounts/views.py:482
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:506
+#: apps/accounts/views.py:511
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:528 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:533 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid ""
 "You can't turn off two-factor authentication while %(organizations)s "
@@ -314,7 +314,7 @@ msgstr ""
 "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s "
 "mewajibkannya."
 
-#: apps/accounts/views.py:542
+#: apps/accounts/views.py:547
 msgid ""
 "Two-factor authentication is off. Your account is protected by your password "
 "only."
@@ -2931,7 +2931,7 @@ msgstr ""
 "aplikasi autentikator Anda, atau kode cadangan, untuk melanjutkan."
 
 #: templates/accounts/two_factor_verify_session.html:11
-#: templates/accounts/verify_email_pending.html:21
+#: templates/accounts/verify_email_pending.html:22
 #: templates/partials/sidebar.html:53
 msgid "Sign out"
 msgstr "Keluar"
@@ -2959,15 +2959,15 @@ msgstr ""
 "Tautan berlaku selama %(lifetime)s. Jika email tidak masuk dalam beberapa "
 "menit, periksa folder spam."
 
-#: templates/accounts/verify_email_pending.html:9
+#: templates/accounts/verify_email_pending.html:10
 msgid "Send the link again"
 msgstr "Kirim ulang tautan"
 
-#: templates/accounts/verify_email_pending.html:13
+#: templates/accounts/verify_email_pending.html:14
 msgid "Wrong email address?"
 msgstr "Salah alamat email?"
 
-#: templates/accounts/verify_email_pending.html:16
+#: templates/accounts/verify_email_pending.html:17
 msgid "Update and send link"
 msgstr "Perbarui dan kirim tautan"
 
