@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.ledger import services
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.forms import AccountForm
+from apps.ledger.selectors import verify_chain
 from apps.ledger.models import Account, JournalEntry, JournalLine
 from apps.ledger.services import JournalLineInput
 
@@ -199,3 +200,26 @@ def test_account_form_explains_the_locks(posted, organization, account):
     assert used.fields["category"].disabled and used.fields["is_contra"].disabled and not used.fields["name"].disabled
     system = AccountForm(instance=Account.objects.get(organization=organization, system_role=SystemRole.RECEIVABLE), organization=organization)
     assert system.fields["is_active"].disabled
+
+
+# --- Account snapshot on journal lines (ledger migration 0009) -------------------------
+
+
+def test_posted_lines_keep_the_account_as_named_when_posted(organization, account):
+    bank = account("1-1100")
+    draft = services.create_journal_entry(
+        organization=organization, date=ON, description="Setoran", post=False,
+        lines=[JournalLineInput(bank, debit=D("10")), JournalLineInput(account("3-1000"), credit=D("10"))],
+    )
+    assert draft.lines.get(account=bank).account_code == ""  # drafts follow the chart
+    Account.objects.filter(pk=bank.pk).update(name="Bank Mandiri")
+    posted_entry = services.post_journal_entry(entry=draft)  # named at posting time
+    line = posted_entry.lines.get(account=bank)
+    assert (line.account_code, line.account_name) == ("1-1100", "Bank Mandiri")
+
+    Account.objects.filter(pk=bank.pk).update(name="Bank BCA", code="1-1101")  # the chart moves on...
+    line.refresh_from_db()
+    assert line.account_label == "1-1100 · Bank Mandiri"  # ...past entries don't
+    with rejected_by_database():
+        JournalLine.objects.filter(pk=line.pk).update(account_name="Bank Lain")
+    assert verify_chain(organization) == []  # renames don't disturb the hash chain

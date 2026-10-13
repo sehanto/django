@@ -32,7 +32,7 @@
 <div class="card"><table class="table mb-0">
   <thead><tr><th>{% translate "Account" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Debit" %}</th><th class="num">{% translate "Credit" %}</th></tr></thead>
   <tbody>{% for line in entry.lines.all %}
-    <tr><td>{{ line.account }}</td><td>{{ line.description }}</td>
+    <tr><td>{{ line.account_label }}</td><td>{{ line.description }}</td>
       <td class="num">{% if line.debit %}{{ line.debit|rupiah }}{% endif %}</td><td class="num">{% if line.credit %}{{ line.credit|rupiah }}{% endif %}</td></tr>
   {% endfor %}</tbody>
   <tfoot><tr class="fw-semibold"><td colspan="2">{% translate "Total" %}</td><td class="num">{{ entry.total|rupiah }}</td><td class="num">{{ entry.total|rupiah }}</td></tr></tfoot>

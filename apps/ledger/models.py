@@ -134,6 +134,10 @@ class JournalLine(TimeStampedModel):
     description = models.CharField(_("description"), max_length=255, blank=True)
     debit = money_field(_("debit"))
     credit = money_field(_("credit"))
+    # The account as it was named when the entry was posted, written by the database
+    # (ledger migration 0009) and frozen with the line. Empty on drafts.
+    account_code = models.CharField(_("account code when posted"), max_length=20, blank=True, editable=False)
+    account_name = models.CharField(_("account name when posted"), max_length=150, blank=True, editable=False)
 
     class Meta:
         ordering = ["id"]
@@ -146,4 +150,9 @@ class JournalLine(TimeStampedModel):
         ]
 
     def __str__(self):
-        return f"{self.account} D{self.debit} K{self.credit}"
+        return f"{self.account_label} D{self.debit} K{self.credit}"
+
+    @property
+    def account_label(self) -> str:
+        """Posted lines show the account as named when posted; drafts the current name."""
+        return f"{self.account_code} · {self.account_name}" if self.account_code else str(self.account)

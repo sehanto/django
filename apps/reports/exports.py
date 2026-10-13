@@ -103,6 +103,7 @@ ENTRY_LINES = Table(
         C("account__code", gettext_lazy("Account code")), C("account__name"),
         C("description", gettext_lazy("Line description")), C("debit"), C("credit"),
         C("entry__posted_by__email", gettext_lazy("Posted by")), C("entry__posting_sequence"), C("entry__entry_hash"),
+        C("account_code"), C("account_name"),
     ),
 )
 TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (

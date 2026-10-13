@@ -89,7 +89,10 @@ Key design decisions:
   (migrations `invoicing/0005`, `taxes/0007`, `ledger/0008`):
   - an account with posted entries keeps its category, contra flag and system role
     (they decide where history lands in the reports and which way it counts); its code,
-    name and description can change (recorded in the audit log). System accounts are
+    name and description can change (recorded in the audit log). Posting copies each
+    line's account code and name onto the line (migration `ledger/0009`, written by the
+    database), so a rename relabels the chart and the period reports, but past journal
+    entries and the journal export keep the name used when they were posted. System accounts are
     never deleted, deactivated or stripped of their role, and no account changes
     organization;
   - issuing an invoice snapshots the buyer's and your own name, NPWP, address and city
