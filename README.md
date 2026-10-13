@@ -462,7 +462,7 @@ many addresses *and* accounts still needs an IP-reputation service at the proxy.
 
 The sign-in, sign-up, password-reset, change-password, "send the confirmation link
 again", "wrong email address?", "turn on/off two-factor authentication", "create new
-backup codes" and "confirm it's you" (2FA for an existing session) forms use
+backup codes", "confirm it's you" (2FA for an existing session) and sign-in 2FA code forms use
 [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/).
 
 **Sign-up and password reset** always show it. Turnstile usually passes without a puzzle.
@@ -483,7 +483,9 @@ the form to guess it.
 
 **Turning two-factor authentication on or off**, **creating new backup codes** and **"confirm
 it's you"** (proving 2FA for a session that started without it, e.g. when an organization
-starts requiring it, or before opening the admin) always show it too. The password and any 2FA code are not checked until it is solved, so no code
+starts requiring it, or before opening the admin) always show it too. So does the **2FA code
+step of signing in**: someone who has the password still can't try codes, or use up the
+user's wrong-code attempts, without solving it. The password and any 2FA code are not checked until it is solved, so no code
 attempt is counted against the user.
 
 **Sign-in** shows it only after repeated failures, so normal users never see it:
@@ -497,9 +499,7 @@ attempt is counted against the user.
   with "complete the security check". Each token is bound to its form (Turnstile
   `action` `login`, `signup`, `password_reset`, `resend_verification`, `change_email`,
   `change_password`, `enable_two_factor`, `disable_two_factor`, `backup_codes` or
-  `verify_session`), so a token solved on one form is refused on the others. The 2FA code step
-  of signing in has no CAPTCHA of its own: it follows a password the CAPTCHA already guards
-  and is throttled by django-otp.
+  `verify_session` or `login_code`), so a token solved on one form is refused on the others.
 - A correct sign-in, or a password reset, clears the email's count. The address's count
   runs until the window ends.
 - django-axes still locks the email+IP pair after 5 failures, even for someone who solves

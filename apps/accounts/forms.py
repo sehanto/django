@@ -145,8 +145,11 @@ class VerifySessionForm(CaptchaFirstFormMixin, TwoFactorCodeForm):
     captcha_action = captcha.CaptchaAction.VERIFY_SESSION
 
 
-class TwoFactorLoginForm(TwoFactorCodeForm):
-    """Sign-in code step, with the optional "remember this device"."""
+class TwoFactorLoginForm(CaptchaFirstFormMixin, TwoFactorCodeForm):
+    """Sign-in code step, with the optional "remember this device". The CAPTCHA first: a script
+    that has the password can't try codes (or use up the attempts) without solving it."""
+
+    captcha_action = captcha.CaptchaAction.LOGIN_CODE
 
     def __init__(self, *args, offer_remember: bool, **kwargs):
         super().__init__(*args, **kwargs)

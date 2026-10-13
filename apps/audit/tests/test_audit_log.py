@@ -141,12 +141,12 @@ def test_two_factor_events(client, user):
     device = two_factor.start_setup(user)
     backup_codes = two_factor.confirm_setup(user, device, code_for(device))
     client.post(LOGIN, {"username": user.email, "password": PASSWORD})
-    client.post(OTP, {"code": "000000"})
+    client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": "000000"})
     wrong = events(A.LOGIN_FAILED, actor=user).get()
     assert wrong.details["step"] == "two_factor"
 
     with later():  # django-otp's back-off after the wrong code
-        client.post(OTP, {"code": backup_codes[0], "remember": "on"}, HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0) Firefox/140")
+        client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": backup_codes[0], "remember": "on"}, HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0) Firefox/140")
     assert events(A.BACKUP_CODE_USED, actor=user).exists()
     assert events(A.DEVICE_REMEMBERED, actor=user).exists()
     assert backup_codes[0] not in everything_recorded()

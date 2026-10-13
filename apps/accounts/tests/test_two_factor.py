@@ -92,10 +92,10 @@ def test_password_alone_is_not_enough(client, user, enabled):
 
 def test_sign_in_with_authenticator_code(client, user, enabled):
     password_step(client, user, next_url="/sales/")
-    wrong = client.post(OTP, {"code": "000000"})
+    wrong = client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": "000000"})
     assert wrong.status_code == 200 and wrong.context["form"].errors["code"]
     with later():
-        response = client.post(OTP, {"code": code_for(enabled["device"], steps_ahead=1)})
+        response = client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(enabled["device"], steps_ahead=1)})
     assert response["Location"] == "/sales/"
     assert client.session["_auth_user_id"] == str(user.pk)
     assert client.session[DEVICE_ID_SESSION_KEY] == enabled["device"].persistent_id
@@ -103,43 +103,43 @@ def test_sign_in_with_authenticator_code(client, user, enabled):
 
 def test_unsafe_next_url_is_ignored(client, user, enabled):
     password_step(client, user, next_url="https://evil.example/")
-    response = client.post(OTP, {"code": code_for(enabled["device"], steps_ahead=1)})
+    response = client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(enabled["device"], steps_ahead=1)})
     assert response["Location"] == "/"
 
 
 def test_codes_cannot_be_replayed(client, user, enabled):
     code = code_for(enabled["device"], steps_ahead=1)
     password_step(client, user)
-    assert client.post(OTP, {"code": code}).status_code == 302
+    assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code}).status_code == 302
     client.logout()
     password_step(client, user)
-    assert client.post(OTP, {"code": code}).status_code == 200  # same code again is refused
+    assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code}).status_code == 200  # same code again is refused
 
 
 def test_backup_code_works_once(client, user, enabled):
     backup = enabled["backup_codes"][0]
     password_step(client, user)
-    response = client.post(OTP, {"code": backup.upper()[:4] + " " + backup.upper()[4:]}, follow=True)  # as typed from paper
+    response = client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": backup.upper()[:4] + " " + backup.upper()[4:]}, follow=True)  # as typed from paper
     assert response.status_code == 200 and "9" in str(list(response.context["messages"])[0])
     client.logout()
     password_step(client, user)
-    assert client.post(OTP, {"code": backup}).status_code == 200
+    assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": backup}).status_code == 200
 
 
 def test_too_many_wrong_codes_require_the_password_again(client, user, enabled):
     password_step(client, user)
     for attempt in range(settings.TWO_FACTOR_MAX_ATTEMPTS - 1):
         with later(seconds=60 * 2**attempt):  # each wrong code doubles the wait
-            assert client.post(OTP, {"code": "000000"}).status_code == 200
+            assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": "000000"}).status_code == 200
     with later(seconds=60 * 2**settings.TWO_FACTOR_MAX_ATTEMPTS):
-        assert client.post(OTP, {"code": "000000"})["Location"] == LOGIN
-    assert client.post(OTP, {"code": code_for(enabled["device"], steps_ahead=1)})["Location"] == LOGIN
+        assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": "000000"})["Location"] == LOGIN
+    assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(enabled["device"], steps_ahead=1)})["Location"] == LOGIN
 
 
 def test_pending_sign_in_expires(client, user, enabled, settings):
     password_step(client, user)
     settings.TWO_FACTOR_PENDING_SECONDS = -1
-    assert client.post(OTP, {"code": code_for(enabled["device"], steps_ahead=1)})["Location"] == LOGIN
+    assert client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(enabled["device"], steps_ahead=1)})["Location"] == LOGIN
 
 
 def test_code_page_needs_a_password_first(client, db):
@@ -195,5 +195,5 @@ def test_admin_requires_a_verified_second_factor(client, django_user_model):
     two_factor.confirm_setup(admin, device, code_for(device))
     client.logout()
     client.post(LOGIN, {"username": admin.email, "password": PASSWORD})
-    client.post(OTP, {"code": code_for(AuthenticatorDevice.objects.get(pk=device.pk), steps_ahead=1)})
+    client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(AuthenticatorDevice.objects.get(pk=device.pk), steps_ahead=1)})
     assert client.get(reverse("admin:index")).status_code == 200

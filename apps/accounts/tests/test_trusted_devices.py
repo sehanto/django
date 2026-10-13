@@ -42,7 +42,7 @@ def sign_in(client, user, password=PASSWORD):
 
 def sign_in_with_code(client, user, device, *, remember, steps_ahead=1):
     sign_in(client, user)
-    data = {"code": code_for(device, steps_ahead)}
+    data = {"code": code_for(device, steps_ahead), RESPONSE_FIELD: FAKE_PASSING_TOKEN}
     if remember:
         data["remember"] = "on"
     return client.post(OTP, data, HTTP_USER_AGENT=CHROME)
@@ -141,7 +141,7 @@ def test_staff_always_enter_a_code(client, user, device):
     user.save()
     sign_in(client, user)
     assert "remember" not in client.get(OTP).context["form"].fields  # not offered
-    client.post(OTP, {"code": code_for(device), "remember": "on"})
+    client.post(OTP, {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(device), "remember": "on"})
     sign_out(client)
     assert not TrustedDevice.objects.exists()
     # Even a remembered device created earlier (e.g. before becoming staff) is ignored.

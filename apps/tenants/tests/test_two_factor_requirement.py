@@ -62,7 +62,7 @@ def test_requiring_2fa_notifies_members_without_it(client, user, organization, m
     enable_2fa(with_2fa)
 
     client.post(reverse("accounts:login"), {"username": user.email, "password": PASSWORD})
-    client.post(reverse("accounts:login_otp"), {"code": code_for(owner_device, steps_ahead=1)})
+    client.post(reverse("accounts:login_otp"), {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(owner_device, steps_ahead=1)})
     mail.outbox.clear()
     response = client.post(SETTINGS, settings_post(organization, require_two_factor="on"))
     assert response.status_code == 302
@@ -127,7 +127,7 @@ def test_cannot_turn_off_2fa_while_required(client, user, organization):
     device = enable_2fa(user)
     require(organization)
     client.post(reverse("accounts:login"), {"username": user.email, "password": PASSWORD})
-    client.post(reverse("accounts:login_otp"), {"code": code_for(device, steps_ahead=1)})
+    client.post(reverse("accounts:login_otp"), {RESPONSE_FIELD: FAKE_PASSING_TOKEN, "code": code_for(device, steps_ahead=1)})
     page = client.get(reverse("accounts:two_factor_disable"))
     assert page.context["required_by"] == [organization]
     response = client.post(reverse("accounts:two_factor_disable"), {"password": PASSWORD, "code": code_for(device, steps_ahead=2), RESPONSE_FIELD: FAKE_PASSING_TOKEN})

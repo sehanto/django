@@ -12,7 +12,7 @@ from django.urls import reverse
 
 from apps.accounts import captcha, two_factor
 from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
-from apps.accounts.models import User
+from apps.accounts.models import AuthenticatorDevice, User
 from apps.accounts.tests.test_two_factor import code_for
 from apps.core.checks import check_captcha_keys
 
@@ -204,6 +204,22 @@ def test_turning_on_two_factor_needs_a_solved_captcha_before_the_code_is_tried(a
 
     auth_client.post(url, {"password": PASSWORD, "code": code_for(device), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert two_factor.is_enabled(user)
+
+
+def test_sign_in_code_step_needs_a_solved_captcha_before_the_code_is_tried(client, user, two_factor_on):
+    device = AuthenticatorDevice.objects.get(user=user, confirmed=True)
+    client.post(LOGIN, {"username": user.email, "password": PASSWORD})
+    otp = reverse("accounts:login_otp")
+    assert 'data-action="login_code"' in client.get(otp).content.decode()
+
+    for _ in range(10):  # far more than the wrong-code limit, had they been counted
+        response = client.post(otp, {"code": code_for(device, steps_ahead=1)})
+        assert response.status_code == 200 and list(response.context["form"].errors) == ["__all__"]
+    assert "_auth_user_id" not in client.session
+
+    # No back-off to wait for: none of those posts reached the code check.
+    done = client.post(otp, {"code": code_for(device, steps_ahead=1), RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert done.status_code == 302 and client.session.get("_auth_user_id") == str(user.pk)
 
 
 def test_proving_two_factor_for_a_session_needs_a_solved_captcha(auth_client, user, two_factor_on):

@@ -342,7 +342,10 @@ class LoginOTPView(FormView):
     form_class = TwoFactorLoginForm
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "offer_remember": trusted_devices.is_offered(self.user)}
+        return {**super().get_form_kwargs(), "offer_remember": trusted_devices.is_offered(self.user), "request": self.request}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(captcha=captcha.widget(captcha.CaptchaAction.LOGIN_CODE), **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
         self.pending = two_factor.pending_login(request)
