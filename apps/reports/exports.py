@@ -22,6 +22,7 @@ from django.utils.translation import gettext_lazy
 
 from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
 from apps.contacts.models import Contact
+from apps.inventory.models import StockMovement
 from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
 from apps.ledger.models import Account, JournalLine
@@ -128,9 +129,19 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("code"), C("name"), C("type"), C("unit"), C("sale_price"), C("purchase_price"),
             C("income_account__code", gettext_lazy("Revenue account code")),
             C("expense_account__code", gettext_lazy("Purchase/expense account code")),
-            C("tax_rate__name", gettext_lazy("Default tax")), C("is_active"),
+            C("tax_rate__name", gettext_lazy("Default tax")), C("track_inventory"),
+            C("inventory_account__code", gettext_lazy("Inventory account code")),
+            C("cogs_account__code", gettext_lazy("Cost of goods sold account code")), C("is_active"),
         )),
         Item, "organization", ("name", "id"),
+    ),
+    (
+        Table("stock_movements.csv", gettext_lazy("The stock card: every movement of tracked items, in posting order."), (
+            C("item__code", gettext_lazy("Item code")), C("item__name", gettext_lazy("Item")), C("date"), C("kind"),
+            C("quantity"), C("value"), C("cost_formula"), C("invoice_line__invoice__number", gettext_lazy("Invoice")),
+            C("journal_entry__number", gettext_lazy("Journal entry")), C("reason"),
+        )),
+        StockMovement, "organization", ("id",),
     ),
     (
         Table("invoices.csv", gettext_lazy("Sales invoices and purchase bills."), (

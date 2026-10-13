@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load i18n money %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div><h1 class="h4 mb-0">{% blocktranslate trimmed with item=item.name %}Stock card: {{ item }}{% endblocktranslate %}</h1>
+    <div class="text-secondary">{% if item.code %}{{ item.code }} · {% endif %}{{ item.inventory_account }}</div></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'inventory:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
+    {% if can_write %}<a href="{% url 'inventory:adjust' %}?item={{ item.pk }}" class="btn btn-primary">{% translate "Stock adjustment" %}</a>{% endif %}
+  </div>
+</div>
+<div class="card"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Type" %}</th><th>{% translate "Document" %}</th><th class="num">{% translate "Quantity" %}</th><th class="num">{% translate "Unit cost" %}</th><th class="num">{% translate "Value" %}</th><th class="num">{% translate "On hand" %}</th><th class="num">{% translate "Stock value" %}</th></tr></thead>
+  <tbody>
+  {% for row in rows %}{% with m=row.movement %}
+    <tr>
+      <td>{{ m.date|date:"d/m/Y" }}</td>
+      <td>{{ m.get_kind_display }}{% if m.cost_formula %} <span class="small text-secondary">({{ m.get_cost_formula_display }})</span>{% endif %}{% if m.reason %}<div class="small text-secondary">{{ m.reason }}</div>{% endif %}</td>
+      <td class="small">{% if m.invoice_line %}<a href="{% url 'invoicing:detail' m.invoice_line.invoice.kind m.invoice_line.invoice_id %}">{{ m.invoice_line.invoice.number }}</a> · {% endif %}<a href="{% url 'ledger:journal_detail' m.journal_entry_id %}">{{ m.journal_entry.number }}</a></td>
+      <td class="num">{{ m.quantity|floatformat:"-3" }}</td>
+      <td class="num">{{ row.unit_cost|rupiah }}</td>
+      <td class="num">{{ m.value|rupiah }}</td>
+      <td class="num">{{ row.quantity|floatformat:"-3" }} {{ item.unit }}</td>
+      <td class="num">{{ row.value|rupiah }}</td>
+    </tr>
+  {% endwith %}{% empty %}
+    <tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No stock movements yet. Purchases, sales and stock adjustments of this item appear here." %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% endblock %}

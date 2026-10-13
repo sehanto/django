@@ -72,7 +72,7 @@ def test_archive_holds_the_complete_books(books, other_organization):
     files = export(books)
     assert set(files) == {
         "README.txt", "organization.csv", "chart_of_accounts.csv", "journal_entries.csv", "contacts.csv", "items.csv",
-        "invoices.csv", "invoice_lines.csv", "payments.csv", "tax_rates.csv", "fixed_assets.csv", "asset_revisions.csv", "depreciation.csv", "pph_final_expenses.csv", "pph_final_payments.csv", "trial_balance.csv",
+        "stock_movements.csv", "invoices.csv", "invoice_lines.csv", "payments.csv", "tax_rates.csv", "fixed_assets.csv", "asset_revisions.csv", "depreciation.csv", "pph_final_expenses.csv", "pph_final_payments.csv", "trial_balance.csv",
     }
     journal = files["journal_entries.csv"]
     assert journal[0][:5] == ["Number", "Date", "Status", "Source", "Entry description"]

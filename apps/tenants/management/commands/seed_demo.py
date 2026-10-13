@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from apps.assets import services as assets
 from apps.contacts.models import Contact
+from apps.inventory import services as inventory
 from apps.invoicing import services as invoicing
 from apps.invoicing.models import InvoiceKind, Item, Payment
 from apps.ledger.models import Account
@@ -88,6 +89,11 @@ class Command(BaseCommand):
             organization=org, code="KOPI-ARB", name="Kopi Arabika Gayo 1 kg", unit="kg",
             sale_price=D("185000"), purchase_price=D("120000"), income_account=acc("4-1000"),
             expense_account=acc("5-1000"), tax_rate=ppn,
+            track_inventory=True, inventory_account=acc("1-1300"), cogs_account=acc("5-1000"),
+        )
+        inventory.adjust_stock(
+            organization=org, item=arabika, on=start, quantity=D("600"), unit_cost=D("115000"),
+            counter_account=acc("3-1000"), reason="Stok awal", created_by=user,
         )
         Item.objects.create(
             organization=org, code="JASA-BARISTA", name="Pelatihan Barista", type=Item.Type.SERVICE, unit="sesi",
@@ -100,7 +106,7 @@ class Command(BaseCommand):
                 break
             bill = invoicing.create_invoice(
                 organization=org, kind=InvoiceKind.PURCHASE, contact=suppliers[0], date=day, created_by=user,
-                lines=[invoicing.InvoiceLineInput("Green bean arabika", acc("5-1000"), D("45") + month * 6, D("120000"), tax_rate=ppn, item=arabika)],
+                lines=[invoicing.InvoiceLineInput("Green bean arabika", acc("1-1300"), D("45") + month * 6, D("120000"), tax_rate=ppn, item=arabika)],
             )
             bill = invoicing.issue_invoice(invoice=bill, issued_by=user)
             if day + timedelta(days=20) <= today:

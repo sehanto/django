@@ -104,7 +104,10 @@ class InvoiceFormView(InvoiceKindMixin, WriteMixin, TemplateView):
             item.pk: {
                 "description": item.name,
                 "price": str(item.sale_price if self.kind == InvoiceKind.SALES else item.purchase_price),
-                "account": (item.income_account_id if self.kind == InvoiceKind.SALES else item.expense_account_id),
+                "account": (
+                    item.income_account_id if self.kind == InvoiceKind.SALES
+                    else item.inventory_account_id if item.track_inventory else item.expense_account_id
+                ),
                 "tax": item.tax_rate_id,
             }
             for item in items_for(self.organization, active_only=True)

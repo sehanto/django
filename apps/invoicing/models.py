@@ -46,10 +46,33 @@ class Item(TenantOwnedModel):
     tax_rate = models.ForeignKey(
         "taxes.TaxRate", null=True, blank=True, on_delete=models.SET_NULL, related_name="+", verbose_name=_("default tax")
     )
+    # Perpetual inventory (apps.inventory): purchases go to the inventory account and each sale
+    # posts its cost (FIFO or weighted average) to cost of goods sold. Fixed once the item has
+    # stock movements (inventory migration 0002).
+    track_inventory = models.BooleanField(
+        _("track stock"), default=False,
+        help_text=_("Keep stock quantities and value: purchases add to inventory, and each sale posts its cost of goods sold."),
+    )
+    inventory_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("inventory account")
+    )
+    cogs_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("cost of goods sold account")
+    )
     is_active = models.BooleanField(_("active"), default=True)
+
+    FIXED_ONCE_STOCKED = ("type", "track_inventory", "inventory_account", "cogs_account")
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.CheckConstraint(
+                name="tracked_items_are_goods_with_accounts",
+                condition=models.Q(track_inventory=False) | models.Q(
+                    type="goods", inventory_account__isnull=False, cogs_account__isnull=False,
+                ),
+            ),
+        ]
         verbose_name = _("item")
         verbose_name_plural = _("items")
 

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
+from apps.inventory.selectors import cost_of_sales_accounts, inventory_accounts
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts, purchase_accounts, revenue_accounts
@@ -111,11 +112,35 @@ class ItemForm(OrganizationFormMixin, BaseModelForm):
         model = Item
         fields = [
             "code", "name", "type", "unit", "sale_price", "purchase_price",
-            "income_account", "expense_account", "tax_rate", "is_active",
+            "income_account", "expense_account", "tax_rate",
+            "track_inventory", "inventory_account", "cogs_account", "is_active",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["income_account"].queryset = revenue_accounts(self.organization)
-        self.fields["expense_account"].queryset = purchase_accounts(self.organization)
-        self.fields["tax_rate"].queryset = tax_rates_for(self.organization, active_only=True)
+        organization = self.organization
+        self.fields["income_account"].queryset = revenue_accounts(organization)
+        self.fields["expense_account"].queryset = purchase_accounts(organization)
+        self.fields["expense_account"].help_text = _("For goods whose stock isn't tracked, and for services.")
+        self.fields["tax_rate"].queryset = tax_rates_for(organization, active_only=True)
+        self.fields["inventory_account"].queryset = inventory_accounts(organization)
+        self.fields["cogs_account"].queryset = cost_of_sales_accounts(organization)
+        # Suggested accounts for turning tracking on, for new and existing items alike.
+        if not self.initial.get("inventory_account"):
+            self.initial["inventory_account"] = inventory_accounts(organization).first()
+        if not self.initial.get("cogs_account"):
+            self.initial["cogs_account"] = cost_of_sales_accounts(organization).filter(system_role__isnull=False).first()
+        if self.instance.pk and self.instance.stock_movements.exists():  # the database refuses these changes
+            for name in Item.FIXED_ONCE_STOCKED:
+                self.fields[name].disabled = True
+            self.fields["track_inventory"].help_text = _("This item has stock movements, so its type, stock tracking and accounts are fixed.")
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("track_inventory"):
+            if cleaned.get("type") != Item.Type.GOODS:
+                self.add_error("track_inventory", _("Only goods have stock."))
+            for name in ("inventory_account", "cogs_account"):
+                if not cleaned.get(name) and name not in self.errors:
+                    self.add_error(name, _("Required for an item whose stock is tracked."))
+        return cleaned

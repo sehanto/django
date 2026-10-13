@@ -107,6 +107,7 @@ class JournalSource(models.TextChoices):
     PAYMENT = "payment", _("Payment")
     TAX = "tax", _("Tax")
     FIXED_ASSET = "fixed_asset", _("Fixed asset")
+    INVENTORY = "inventory", _("Inventory")
     REVERSAL = "reversal", _("Reversal")
 
 

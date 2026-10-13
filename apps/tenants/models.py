@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.assets.domain import DepreciationMethod
+from apps.inventory.domain import CostFormula as InventoryCostFormula
 from apps.contacts.validators import npwp_format_validator
 from apps.core.models import TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
@@ -30,13 +31,6 @@ class Plan(TimeStampedModel):
 
     def __str__(self):
         return self.name
-
-
-class InventoryCostFormula(models.TextChoices):
-    """The cost formulas SAK EMKM allows for inventory."""
-
-    FIFO = "fifo", _("First in, first out (FIFO)")
-    WEIGHTED_AVERAGE = "weighted_average", _("Weighted average")
 
 
 class Organization(TimeStampedModel):

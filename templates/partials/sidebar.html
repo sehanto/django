@@ -34,6 +34,7 @@
     <li class="nav-heading">{% translate "Master data" %}</li>
     <li><a class="nav-link {% if url.namespace == 'contacts' %}active{% endif %}" href="{% url 'contacts:list' %}"><i class="bi bi-people me-2"></i>{% translate "Contacts" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'items' %}active{% endif %}" href="{% url 'invoicing:items' %}"><i class="bi bi-box-seam me-2"></i>{% translate "Items" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'inventory' %}active{% endif %}" href="{% url 'inventory:list' %}"><i class="bi bi-boxes me-2"></i>{% translate "Inventory" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'assets' %}active{% endif %}" href="{% url 'assets:list' %}"><i class="bi bi-pc-display me-2"></i>{% translate "Fixed assets" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}"><i class="bi bi-diagram-3 me-2"></i>{% translate "Chart of accounts" %}</a></li>
     <li class="nav-heading">{% translate "Taxes & reports" %}</li>

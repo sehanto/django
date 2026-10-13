@@ -21,6 +21,7 @@ from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.sequences import next_document_number
 from apps.core.validators import ensure_business_date
+from apps.inventory import services as inventory
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
@@ -82,6 +83,13 @@ def _validate_lines(organization, kind: str, lines: Sequence[InvoiceLineInput]) 
             raise ValidationFailed(_("Account %(account)s is inactive.") % {"account": line.account})
         if line.tax_rate is not None and kind == InvoiceKind.SALES and not organization.is_pkp:
             raise ValidationFailed(_("Only a VAT-registered business (PKP) can charge PPN. Change the PKP status in the settings."))
+        if line.item is not None and line.item.track_inventory:
+            if line.quantity <= 0:
+                raise ValidationFailed(_("The quantity of %(item)s must be positive: its stock is tracked.") % {"item": line.item.name})
+            if kind == InvoiceKind.PURCHASE and line.account != line.item.inventory_account:
+                raise ValidationFailed(
+                    _("Purchases of %(item)s go to its inventory account %(account)s.") % {"item": line.item.name, "account": line.item.inventory_account}
+                )
     return compute_invoice_totals([line.to_spec() for line in lines])
 
 
@@ -209,9 +217,20 @@ def _amounts_by_account(pairs) -> "OrderedDict[Account, Decimal]":
     return grouped
 
 
-def _journal_lines(invoice: Invoice, lines: list[InvoiceLine], totals: InvoiceTotals) -> list[JournalLineInput]:
+def purchase_costs(organization, lines: list[InvoiceLine], totals: InvoiceTotals) -> list[Decimal]:
+    """What each purchase line costs the business: a PKP credits input VAT; otherwise the VAT
+    is part of the cost (and so of the inventory value)."""
+    amounts = [line.amount for line in lines]
+    if not organization.is_pkp:
+        for group in totals.tax_groups:
+            shares = allocate(group.tax, [amounts[i] for i in group.line_indexes])
+            for index, share in zip(group.line_indexes, shares):
+                amounts[index] += share
+    return amounts
+
+
+def _journal_lines(invoice: Invoice, lines: list[InvoiceLine], totals: InvoiceTotals, stock: list) -> list[JournalLineInput]:
     organization = invoice.organization
-    line_amounts = [line.amount for line in lines]
 
     if invoice.is_sales:
         result = [JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), debit=totals.total)]
@@ -220,15 +239,10 @@ def _journal_lines(invoice: Invoice, lines: list[InvoiceLine], totals: InvoiceTo
                 result.append(JournalLineInput(account, credit=amount))
         if totals.tax_total:
             result.append(JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), credit=totals.tax_total))
-        return result
+        return result + inventory.cost_journal_lines(stock)  # cost of goods sold of tracked items
 
-    # Purchases: a PKP may credit input VAT; otherwise VAT becomes part of cost.
     vat_recoverable = organization.is_pkp
-    if not vat_recoverable:
-        for group in totals.tax_groups:
-            shares = allocate(group.tax, [line_amounts[i] for i in group.line_indexes])
-            for index, share in zip(group.line_indexes, shares):
-                line_amounts[index] += share
+    line_amounts = purchase_costs(organization, lines, totals)
     result = [
         JournalLineInput(account, debit=amount)
         for account, amount in _amounts_by_account(zip((l.account for l in lines), line_amounts)).items()
@@ -244,7 +258,7 @@ def _journal_lines(invoice: Invoice, lines: list[InvoiceLine], totals: InvoiceTo
 def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
     invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
     _ensure_draft(invoice)
-    lines = list(invoice.lines.select_related("account", "tax_rate"))
+    lines = list(invoice.lines.select_related("account", "tax_rate", "item__inventory_account", "item__cogs_account"))
     totals = _validate_lines(
         invoice.organization,
         invoice.kind,
@@ -252,6 +266,11 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
     )
     if totals.total <= 0:
         raise ValidationFailed(_("The invoice total must be greater than zero."))
+
+    if invoice.is_sales:
+        stock = inventory.plan_sale(invoice.organization, lines)
+    else:
+        stock = inventory.plan_purchase(zip(lines, purchase_costs(invoice.organization, lines, totals)))
 
     invoice.number = next_document_number(invoice.organization, INVOICE_PREFIX[invoice.kind], invoice.date)
     # Journal descriptions are stored business records and stay in Indonesian.
@@ -262,9 +281,10 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
         description=f"{label} {invoice.contact.name}",
         reference=invoice.number,
         source=JOURNAL_SOURCE[invoice.kind],
-        lines=_journal_lines(invoice, lines, totals),
+        lines=_journal_lines(invoice, lines, totals, stock),
         created_by=issued_by,
     )
+    inventory.record(stock, entry=invoice.journal_entry, on=invoice.date, created_by=issued_by)
     _apply_totals(invoice, totals)
     invoice.snapshot_parties()  # frozen with the invoice from here on
     invoice.status = Invoice.Status.ISSUED
@@ -280,10 +300,12 @@ def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
         raise InvalidStateTransition(_("Void all payments on this invoice first."))
     if invoice.status != Invoice.Status.ISSUED:
         raise InvalidStateTransition(_("Only issued invoices can be voided."))
-    reverse_journal_entry(
+    stock = inventory.plan_sale_void(invoice) if invoice.is_sales else inventory.plan_purchase_void(invoice)
+    reversal = reverse_journal_entry(
         entry=invoice.journal_entry, date=max(on, invoice.date), created_by=voided_by,
         description=f"Pembatalan faktur {invoice.number}",
     )
+    inventory.record(stock, entry=reversal, on=reversal.date, created_by=voided_by)
     invoice.status = Invoice.Status.VOID
     invoice.save(update_fields=["status", "updated_at"])
     return invoice

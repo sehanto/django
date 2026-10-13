@@ -40,6 +40,7 @@ NUMBER_PREFIX = {
     Source.PAYMENT: "JK",
     Source.TAX: "JT",
     Source.FIXED_ASSET: "JA",
+    Source.INVENTORY: "JI",
     Source.REVERSAL: "JR",
 }
 
