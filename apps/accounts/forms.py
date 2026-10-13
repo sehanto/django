@@ -2,7 +2,7 @@ from django import forms
 from django.forms.utils import ErrorDict
 from django.conf import settings
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
@@ -91,6 +91,13 @@ class ResetPasswordForm(CaptchaFirstFormMixin, SanitizedFormMixin, PasswordReset
     def send_mail(self, subject_template_name, email_template_name, context, *args, **kwargs):
         with translation.override(context["user"].language):
             super().send_mail(subject_template_name, email_template_name, context, *args, **kwargs)
+
+
+class ChangePasswordForm(CaptchaFirstFormMixin, SanitizedFormMixin, PasswordChangeForm):
+    """Change the password while signed in. The CAPTCHA comes first, so a hijacked session
+    can't be used by a script to guess the current password."""
+
+    captcha_action = captcha.CaptchaAction.CHANGE_PASSWORD
 
 
 class NewPasswordForm(SanitizedFormMixin, SetPasswordForm):

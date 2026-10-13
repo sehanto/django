@@ -155,6 +155,7 @@ def test_two_factor_events(client, user):
 def test_password_change_is_recorded(auth_client, user):
     auth_client.post(reverse("accounts:password_change"), {
         "old_password": PASSWORD, "new_password1": "Baru-Rahasia-456", "new_password2": "Baru-Rahasia-456",
+        RESPONSE_FIELD: FAKE_PASSING_TOKEN,
     })
     assert events(A.PASSWORD_CHANGED, actor=user).exists()
     assert "Baru-Rahasia-456" not in everything_recorded()

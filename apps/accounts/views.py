@@ -31,6 +31,7 @@ from . import captcha, services, throttle, trusted_devices, two_factor
 from .client_ip import client_ip
 from .forms import (
     ChangeEmailForm,
+    ChangePasswordForm,
     LoginForm,
     NewPasswordForm,
     PasswordConfirmationForm,
@@ -142,7 +143,14 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
 class PasswordChangeView(auth_views.PasswordChangeView):
     template_name = "accounts/password_change.html"
+    form_class = ChangePasswordForm
     success_url = reverse_lazy("accounts:profile")
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "request": self.request}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(captcha=captcha.widget(captcha.CaptchaAction.CHANGE_PASSWORD), **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)

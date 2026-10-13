@@ -161,6 +161,26 @@ def test_correcting_the_address_needs_a_solved_captcha_before_the_password_is_ch
     assert User.objects.filter(email="dewi@example.com").exists()
 
 
+# --- Changing the password: always required --------------------------------------------
+
+
+def test_changing_the_password_needs_a_solved_captcha_before_anything_is_checked(auth_client, user):
+    change = reverse("accounts:password_change")
+    assert 'data-action="change_password"' in auth_client.get(change).content.decode()
+    new = {"new_password1": "Baru-Rahasia-456", "new_password2": "Baru-Rahasia-456"}
+
+    wrong = auth_client.post(change, {"old_password": "a-guess", **new})
+    assert list(wrong.context["form"].errors) == ["__all__"]  # no "old password incorrect" without it
+    right_without = auth_client.post(change, {"old_password": PASSWORD, **new})
+    assert right_without.status_code == 200
+    user.refresh_from_db()
+    assert user.check_password(PASSWORD)
+
+    assert auth_client.post(change, {"old_password": PASSWORD, **new, RESPONSE_FIELD: FAKE_PASSING_TOKEN}).status_code == 302
+    user.refresh_from_db()
+    assert user.check_password("Baru-Rahasia-456")
+
+
 # --- Talking to Cloudflare -------------------------------------------------------------
 
 
