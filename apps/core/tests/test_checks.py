@@ -27,7 +27,7 @@ def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
 
 PRODUCTION_ENV = {
     "DJANGO_SECRET_KEY": "x", "XENDIT_SECRET_KEY": "x", "XENDIT_CALLBACK_TOKEN": "x", "EMAIL_URL": "smtp://localhost:25",
-    "TURNSTILE_SITE_KEY": "x", "TURNSTILE_SECRET_KEY": "x", "FIELD_ENCRYPTION_KEYS": "x",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": "x",
     "BILLING_SELLER_NAME": "PT BukuUMKM Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
     "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
 }
@@ -57,3 +57,10 @@ def test_production_requires_seller_details(monkeypatch, name, value):
 def test_production_starts_with_seller_details(monkeypatch):
     prod = load_production_settings(monkeypatch)
     assert prod.BILLING_SELLER_NPWP == "0123456789012345"
+
+
+@pytest.mark.parametrize("name", ["TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"])
+@pytest.mark.parametrize("value", [None, "", "1x00000000000000000000AA", "2x0000000000000000000000000000000AA", "3x00000000000000000000FF"])
+def test_production_requires_real_turnstile_keys(monkeypatch, name, value):
+    with pytest.raises(ImproperlyConfigured, match=name):
+        load_production_settings(monkeypatch, **{name: value})

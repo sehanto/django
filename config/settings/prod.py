@@ -41,9 +41,19 @@ vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
 
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).
+# Cloudflare's public test keys would let every visitor through, so they are refused.
+def _turnstile_key(name: str) -> str:
+    value = _required(name)
+    if value.startswith(TURNSTILE_TEST_KEY_PREFIXES):  # noqa: F405
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(f"{name} is one of Cloudflare's test keys; set the key of your Turnstile widget.")
+    return value
+
+
 CAPTCHA_BACKEND = "turnstile"
-TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY")  # noqa: F405
-TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY")  # noqa: F405
+TURNSTILE_SITE_KEY = _turnstile_key("TURNSTILE_SITE_KEY")
+TURNSTILE_SECRET_KEY = _turnstile_key("TURNSTILE_SECRET_KEY")
 
 # Database field encryption keys are required in production (never derived from SECRET_KEY).
 FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS")  # noqa: F405

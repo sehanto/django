@@ -189,6 +189,9 @@ CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 CAPTCHA_BACKEND = env("CAPTCHA_BACKEND", default="turnstile")  # apps.accounts.captcha.CaptchaBackend
 TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY", default="1x00000000000000000000AA")
 TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY", default="1x0000000000000000000000000000000AA")
+# Cloudflare's public test keys (always pass / always fail / forced challenge): refused in
+# production (prod.py) and flagged by check --deploy (core.W002).
+TURNSTILE_TEST_KEY_PREFIXES = ("1x0000", "2x0000", "3x0000")
 LOGIN_CAPTCHA_AFTER_FAILURES = env.int("LOGIN_CAPTCHA_AFTER_FAILURES", default=2)
 LOGIN_CAPTCHA_WINDOW_MINUTES = env.int("LOGIN_CAPTCHA_WINDOW_MINUTES", default=60)
 

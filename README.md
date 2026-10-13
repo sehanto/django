@@ -557,7 +557,8 @@ attempt is counted against the user.
 
 Setup: in the Cloudflare dashboard, open **Turnstile → Add widget**, add your domain and
 choose the "Managed" mode. Then set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`;
-production refuses to start without them. Development uses Cloudflare's public test
+production refuses to start without them, with blank values, or with Cloudflare's test
+keys. Development uses Cloudflare's public test
 keys, which always pass and show "for testing only". `manage.py check --deploy` warns
 (`core.W002`) if those are still in use. Tests use `CAPTCHA_BACKEND=fake`; post
 `apps.accounts.captcha.FAKE_PASSING_TOKEN` as `cf-turnstile-response` to pass it.
