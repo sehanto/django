@@ -179,9 +179,18 @@ class InvoiceLine(TimeStampedModel):
     discount_percent = models.DecimalField(_("discount (%)"), max_digits=5, decimal_places=2, default=0)
     tax_rate = models.ForeignKey("taxes.TaxRate", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("tax"))
     amount = money_field(_("amount"))
+    # The account as named when the invoice was issued, written by the database (invoicing
+    # migration 0006) and frozen with the line. Empty on drafts.
+    account_code = models.CharField(_("account code when issued"), max_length=20, blank=True, editable=False)
+    account_name = models.CharField(_("account name when issued"), max_length=150, blank=True, editable=False)
 
     class Meta:
         ordering = ["id"]
+
+    @property
+    def account_label(self) -> str:
+        """Issued lines show the account as named at issue; drafts the current name."""
+        return f"{self.account_code} · {self.account_name}" if self.account_code else str(self.account)
 
     def to_spec(self) -> LineSpec:
         tax = None

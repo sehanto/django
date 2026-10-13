@@ -243,3 +243,19 @@ def test_tax_rates_used_on_issued_invoices_are_locked(pkp_organization, customer
     assert form.locked and form.fields["rate"].disabled and not form.fields["is_active"].disabled
     with refused():
         ppn.delete()
+
+
+def test_issued_lines_keep_the_account_as_named_at_issue(organization, customer, account):
+    revenue = account("4-1000")
+    invoice = draft(organization, customer, account)
+    assert invoice.lines.get().account_code == ""  # drafts follow the chart
+    Account.objects.filter(pk=revenue.pk).update(name="Penjualan Kopi")
+    services.issue_invoice(invoice=invoice)
+    line = invoice.lines.get()
+    assert (line.account_code, line.account_name) == ("4-1000", "Penjualan Kopi")
+
+    Account.objects.filter(pk=revenue.pk).update(name="Pendapatan Lain", code="4-1001")
+    line.refresh_from_db()
+    assert line.account_label == "4-1000 · Penjualan Kopi"
+    with refused():
+        InvoiceLine.objects.filter(pk=line.pk).update(account_name="Akun Lain")

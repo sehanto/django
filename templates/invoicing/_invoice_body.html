@@ -17,7 +17,7 @@
 <div class="table-responsive"><table class="table">
   <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Qty" %}</th><th class="num">{% translate "Price" %}</th><th class="num">{% translate "Disc." %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
   <tbody>{% for line in invoice.lines.all %}
-    <tr><td>{{ line.description }}<div class="small text-secondary no-print">{{ line.account }}</div></td>
+    <tr><td>{{ line.description }}<div class="small text-secondary no-print">{{ line.account_label }}</div></td>
       <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}</td>
       <td class="num">{% if line.discount_percent %}{{ line.discount_percent|floatformat:"-2" }}%{% endif %}</td>
       <td class="small">{{ line.tax_rate|default:"" }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
