@@ -103,6 +103,8 @@ def test_production_requires_encryption_keys(monkeypatch):
     monkeypatch.setenv("XENDIT_SECRET_KEY", "x")
     monkeypatch.setenv("XENDIT_CALLBACK_TOKEN", "x")
     monkeypatch.setenv("EMAIL_URL", "smtp://localhost:25")
+    monkeypatch.setenv("TURNSTILE_SITE_KEY", "x")
+    monkeypatch.setenv("TURNSTILE_SECRET_KEY", "x")
     monkeypatch.delenv("FIELD_ENCRYPTION_KEYS", raising=False)
     monkeypatch.setattr(environ.Env, "read_env", staticmethod(lambda *args, **kwargs: None))  # ignore local .env
     import sys

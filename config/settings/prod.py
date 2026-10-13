@@ -25,5 +25,10 @@ XENDIT_CALLBACK_TOKEN = env("XENDIT_CALLBACK_TOKEN")  # noqa: F405
 vars().update(env.email_url("EMAIL_URL"))  # noqa: F405 - required in production
 CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
 
+# Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).
+CAPTCHA_BACKEND = "turnstile"
+TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY")  # noqa: F405
+TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY")  # noqa: F405
+
 # Database field encryption keys are required in production (never derived from SECRET_KEY).
 FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS")  # noqa: F405

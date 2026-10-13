@@ -10,6 +10,7 @@ from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import two_factor
 from apps.accounts.tests.test_two_factor import OTP, code_for, later
 from apps.audit import services as audit
@@ -132,7 +133,7 @@ def test_unknown_email_failures_are_recorded_without_an_actor(client, db):
 
 def test_lockout_is_recorded(client, user):
     for _ in range(settings.AXES_FAILURE_LIMIT):
-        client.post(LOGIN, {"username": user.email, "password": "wrong"})
+        client.post(LOGIN, {"username": user.email, "password": "wrong", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert events(A.ACCOUNT_LOCKED, actor=user).exists()
 
 

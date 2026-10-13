@@ -27,7 +27,7 @@ from apps.tenants.selectors import organizations_requiring_two_factor
 from apps.tenants.services import register_owner_with_organization
 from apps.tenants.session import set_current_organization
 
-from . import services, throttle, trusted_devices, two_factor
+from . import captcha, services, throttle, trusted_devices, two_factor
 from .client_ip import client_ip
 from .forms import (
     ChangeEmailForm,
@@ -59,6 +59,11 @@ class LoginView(auth_views.LoginView):
     template_name = "accounts/login.html"
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        # After a failed POST the failure is already counted, so the widget appears right away.
+        email = self.request.POST.get("username", "") if self.request.method == "POST" else ""
+        return super().get_context_data(captcha=captcha.widget(self.request, email), **kwargs)
 
     def form_valid(self, form):
         user = form.get_user()
@@ -216,6 +221,7 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
         response = super().form_valid(form)
         # Proving control of the mailbox lifts any login lockout and confirms the address.
         axes_reset(username=self.user.email.lower())
+        captcha.record_success(self.user.email)
         services.mark_email_verified(self.user)
         audit.record(AuditAction.PASSWORD_RESET, request=self.request, actor=self.user)
         return response

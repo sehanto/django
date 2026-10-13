@@ -13,6 +13,7 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from django_otp.oath import TOTP
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice
 
@@ -147,8 +148,8 @@ def test_code_page_needs_a_password_first(client, db):
 
 def test_wrong_passwords_are_still_rate_limited(client, user, enabled):
     for _ in range(settings.AXES_FAILURE_LIMIT - 1):
-        client.post(LOGIN, {"username": user.email, "password": "wrong"})
-    assert client.post(LOGIN, {"username": user.email, "password": "wrong"}).status_code == 429
+        client.post(LOGIN, {"username": user.email, "password": "wrong", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
+    assert client.post(LOGIN, {"username": user.email, "password": "wrong", RESPONSE_FIELD: FAKE_PASSING_TOKEN}).status_code == 429
 
 
 def test_users_without_two_factor_sign_in_directly(client, user):

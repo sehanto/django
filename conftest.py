@@ -4,6 +4,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.core.cache import cache
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -13,6 +14,14 @@ from apps.ledger.models import Account
 from apps.tenants.models import Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import create_organization
+
+
+@pytest.fixture(autouse=True)
+def fresh_cache():
+    """Throttle and sign-in failure counters live in the cache; never carry them across tests."""
+    cache.clear()
+    yield
+    cache.clear()
 
 
 @pytest.fixture

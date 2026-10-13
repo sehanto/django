@@ -1,9 +1,27 @@
 from django.contrib import admin
-from django.urls import include, path
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
+from django.urls import include, path, reverse
+from django.utils.http import urlencode
 from django_otp.admin import OTPAdminSite
 
-# The admin has its own login; require a verified second factor there too.
-admin.site.__class__ = OTPAdminSite
+
+class AdminSite(OTPAdminSite):
+    """The admin requires a verified second factor and has no login form of its own:
+    everyone signs in on the site's page, where rate limiting, the CAPTCHA and 2FA apply."""
+
+    def login(self, request, extra_context=None):
+        next_url = request.GET.get("next") or reverse("admin:index")
+        user = request.user
+        if not user.is_authenticated:
+            return redirect_to_login(next_url, login_url=reverse("accounts:login"))
+        if user.is_active and user.is_staff and not user.is_verified():  # password-only session: prove 2FA
+            return redirect(f"{reverse('accounts:two_factor_verify_session')}?{urlencode({'next': next_url})}")
+        raise PermissionDenied  # signed in, but not staff
+
+
+admin.site.__class__ = AdminSite
 
 urlpatterns = [
     path("admin/", admin.site.urls),

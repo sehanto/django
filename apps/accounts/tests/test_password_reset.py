@@ -9,6 +9,8 @@ from django.core import mail
 from django.core.cache import cache
 from django.urls import reverse
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
+
 RESET = reverse("accounts:password_reset")
 SENT = reverse("accounts:password_reset_done")
 OLD_PASSWORD = "Rahasia-123"  # from the ``user`` fixture
@@ -120,12 +122,14 @@ def test_link_ignores_a_forged_host_header(client, user, site, settings):
 
 def test_reset_lifts_a_login_lockout(client, user, site):
     for _ in range(settings.AXES_FAILURE_LIMIT):
-        client.post(reverse("accounts:login"), {"username": user.email, "password": "wrong"}, REMOTE_ADDR="203.0.113.10")
+        client.post(reverse("accounts:login"), {"username": user.email, "password": "wrong", RESPONSE_FIELD: FAKE_PASSING_TOKEN}, REMOTE_ADDR="203.0.113.10")
     assert AccessAttempt.objects.exists()
     request_reset(client, user.email)
     set_new_password(client, reset_link(mail.outbox[0]))
     assert not AccessAttempt.objects.exists()
-    login = client.post(reverse("accounts:login"), {"username": user.email, "password": NEW_PASSWORD}, REMOTE_ADDR="203.0.113.10")
+    # The address itself still has recent failures, so the CAPTCHA stays on for it.
+    login = client.post(reverse("accounts:login"), {"username": user.email, "password": NEW_PASSWORD,
+                                                    RESPONSE_FIELD: FAKE_PASSING_TOKEN}, REMOTE_ADDR="203.0.113.10")
     assert login.status_code == 302
 
 
@@ -156,5 +160,5 @@ def test_inactive_accounts_get_no_email(client, user, site):
 def test_login_and_lockout_pages_link_to_reset(client, user):
     assert RESET in client.get(reverse("accounts:login")).content.decode()
     for _ in range(settings.AXES_FAILURE_LIMIT):
-        locked = client.post(reverse("accounts:login"), {"username": user.email, "password": "wrong"})
+        locked = client.post(reverse("accounts:login"), {"username": user.email, "password": "wrong", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
     assert locked.status_code == 429 and RESET in locked.content.decode()

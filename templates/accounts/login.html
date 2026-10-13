@@ -4,8 +4,13 @@
 <h2 class="h5 mb-3">{% translate "Sign in" %}</h2>
 <form method="post">{% csrf_token %}
   {% include "partials/form_fields.html" with col="col-12" %}
+  {% if captcha %}
+    <p class="small text-secondary mt-3 mb-2">{% translate "Several sign-in attempts failed. Please confirm you are not a robot." %}</p>
+    <div class="cf-turnstile" data-sitekey="{{ captcha.site_key }}" data-action="{{ captcha.action }}" data-language="{{ captcha.language }}" data-theme="auto" data-size="flexible"></div>
+  {% endif %}
   <div class="text-end small mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
   <button class="btn btn-primary w-100 mt-3">{% translate "Sign in" %}</button>
 </form>
 <p class="text-center small mt-3 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Sign up free" %}</a></p>
 {% endblock %}
+{% block scripts %}{% if captcha %}<script src="{{ captcha.script_url }}" async defer></script>{% endif %}{% endblock %}

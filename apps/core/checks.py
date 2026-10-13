@@ -26,3 +26,24 @@ def check_database_role(app_configs, **kwargs):
             id="core.W001",
         )
     ]
+
+
+# Cloudflare's public test keys (always pass / always fail / forced challenge).
+TURNSTILE_TEST_KEY_PREFIXES = ("1x0000", "2x0000", "3x0000")
+
+
+@register(Tags.security, deploy=True)
+def check_captcha_keys(app_configs, **kwargs):
+    """Cloudflare's test keys accept every token, so the login CAPTCHA would stop nothing."""
+    if settings.CAPTCHA_BACKEND != "turnstile":
+        return [Warning("The login CAPTCHA is not using Turnstile.", hint="Set CAPTCHA_BACKEND=turnstile.", id="core.W002")]
+    keys = (settings.TURNSTILE_SITE_KEY or "", settings.TURNSTILE_SECRET_KEY or "")
+    if any(key.startswith(TURNSTILE_TEST_KEY_PREFIXES) for key in keys):
+        return [
+            Warning(
+                "The login CAPTCHA uses Cloudflare's Turnstile test keys, which accept any visitor.",
+                hint="Set TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY to the keys of your Turnstile widget.",
+                id="core.W002",
+            )
+        ]
+    return []

@@ -8,11 +8,22 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.forms import BaseForm, BaseModelForm, SanitizedFormMixin
 from apps.tenants.models import Organization
 
+from . import captcha
 from .models import User
 
 
 class LoginForm(SanitizedFormMixin, AuthenticationForm):
     username = forms.EmailField(label=_("Email"), widget=forms.EmailInput(attrs={"autofocus": True}))
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        "captcha": _("Please complete the security check, then sign in again."),
+    }
+
+    def clean(self):
+        # After repeated failures, the password is only checked once the CAPTCHA is solved.
+        if captcha.is_required(self.request, self.data.get("username")) and not captcha.verify(self.request):
+            raise forms.ValidationError(self.error_messages["captcha"], code="captcha")
+        return super().clean()
 
     def clean_username(self):
         return self.cleaned_data["username"].lower()  # accounts are stored with lowercase emails

@@ -454,9 +454,35 @@ logs (sign-in records with IP address and browser) are deleted daily together wi
 sign-in audit events, after `SECURITY_LOG_RETENTION_DAYS` (default 90), by
 `prune_security_logs` (see [Scheduled jobs](#scheduled-jobs)).
 
-This limit stops guessing many passwords for one account. It doesn't stop slow
-"credential stuffing" spread across many accounts and addresses; for that, add a CAPTCHA or
-an IP-reputation service at the proxy.
+This limit stops guessing many passwords for one account. The CAPTCHA below slows
+guessing from one address across many accounts. Slow "credential stuffing" spread over
+many addresses *and* accounts still needs an IP-reputation service at the proxy.
+
+### Login CAPTCHA
+
+The sign-in page uses [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/),
+but only after repeated failures, so normal users never see it:
+
+- After `LOGIN_CAPTCHA_AFTER_FAILURES` (2) failed sign-ins from one IP address **or** for
+  one email within `LOGIN_CAPTCHA_WINDOW_MINUTES` (60), the form shows the widget.
+  Turnstile usually passes without a puzzle.
+- While the CAPTCHA is required, the password is not checked until Cloudflare confirms the
+  token (`apps/accounts/captcha.py`, server-side `siteverify`). Bots therefore can't keep
+  testing passwords. If Cloudflare can't be reached, sign-in fails closed with "complete
+  the security check".
+- A correct sign-in, or a password reset, clears the email's count. The address's count
+  runs until the window ends.
+- django-axes still locks the email+IP pair after 5 failures, even for someone who solves
+  every CAPTCHA.
+- The admin has no login form of its own. `/admin/login/` sends everyone to this page,
+  or to the 2FA step for a signed-in staff session without it.
+
+Setup: in the Cloudflare dashboard, open **Turnstile → Add widget**, add your domain and
+choose the "Managed" mode. Then set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`;
+production refuses to start without them. Development uses Cloudflare's public test
+keys, which always pass and show "for testing only". `manage.py check --deploy` warns
+(`core.W002`) if those are still in use. Tests use `CAPTCHA_BACKEND=fake`; post
+`apps.accounts.captcha.FAKE_PASSING_TOKEN` as `cf-turnstile-response` to pass it.
 
 ## Subscription billing
 
@@ -563,7 +589,8 @@ few lines a day.
 
 Use `DJANGO_SETTINGS_MODULE=config.settings.prod` and set `DJANGO_SECRET_KEY`,
 `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DATABASE_URL` (the data-only app role) and
-`DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `FIELD_ENCRYPTION_KEYS` (see
+`DATABASE_OWNER_URL` (see [Database roles](#database-roles)), `TURNSTILE_SITE_KEY` and
+`TURNSTILE_SECRET_KEY` (see [Login CAPTCHA](#login-captcha)), `FIELD_ENCRYPTION_KEYS` (see
 [How 2FA secrets are stored](#how-2fa-secrets-are-stored)), `SITE_URL` (the public
 address used in emails), `EMAIL_URL` (SMTP, e.g. `smtp+tls://user:password@smtp.example.com:587`)
 and `DEFAULT_FROM_EMAIL`, plus the billing and proxy settings described above.

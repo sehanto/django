@@ -182,6 +182,16 @@ SITE_NAME = env("SITE_NAME", default="BukuUMKM")  # shown in emails
 # production: "dbcache://django_cache" (run createcachetable) or a Redis URL.
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
 
+# Login CAPTCHA (Cloudflare Turnstile), shown after this many failed sign-ins from one IP
+# address or for one email within the window. The default keys are Cloudflare's public
+# always-pass test keys (https://developers.cloudflare.com/turnstile/troubleshooting/testing/);
+# production requires real ones (config/settings/prod.py).
+CAPTCHA_BACKEND = env("CAPTCHA_BACKEND", default="turnstile")  # apps.accounts.captcha.CaptchaBackend
+TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY", default="1x00000000000000000000AA")
+TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY", default="1x0000000000000000000000000000000AA")
+LOGIN_CAPTCHA_AFTER_FAILURES = env.int("LOGIN_CAPTCHA_AFTER_FAILURES", default=2)
+LOGIN_CAPTCHA_WINDOW_MINUTES = env.int("LOGIN_CAPTCHA_WINDOW_MINUTES", default=60)
+
 # Books export (ZIP of CSVs) per organization; each one reads the whole ledger.
 BOOKS_EXPORTS_PER_HOUR = env.int("BOOKS_EXPORTS_PER_HOUR", default=10)
 

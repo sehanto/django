@@ -7,6 +7,7 @@ STORAGES["staticfiles"] = {  # noqa: F405
 }
 MIDDLEWARE.remove("whitenoise.middleware.WhiteNoiseMiddleware")  # noqa: F405 - runserver serves static
 BILLING_GATEWAY = "fake"
+CAPTCHA_BACKEND = "fake"  # accepts only apps.accounts.captcha.FAKE_PASSING_TOKEN
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 

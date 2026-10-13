@@ -10,6 +10,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
+from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts.client_ip import client_ip, login_username
 
 LOGIN = reverse("accounts:login")
@@ -18,7 +19,9 @@ LIMIT = settings.AXES_FAILURE_LIMIT
 
 
 def attempt(client, email, password="wrong-password", ip="203.0.113.10", path=LOGIN):
-    return client.post(path, {"username": email, "password": password}, REMOTE_ADDR=ip)
+    """A sign-in by someone who also solves the CAPTCHA that appears after a few failures:
+    the lockout must still stop them."""
+    return client.post(path, {"username": email, "password": password, RESPONSE_FIELD: FAKE_PASSING_TOKEN}, REMOTE_ADDR=ip)
 
 
 def fail(client, email, times, **kwargs):
@@ -85,12 +88,12 @@ def test_lockout_page_follows_language(client, user):
     assert "Too many sign-in attempts" in html and "15\xa0minutes" in html  # Django keeps "15 minutes" together
 
 
-def test_admin_login_is_protected_too(client, django_user_model):
+def test_admin_has_no_login_form_of_its_own(client, django_user_model):
+    """Its own form would bypass the CAPTCHA; everyone signs in on the protected page."""
     django_user_model.objects.create_superuser(email="admin@example.com", password=PASSWORD, full_name="Admin")
-    admin_login = reverse("admin:login")
-    for _ in range(LIMIT - 1):
-        assert attempt(client, "admin@example.com", path=admin_login).status_code == 200
-    assert attempt(client, "admin@example.com", path=admin_login).status_code == 429
+    response = attempt(client, "admin@example.com", path=reverse("admin:login"))
+    assert response.status_code == 302 and response["Location"].startswith(LOGIN)
+    assert "_auth_user_id" not in client.session
 
 
 def test_support_can_unlock_a_user(client, user):
