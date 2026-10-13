@@ -89,6 +89,14 @@ class FixedAsset(TenantOwnedModel):
         return revisions[-1].useful_life_months if revisions else self.useful_life_months
 
     @property
+    def current_method(self) -> str:
+        revisions = self.estimates
+        return revisions[-1].method if revisions else self.method
+
+    def get_current_method_display(self) -> str:
+        return DepreciationMethod(self.current_method).label
+
+    @property
     def current_residual_value(self):
         revisions = self.estimates
         return revisions[-1].residual_value if revisions else self.residual_value
@@ -115,7 +123,8 @@ class FixedAsset(TenantOwnedModel):
 
 
 class AssetRevision(TenantOwnedModel):
-    """A change in accounting estimate: a new useful life and residual value from a month on.
+    """A change in accounting estimate: a new useful life, residual value and depreciation
+    method from a month on.
 
     Applied prospectively (past depreciation stays as posted). Append-only in the database
     (assets migration 0004): it starts after the last posted month and after earlier
@@ -131,6 +140,8 @@ class AssetRevision(TenantOwnedModel):
     residual_value = money_field(_("residual value"), validators=[MinValueValidator(0)])
     previous_useful_life_months = models.PositiveSmallIntegerField(_("previous useful life (months)"))
     previous_residual_value = money_field(_("previous residual value"))
+    method = models.CharField(_("depreciation method"), max_length=20, choices=DepreciationMethod.choices)
+    previous_method = models.CharField(_("previous depreciation method"), max_length=20, choices=DepreciationMethod.choices)
     reason = models.CharField(_("reason"), max_length=255)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
@@ -144,7 +155,7 @@ class AssetRevision(TenantOwnedModel):
 
     @property
     def estimate(self) -> Estimate:
-        return Estimate((self.effective_from.year, self.effective_from.month), self.useful_life_months, self.residual_value)
+        return Estimate((self.effective_from.year, self.effective_from.month), self.useful_life_months, self.residual_value, self.method)
 
 
 class DepreciationPosting(TenantOwnedModel):

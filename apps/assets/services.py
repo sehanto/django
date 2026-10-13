@@ -16,7 +16,7 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import accumulated_before, add_months, month_end, months_between
+from .domain import DepreciationMethod, accumulated_before, add_months, month_end, months_between
 from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 
@@ -205,11 +205,13 @@ def first_revisable_month(asset: FixedAsset) -> date:
 
 @transaction.atomic
 def revise_estimate(
-    *, asset: FixedAsset, effective_from: date, useful_life_months: int, residual_value: Decimal, reason: str, created_by=None
+    *, asset: FixedAsset, effective_from: date, useful_life_months: int, residual_value: Decimal, reason: str,
+    method: str | None = None, created_by=None,
 ) -> AssetRevision:
-    """Change the useful life and residual value from a month on (a change in accounting
-    estimate, applied prospectively): depreciation already posted stays, and from that month
-    the remaining book value less the new residual value is spread over the remaining life."""
+    """Change the useful life, residual value or depreciation method from a month on (a change
+    in accounting estimate, applied prospectively): depreciation already posted stays, and from
+    that month the remaining book value less the new residual value is depreciated over the
+    remaining life with the (new) method."""
     asset = FixedAsset.objects.select_for_update().get(pk=asset.pk)
     if asset.status != FixedAsset.Status.ACTIVE or not asset.is_depreciable:
         raise InvalidStateTransition(_("Only a depreciable asset in use can be revised."))
@@ -233,6 +235,9 @@ def revise_estimate(
             elapsed + 1,
         ) % {"period": _period(starts.year, starts.month), "months": elapsed + 1})
     residual_value = quantize(residual_value or ZERO)
+    method = DepreciationMethod(method or asset.current_method)
+    if (useful_life_months, residual_value, method) == (asset.current_useful_life_months, asset.current_residual_value, asset.current_method):
+        raise ValidationFailed(_("Change the useful life, the residual value or the depreciation method."))
     book_value = asset.cost - accumulated_before(asset.schedule, (starts.year, starts.month))
     if residual_value < 0 or residual_value > book_value:
         raise ValidationFailed(
@@ -241,5 +246,6 @@ def revise_estimate(
     return AssetRevision.objects.create(
         organization=asset.organization, asset=asset, effective_from=starts, useful_life_months=useful_life_months,
         residual_value=residual_value, previous_useful_life_months=asset.current_useful_life_months,
-        previous_residual_value=asset.current_residual_value, reason=reason.strip(), created_by=created_by,
+        previous_residual_value=asset.current_residual_value, method=method, previous_method=asset.current_method,
+        reason=reason.strip(), created_by=created_by,
     )

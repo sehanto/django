@@ -182,9 +182,10 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         FixedAsset, "organization", ("number",),
     ),
     (
-        Table("asset_revisions.csv", gettext_lazy("Changes in the useful life and residual value of fixed assets."), (
+        Table("asset_revisions.csv", gettext_lazy("Changes in the useful life, residual value and depreciation method of fixed assets."), (
             C("asset__number", gettext_lazy("Fixed asset")), C("effective_from"), C("previous_useful_life_months"),
-            C("useful_life_months"), C("previous_residual_value"), C("residual_value"), C("reason"),
+            C("useful_life_months"), C("previous_residual_value"), C("residual_value"), C("previous_method"), C("method"),
+            C("reason"),
         )),
         AssetRevision, "organization", ("asset__number", "effective_from", "pk"),
     ),

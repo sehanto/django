@@ -59,7 +59,7 @@ def test_months_roll_over_the_year():
 def revised(cost, months, *revisions, method=DepreciationMethod.STRAIGHT_LINE, residual="0"):
     return depreciation_schedule(
         cost=D(cost), residual_value=D(residual), useful_life_months=months, method=method, acquired_on=date(2026, 1, 15),
-        revisions=[Estimate(starts, life, D(res)) for starts, life, res in revisions],
+        revisions=[Estimate(r[0], r[1], D(r[2]), r[3] if len(r) > 3 else method) for r in revisions],
     )
 
 
@@ -94,3 +94,19 @@ def test_revisions_apply_in_order():
     months = revised("4800000", 48, ((2027, 1), 60, "0"), ((2028, 1), 36, "0"))
     assert len(months) == 36 and months[-1].book_value == 0
     assert months[23].accumulated == D("1200000") + 12 * D("75000")
+
+
+def test_switching_to_declining_balance_applies_to_the_remaining_book_value():
+    months = revised("4800000", 48, ((2027, 1), 48, "0", DepreciationMethod.DECLINING_BALANCE))
+    assert {m.amount for m in months[:12]} == {D("100000")}  # straight line so far
+    # 3.600.000 left over 36 months: twice the straight-line rate is 2/3 a year.
+    assert sum(m.amount for m in months[12:24]) == D("2400000")
+    assert sum(m.amount for m in months[24:36]) == D("800000")
+    assert sum(m.amount for m in months[36:]) == D("400000") and months[-1].book_value == 0
+
+
+def test_switching_back_to_straight_line_spreads_what_is_left_evenly():
+    months = revised("10000000", 48, ((2027, 1), 48, "0", DepreciationMethod.STRAIGHT_LINE), method=DepreciationMethod.DECLINING_BALANCE)
+    assert sum(m.amount for m in months[:12]) == D("5000000")
+    assert {m.amount for m in months[12:]} <= {D("138888"), D("138889")}  # 5.000.000 over 36 months
+    assert months[-1].book_value == 0

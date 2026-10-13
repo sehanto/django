@@ -122,7 +122,7 @@ class AssetDetailView(OrganizationMixin, DetailView):
             revisions=asset.estimates,
             revision_form=RevisionForm(initial={
                 "effective_from": services.first_revisable_month(asset), "useful_life_months": asset.current_useful_life_months,
-                "residual_value": asset.current_residual_value,
+                "residual_value": asset.current_residual_value, "method": asset.current_method,
             }) if can_revise else None,
             **kwargs,
         )

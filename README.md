@@ -15,7 +15,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **Pembayaran** | Receipts and disbursements per invoice through cash/bank accounts (Tunai, Transfer, QRIS, E-Wallet, Giro). A payment can be voided, which reverses its journal. |
 | **PPN** | Configurable rates, with defaults for PMK 131/2024: 12% on DPP 11/12 (effectively 11%) and 12% for luxury goods. Tax is computed per rate on the aggregated base and rounded down to whole rupiah. Only a PKP can charge output VAT. For a non-PKP, input VAT on purchases is capitalized into cost. |
 | **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Accrual basis: each month's tax is recorded as an expense on the month's last day (Beban PPh Final / Utang PPh Final), and the deposit (with its NTPN) settles the liability; recording a deposit records a missing expense first. Warns when turnover passes Rp4,8 miliar. |
-| **Aset tetap** | Fixed asset register (a sub-ledger of the fixed asset accounts): cost, useful life, residual value, straight-line or declining-balance depreciation per the organization's policy, land not depreciated. Depreciation is posted monthly (one entry per month, dated its last day, caught up automatically and nightly by cron); sales and write-offs post the gain or loss. A revised useful life or residual value applies prospectively (change in estimate) and is disclosed in the notes. The register reconciles with the ledger. |
+| **Aset tetap** | Fixed asset register (a sub-ledger of the fixed asset accounts): cost, useful life, residual value, straight-line or declining-balance depreciation per the organization's policy, land not depreciated. Depreciation is posted monthly (one entry per month, dated its last day, caught up automatically and nightly by cron); sales and write-offs post the gain or loss. A revised useful life, residual value or depreciation method applies prospectively (change in estimate) and is disclosed in the notes. The register reconciles with the ledger. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Catatan atas Laporan Keuangan, Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. See "SAK EMKM" below. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
 | **Bahasa** | Bahasa Indonesia or English, per user, with an ID/EN switch everywhere. Invoices print in each customer's or supplier's own document language. See [Languages](#languages). |
@@ -275,13 +275,12 @@ The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan 
 | Comparative information | The position is compared with the previous year end; the income statement with the same period a year earlier (screen and CSV). |
 | Notes | Statement of compliance, basis of preparation, policies for revenue, receivables, inventory, fixed assets, liabilities, income tax and PPN (wording follows the organization's settings), one note per statement line group, and free-text additional information. |
 | Fixed assets | Cost less accumulated depreciation from the fixed asset register; land not depreciated; monthly depreciation from the month of acquisition; gain or loss on disposal. |
-| Changes in estimates | A revised useful life or residual value applies from a month after the depreciation already posted: the remaining book value less the new residual value is spread over the remaining months. Past depreciation is not restated; the notes list the revisions that took effect in the period. |
+| Changes in estimates | A revised useful life, residual value or depreciation method applies from a month after the depreciation already posted: the remaining book value less the new residual value is depreciated over the remaining months with the (new) method; declining balance continues at twice the rate of the remaining life. Past depreciation is not restated; the notes list the revisions that took effect in the period. |
 | Policy choices | Inventory cost formula (FIFO or weighted average) and depreciation method (straight line or declining balance) are organization settings, stated in the notes. |
 | Income tax | Current tax only (PPh Final or regular); no deferred tax. |
 
 Not automated yet: inventory valuation (purchases post to *Beban Pokok Penjualan*; adjust
-inventory with a journal entry after a stock count), and changing the depreciation method of an
-asset already depreciated.
+inventory with a journal entry after a stock count).
 
 ### Exporting the books
 

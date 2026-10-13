@@ -13,10 +13,11 @@ asset with a useful life of 48 months is fully depreciated after its 48th month:
 Monthly amounts are whole rupiah, rounded on the running total so that they always
 add up exactly to the depreciable amount.
 
-A revised useful life or residual value is a change in accounting estimate, applied
-prospectively: months before the revision keep their amounts, and from the revision's
-month the book value at that point, less the new residual value, is depreciated over the
-remaining useful life with the same method.
+A revised useful life, residual value or depreciation method is a change in accounting
+estimate, applied prospectively: months before the revision keep their amounts, and from
+the revision's month the book value at that point, less the new residual value, is
+depreciated over the remaining useful life with the revision's method (for declining
+balance, at twice the rate of the remaining life).
 """
 
 import calendar
@@ -106,12 +107,13 @@ def _yearly_charges(depreciable: Decimal, residual: Decimal, life_months: int, m
 
 @dataclass(frozen=True)
 class Estimate:
-    """A revised useful life (total, counted from the month of acquisition) and residual value,
-    applied from ``starts`` (year, month)."""
+    """A revised useful life (total, counted from the month of acquisition), residual value
+    and depreciation method, applied from ``starts`` (year, month)."""
 
     starts: tuple[int, int]
     useful_life_months: int
     residual_value: Decimal
+    method: str
 
 
 def months_between(start: tuple[int, int], end: tuple[int, int]) -> int:
@@ -148,7 +150,7 @@ def depreciation_schedule(
     for revision in sorted(revisions, key=lambda r: r.starts):  # stable: same-month revisions keep their order
         before = accumulated_before(schedule, revision.starts)
         remaining = revision.useful_life_months - months_between(acquired, revision.starts)
-        tail = _plain_schedule(quantize(cost) - before, revision.residual_value, remaining, method, revision.starts)
+        tail = _plain_schedule(quantize(cost) - before, revision.residual_value, remaining, revision.method, revision.starts)
         schedule = [m for m in schedule if m.key < revision.starts] + [
             ScheduledMonth(m.year, m.month, m.amount, before + m.accumulated, m.book_value) for m in tail
         ]

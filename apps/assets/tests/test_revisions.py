@@ -7,7 +7,7 @@ from django.db import IntegrityError, transaction
 from django.urls import reverse
 
 from apps.assets import services
-from apps.assets.models import AssetRevision
+from apps.assets.models import AssetRevision, FixedAsset
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.tenants.roles import Role
 
@@ -22,8 +22,10 @@ def depreciated(organization, make_asset):
     return asset
 
 
-def revise(asset, on=date(2026, 4, 1), months=60, residual="0", reason="Dipakai lebih lama"):
-    return services.revise_estimate(asset=asset, effective_from=on, useful_life_months=months, residual_value=D(residual), reason=reason)
+def revise(asset, on=date(2026, 4, 1), months=60, residual="0", reason="Dipakai lebih lama", method=None):
+    return services.revise_estimate(
+        asset=asset, effective_from=on, useful_life_months=months, residual_value=D(residual), reason=reason, method=method,
+    )
 
 
 def test_a_revision_changes_depreciation_from_its_month_on(organization, depreciated, user):
@@ -43,6 +45,18 @@ def test_a_revision_changes_depreciation_from_its_month_on(organization, depreci
     assert depreciated.schedule[-1].book_value == 0 and len(depreciated.schedule) == 60
 
 
+def test_the_method_can_change_too(organization, depreciated):
+    revision = revise(depreciated, months=48, method=FixedAsset.Method.DECLINING_BALANCE)
+    assert (revision.previous_method, revision.method) == (FixedAsset.Method.STRAIGHT_LINE, FixedAsset.Method.DECLINING_BALANCE)
+    assert depreciated.method == FixedAsset.Method.STRAIGHT_LINE  # the original stays recorded
+    assert depreciated.current_method == FixedAsset.Method.DECLINING_BALANCE
+    services.post_depreciation(organization=organization, through=date(2026, 4, 30))
+    april = depreciated.postings.get(month=4)
+    # 4.500.000 left over 45 months: the first 12 charge 4.500.000 x 24/45 = 2.400.000.
+    assert april.amount == D("200000")
+    assert depreciated.schedule[-1].book_value == 0 and len(depreciated.schedule) == 48
+
+
 def test_only_assets_with_posted_depreciation_are_revised(make_asset):
     with pytest.raises(InvalidStateTransition, match="edit it instead"):
         revise(make_asset())
@@ -53,6 +67,7 @@ def test_only_assets_with_posted_depreciation_are_revised(make_asset):
     ({"months": 3}, "at least 4 months"),
     ({"residual": "4600000"}, "more than the book value"),  # 4.500.000 left
     ({"reason": "  "}, "reason"),
+    ({"months": 48}, "Change the useful life"),  # nothing changes
 ])
 def test_revisions_are_validated(depreciated, kwargs, message):
     with pytest.raises(ValidationFailed, match=message):
@@ -84,6 +99,7 @@ def test_revisions_are_append_only_in_the_database(organization, depreciated):
             AssetRevision.objects.create(
                 organization=organization, asset=depreciated, effective_from=effective_from, useful_life_months=60,
                 residual_value=D("0"), previous_useful_life_months=48, previous_residual_value=D("0"), reason="x",
+                method=FixedAsset.Method.STRAIGHT_LINE, previous_method=FixedAsset.Method.STRAIGHT_LINE,
             )
 
 
@@ -95,10 +111,12 @@ def test_revising_through_the_page_and_disclosing_it(auth_client, user, organiza
 
     auth_client.post(reverse("assets:revise", args=[depreciated.pk]), {
         "effective_from": "2026-04-01", "useful_life_months": "60", "residual_value": "0", "reason": "Dipakai lebih lama",
+        "method": FixedAsset.Method.DECLINING_BALANCE,
     })
     assert depreciated.revisions.count() == 1
     notes = auth_client.get(reverse("reports:notes"), {"as_of": "2026-12-31"}).content.decode()
     assert "Changes in accounting estimates" in notes and "48 → 60" in notes and "Dipakai lebih lama" in notes
+    assert "Straight line → Declining balance" in notes
 
     client.force_login(make_member(Role.VIEWER))
     assert client.post(reverse("assets:revise", args=[depreciated.pk]), {}).status_code == 403

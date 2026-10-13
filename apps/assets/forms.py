@@ -6,7 +6,7 @@ from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.ledger.models import Account
 from apps.ledger.selectors import cash_accounts
 
-from .domain import MAX_USEFUL_LIFE_MONTHS
+from .domain import MAX_USEFUL_LIFE_MONTHS, DepreciationMethod
 from .models import FixedAsset
 from .selectors import accumulated_depreciation_accounts, depreciation_expense_accounts, fixed_asset_accounts, gain_loss_accounts
 
@@ -75,5 +75,9 @@ class RevisionForm(BaseForm):
     )
     residual_value = forms.DecimalField(
         label=_("Residual value"), max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES, min_value=0, required=False,
+    )
+    method = forms.ChoiceField(
+        label=_("Depreciation method"), choices=DepreciationMethod.choices,
+        help_text=_("Declining balance continues at twice the rate of the remaining life."),
     )
     reason = forms.CharField(label=_("Reason"), max_length=255, help_text=_("E.g. the machine will be used two years longer than expected."))
