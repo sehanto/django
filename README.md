@@ -15,6 +15,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **Pembayaran** | Receipts and disbursements per invoice through cash/bank accounts (Tunai, Transfer, QRIS, E-Wallet, Giro). A payment can be voided, which reverses its journal. |
 | **PPN** | Configurable rates, with defaults for PMK 131/2024: 12% on DPP 11/12 (effectively 11%) and 12% for luxury goods. Tax is computed per rate on the aggregated base and rounded down to whole rupiah. Only a PKP can charge output VAT. For a non-PKP, input VAT on purchases is capitalized into cost. |
 | **PPh Final UMKM** | PP 55/2022 at 0.5% of monthly gross turnover. For individual taxpayers the Rp500 juta annual exemption is consumed chronologically. Accrual basis: each month's tax is recorded as an expense on the month's last day (Beban PPh Final / Utang PPh Final), and the deposit (with its NTPN) settles the liability; recording a deposit records a missing expense first. Warns when turnover passes Rp4,8 miliar. |
+| **Retur** | Sales returns and purchase returns (nota retur, numbered RJ/RB) of issued invoices: lines are taken back at their issued price, discount and PPN rate, up to what was invoiced. The return first reduces the invoice's balance; the rest is refunded through a cash/bank account. PPN is corrected in the month of the return (PPN summary) and PPh Final turnover is net of returns. Tracked stock comes back at the cost it left at (sales) or leaves at its stock cost (purchases, the difference to cost of goods sold). |
 | **Persediaan** | Perpetual inventory for goods whose stock is tracked (opt-in per item): purchase bills add stock at cost (including PPN a non-PKP can't credit), sales invoices post their cost of goods sold in the same entry by FIFO or weighted average (the organization's policy), and selling more than is in stock is refused. Stock adjustments record opening stock and count differences. Each item has a stock card (kartu stok); stock value reconciles with the inventory account. |
 | **Aset tetap** | Fixed asset register (a sub-ledger of the fixed asset accounts): cost, useful life, residual value, straight-line or declining-balance depreciation per the organization's policy, land not depreciated. Depreciation is posted monthly (one entry per month, dated its last day, caught up automatically and nightly by cron); sales and write-offs post the gain or loss. A revised useful life, residual value or depreciation method applies prospectively (change in estimate) and is disclosed in the notes. The register reconciles with the ledger. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Catatan atas Laporan Keuangan, Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. See "SAK EMKM" below. |
@@ -94,6 +95,9 @@ Key design decisions:
   and must match a posted journal entry on the last day of their month; an asset's figures are
   fixed once depreciation is posted, disposal is one step with its journal entry, and assets
   with postings or a disposal can't be deleted. Only the name and description stay editable.
+  Returns (`invoicing/0011`) are final: inserted with their posted journal entry for an issued invoice,
+  their lines within what was invoiced; the invoice's `amount_credited` must equal its returns, and
+  payments plus returns credited decide its status. An invoice with returns can't be voided.
   Stock movements (`inventory/0002`) are append-only and need a posted journal entry; once an item
   has movements, its type, stock tracking and accounts are fixed. A voided sale returns its stock at
   the cost it left at; a purchase can be voided only while its own stock is untouched.
@@ -287,8 +291,8 @@ The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan 
 
 Valuation follows the order in which documents are posted, not their dates: a backdated purchase
 doesn't change the cost of sales posted before it. Not covered: lower of cost and net realisable
-value write-downs (record them as a stock decrease) and sales/purchase returns as documents (void
-the invoice, or adjust stock).
+value write-downs (record them as a stock decrease). Returns are final: correct a mistaken return
+with a journal entry or a new invoice.
 
 ### Exporting the books
 

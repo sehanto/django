@@ -26,8 +26,9 @@
     <tr><td colspan="5" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
     {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPN" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
     <tr class="fw-bold"><td colspan="5" class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
-    {% if invoice.amount_paid %}
-      <tr><td colspan="5" class="text-end">{% translate "Amount paid" %}</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>
+    {% if invoice.amount_paid %}<tr><td colspan="5" class="text-end">{% translate "Amount paid" %}</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>{% endif %}
+    {% if invoice.amount_credited %}<tr><td colspan="5" class="text-end">{% translate "Returns credited" %}</td><td class="num">{{ invoice.amount_credited|rupiah }}</td></tr>{% endif %}
+    {% if invoice.amount_paid or invoice.amount_credited %}
       <tr class="fw-semibold"><td colspan="5" class="text-end">{% translate "Balance due" %}</td><td class="num">{{ invoice.balance_due|rupiah }}</td></tr>
     {% endif %}
   </tfoot>

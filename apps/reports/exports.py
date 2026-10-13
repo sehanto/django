@@ -24,7 +24,7 @@ from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
 from apps.contacts.models import Contact
 from apps.inventory.models import StockMovement
 from apps.core.sanitizers import csv_safe
-from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment
+from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate
@@ -151,7 +151,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("contact_address"), C("contact_city"), C("seller_name"), C("seller_npwp"),
             C("date"), C("due_date"), C("reference"),
             C("tax_invoice_number"), C("status"), C("subtotal"), C("tax_amount"), C("total"), C("amount_paid"),
-            C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
+            C("amount_credited"), C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
         )),
         Invoice, "organization", ("date", "id"),
     ),
@@ -165,6 +165,22 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("tax_name"), C("tax_rate_percent"), C("tax_dpp_numerator"), C("tax_dpp_denominator"),
         )),
         InvoiceLine, "invoice__organization", ("invoice__date", "invoice_id", "id"),
+    ),
+    (
+        Table("returns.csv", gettext_lazy("Sales and purchase returns (nota retur)."), (
+            C("kind"), C("number"), C("invoice__number", gettext_lazy("Invoice number")), C("date"), C("reason"),
+            C("subtotal"), C("tax_amount"), C("total"), C("credited"), C("refunded"),
+            C("cash_account__code", gettext_lazy("Refund cash/bank account code")),
+            C("journal_entry__number", gettext_lazy("Journal entry")),
+        )),
+        ReturnNote, "organization", ("date", "id"),
+    ),
+    (
+        Table("return_lines.csv", gettext_lazy("Return lines (linked by return number)."), (
+            C("return_note__number", gettext_lazy("Return number")), C("invoice_line__description", gettext_lazy("Item description")),
+            C("invoice_line__item_code", gettext_lazy("Item code")), C("quantity"), C("amount"),
+        )),
+        ReturnLine, "return_note__organization", ("return_note__date", "return_note_id", "id"),
     ),
     (
         Table("payments.csv", gettext_lazy("Receipts and disbursements."), (

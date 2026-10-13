@@ -12,7 +12,7 @@ from apps.taxes.selectors import tax_rates_for
 
 from .models import Invoice, InvoiceKind, Item, Payment
 from .selectors import items_for
-from .services import InvoiceLineInput
+from .services import InvoiceLineInput, ReturnLineInput, returnable_quantity
 
 
 def line_accounts(organization, kind):
@@ -144,3 +144,47 @@ class ItemForm(OrganizationFormMixin, BaseModelForm):
                 if not cleaned.get(name) and name not in self.errors:
                     self.add_error(name, _("Required for an item whose stock is tracked."))
         return cleaned
+
+
+class ReturnForm(OrganizationFormMixin, BaseForm):
+    """One quantity field per line of the invoice that can still be returned."""
+
+    date = BusinessDateField(label=_("Return date"))
+    reason = forms.CharField(label=_("Reason"), max_length=255, help_text=_("E.g. damaged goods, wrong item delivered."))
+    cash_account = forms.ModelChoiceField(
+        label=_("Refund through"), queryset=Account.objects.none(), required=False,
+        help_text=_("Only needed when the return is more than what is still owed on the invoice."),
+    )
+
+    def __init__(self, *args, invoice, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.invoice = invoice
+        self.fields["cash_account"].queryset = cash_accounts(self.organization)
+        self.returnable = []
+        for line in invoice.lines.prefetch_related("returns").select_related("item"):
+            available = returnable_quantity(line)
+            if available <= 0:
+                continue
+            name = f"line_{line.pk}"
+            self.fields[name] = forms.DecimalField(
+                label=line.description, required=False, min_value=0, max_value=available, max_digits=14, decimal_places=3,
+                help_text=_("Up to %(quantity)s") % {"quantity": f"{available.normalize():f}"},
+            )
+            self.returnable.append((line, name, available))
+
+    @property
+    def line_fields(self):
+        return [(line, self[name], available) for line, name, available in self.returnable]
+
+    def clean(self):
+        cleaned = super().clean()
+        if not any(cleaned.get(name) for _line, name, _a in self.returnable):
+            raise forms.ValidationError(_("Enter the quantity returned for at least one line."))
+        return cleaned
+
+    def to_input(self) -> dict:
+        data = self.cleaned_data
+        return {
+            "date": data["date"], "reason": data["reason"], "cash_account": data.get("cash_account"),
+            "lines": [ReturnLineInput(line, data[name]) for line, name, _a in self.returnable if data.get(name)],
+        }

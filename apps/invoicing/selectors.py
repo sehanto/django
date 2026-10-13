@@ -8,7 +8,7 @@ from django.utils import timezone
 from apps.core.money import ZERO
 
 from .domain import AgingBucket, aging_bucket
-from .models import Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment
+from .models import Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
 
 
 def invoices_for(
@@ -103,7 +103,7 @@ def aging_report(organization, kind: str) -> AgingReport:
 
 
 def outstanding_summary(organization, kind: str) -> dict:
-    balance = Sum(F("total") - F("amount_paid"), default=ZERO)
+    balance = Sum(F("total") - F("amount_paid") - F("amount_credited"), default=ZERO)
     open_qs = open_invoices(organization, kind)
     overdue = open_qs.filter(due_date__lt=timezone.localdate()).aggregate(amount=balance, count=Count("id"))
     return {
@@ -114,19 +114,28 @@ def outstanding_summary(organization, kind: str) -> dict:
 
 
 def vat_summary(organization, year: int) -> list[dict]:
-    """Monthly PPN Keluaran vs PPN Masukan from non-void invoices."""
+    """Monthly PPN Keluaran vs PPN Masukan from non-void invoices, less returns (nota retur)
+    in the month of the return."""
     rows = (
         Invoice.objects.for_organization(organization)
         .filter(date__year=year, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
         .values("date__month", "kind")
         .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
     )
+    returns = (
+        ReturnNote.objects.for_organization(organization).filter(date__year=year)
+        .values("date__month", "kind").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
+    )
     months = {m: {"month": m, "output_base": ZERO, "output": ZERO, "input_base": ZERO, "input": ZERO} for m in range(1, 13)}
-    for row in rows:
+    for row, sign in [*((r, 1) for r in rows), *((r, -1) for r in returns)]:
         target = months[row["date__month"]]
         prefix = "output" if row["kind"] == InvoiceKind.SALES else "input"
-        target[prefix] += row["tax"]
-        target[f"{prefix}_base"] += row["base"]
+        target[prefix] += sign * row["tax"]
+        target[f"{prefix}_base"] += sign * row["base"]
     for month in months.values():
         month["net"] = month["output"] - month["input"]
     return list(months.values())
+
+
+def returns_for(organization) -> QuerySet[ReturnNote]:
+    return ReturnNote.objects.for_organization(organization).select_related("invoice", "cash_account", "journal_entry")

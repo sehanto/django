@@ -56,6 +56,7 @@ class Planned:
     cost_formula: str = ""
     invoice_line: object = None
     reverses: StockMovement | None = None
+    return_line: object = None
 
     @property
     def cost(self) -> Decimal:
@@ -126,14 +127,60 @@ def plan_purchase_void(invoice) -> list[Planned]:
     return planned
 
 
+def plan_sales_return(lines_and_quantities) -> list[Planned]:
+    """Returned goods come back at the cost they left at (pro rata; the last return of a line
+    takes the rest, so the line's cost comes back exactly). Lines sold before the item's stock
+    was tracked have no cost to bring back."""
+    planned = []
+    for line, quantity in lines_and_quantities:
+        sale = StockMovement.objects.filter(invoice_line=line, kind=MovementKind.SALE).select_related("item").first()
+        if sale is None:
+            continue
+        earlier = StockMovement.objects.filter(invoice_line=line, kind=MovementKind.SALE_RETURN, return_line__isnull=False)
+        returned = sum((m.quantity for m in earlier), Decimal("0"))
+        returned_value = sum((m.value for m in earlier), Decimal("0"))
+        sold, cost = -sale.quantity, -sale.value
+        value = cost - returned_value if returned + quantity == sold else quantize(cost * quantity / sold)
+        planned.append(Planned(sale.item, MovementKind.SALE_RETURN, quantity, value, invoice_line=line))
+    return planned
+
+
+def plan_purchase_return(organization, lines_and_quantities) -> list[Planned]:
+    """Goods sent back to the supplier leave stock at their cost under the organization's
+    formula (they may have been valued together with later purchases)."""
+    received = {
+        m.invoice_line_id: m
+        for m in StockMovement.objects.filter(
+            invoice_line__in=[line for line, _q in lines_and_quantities], kind=MovementKind.PURCHASE
+        ).select_related("item")
+    }
+    pairs = [(line, quantity, received[line.pk]) for line, quantity in lines_and_quantities if line.pk in received]
+    _lock(m.item for _l, _q, m in pairs)
+    stocks, planned = {}, []
+    formula = organization.inventory_cost_formula
+    for line, quantity, receipt in pairs:
+        stock = stocks.setdefault(receipt.item_id, stock_of(receipt.item))
+        try:
+            cost = stock.issue(quantity, formula)
+        except InsufficientStock as exc:
+            raise _not_enough(receipt.item, exc.available) from None
+        planned.append(Planned(receipt.item, MovementKind.PURCHASE_RETURN, -quantity, -cost, formula, invoice_line=line))
+    return planned
+
+
 def cost_journal_lines(planned: list[Planned]) -> list[JournalLineInput]:
     """Cost of goods sold for sales (Dr cost of goods sold, Cr inventory); mirrored for returns."""
     lines = []
     for p in planned:
-        if p.kind == MovementKind.SALE and p.cost:
-            label = p.item.name
+        if not p.cost:
+            continue
+        label = p.item.name
+        if p.kind == MovementKind.SALE:
             lines.append(JournalLineInput(p.item.cogs_account, debit=p.cost, description=label))
             lines.append(JournalLineInput(p.item.inventory_account, credit=p.cost, description=label))
+        elif p.kind == MovementKind.SALE_RETURN and p.reverses is None:  # a sales return document
+            lines.append(JournalLineInput(p.item.inventory_account, debit=p.cost, description=label))
+            lines.append(JournalLineInput(p.item.cogs_account, credit=p.cost, description=label))
     return lines
 
 
@@ -141,7 +188,8 @@ def record(planned: list[Planned], *, entry: JournalEntry, on: date, created_by=
     return StockMovement.objects.bulk_create(
         StockMovement(
             organization=entry.organization, item=p.item, date=on, kind=p.kind, quantity=p.quantity, value=p.value,
-            cost_formula=p.cost_formula, invoice_line=p.invoice_line, reverses=p.reverses, journal_entry=entry,
+            cost_formula=p.cost_formula, invoice_line=p.invoice_line, reverses=p.reverses, return_line=p.return_line,
+            journal_entry=entry,
             reason=reason, created_by=created_by,
         )
         for p in planned

@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -101,6 +101,9 @@ class Invoice(TenantOwnedModel):
     tax_amount = money_field(_("PPN (VAT)"))
     total = money_field(_("total"))
     amount_paid = money_field(_("amount paid"))
+    # Returns credited against the balance (not the part refunded in cash): with the payments,
+    # it settles the invoice. The database checks it against the posted returns (invoicing 0011).
+    amount_credited = money_field(_("returns credited"))
 
     journal_entry = models.OneToOneField(
         "ledger.JournalEntry", null=True, blank=True, on_delete=models.PROTECT, related_name="invoice"
@@ -173,7 +176,21 @@ class Invoice(TenantOwnedModel):
 
     @property
     def balance_due(self):
-        return self.total - self.amount_paid
+        return self.total - self.amount_paid - self.amount_credited
+
+    @property
+    def status_label(self) -> str:
+        """The status as shown: an invoice settled by returns alone wasn't paid."""
+        if self.amount_credited and not self.amount_paid:
+            if self.status == self.Status.PAID:
+                return _("Returned")
+            if self.status == self.Status.PARTIAL:
+                return _("Partly returned")
+        return self.get_status_display()
+
+    @property
+    def can_return(self) -> bool:
+        return self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID)
 
     @property
     def is_sales(self) -> bool:
@@ -289,3 +306,64 @@ class Payment(TenantOwnedModel):
     @property
     def is_receipt(self) -> bool:
         return self.invoice.kind == InvoiceKind.SALES
+
+
+class ReturnNote(TenantOwnedModel):
+    """A sales return (retur penjualan) or purchase return (retur pembelian) of an issued
+    invoice: the nota retur. Its lines take back quantities of the invoice's lines at their
+    issued price, discount and tax rate. The total first reduces what is still owed on the
+    invoice (``credited``); the rest is refunded in cash (``refunded``).
+
+    Final once posted: inserted with its posted journal entry and never changed or deleted
+    (invoicing migration 0011).
+    """
+
+    kind = models.CharField(_("type"), max_length=10, choices=InvoiceKind.choices, editable=False)
+    number = models.CharField(_("number"), max_length=30)
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="returns", verbose_name=_("invoice"))
+    date = models.DateField(_("date"))
+    reason = models.CharField(_("reason"), max_length=255)
+    subtotal = money_field(_("subtotal"))
+    tax_amount = money_field(_("PPN (VAT)"))
+    total = money_field(_("total"))
+    credited = money_field(_("credited to the invoice"))
+    refunded = money_field(_("refunded"))
+    cash_account = models.ForeignKey(
+        "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("refund cash/bank account")
+    )
+    journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="return_note")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-date", "-id"]
+        verbose_name = _("return")
+        verbose_name_plural = _("returns")
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "number"], name="unique_return_number"),
+            models.CheckConstraint(
+                name="return_is_credited_or_refunded",
+                condition=Q(total__gt=0, credited__gte=0, refunded__gte=0, total=F("credited") + F("refunded")),
+            ),
+        ]
+
+    def __str__(self):
+        return self.number
+
+    @property
+    def is_sales(self) -> bool:
+        return self.kind == InvoiceKind.SALES
+
+
+class ReturnLine(TimeStampedModel):
+    return_note = models.ForeignKey(ReturnNote, on_delete=models.CASCADE, related_name="lines")
+    invoice_line = models.ForeignKey(InvoiceLine, on_delete=models.PROTECT, related_name="returns", verbose_name=_("invoice line"))
+    quantity = models.DecimalField(_("quantity"), max_digits=14, decimal_places=3, validators=[MinValueValidator(Decimal("0.001"))])
+    amount = money_field(_("amount"))
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = _("return line")
+        verbose_name_plural = _("return lines")
+
+    def __str__(self):
+        return f"{self.return_note.number}: {self.quantity} x {self.invoice_line.description}"

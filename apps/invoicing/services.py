@@ -27,10 +27,11 @@ from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
 from .domain import InvoiceTotals, LineSpec, TaxSpec, allocate, compute_invoice_totals, payment_state
-from .models import Invoice, InvoiceKind, InvoiceLine, Item, Payment
+from .models import Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from .selectors import invoices_created_this_month
 
 INVOICE_PREFIX = {InvoiceKind.SALES: "INV", InvoiceKind.PURCHASE: "BILL"}
+RETURN_PREFIX = {InvoiceKind.SALES: "RJ", InvoiceKind.PURCHASE: "RB"}
 PAYMENT_PREFIX = {InvoiceKind.SALES: "KM", InvoiceKind.PURCHASE: "KK"}
 JOURNAL_SOURCE = {
     InvoiceKind.SALES: JournalEntry.Source.SALES_INVOICE,
@@ -296,6 +297,8 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
 @transaction.atomic
 def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
+    if invoice.returns.exists():
+        raise InvalidStateTransition(_("This invoice has returns, so it can't be voided. Record a return for the rest instead."))
     if invoice.status in (Invoice.Status.PARTIAL, Invoice.Status.PAID):
         raise InvalidStateTransition(_("Void all payments on this invoice first."))
     if invoice.status != Invoice.Status.ISSUED:
@@ -315,8 +318,9 @@ def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
 
 
 def _refresh_payment_status(invoice: Invoice) -> None:
-    invoice.status = payment_state(invoice.total, invoice.amount_paid)
-    invoice.save(update_fields=["amount_paid", "status", "updated_at"])
+    """Payments and returns credited together settle the invoice (the database checks both)."""
+    invoice.status = payment_state(invoice.total, invoice.amount_paid + invoice.amount_credited)
+    invoice.save(update_fields=["amount_paid", "amount_credited", "status", "updated_at"])
 
 
 @transaction.atomic
@@ -380,3 +384,148 @@ def void_payment(*, payment: Payment, on: date, voided_by=None) -> Payment:
     invoice.amount_paid -= payment.amount
     _refresh_payment_status(invoice)
     return payment
+
+
+# --- Returns (nota retur) ----------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ReturnLineInput:
+    invoice_line: InvoiceLine
+    quantity: Decimal
+
+
+def returnable_quantity(line: InvoiceLine) -> Decimal:
+    returned = sum((r.quantity for r in line.returns.all()), Decimal("0"))
+    return line.quantity - returned
+
+
+def _issued_spec(line: InvoiceLine, quantity: Decimal) -> LineSpec:
+    """The line as issued: its price, discount and the tax rate frozen at issue."""
+    tax = None
+    if line.tax_rate_percent is not None:
+        key = (line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator)
+        tax = TaxSpec(key, line.tax_rate_percent, line.tax_dpp_numerator, line.tax_dpp_denominator)
+    return LineSpec(quantity, line.unit_price, line.discount_percent, tax)
+
+
+@dataclass(frozen=True)
+class _ReturnedLine:  # what purchase_costs() needs
+    amount: Decimal
+
+
+@transaction.atomic
+def create_return(
+    *, invoice: Invoice, date: date, reason: str, lines: Sequence[ReturnLineInput], cash_account: Account | None = None,
+    created_by=None,
+) -> ReturnNote:
+    """Record goods (or services) taken back on an issued invoice: a sales return from a
+    customer or a purchase return to a supplier.
+
+    Lines are priced and taxed as issued. The total first reduces what is still owed on the
+    invoice; the rest is refunded through ``cash_account``. The PPN is reversed in the
+    return's period (nota retur). Tracked stock comes back at the cost it left at (sales) or
+    leaves at its current cost (purchases, the difference to cost of goods sold).
+    """
+    invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
+    organization = invoice.organization
+    if not invoice.can_return:
+        raise InvalidStateTransition(_("Only issued invoices can have returns."))
+    ensure_business_date(date)
+    if date < invoice.date:
+        raise ValidationFailed(_("The return date cannot be before the invoice date."))
+    if not reason.strip():
+        raise ValidationFailed(_("Give the reason for the return."))
+    lines = [line for line in lines if line.quantity]
+    if not lines:
+        raise ValidationFailed(_("Enter the quantity returned for at least one line."))
+    for line in lines:
+        if line.invoice_line.invoice_id != invoice.pk:
+            raise ValidationFailed(_("Return lines must come from this invoice."))
+        available = returnable_quantity(line.invoice_line)
+        if line.quantity < 0 or line.quantity > available:
+            raise ValidationFailed(
+                _("At most %(quantity)s of %(item)s can still be returned.")
+                % {"quantity": f"{available.normalize():f}", "item": line.invoice_line.description}
+            )
+
+    totals = compute_invoice_totals([_issued_spec(l.invoice_line, l.quantity) for l in lines])
+    credited = min(totals.total, max(invoice.balance_due, ZERO))
+    refunded = totals.total - credited
+    if refunded and (not _belongs(cash_account, organization) or cash_account is None or not cash_account.is_cash):
+        raise ValidationFailed(
+            _("%(amount)s has already been settled and is refunded: choose the cash or bank account.")
+            % {"amount": localized_rupiah(refunded)}
+        )
+
+    pairs = [(l.invoice_line, l.quantity) for l in lines]
+    stock = inventory.plan_sales_return(pairs) if invoice.is_sales else inventory.plan_purchase_return(organization, pairs)
+    journal_lines = _return_journal_lines(invoice, lines, totals, credited, refunded, cash_account, stock)
+
+    number = next_document_number(organization, RETURN_PREFIX[invoice.kind], date)
+    label = "Retur penjualan" if invoice.is_sales else "Retur pembelian"  # stored business records stay Indonesian
+    entry = create_journal_entry(
+        organization=organization, date=date, description=f"{label} {invoice.number} {invoice.contact.name}"[:255],
+        reference=number, source=JOURNAL_SOURCE[invoice.kind], lines=journal_lines, created_by=created_by,
+    )
+    note = ReturnNote.objects.create(
+        organization=organization, kind=invoice.kind, number=number, invoice=invoice, date=date, reason=reason.strip(),
+        subtotal=totals.subtotal, tax_amount=totals.tax_total, total=totals.total, credited=credited, refunded=refunded,
+        cash_account=cash_account if refunded else None, journal_entry=entry, created_by=created_by,
+    )
+    created = {}
+    for line, amount in zip(lines, totals.line_amounts):
+        created[line.invoice_line.pk] = ReturnLine.objects.create(
+            return_note=note, invoice_line=line.invoice_line, quantity=line.quantity, amount=amount,
+        )
+    for planned in stock:
+        planned.return_line = created[planned.invoice_line.pk]
+    inventory.record(stock, entry=entry, on=date, created_by=created_by)
+
+    invoice.amount_credited += credited
+    _refresh_payment_status(invoice)
+    return note
+
+
+def _return_journal_lines(invoice, lines, totals, credited, refunded, cash_account, stock) -> list[JournalLineInput]:
+    organization = invoice.organization
+    if invoice.is_sales:
+        result = [
+            JournalLineInput(account, debit=amount)
+            for account, amount in _amounts_by_account(
+                (l.invoice_line.account, amount) for l, amount in zip(lines, totals.line_amounts)
+            ).items() if amount
+        ]
+        if totals.tax_total:
+            result.append(JournalLineInput(get_system_account(organization, SystemRole.OUTPUT_VAT), debit=totals.tax_total))
+        if credited:
+            result.append(JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=credited))
+        if refunded:
+            result.append(JournalLineInput(cash_account, credit=refunded))
+        return result + inventory.cost_journal_lines(stock)
+
+    # Purchases: what each line cost (with PPN a non-PKP can't credit) goes back out of its
+    # account; tracked stock leaves at its stock cost and the difference goes to cost of goods sold.
+    costs = purchase_costs(organization, [_ReturnedLine(a) for a in totals.line_amounts], totals)
+    stock_cost = {p.invoice_line.pk: p for p in stock}
+    result = []
+    if credited:
+        result.append(JournalLineInput(get_system_account(organization, SystemRole.PAYABLE), debit=credited))
+    if refunded:
+        result.append(JournalLineInput(cash_account, debit=refunded))
+    credits = []
+    for line, cost in zip(lines, costs):
+        planned = stock_cost.get(line.invoice_line.pk)
+        if planned is None:
+            credits.append((line.invoice_line.account, cost))
+            continue
+        credits.append((planned.item.inventory_account, planned.cost))
+        credits.append((planned.item.cogs_account, cost - planned.cost))
+    for account, amount in _amounts_by_account(credits).items():
+        if amount > 0:
+            result.append(JournalLineInput(account, credit=amount))
+        elif amount < 0:
+            result.append(JournalLineInput(account, debit=-amount))
+    if organization.is_pkp and totals.tax_total:
+        result.append(JournalLineInput(get_system_account(organization, SystemRole.INPUT_VAT), credit=totals.tax_total))
+    return result

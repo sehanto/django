@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load i18n money ui %}
+{% block title %}{% if invoice.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %}{% endblock %}
+{% block content %}
+<a href="{% url 'invoicing:detail' kind invoice.pk %}" class="small text-decoration-none">&larr; {{ invoice.number }}</a>
+<h1 class="h4 mb-3">{% if invoice.is_sales %}{% blocktranslate trimmed with number=invoice.number %}Sales return of {{ number }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with number=invoice.number %}Purchase return of {{ number }}{% endblocktranslate %}{% endif %}</h1>
+<form method="post" class="card" style="max-width: 960px;"><div class="card-body">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+  <div class="table-responsive mb-3"><table class="table align-middle mb-0">
+    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Invoiced" %}</th><th class="num">{% translate "Unit price" %}</th><th style="width: 180px">{% translate "Quantity returned" %}</th></tr></thead>
+    <tbody>{% for line, field, available in form.line_fields %}
+      <tr><td>{{ line.description }}<div class="small text-secondary">{{ line.tax_label }}</div></td>
+        <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}{% if line.discount_percent %} <span class="small text-secondary">-{{ line.discount_percent|floatformat:"-2" }}%</span>{% endif %}</td>
+        <td>{{ field|add_class:'form-control' }}<div class="form-text">{{ field.help_text }}</div>{% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-secondary">{% translate "Everything on this invoice has already been returned." %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <div class="row g-3">
+    {% for field in form %}{% if not field.name|slice:":5" == "line_" %}
+      <div class="col-md-4"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+        {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</div>
+    {% endif %}{% endfor %}
+  </div>
+  <p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with balance=invoice.balance_due|rupiah %}
+    Lines are returned at their invoiced price, discount and PPN rate. The return first reduces what is still owed ({{ balance }}); anything more is refunded. The PPN is corrected in the month of the return.
+  {% endblocktranslate %}</p>
+</div>
+<div class="card-footer d-flex gap-2 justify-content-end">
+  <a href="{% url 'invoicing:detail' kind invoice.pk %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Record return" %}</button>
+</div></form>
+{% endblock %}

@@ -35,14 +35,15 @@ class CostFormula(models.TextChoices):
 class MovementKind(models.TextChoices):
     PURCHASE = "purchase", _("Purchase")
     SALE = "sale", _("Sale")
-    SALE_RETURN = "sale_return", _("Sale voided")
+    SALE_RETURN = "sale_return", _("Sale voided or returned")
     PURCHASE_REVERSAL = "purchase_reversal", _("Purchase voided")
+    PURCHASE_RETURN = "purchase_return", _("Returned to supplier")
     INCREASE = "increase", _("Stock increase")
     DECREASE = "decrease", _("Stock decrease")
 
     @property
     def is_issue(self) -> bool:
-        return self in (MovementKind.SALE, MovementKind.DECREASE)
+        return self in (MovementKind.SALE, MovementKind.DECREASE, MovementKind.PURCHASE_RETURN)
 
 
 class InsufficientStock(Exception):

@@ -24,6 +24,7 @@ class StockMovement(TenantOwnedModel):
     value = money_field(_("value"))
     cost_formula = models.CharField(_("cost formula"), max_length=20, choices=CostFormula.choices, blank=True, help_text=_("For issues: how their cost was taken."))
     invoice_line = models.ForeignKey("invoicing.InvoiceLine", null=True, blank=True, on_delete=models.PROTECT, related_name="+")
+    return_line = models.ForeignKey("invoicing.ReturnLine", null=True, blank=True, on_delete=models.PROTECT, related_name="+")
     reverses = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT, related_name="reversed_by")
     journal_entry = models.ForeignKey("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
     reason = models.CharField(_("reason"), max_length=255, blank=True)
@@ -38,7 +39,7 @@ class StockMovement(TenantOwnedModel):
                 name="stock_movement_sign_follows_kind",
                 condition=(
                     models.Q(kind__in=["purchase", "sale_return", "increase"], quantity__gt=0, value__gte=0)
-                    | models.Q(kind__in=["sale", "purchase_reversal", "decrease"], quantity__lt=0, value__lte=0)
+                    | models.Q(kind__in=["sale", "purchase_reversal", "decrease", "purchase_return"], quantity__lt=0, value__lte=0)
                 ),
             ),
         ]

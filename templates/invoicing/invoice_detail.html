@@ -5,7 +5,7 @@
   <div>
     <a href="{% url 'invoicing:list' kind %}" class="small text-decoration-none">&larr; {{ labels.plural }}</a>
     <h1 class="h4 mb-0">{{ invoice.display_number }}
-      <span class="badge align-middle text-bg-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.get_status_display }}{% endif %}</span></h1>
+      <span class="badge align-middle text-bg-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.status_label }}{% endif %}</span></h1>
   </div>
   <div class="d-flex flex-wrap gap-2">
     {% if invoice.status != invoice.Status.DRAFT %}<a href="{% url 'invoicing:print' kind invoice.pk %}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</a>{% endif %}
@@ -14,8 +14,9 @@
         <a href="{% url 'invoicing:update' kind invoice.pk %}" class="btn btn-outline-secondary">{% translate "Edit" %}</a>
         <form method="post" action="{% url 'invoicing:delete' kind invoice.pk %}" data-confirm="{% translate 'Delete this draft?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Delete" %}</button></form>
         <form method="post" action="{% url 'invoicing:issue' kind invoice.pk %}">{% csrf_token %}<button class="btn btn-primary">{% translate "Issue" %}</button></form>
-      {% elif invoice.status == invoice.Status.ISSUED %}
-        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#voidModal">{% translate "Void invoice" %}</button>
+      {% else %}
+        {% if invoice.can_return %}<a href="{% url 'invoicing:return_create' kind invoice.pk %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-return-left"></i> {% if invoice.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %}</a>{% endif %}
+        {% if invoice.status == invoice.Status.ISSUED and not returns %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#voidModal">{% translate "Void invoice" %}</button>{% endif %}
       {% endif %}
     {% endif %}
   </div>
@@ -46,6 +47,17 @@
         </div>
       {% empty %}<p class="small text-secondary mb-0">{% translate "No payments yet." %}</p>{% endfor %}
     </div></div>
+    {% if returns %}
+    <div class="card mt-3"><div class="card-body">
+      <h2 class="h6">{% translate "Returns" %}</h2>
+      {% for r in returns %}
+        <div class="d-flex justify-content-between align-items-start border-top py-2">
+          <div><a href="{% url 'invoicing:return_detail' r.pk %}" class="small fw-semibold">{{ r.number }}</a><div class="small text-secondary">{{ r.date|date:"d M Y" }} · {{ r.reason }}</div></div>
+          <div class="text-end"><div class="num">{{ r.total|rupiah }}</div>{% if r.refunded %}<div class="small text-secondary">{% blocktranslate trimmed with amount=r.refunded|rupiah %}{{ amount }} refunded{% endblocktranslate %}</div>{% endif %}</div>
+        </div>
+      {% endfor %}
+    </div></div>
+    {% endif %}
   </div>
 </div>
 

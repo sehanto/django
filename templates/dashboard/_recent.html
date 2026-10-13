@@ -3,6 +3,6 @@
   <div class="d-flex justify-content-between"><h2 class="h6">{{ title }}</h2><a class="small" href="{% url 'invoicing:list' kind %}">{% translate "All" %}</a></div>
   {% for inv in invoices %}
     <div class="d-flex justify-content-between border-top py-2 small"><a href="{% url 'invoicing:detail' kind inv.pk %}">{{ inv.display_number }} · {{ inv.party_name }}</a>
-      <span><span class="num">{{ inv.total|rupiah }}</span> <span class="badge text-bg-{{ inv.status|status_badge }}">{{ inv.get_status_display }}</span></span></div>
+      <span><span class="num">{{ inv.total|rupiah }}</span> <span class="badge text-bg-{{ inv.status|status_badge }}">{{ inv.status_label }}</span></span></div>
   {% empty %}<p class="small text-secondary mb-0">{{ empty }}</p>{% endfor %}
 </div></div>

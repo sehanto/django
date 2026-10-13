@@ -5,7 +5,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.params import choice_param, int_param, text_param
@@ -13,9 +13,9 @@ from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
-from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, VoidForm, line_inputs
+from .forms import InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, VoidForm, line_inputs
 from .models import Invoice, InvoiceKind, InvoiceStatusFilter
-from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for
+from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
 # Complete phrases rather than fragments, so each language can word them naturally.
 KIND_LABELS = {
@@ -173,6 +173,7 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
                 organization=self.organization, initial={"date": max(today, invoice.date), "amount": invoice.balance_due}
             ),
             void_form=VoidForm(initial={"date": today}),
+            returns=list(invoice.returns.all()),
             **kwargs,
         )
 
@@ -299,3 +300,45 @@ class ItemUpdateView(ItemFormMixin, UpdateView):
     pass
 
 
+
+
+class ReturnCreateView(InvoiceKindMixin, WriteMixin, FormView):
+    """Record a sales return or purchase return (nota retur) of an issued invoice."""
+
+    template_name = "invoicing/return_form.html"
+    form_class = ReturnForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.invoice = None
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_invoice(self):
+        if self.invoice is None:
+            self.invoice = get_object_or_404(invoice_detail(self.organization, self.kwargs["pk"]).filter(kind=self.kind))
+        return self.invoice
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "organization": self.organization, "invoice": self.get_invoice()}
+
+    def get_initial(self):
+        return {"date": max(timezone.localdate(), self.get_invoice().date)}
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(invoice=self.get_invoice(), **kwargs)
+
+    def form_valid(self, form):
+        try:
+            note = services.create_return(invoice=self.get_invoice(), created_by=self.request.user, **form.to_input())
+        except DomainError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Return %(number)s recorded and posted to the ledger.") % {"number": note.number})
+        return redirect("invoicing:return_detail", note.pk)
+
+
+class ReturnDetailView(OrganizationMixin, DetailView):
+    template_name = "invoicing/return_detail.html"
+    context_object_name = "note"
+
+    def get_queryset(self):
+        return returns_for(self.organization).prefetch_related("lines__invoice_line")
