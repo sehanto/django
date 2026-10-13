@@ -148,7 +148,22 @@ def _allowed_hosts() -> list[str]:
 
 
 ALLOWED_HOSTS = _allowed_hosts()
-CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405 - shared by workers
+# A cache shared by all workers (and servers): sign-in rate limits, CAPTCHA triggers, and the
+# password-reset and export limits count there. A per-process cache multiplies every limit by
+# the number of workers; a dummy cache turns them off. check --deploy (core.W004) also tests
+# that it answers (e.g. the database cache table exists).
+_SHARED_CACHE_BACKENDS = (
+    "django.core.cache.backends.db.DatabaseCache",
+    "django.core.cache.backends.redis.RedisCache",
+    "django.core.cache.backends.memcached.PyMemcacheCache",
+    "django.core.cache.backends.memcached.PyLibMCCache",
+)
+CACHES = {"default": env.cache("CACHE_URL", default="dbcache://django_cache")}  # noqa: F405
+if CACHES["default"]["BACKEND"] not in _SHARED_CACHE_BACKENDS:
+    raise ImproperlyConfigured(
+        "CACHE_URL must be a cache shared by all workers: dbcache://django_cache (default), redis://, rediss:// "
+        "or pymemcache://; local-memory, dummy and file caches break the sign-in and reset limits."
+    )
 
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).
 # Cloudflare's public test keys would let every visitor through, so they are refused.

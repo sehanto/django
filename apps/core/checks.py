@@ -82,3 +82,30 @@ def check_billing_seller(app_configs, **kwargs):
             id="core.W003",
         )
     ]
+
+
+@register(Tags.caches, Tags.security, deploy=True)
+def check_cache_answers(app_configs, **kwargs):
+    """Rate limits and CAPTCHA triggers live in the cache: it must actually store values."""
+    import secrets
+
+    from django.core.cache import cache
+
+    probe = secrets.token_hex(8)
+    try:
+        cache.set("bukuumkm:deploy-check", probe, 30)
+        works = cache.get("bukuumkm:deploy-check") == probe
+        cache.delete("bukuumkm:deploy-check")
+    except Exception as exc:  # unreachable server, missing table, ...
+        works, reason = False, f"{type(exc).__name__}: {exc}"
+    else:
+        reason = "it did not return a value it just stored"
+    if works:
+        return []
+    return [
+        Warning(
+            f"The cache does not work ({reason}), so sign-in rate limits and CAPTCHA triggers can't count.",
+            hint="Check CACHE_URL; for the database cache run manage.py createcachetable (as the owner).",
+            id="core.W004",
+        )
+    ]

@@ -691,7 +691,9 @@ localhost), `DEFAULT_FROM_EMAIL` a valid address, and `SITE_URL` the public `htt
 address (links in emails are built from it).
 
 Throttling needs a cache shared by all workers. The default in production is Django's
-database cache (set `CACHE_URL` to a Redis URL to use Redis instead); create its table once:
+database cache (set `CACHE_URL` to a Redis URL to use Redis instead); create its table once: Production refuses local-memory, dummy and file caches (they
+would multiply or disable the sign-in, CAPTCHA and reset limits) and accepts the database cache,
+Redis or Memcached; `check --deploy` (`core.W004`) also tests that the cache stores values.
 
 ```bash
 .venv/bin/python manage.py createcachetable

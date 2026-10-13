@@ -4,6 +4,7 @@ import base64
 import importlib
 import secrets
 import sys
+from unittest import mock
 
 import environ
 import pytest
@@ -180,3 +181,28 @@ def test_production_requires_real_allowed_hosts(monkeypatch, overrides, message)
 def test_production_accepts_public_hosts(monkeypatch, hosts):
     prod = load_production_settings(monkeypatch, DJANGO_ALLOWED_HOSTS=hosts, DJANGO_CSRF_TRUSTED_ORIGINS="https://app.bukuumkm.id")
     assert prod.ALLOWED_HOSTS
+
+
+@pytest.mark.parametrize("url", ["locmemcache://", "dummycache://", "filecache:///var/tmp/cache", "memcache://mc.internal:11211"])
+def test_production_requires_a_shared_cache(monkeypatch, url):
+    with pytest.raises(ImproperlyConfigured, match="CACHE_URL"):
+        load_production_settings(monkeypatch, CACHE_URL=url)
+
+
+@pytest.mark.parametrize(("url", "backend"), [
+    (None, "django.core.cache.backends.db.DatabaseCache"),  # the default
+    ("rediss://:secret@redis.internal:6380/0", "django.core.cache.backends.redis.RedisCache"),
+])
+def test_production_accepts_shared_caches(monkeypatch, url, backend):
+    assert load_production_settings(monkeypatch, CACHE_URL=url).CACHES["default"]["BACKEND"] == backend
+
+
+def test_deploy_check_tests_that_the_cache_answers():
+    from apps.core.checks import check_cache_answers
+
+    assert check_cache_answers(None) == []  # the test cache works
+    with override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}):
+        assert [w.id for w in check_cache_answers(None)] == ["core.W004"]
+    with mock.patch("django.core.cache.cache.set", side_effect=ConnectionError("redis.internal:6379 refused")):
+        warnings = check_cache_answers(None)
+    assert [w.id for w in warnings] == ["core.W004"] and "refused" in warnings[0].msg
