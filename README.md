@@ -84,6 +84,15 @@ Key design decisions:
   Payments and PPh Final payments are inserted as recorded and can only be voided, after
   their journal entry is reversed. They are never deleted: cancelling a PPh Final payment
   keeps it as a void record. Only the owner's organization purge removes them.
+
+  Subscription invoices (our own sales records, migration `billing/0006`) are guarded
+  too:
+  - their terms (plan, period, buyer, amounts, credit) never change after creation;
+  - status only moves forward (pending → paid, expired, canceled or failed; a closed one
+    → paid when support confirms a transfer), and paid is final;
+  - payment and coverage are recorded once, when the invoice is paid, and "ended early on"
+    is set at most once;
+  - they are never deleted, not even with the organization.
 - **Tamper-evident audit trail.** Posting records who posted (`posted_by`). The database
   (migration `ledger/0006_hash_chain`) also gives each posted entry a gap-free
   `posting_sequence` per organization and a SHA-256 `entry_hash` over its content, its

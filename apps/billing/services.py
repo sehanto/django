@@ -105,7 +105,7 @@ def _new_invoice(organization, plan, period, quote: SwitchQuote, credit: Credit,
         buyer_address=", ".join(filter(None, [organization.address, organization.city])),
         buyer_email=organization.email or getattr(created_by, "email", ""),
         subtotal=charge.subtotal, credit_amount=charge.credit, tax_base=charge.tax_base, tax_amount=charge.tax,
-        total=charge.total, coverage_value=charge.subtotal,
+        total=charge.total, coverage_value=extra.pop("coverage_value", charge.subtotal),
         credited_plan=organization.plan if charge.credit else None,
         credited_days=credit.days if charge.credit else 0,
         credit_basis_until=organization.plan_paid_until if charge.credit else None,
@@ -129,9 +129,8 @@ def _switch_with_credit(organization, plan, period, quote: SwitchQuote, credit: 
     invoice = _new_invoice(
         organization, plan, period, quote, credit, gateway=GatewayName.CREDIT, created_by=created_by,
         status=Status.PAID, paid_at=timezone.now(), coverage_start=start, coverage_end=end,
+        coverage_value=credit.amount,  # all of the credit went into this coverage
     )
-    invoice.coverage_value = credit.amount  # all of the credit went into this coverage
-    invoice.save(update_fields=["coverage_value"])
     _supersede_other_plans(organization, plan, today)
     set_subscription(organization=organization, plan=plan, paid_until=end)
     logger.info("Organization %s switched to %s using credit; covered until %s", organization.pk, plan.code, end)
