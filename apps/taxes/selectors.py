@@ -12,6 +12,13 @@ from .domain import PphFinalMonth, compute_pph_final
 from .models import PphFinalPayment, TaxRate
 
 
+def tax_rate_is_used(rate: TaxRate) -> bool:
+    """Used on an issued invoice: its name, rate and DPP are locked (taxes migration 0007)."""
+    from apps.invoicing.models import Invoice, InvoiceLine  # invoicing depends on taxes
+
+    return InvoiceLine.objects.filter(tax_rate=rate).exclude(invoice__status=Invoice.Status.DRAFT).exists()
+
+
 def tax_rates_for(organization, *, active_only: bool = False) -> QuerySet[TaxRate]:
     qs = TaxRate.objects.for_organization(organization)
     return qs.filter(is_active=True) if active_only else qs

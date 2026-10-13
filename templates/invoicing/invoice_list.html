@@ -22,7 +22,7 @@
     <tr>
       <td><a href="{% url 'invoicing:detail' kind inv.pk %}">{{ inv.display_number }}</a></td>
       <td class="text-nowrap">{{ inv.date|date:"d M Y" }}</td>
-      <td>{{ inv.contact.name }}</td>
+      <td>{{ inv.party_name }}</td>
       <td class="text-nowrap {% if inv.is_overdue %}text-danger fw-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
       <td class="num">{{ inv.total|rupiah }}</td>
       <td class="num">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>

@@ -20,7 +20,7 @@ def invoices_for(
     elif status:
         qs = qs.filter(status=status)
     if query:
-        qs = qs.filter(Q(number__icontains=query) | Q(contact__name__icontains=query) | Q(reference__icontains=query))
+        qs = qs.filter(Q(number__icontains=query) | Q(contact__name__icontains=query) | Q(contact_name__icontains=query) | Q(reference__icontains=query))
     if contact_id:
         qs = qs.filter(contact_id=contact_id)
     return qs
@@ -44,7 +44,8 @@ def payments_for(organization, *, kind: str = "", query: str = "") -> QuerySet[P
     if kind:
         qs = qs.filter(invoice__kind=kind)
     if query:
-        qs = qs.filter(Q(number__icontains=query) | Q(invoice__number__icontains=query) | Q(invoice__contact__name__icontains=query))
+        qs = qs.filter(Q(number__icontains=query) | Q(invoice__number__icontains=query) | Q(invoice__contact__name__icontains=query)
+            | Q(invoice__contact_name__icontains=query))
     return qs
 
 

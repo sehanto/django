@@ -12,7 +12,7 @@
   <tbody>
   {% for p in object_list %}
     <tr class="{% if p.status == p.Status.VOID %}text-secondary{% endif %}">
-      <td>{{ p.number }}</td><td class="text-nowrap">{{ p.date|date:"d M Y" }}</td><td>{{ p.invoice.contact.name }}</td>
+      <td>{{ p.number }}</td><td class="text-nowrap">{{ p.date|date:"d M Y" }}</td><td>{{ p.invoice.party_name }}</td>
       <td><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></td>
       <td class="small">{{ p.cash_account.name }}</td><td class="small">{{ p.get_method_display }}</td>
       <td class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>

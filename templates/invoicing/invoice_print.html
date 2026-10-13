@@ -4,9 +4,11 @@
 <main class="container py-4" style="max-width: 860px;">
   <div class="d-flex justify-content-between mb-4">
     <div>
-      <h2 class="h4 fw-bold mb-1">{{ invoice.organization.name }}</h2>
-      <div class="small">{{ invoice.organization.address|linebreaksbr }}{% if invoice.organization.city %}, {{ invoice.organization.city }}{% endif %}</div>
-      {% if invoice.organization.npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.organization.npwp }}</div>{% endif %}
+      {% with seller=invoice.seller %}
+      <h2 class="h4 fw-bold mb-1">{{ seller.name }}</h2>
+      <div class="small">{{ seller.address|linebreaksbr }}{% if seller.city %}, {{ seller.city }}{% endif %}</div>
+      {% if seller.npwp %}<div class="small">{% translate "NPWP" %}: {{ seller.npwp }}</div>{% endif %}
+      {% endwith %}
       {% if invoice.organization.phone %}<div class="small">{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
     </div>
     <div class="text-end">

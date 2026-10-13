@@ -133,7 +133,10 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (
         Table("invoices.csv", gettext_lazy("Sales invoices and purchase bills."), (
             C("id", gettext_lazy("Invoice ID")), C("kind"), C("number"), C("contact__name", gettext_lazy("Contact")),
-            C("contact__npwp", gettext_lazy("Contact NPWP")), C("date"), C("due_date"), C("reference"),
+            C("contact__npwp", gettext_lazy("Contact NPWP")),
+            C("contact_name", gettext_lazy("Contact name on the invoice")), C("contact_npwp", gettext_lazy("Contact NPWP on the invoice")),
+            C("contact_address"), C("contact_city"), C("seller_name"), C("seller_npwp"),
+            C("date"), C("due_date"), C("reference"),
             C("tax_invoice_number"), C("status"), C("subtotal"), C("tax_amount"), C("total"), C("amount_paid"),
             C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
         )),

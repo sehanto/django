@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.contacts.validators import format_npwp
 from apps.core.validators import code_validator, tax_invoice_number_validator
 
 from .domain import InvoiceStatus, LineSpec, TaxSpec
@@ -82,6 +83,16 @@ class Invoice(TenantOwnedModel):
         "ledger.JournalEntry", null=True, blank=True, on_delete=models.PROTECT, related_name="invoice"
     )
     issued_at = models.DateTimeField(null=True, blank=True)
+    # Parties as they were when the invoice was issued (frozen with it; contacts and the
+    # organization stay editable for future invoices). Empty while a draft.
+    contact_name = models.CharField(_("contact name"), max_length=200, blank=True, editable=False)
+    contact_npwp = models.CharField(_("contact NPWP"), max_length=16, blank=True, editable=False)
+    contact_address = models.TextField(_("contact address"), blank=True, editable=False)
+    contact_city = models.CharField(_("contact city"), max_length=100, blank=True, editable=False)
+    seller_name = models.CharField(_("seller name"), max_length=200, blank=True, editable=False)
+    seller_npwp = models.CharField(_("seller NPWP"), max_length=16, blank=True, editable=False)
+    seller_address = models.TextField(_("seller address"), blank=True, editable=False)
+    seller_city = models.CharField(_("seller city"), max_length=100, blank=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
@@ -101,6 +112,41 @@ class Invoice(TenantOwnedModel):
     @property
     def display_number(self) -> str:
         return self.number or _("DRAFT-%(id)s") % {"id": self.pk}
+
+    def snapshot_parties(self) -> None:
+        """Copy the buyer's and the organization's details onto the invoice (at issue)."""
+        contact, organization = self.contact, self.organization
+        self.contact_name, self.contact_npwp = contact.name, contact.npwp
+        self.contact_address, self.contact_city = contact.address, contact.city
+        self.seller_name, self.seller_npwp = organization.name, organization.npwp
+        self.seller_address, self.seller_city = organization.address, organization.city
+
+    def _party(self, snapshot: str, live) -> str:
+        """Issued invoices show the parties as they were; drafts show the current details."""
+        return getattr(self, snapshot) if self.status != self.Status.DRAFT else live
+
+    @property
+    def party_name(self) -> str:
+        return self._party("contact_name", self.contact.name)
+
+    @property
+    def party_npwp(self) -> str:
+        return format_npwp(self._party("contact_npwp", self.contact.npwp))
+
+    @property
+    def party_address(self) -> str:
+        return self._party("contact_address", self.contact.address)
+
+    @property
+    def party_city(self) -> str:
+        return self._party("contact_city", self.contact.city)
+
+    @property
+    def seller(self) -> dict:
+        org = self.organization
+        if self.status == self.Status.DRAFT:
+            return {"name": org.name, "npwp": org.npwp, "address": org.address, "city": org.city}
+        return {"name": self.seller_name, "npwp": self.seller_npwp, "address": self.seller_address, "city": self.seller_city}
 
     @property
     def balance_due(self):

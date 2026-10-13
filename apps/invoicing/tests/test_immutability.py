@@ -90,13 +90,6 @@ def test_lines_of_an_issued_invoice_are_frozen(issued, account):
         InvoiceLine.objects.create(invoice=issued, description="x", account=account("4-1000"), amount=D("1"))
 
 
-def test_deleting_a_catalog_item_keeps_issued_lines(organization, customer, account, item):
-    invoice = services.issue_invoice(invoice=draft(organization, customer, account, item=item))
-    item.delete()  # SET_NULL on the line is the one change allowed
-    line = invoice.lines.get()
-    assert line.item_id is None and line.amount == D("200000.00")
-
-
 def test_amount_paid_and_status_follow_the_payments(issued, account):
     with refused():
         Invoice.objects.filter(pk=issued.pk).update(amount_paid=issued.total, status=Invoice.Status.PAID)
@@ -187,3 +180,66 @@ def test_pph_final_payments_are_cancelled_not_deleted(pph_payment):
     )
     assert again.status == PphFinalPayment.Status.POSTED
     assert PphFinalPayment.objects.filter(organization=pph_payment.organization, year=2026, month=1).count() == 2
+
+
+# --- Reference data: snapshot + lock when used ----------------------------------------
+
+
+def test_issued_invoices_keep_the_parties_as_they_were(client, auth_client, organization, customer, account, issued):
+    from django.urls import reverse
+
+    customer.name, customer.address = "PT Pelanggan Baru", "Jl. Baru 1"
+    customer.save()  # contacts stay editable...
+    organization.name = "Usaha Ganti Nama"
+    organization.save()
+
+    issued.refresh_from_db()
+    assert issued.party_name == "PT Pelanggan" and issued.seller["name"] != "Usaha Ganti Nama"  # ...issued invoices don't change
+    page = auth_client.get(reverse("invoicing:print", args=[InvoiceKind.SALES, issued.pk])).content.decode()
+    assert "PT Pelanggan" in page and "PT Pelanggan Baru" not in page and "Usaha Ganti Nama" not in page
+
+    later = draft(organization, customer, account)
+    assert later.party_name == "PT Pelanggan Baru"  # drafts show the current details
+    with refused():
+        Invoice.objects.filter(pk=issued.pk).update(contact_name="Siapa Saja")
+
+
+def test_issuing_requires_the_party_snapshot(organization, customer, account):
+    invoice = draft(organization, customer, account)
+    entry = services.issue_invoice(invoice=draft(organization, customer, account)).journal_entry
+    with refused():  # an issue that skipped the snapshot
+        Invoice.objects.filter(pk=invoice.pk).update(status=Invoice.Status.ISSUED, number="INV/X", total=D("1"), journal_entry=entry)
+
+
+def test_items_used_on_issued_invoices_cannot_be_deleted(organization, customer, account, item):
+    services.issue_invoice(invoice=draft(organization, customer, account, item=item))
+    item.name = "Kopi bubuk 500g"
+    item.save()  # still editable: lines copied what they needed
+    with refused():
+        item.delete()
+    unused = Item.objects.create(organization=organization, name="Teh", sale_price=D("1"))
+    unused.delete()
+
+
+def test_tax_rates_used_on_issued_invoices_are_locked(pkp_organization, customer, account):
+    organization = pkp_organization
+    from apps.taxes.forms import TaxRateForm
+    from apps.taxes.models import TaxRate
+
+    ppn = TaxRate.objects.get(organization=organization, name__startswith="PPN 12% (DPP 11/12)")
+    form = TaxRateForm(instance=ppn, organization=organization)
+    assert not form.locked and not form.fields["rate"].disabled  # unused: editable
+
+    services.issue_invoice(invoice=services.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=ON,
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"), tax_rate=ppn)],
+    ))
+    with refused():
+        TaxRate.objects.filter(pk=ppn.pk).update(rate=D("11"))
+    with refused():
+        TaxRate.objects.filter(pk=ppn.pk).update(name="PPN lama")
+    TaxRate.objects.filter(pk=ppn.pk).update(is_active=False)  # deactivating is allowed
+    form = TaxRateForm(instance=ppn, organization=organization)
+    assert form.locked and form.fields["rate"].disabled and not form.fields["is_active"].disabled
+    with refused():
+        ppn.delete()

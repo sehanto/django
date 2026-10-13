@@ -8,12 +8,26 @@ from apps.ledger.selectors import cash_accounts
 
 from .domain import Month
 from .models import TaxRate
+from .selectors import tax_rate_is_used
 
 
 class TaxRateForm(OrganizationFormMixin, BaseModelForm):
+    LOCKED_WHEN_USED = ("name", "rate", "dpp_numerator", "dpp_denominator")
+
     class Meta:
         model = TaxRate
         fields = ["name", "rate", "dpp_numerator", "dpp_denominator", "is_active"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.locked = bool(self.instance.pk) and tax_rate_is_used(self.instance)
+        if self.locked:  # the database refuses these changes anyway; say so up front
+            for name in self.LOCKED_WHEN_USED:
+                self.fields[name].disabled = True
+            self.fields["is_active"].help_text = _(
+                "This rate is used on issued invoices, so only its active status can change. "
+                "To charge a different rate, deactivate it and add a new one."
+            )
 
 
 class PphFinalPaymentForm(OrganizationFormMixin, BaseForm):

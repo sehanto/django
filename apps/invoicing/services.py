@@ -266,6 +266,7 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
         created_by=issued_by,
     )
     _apply_totals(invoice, totals)
+    invoice.snapshot_parties()  # frozen with the invoice from here on
     invoice.status = Invoice.Status.ISSUED
     invoice.issued_at = timezone.now()
     invoice.save()

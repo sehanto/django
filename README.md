@@ -85,6 +85,17 @@ Key design decisions:
   their journal entry is reversed. They are never deleted: cancelling a PPh Final payment
   keeps it as a void record. Only the owner's organization purge removes them.
 
+  Reference data stays editable for future documents but can't rewrite history
+  (migrations `invoicing/0005`, `taxes/0007`):
+  - issuing an invoice snapshots the buyer's and your own name, NPWP, address and city
+    onto it. Issued invoices, prints and the export show those snapshots, so editing a
+    contact or the organization never changes an issued invoice, and the database refuses
+    to issue without them;
+  - a tax rate used on an issued invoice keeps its name, rate and DPP; it can only be
+    (de)activated (add a new rate to charge a different one);
+  - items used on issued invoices, and contacts or tax rates used on any invoice, can't be
+    deleted (deactivate them). Items themselves stay editable: lines copy what they need.
+
   Subscription invoices (our own sales records, migration `billing/0006`) are guarded
   too:
   - their terms (plan, period, buyer, amounts, credit) never change after creation;

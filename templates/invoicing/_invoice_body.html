@@ -2,9 +2,10 @@
 <div class="row mb-4">
   <div class="col-sm-6">
     <div class="small text-secondary">{% if invoice.is_sales %}{% translate "Bill to" %}{% else %}{% translate "From supplier" %}{% endif %}</div>
-    <div class="fw-semibold">{{ invoice.contact.name }}</div>
-    {% if invoice.contact.address %}<div class="small">{{ invoice.contact.address|linebreaksbr }}{% if invoice.contact.city %}, {{ invoice.contact.city }}{% endif %}</div>{% endif %}
-    {% if invoice.contact.npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.contact.formatted_npwp }}</div>{% endif %}
+    {# Issued invoices show the parties as they were when issued (snapshot); drafts the current details. #}
+    <div class="fw-semibold">{{ invoice.party_name }}</div>
+    {% if invoice.party_address %}<div class="small">{{ invoice.party_address|linebreaksbr }}{% if invoice.party_city %}, {{ invoice.party_city }}{% endif %}</div>{% endif %}
+    {% if invoice.party_npwp %}<div class="small">{% translate "NPWP" %}: {{ invoice.party_npwp }}</div>{% endif %}
   </div>
   <div class="col-sm-6 text-sm-end small">
     <div>{% translate "Date" %}: <strong>{{ invoice.date|date:"d F Y" }}</strong></div>
