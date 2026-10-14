@@ -352,6 +352,10 @@ With `CORETAX_CONNECTOR` (`fake` or `http`, plus `CORETAX_API_URL` and `CORETAX_
 `--send` sends it instead and records the numbers on the subscription invoices (set once; billing 0008).
 Buyers without an NPWP are left out.
 
+## Retail sales in total (SPT Masa PPN digunggung)
+
+A retailer (Organization → retailer) reports sales to customers without an NPWP or identity document as a monthly total instead of fakturs. **Reports → PPN** offers each month's import file in DJP's retail format ("Retail_XML Induk IA5 IA9 dan IB" v1.2): one row per invoice and kind of delivery (taxed: 1.A5; facility 07/08: 1.A9; without PPN: 1.B; goods or services), anonymous buyer (NIK of zeros, as in DJP's sample), whole-rupiah amounts, the invoice id as the numeric serial and its number in Info. Import it into the SPT Masa PPN draft in Coretax. Returns of these sales aren't in the template; subtract them in Coretax.
+
 ## eBupot files (bukti potong)
 
 **Taxes → Withheld income tax → (month)** builds the month's Coretax eBupot import files in DJP's format (the converter templates' schemas: BPMP v.3, BP21 v.4, BP26, BPA1, BPPU v.3), downloadable as XML or sent through the Coretax connection, which records the bukti potong numbers that come back:
@@ -858,5 +862,5 @@ Static files are served by WhiteNoise.
 
 ## Possible next steps
 
-- eBupot SPT Masa PPh 21/26 and Unifikasi returns themselves (Coretax builds them from the bukti potong)
+- Nothing open in tax reporting: the SPT Masa PPh 21/26 and Unifikasi have no import format (Coretax builds them from the bukti potong these files create), and the SPT Masa PPN is drafted by Coretax from the fakturs, with the retail total imported from the digunggung file.
 

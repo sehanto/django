@@ -16,11 +16,12 @@
 </table></div></div>
 {% if totals.aggregated_base %}
 <h2 class="h6 mt-4">{% translate "Retail sales reported in total (digunggung)" %}</h2>
-<p class="small text-secondary">{% translate "Included above. Sales to customers without an NPWP or identity document: report each month's total in the SPT Masa PPN instead of individual fakturs; they are left out of the Coretax files." %}</p>
+<p class="small text-secondary">{% translate "Included above. Sales to customers without an NPWP or identity document: report each month's total in the SPT Masa PPN instead of individual fakturs; they are left out of the Faktur files. Each month's XML imports them into the SPT Masa PPN draft in Coretax (1.A5, 1.A9 for facilities, 1.B without PPN). Returns of these sales are not in the file: subtract them in Coretax." %}</p>
 <div class="card"><div class="table-responsive"><table class="table table-sm mb-0">
-  <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Sales value" %}</th><th class="num">{% translate "Output PPN" %}</th></tr></thead>
-  <tbody>{% for r in rows %}{% if r.aggregated_base %}<tr><td>{{ r.month|stringformat:"02d" }}/{{ year }}</td><td class="num">{{ r.aggregated_base|rupiah }}</td><td class="num">{{ r.aggregated|rupiah }}</td></tr>{% endif %}{% endfor %}</tbody>
-  <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td><td class="num">{{ totals.aggregated_base|rupiah }}</td><td class="num">{{ totals.aggregated|rupiah }}</td></tr></tfoot>
+  <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Sales value" %}</th><th class="num">{% translate "Output PPN" %}</th><th class="no-print"></th></tr></thead>
+  <tbody>{% for r in rows %}{% if r.aggregated_base %}<tr><td>{{ r.month|stringformat:"02d" }}/{{ year }}</td><td class="num">{{ r.aggregated_base|rupiah }}</td><td class="num">{{ r.aggregated|rupiah }}</td>
+    <td class="no-print text-end"><a href="{% url 'invoicing:month_retail_coretax' year r.month %}" class="small text-nowrap"><i class="bi bi-filetype-xml"></i> {% translate "SPT PPN digunggung" %}</a></td></tr>{% endif %}{% endfor %}</tbody>
+  <tfoot><tr class="fw-bold"><td>{% translate "Total" %}</td><td class="num">{{ totals.aggregated_base|rupiah }}</td><td class="num">{{ totals.aggregated|rupiah }}</td><td class="no-print"></td></tr></tfoot>
 </table></div></div>
 {% endif %}
 <p class="small text-secondary mt-2">{% translate "Calculated from issued invoices (excluding voided ones), less returns in the month of the return. PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer and is not payable. PPN under a facility (codes 07/08) is reported on the faktur but not collected. PPnBM on sales is shown on its own (VAT collectors withhold it like the PPN); it is never credited. Only a PKP can credit input PPN." %}{% if not current_organization.is_pkp %} {% translate "This organization is not a PKP yet." %}{% endif %}</p>

@@ -505,3 +505,39 @@ def test_a_retailers_sales_to_anonymous_buyers_are_reported_in_total(books, cust
     assert "digunggung" in coretax.invoice_problem(invoice)
     march = vat_summary(books, 2026)[2]
     assert (march["aggregated_base"], march["aggregated"], march["output"]) == (D("120000"), D("13200"), D("13200"))
+
+
+def test_the_months_retail_total_as_an_spt_ppn_import(books, customer, account, auth_client):
+    customer.npwp = ""
+    customer.save()
+    books.is_retailer = True
+    books.save(update_fields=["is_retailer"])
+    ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
+    service = Item.objects.create(organization=books, name="Antar", type=Item.Type.SERVICE, unit="kali")
+    invoice = services.issue_invoice(invoice=services.create_invoice(
+        organization=books, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+        lines=[
+            InvoiceLineInput("Kopi", account("4-1000"), D("2"), D("60000"), tax_rate=ppn),
+            InvoiceLineInput("Ongkos antar", account("4-1000"), D("1"), D("10000"), tax_rate=ppn, item=service),
+            InvoiceLineInput("Beras", account("4-1000"), D("1"), D("50000")),
+        ],
+    ))
+    rows, returns = coretax.month_retail(books, 2026, 3)
+    assert [(r.trx_code, r.goods_or_services, r.base, r.other, r.vat) for r in rows] == [
+        ("Normal", "A", D("120000"), D("110000"), D("13200")),
+        ("Normal", "B", D("10000"), D("9166.67"), D("1100")),
+        ("NoVAT", "A", D("50000"), D("50000"), D("0")),
+    ]
+    assert returns == []
+    response = auth_client.get(reverse("invoicing:month_retail_coretax", args=[2026, 3]))
+    root = ET.fromstring(response.content)
+    assert [child.tag for child in root] == ["TIN", "TaxPeriodMonth", "TaxPeriodYear", "ListOfRetailInvoice"]
+    first = root.find("ListOfRetailInvoice/RetailInvoice")
+    assert [child.tag for child in first] == [
+        "TrxCode", "BuyerName", "BuyerIdOpt", "BuyerIdNumber", "GoodServiceOpt", "SerialNo", "TransactionDate",
+        "TaxBaseSellingPrice", "OtherTaxBaseSellingPrice", "VAT", "STLG", "Info",
+    ]
+    assert (first.findtext("BuyerIdNumber"), first.findtext("SerialNo"), first.findtext("Info")) == ("0" * 16, str(invoice.pk), invoice.number)
+    second = root.findall("ListOfRetailInvoice/RetailInvoice")[1]
+    assert second.findtext("OtherTaxBaseSellingPrice") == "9167"  # whole rupiah (xs:int)
+    assert auth_client.get(reverse("invoicing:month_retail_coretax", args=[2026, 4])).status_code == 302

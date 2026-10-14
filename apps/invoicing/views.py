@@ -455,6 +455,22 @@ class MonthInvoicesCoretaxView(OrganizationMixin, View):
         return _xml_download(coretax.build_invoices_xml(self.organization, invoices), name)
 
 
+class MonthRetailCoretaxView(OrganizationMixin, View):
+    """A retailer's sales to anonymous consumers of a month, for the SPT Masa PPN (digunggung:
+    1.A5, 1.A9 and 1.B), in DJP's retail import format."""
+
+    def get(self, request, year, month):
+        if not 1 <= month <= 12:
+            raise Http404
+        rows, _returns = coretax.month_retail(self.organization, year, month)
+        if not rows or len(coretax.tin(self.organization.npwp)) != 16:
+            messages.info(request, _("There are no retail sales of %(period)s to report in total, or the organization has no NPWP.")
+                          % {"period": f"{month:02d}/{year}"})
+            return redirect(f"{reverse('reports:vat')}?year={year}")
+        name = coretax.filename(self.organization, f"{year}-{month:02d}", kind="ppn-digunggung")
+        return _xml_download(coretax.build_retail_xml(self.organization, year, month, rows), name)
+
+
 class TaxInvoiceNumberView(InvoiceKindMixin, WriteMixin, View):
     def post(self, request, kind, pk):
         invoice = get_object_or_404(invoice_detail(self.organization, pk).filter(kind=self.kind))

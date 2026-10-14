@@ -13,6 +13,7 @@ urlpatterns = [
     path("returns/<int:pk>/coretax.xml", views.ReturnCoretaxView.as_view(), name="return_coretax"),
     path("returns/coretax/<int:year>/<int:month>.xml", views.MonthCoretaxView.as_view(), name="month_coretax"),
     path("faktur-pajak-keluaran/<int:year>/<int:month>.xml", views.MonthInvoicesCoretaxView.as_view(), name="month_invoices_coretax"),
+    path("ppn-digunggung/<int:year>/<int:month>.xml", views.MonthRetailCoretaxView.as_view(), name="month_retail_coretax"),
     path("coretax/", views.CoretaxConnectionView.as_view(), name="coretax_connection"),
     path("coretax/send/<int:year>/<int:month>/", views.CoretaxSendView.as_view(), name="coretax_send_month"),
     path("coretax/send/<int:year>/<int:month>/returns/", views.CoretaxSendView.as_view(), {"returns": True}, name="coretax_send_returns"),

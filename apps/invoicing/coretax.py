@@ -73,6 +73,10 @@ def _round(value: Decimal) -> Decimal:
     return value.quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
+def _rupiah(value: Decimal) -> str:
+    return f"{Decimal(value).quantize(Decimal('1'), rounding=ROUND_HALF_UP):f}"
+
+
 def _number(value: Decimal) -> str:
     value = _round(Decimal(value))
     return f"{value:.0f}" if value == value.to_integral() else f"{value:.2f}"
@@ -293,11 +297,33 @@ def invoice_problem(invoice: Invoice) -> str | None:
     return None
 
 
-def _good_service(parent, line) -> None:
+@dataclass(frozen=True)
+class LineAmounts:
+    discount: Decimal
+    base: Decimal  # harga jual / DPP
+    other: Decimal  # DPP nilai lain
+    vat: Decimal
+    luxury: Decimal
+
+
+def _line_base(line) -> Decimal:
+    gross = line.unit_price * line.quantity
+    return _round(gross - _round(gross * line.discount_percent / HUNDRED))
+
+
+def line_amounts(line) -> LineAmounts:
+    """A taxed line's figures as Coretax shows them."""
     gross = line.unit_price * line.quantity
     discount = _round(gross * line.discount_percent / HUNDRED)
     base = _round(gross - discount)
     other = _round(base * line.tax_dpp_numerator / line.tax_dpp_denominator)
+    luxury_rate = line.tax_luxury_rate or ZERO
+    return LineAmounts(discount, base, other, _round(other * line.tax_rate_percent / HUNDRED), _round(other * luxury_rate / HUNDRED))
+
+
+def _good_service(parent, line) -> None:
+    amounts = line_amounts(line)
+    discount, base, other = amounts.discount, amounts.base, amounts.other
     luxury_rate = line.tax_luxury_rate or ZERO
     # Besaran tertentu: the faktur shows the statutory rate, and the PPN is the fixed share of
     # the price (the template allows a PPN other than rate x base outside codes 01, 04 and 09).
@@ -308,8 +334,7 @@ def _good_service(parent, line) -> None:
         ("Name", line.description), ("Unit", unit_code(line.item.unit if line.item_id else "")),
         ("Price", _number(line.unit_price)), ("Qty", _quantity(line.quantity)), ("TotalDiscount", _number(discount)),
         ("TaxBase", _number(base)), ("OtherTaxBase", _number(other)), ("VATRate", _quantity(rate)),
-        ("VAT", _number(_round(other * line.tax_rate_percent / HUNDRED))), ("STLGRate", _quantity(luxury_rate)),
-        ("STLG", _number(_round(other * luxury_rate / HUNDRED))),
+        ("VAT", _number(amounts.vat)), ("STLGRate", _quantity(luxury_rate)), ("STLG", _number(amounts.luxury)),
     ]:
         _text(element, tag, value)
 
@@ -359,3 +384,83 @@ def month_invoices(organization, year: int, month: int):
                 date__gte=start, date__lt=end)
         .select_related("organization", "contact").order_by("date", "id")
     )
+
+
+# SPT Masa PPN, retail sales reported as a total (digunggung): DJP's "Retail_XML Induk IA5 IA9
+# dan IB" converter v1.2 and its "SPT PPN Digunggung" sample. Normal fills 1.A5, 07/08 1.A9 and
+# NoVAT (deliveries without PPN) 1.B; buyers stay anonymous (NIK of zeros, as in the sample).
+RETAIL_NORMAL, RETAIL_NO_VAT = "Normal", "NoVAT"
+ANONYMOUS_NIK = "0" * 16
+
+
+@dataclass(frozen=True)
+class RetailRow:
+    invoice: Invoice
+    trx_code: str
+    goods_or_services: str
+    base: Decimal
+    other: Decimal
+    vat: Decimal
+    luxury: Decimal
+
+
+def month_retail(organization, year: int, month: int) -> tuple[list[RetailRow], list[ReturnNote]]:
+    """A retailer's sales of the month to anonymous end consumers, one row per invoice and kind
+    of delivery (taxed, facility or without PPN; goods or services), and the month's returns
+    of such sales (to be subtracted in Coretax by hand: the template has no returns)."""
+    invoices = [
+        invoice for invoice in Invoice.objects.for_organization(organization).filter(
+            kind=InvoiceKind.SALES, date__year=year, date__month=month,
+            status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
+        ).order_by("date", "id")
+        if is_aggregated(invoice)
+    ]
+    rows = []
+    for invoice in invoices:
+        groups: dict[tuple[str, str], list] = {}
+        for line in invoice.lines.select_related("item").order_by("id"):
+            taxed = line.tax_rate_percent is not None
+            code = (invoice.vat_facility or RETAIL_NORMAL) if taxed else RETAIL_NO_VAT
+            kind = SERVICES if line.item_id and line.item.type == Item.Type.SERVICE else GOODS
+            groups.setdefault((code, kind), []).append(line)
+        for (code, kind), lines in groups.items():
+            if code == RETAIL_NO_VAT:
+                base = sum((_line_base(l) for l in lines), ZERO)
+                rows.append(RetailRow(invoice, code, kind, base, base, ZERO, ZERO))
+                continue
+            amounts = [line_amounts(l) for l in lines]
+            rows.append(RetailRow(
+                invoice, code, kind, sum((a.base for a in amounts), ZERO), sum((a.other for a in amounts), ZERO),
+                sum((a.vat for a in amounts), ZERO), sum((a.luxury for a in amounts), ZERO),
+            ))
+    returns = [
+        note for note in ReturnNote.objects.for_organization(organization).filter(
+            kind=InvoiceKind.SALES, date__year=year, date__month=month, status=ReturnNote.Status.POSTED,
+        ).select_related("invoice", "invoice__organization").order_by("date", "id")
+        if is_aggregated(note.invoice)
+    ]
+    return rows, returns
+
+
+def build_retail_xml(organization, year: int, month: int, rows: list[RetailRow]) -> bytes:
+    root = ET.Element("RetailInvoiceBulk", {
+        "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance", "xsi:noNamespaceSchemaLocation": "schema.xsd",
+    })
+    _text(root, "TIN", tin(organization.npwp))
+    _text(root, "TaxPeriodMonth", str(month))
+    _text(root, "TaxPeriodYear", str(year))
+    listing = ET.SubElement(root, "ListOfRetailInvoice")
+    for row in rows:
+        element = ET.SubElement(listing, "RetailInvoice")
+        for tag, value in [
+            ("TrxCode", row.trx_code), ("BuyerName", row.invoice.party_name or "Konsumen akhir"), ("BuyerIdOpt", "NIK"),
+            ("BuyerIdNumber", ANONYMOUS_NIK), ("GoodServiceOpt", row.goods_or_services),
+            ("SerialNo", str(row.invoice.pk)),  # numeric (xs:long): the invoice number goes in Info
+            # Whole rupiah (xs:int; DJP's converter rounds them).
+            ("TransactionDate", row.invoice.date.isoformat()), ("TaxBaseSellingPrice", _rupiah(row.base)),
+            ("OtherTaxBaseSellingPrice", _rupiah(row.other)), ("VAT", _rupiah(row.vat)), ("STLG", _rupiah(row.luxury)),
+            ("Info", row.invoice.number),
+        ]:
+            _text(element, tag, value)
+    ET.indent(root, space="\t")
+    return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")

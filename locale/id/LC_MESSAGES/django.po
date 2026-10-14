@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 08:27+0700\n"
+"POT-Creation-Date: 2026-10-14 08:57+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -1767,49 +1767,49 @@ msgstr "Nilai stok diturunkan ke nilai realisasi neto dan dijurnal."
 msgid "Sales & Purchases"
 msgstr "Penjualan & Pembelian"
 
-#: apps/invoicing/coretax.py:128
+#: apps/invoicing/coretax.py:132
 msgid "Your customer records a sales return in Coretax; you approve it under Retur Pajak Keluaran."
 msgstr ""
 "Pelanggan Anda yang membuat retur penjualan di Coretax; Anda menyetujuinya di menu Retur Pajak "
 "Keluaran."
 
-#: apps/invoicing/coretax.py:130
+#: apps/invoicing/coretax.py:134
 msgid "A voided return is not reported."
 msgstr "Retur yang dibatalkan tidak dilaporkan."
 
-#: apps/invoicing/coretax.py:132
+#: apps/invoicing/coretax.py:136
 msgid "Only a VAT-registered business (PKP) reports returns of input VAT."
 msgstr "Hanya PKP yang melaporkan retur pajak masukan."
 
-#: apps/invoicing/coretax.py:134 apps/invoicing/coretax.py:281
+#: apps/invoicing/coretax.py:138 apps/invoicing/coretax.py:285
 msgid "Enter the organization's NPWP in the settings."
 msgstr "Isi NPWP organisasi di pengaturan."
 
-#: apps/invoicing/coretax.py:136
+#: apps/invoicing/coretax.py:140
 msgid "The supplier's NPWP was not on the bill when it was issued."
 msgstr "NPWP pemasok tidak tercantum pada tagihan saat diterbitkan."
 
-#: apps/invoicing/coretax.py:138
+#: apps/invoicing/coretax.py:142
 msgid "The bill has no Faktur Pajak number from the supplier."
 msgstr "Tagihan tidak memiliki nomor Faktur Pajak dari pemasok."
 
-#: apps/invoicing/coretax.py:140
+#: apps/invoicing/coretax.py:144
 msgid "The returned lines carry no PPN."
 msgstr "Baris yang diretur tidak dikenai PPN."
 
-#: apps/invoicing/coretax.py:275
+#: apps/invoicing/coretax.py:279
 msgid "Only sales invoices become a Faktur Pajak Keluaran."
 msgstr "Hanya faktur penjualan yang menjadi Faktur Pajak Keluaran."
 
-#: apps/invoicing/coretax.py:277
+#: apps/invoicing/coretax.py:281
 msgid "Only issued invoices are reported."
 msgstr "Hanya faktur yang sudah diterbitkan yang dilaporkan."
 
-#: apps/invoicing/coretax.py:279
+#: apps/invoicing/coretax.py:283
 msgid "Only a VAT-registered business (PKP) issues a Faktur Pajak."
 msgstr "Hanya PKP yang membuat Faktur Pajak."
 
-#: apps/invoicing/coretax.py:283
+#: apps/invoicing/coretax.py:287
 msgid ""
 "A retail sale to a customer without an NPWP or identity document: it is reported in the month's "
 "total (digunggung) in the SPT Masa PPN, not as its own faktur."
@@ -1817,7 +1817,7 @@ msgstr ""
 "Penjualan eceran kepada pelanggan tanpa NPWP atau dokumen identitas: dilaporkan dalam jumlah "
 "bulanan (digunggung) pada SPT Masa PPN, bukan sebagai faktur tersendiri."
 
-#: apps/invoicing/coretax.py:285
+#: apps/invoicing/coretax.py:289
 msgid ""
 "The customer had neither an NPWP nor an identity document (NIK, passport) when the invoice was "
 "issued. Enter one on the contact for future invoices, or create this faktur in Coretax directly."
@@ -1825,11 +1825,11 @@ msgstr ""
 "Pelanggan belum memiliki NPWP maupun dokumen identitas (NIK, paspor) saat faktur diterbitkan. Isi "
 "pada data kontak untuk faktur berikutnya, atau buat faktur ini langsung di Coretax."
 
-#: apps/invoicing/coretax.py:288
+#: apps/invoicing/coretax.py:292
 msgid "The invoice carries no PPN."
 msgstr "Faktur ini tidak dikenai PPN."
 
-#: apps/invoicing/coretax.py:290
+#: apps/invoicing/coretax.py:294
 msgid ""
 "The invoice mixes the 11/12 tax base with the full tax base; Coretax needs a separate faktur for "
 "each."
@@ -1837,7 +1837,7 @@ msgstr ""
 "Faktur ini mencampur DPP 11/12 dengan DPP penuh; Coretax memerlukan faktur terpisah untuk masing-"
 "masing."
 
-#: apps/invoicing/coretax.py:292
+#: apps/invoicing/coretax.py:296
 msgid ""
 "The invoice mixes PPN besaran tertentu or a rate other than 12% with other PPN; Coretax needs a "
 "separate faktur for each."
@@ -3184,19 +3184,26 @@ msgstr "Tidak ada retur pembelian masa %(period)s yang dapat dilaporkan ke Coret
 msgid "No sales invoice of %(period)s can be reported to Coretax."
 msgstr "Tidak ada faktur penjualan masa %(period)s yang dapat dilaporkan ke Coretax."
 
-#: apps/invoicing/views.py:465
+#: apps/invoicing/views.py:467
+#, python-format
+msgid "There are no retail sales of %(period)s to report in total, or the organization has no NPWP."
+msgstr ""
+"Tidak ada penjualan eceran masa %(period)s yang dilaporkan secara digunggung, atau organisasi "
+"belum memiliki NPWP."
+
+#: apps/invoicing/views.py:481
 msgid "Faktur Pajak number recorded."
 msgstr "Nomor Faktur Pajak dicatat."
 
-#: apps/invoicing/views.py:469
+#: apps/invoicing/views.py:485
 msgid "Enter the Faktur Pajak number."
 msgstr "Isi nomor Faktur Pajak."
 
-#: apps/invoicing/views.py:503
+#: apps/invoicing/views.py:519
 msgid "Coretax connection saved."
 msgstr "Koneksi Coretax disimpan."
 
-#: apps/invoicing/views.py:530 apps/taxes/views.py:284 templates/invoicing/invoice_detail.html:29
+#: apps/invoicing/views.py:546 apps/taxes/views.py:284 templates/invoicing/invoice_detail.html:29
 #, python-format
 msgid "Sent to Coretax: %(status)s."
 msgstr "Dikirim ke Coretax: %(status)s."
@@ -6455,7 +6462,7 @@ msgstr "PPN 12%%"
 #: templates/invoicing/invoice_list.html:19 templates/invoicing/return_detail.html:37
 #: templates/ledger/journal_detail.html:38 templates/payroll/run_detail.html:21
 #: templates/reports/aging.html:7 templates/reports/aging.html:13 templates/reports/notes.html:56
-#: templates/reports/vat.html:15 templates/reports/vat.html:23
+#: templates/reports/vat.html:15 templates/reports/vat.html:24
 msgid "Total"
 msgstr "Total"
 
@@ -8358,13 +8365,20 @@ msgstr "Penjualan eceran yang dilaporkan secara digunggung"
 #: templates/reports/vat.html:19
 msgid ""
 "Included above. Sales to customers without an NPWP or identity document: report each month's total"
-" in the SPT Masa PPN instead of individual fakturs; they are left out of the Coretax files."
+" in the SPT Masa PPN instead of individual fakturs; they are left out of the Faktur files. Each "
+"month's XML imports them into the SPT Masa PPN draft in Coretax (1.A5, 1.A9 for facilities, 1.B "
+"without PPN). Returns of these sales are not in the file: subtract them in Coretax."
 msgstr ""
 "Sudah termasuk di atas. Penjualan kepada pelanggan tanpa NPWP atau dokumen identitas: laporkan "
 "jumlah tiap bulan pada SPT Masa PPN, bukan faktur satu per satu; penjualan ini tidak dimasukkan ke"
-" berkas Coretax."
+" berkas Faktur. XML tiap bulan mengimpornya ke konsep SPT Masa PPN di Coretax (1.A5, 1.A9 untuk "
+"fasilitas, 1.B tanpa PPN). Retur atas penjualan ini tidak ada dalam berkas: kurangkan di Coretax."
 
-#: templates/reports/vat.html:26
+#: templates/reports/vat.html:23
+msgid "SPT PPN digunggung"
+msgstr "SPT PPN digunggung"
+
+#: templates/reports/vat.html:27
 msgid ""
 "Calculated from issued invoices (excluding voided ones), less returns in the month of the return. "
 "PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer and is not payable. PPN "
@@ -8378,7 +8392,7 @@ msgstr ""
 "ditampilkan tersendiri (pemungut PPN juga memungutnya); PPnBM tidak pernah dikreditkan. Hanya PKP "
 "yang dapat mengkreditkan PPN masukan."
 
-#: templates/reports/vat.html:26
+#: templates/reports/vat.html:27
 msgid "This organization is not a PKP yet."
 msgstr "Organisasi ini belum PKP."
 
