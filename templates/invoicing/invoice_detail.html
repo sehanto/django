@@ -34,6 +34,16 @@
       </form>
       {% endif %}
     {% endif %}
+    {% if invoice.special_document and invoice.status != invoice.Status.DRAFT %}
+      <p class="small text-secondary mt-2 mb-0"><i class="bi bi-file-earmark-text me-1"></i>{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
+      {% if can_write and not invoice.special_document_number and invoice.status != invoice.Status.VOID %}
+      <form method="post" action="{% url 'invoicing:special_document' kind invoice.pk %}" class="row g-2 align-items-end mt-1" style="max-width: 560px;">{% csrf_token %}
+        <div class="col"><label class="form-label small mb-1" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-control form-control-sm" maxlength="100" required></div>
+        <div class="col-auto"><label class="form-label small mb-1" for="special-date">{% translate "Document date" %}</label><input id="special-date" type="date" name="date" class="form-control form-control-sm" required></div>
+        <div class="col-auto"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></div>
+      </form>
+      {% endif %}
+    {% endif %}
     {% if invoice.journal_entry %}<p class="small text-secondary mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
   </div>
   <div class="col-xl-4">

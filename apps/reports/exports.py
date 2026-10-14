@@ -27,7 +27,7 @@ from apps.core.sanitizers import csv_safe
 from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
-from apps.taxes.models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
+from apps.taxes.models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, TaxRate, WithholdingDeposit
 from apps.payroll.models import Employee, PayrollRun, Payslip, PriorIncome
 from apps.tenants.models import BusinessPlace, Organization
 
@@ -120,8 +120,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (ENTRY_LINES, JournalLine, "entry__organization", ("entry__date", "entry__number", "id")),
     (
         Table("contacts.csv", gettext_lazy("Customers and suppliers."), (
-            C("name"), C("kind"), C("npwp"), C("nitku"), C("id_type"), C("id_number"), C("country"),
-            C("email"), C("phone"), C("address"), C("city"),
+            C("name"), C("kind"), C("npwp"), C("nitku"), C("id_type"), C("id_number"), C("country"), C("foreign_tin"),
+            C("treaty_document"), C("email"), C("phone"), C("address"), C("city"),
             C("payment_terms_days"), C("document_language"), C("vat_collector"), C("notes"), C("is_active"),
         )),
         Contact, "organization", ("name", "id"),
@@ -154,7 +154,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("contact_address"), C("contact_city"), C("buyer_vat_collector"), C("seller_name"), C("seller_npwp"), C("seller_nitku"),
             C("date"), C("due_date"), C("reference"),
             C("tax_invoice_number"), C("delivery_kind"), C("business_place__nitku", gettext_lazy("Place of business NITKU")),
-            C("vat_facility"), C("facility_info"), C("facility_stamp"),
+            C("vat_facility"), C("facility_info"), C("facility_stamp"), C("special_document"), C("special_document_number"),
+            C("special_document_date"),
             C("supporting_document"), C("supporting_document_date"),
             C("status"), C("subtotal"), C("tax_amount"), C("vat_not_collected"), C("luxury_tax_amount"), C("total"), C("amount_paid"),
             C("amount_credited"), C("journal_entry__number", gettext_lazy("Journal entry")), C("notes"),
@@ -198,7 +199,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("amount"), C("method"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
             C("vat_withheld"), C("income_tax_kind"), C("income_tax_withheld"),
             C("income_tax_account__code", gettext_lazy("Prepaid tax account code")), C("income_tax_base"), C("income_tax_rate"),
-            C("withholding_slip"), C("reference"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
+            C("income_tax_object"), C("withholding_slip"), C("reference"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         Payment, "organization", ("date", "id"),
     ),
@@ -263,6 +264,25 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
         )),
         WithholdingDeposit, "organization", ("year", "month", "kind"),
+    ),
+    (
+        Table("import_declarations.csv", gettext_lazy("Imports (PIB) and the taxes paid at customs."), (
+            C("number"), C("date"), C("supplier_name"), C("bill__number", gettext_lazy("Bill")), C("customs_value"), C("import_duty"),
+            C("vat"), C("luxury_tax"), C("pph22"), C("cost_account__code", gettext_lazy("Cost account code")),
+            C("prepaid_tax_account__code", gettext_lazy("Prepaid tax account code")),
+            C("cash_account__code", gettext_lazy("Cash/bank account code")), C("ntpn"),
+            C("journal_entry__number", gettext_lazy("Journal entry")), C("status"),
+        )),
+        ImportDeclaration, "organization", ("date", "id"),
+    ),
+    (
+        Table("self_deposits.csv", gettext_lazy("Final income tax deposited on your own income."), (
+            C("tax_object"), C("year"), C("month"), C("tax_base"), C("rate"), C("amount"), C("invoice__number", gettext_lazy("Invoice")),
+            C("document_number"), C("document_date"), C("paid_on"), C("ntpn"), C("cash_account__code", gettext_lazy("Cash/bank account code")),
+            C("expense_entry__number", gettext_lazy("Expense entry")), C("payment_entry__number", gettext_lazy("Payment entry")),
+            C("slip_number"), C("status"),
+        )),
+        SelfDeposit, "organization", ("year", "month", "id"),
     ),
     (
         Table("employees.csv", gettext_lazy("Employees."), (

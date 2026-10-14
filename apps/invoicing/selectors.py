@@ -153,6 +153,17 @@ def vat_summary(organization, year: int) -> list[dict]:
             target["luxury"] += sign * row["luxury"]
     for row, sign in [*((r, 1) for r in collected), *((r, -1) for r in collected_returns)]:
         months[row["date__month"]]["collected"] += sign * row["tax"]
+    if organization.is_pkp:  # PPN impor paid at customs (PIB): input PPN of the PIB's month
+        from apps.taxes.models import ImportDeclaration  # taxes reads invoicing too
+
+        imports = (
+            ImportDeclaration.objects.for_organization(organization)
+            .filter(date__year=year, status=ImportDeclaration.Status.POSTED)
+            .values("date__month").annotate(tax=Sum("vat"), base=Sum("customs_value"))
+        )
+        for row in imports:
+            months[row["date__month"]]["input"] += row["tax"]
+            months[row["date__month"]]["input_base"] += row["base"]
     # A retailer's sales to end consumers without an NPWP or identity document are reported in
     # one monthly total (digunggung) instead of individual fakturs: shown here as a breakdown.
     for month in months.values():

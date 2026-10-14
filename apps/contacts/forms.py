@@ -18,7 +18,7 @@ class ContactForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Contact
         fields = [
-            "kind", "name", "npwp", "nitku", "id_type", "id_number", "country", "email", "phone", "address", "city", "payment_terms_days",
+            "kind", "name", "npwp", "nitku", "id_type", "id_number", "country", "foreign_tin", "treaty_document", "email", "phone", "address", "city", "payment_terms_days",
             "document_language", "vat_collector", "notes", "is_active",
         ]
         widgets = {"address": forms.Textarea(attrs={"rows": 2}), "notes": forms.Textarea(attrs={"rows": 2})}

@@ -522,13 +522,12 @@ def test_the_months_retail_total_as_an_spt_ppn_import(books, customer, account, 
             InvoiceLineInput("Beras", account("4-1000"), D("1"), D("50000")),
         ],
     ))
-    rows, returns = coretax.month_retail(books, 2026, 3)
+    rows = coretax.month_retail(books, 2026, 3)
     assert [(r.trx_code, r.goods_or_services, r.base, r.other, r.vat) for r in rows] == [
         ("Normal", "A", D("120000"), D("110000"), D("13200")),
         ("Normal", "B", D("10000"), D("9166.67"), D("1100")),
         ("NoVAT", "A", D("50000"), D("50000"), D("0")),
     ]
-    assert returns == []
     response = auth_client.get(reverse("invoicing:month_retail_coretax", args=[2026, 3]))
     root = ET.fromstring(response.content)
     assert [child.tag for child in root] == ["TIN", "TaxPeriodMonth", "TaxPeriodYear", "ListOfRetailInvoice"]

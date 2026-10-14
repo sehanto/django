@@ -156,15 +156,69 @@ NON_EMPLOYEE_PPH_21 = {
 }
 
 
+# "BPSP Excel to XML v.3": final income tax deposited on one's own income (rent, construction).
+SELF_DEPOSIT = {
+    "28-403-02": ("Persewaan Tanah dan/atau Bangunan", Decimal("10")),
+    "28-409-10": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Kecil) sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2")),
+    "28-409-10": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Kecil) yang Disetor Sendiri", Decimal("2")),
+    "28-409-11": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Menengah dan Besar) sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("3")),
+    "28-409-22": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("1.75")),
+    "28-409-22": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("1.75")),
+    "28-409-23": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha Atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("4")),
+    "28-409-23": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha Atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("4")),
+    "28-409-24": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Selain Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("2.65")),
+    "28-409-24": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Selain Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2.65")),
+    "28-409-25": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha (Disetor Sendiri)", Decimal("2.65")),
+    "28-409-25": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2.65")),
+    "28-409-26": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha (Disetor Sendiri)", Decimal("4")),
+    "28-409-26": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("4")),
+    "28-409-27": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("3.5")),
+    "28-409-27": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("3.5")),
+    "28-409-28": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("6")),
+    "28-409-28": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("6")),
+}
+# "BPNR Excel to XML v.2": PPh 26 on payments to non-residents other than employees: (name, deemed %, rate %).
+PPH_26 = {
+    "27-100-01": ("Sewa dan Penghasilan Lain Sehubungan dengan Penggunaan Harta (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-02": ("Hadiah dan Penghargaan (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-03": ("Pensiun dan pembayaran berkala lainnya (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-04": ("Keuntungan Karena Pembebasan Utang (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-05": ("Penghasilan dari Penjualan atau Pengalihan Harta di Indonesia (PPh Pasal 26)", Decimal("25"), Decimal("20")),
+    "27-100-07": ("Penghasilan dari Penjualan/Pengalihan Saham (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-08": ("Penghasilan dari Penjualan/Pengalihan Saham tidak di Bursa Efek (PPh Pasal 26)", Decimal("25"), Decimal("20")),
+    "27-100-09": ("Penjualan atau Pengalihan Saham Perusahaan Antara (Conduit Company atau Special Purpose Company)(PPh Pasal 26)", Decimal("25"), Decimal("20")),
+    "27-100-10": ("Sewa dan Penghasilan Lain Sehubungan dengan Penggunaan Harta Sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai Hibah atau Pinjaman Luar Negeri (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-100-11": ("Penghasilan dari Penjualan atau Pengalihan Harta di Indonesia sehubungan pelaksanaan proyek pemerintah yang dibiayai Hibah atau Pinjaman Luar Negeri (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-101-01": ("Dividen (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-102-01": ("Bunga Selain Bunga Obligasi (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-102-02": ("Premi Swap dan Transaksi Lindung Nilai Lainnya (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-102-03": ("Bunga Obligasi (PPh Pasal 26)", Decimal("100"), Decimal("10")),
+    "27-103-01": ("Royalti (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-103-02": ("Royalti dalam rangka pelaksanaan proyek pemerintah yang dibiayai Hibah atau Pinjaman Luar Negeri (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-104-01": ("Imbalan Sehubungan dengan Jasa, Pekerjaan dan Kegiatan", Decimal("100"), Decimal("20")),
+    "27-104-02": ("Imbalan Sehubungan dengan Jasa, Pekerjaan dan Kegiatan dalam rangka pelaksanaan proyek pemerintah yang dibiayai Hibah atau Pinjaman Luar Negeri (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+    "27-107-01": ("Bunga Pinjaman yang Diterima Wajib Pajak Dalam Negeri dan Bentuk Usaha Tetap Melalui Layanan Pinjam Meminjam Uang Berbasis Teknologi Informasi (PPh Pasal 26)", Decimal("100"), Decimal("20")),
+}
+
+
 def codes_for(kind: str) -> dict:
     """{code: name} for a withholding kind (``PayerWithholding`` value)."""
     if kind == "pph21":
         return NON_EMPLOYEE_PPH_21
+    if kind == "pph26":
+        return {code: name for code, (name, _deemed, _rate) in PPH_26.items()}
     table = {"pph23": PPH_23, "pph4_2": PPH_4_2}.get(kind, {})
     return {code: name for code, (name, _rate) in table.items()}
 
 
 def reference_rate(kind: str, code: str) -> Decimal | None:
     """The rate (%) DJP's reference gives the code (Coretax checks it); None for PPh 21 fees."""
+    if kind == "pph26":
+        return PPH_26[code][2] if code in PPH_26 else None
     entry = {"pph23": PPH_23, "pph4_2": PPH_4_2}.get(kind, {}).get(code)
     return entry[1] if entry else None
+
+
+def deemed(kind: str, code: str) -> Decimal:
+    """The share (%) of the gross the tax is on (PPh 26 codes; 100 otherwise)."""
+    return PPH_26[code][1] if kind == "pph26" and code in PPH_26 else Decimal("100")

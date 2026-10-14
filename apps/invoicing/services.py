@@ -32,7 +32,10 @@ from apps.contacts.countries import INDONESIA
 from apps.contacts.models import BuyerIdType
 
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
+from .models import (
+    EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment,
+    ReturnLine, ReturnNote, SpecialDocument,
+)
 from .selectors import invoices_created_this_month
 
 INVOICE_PREFIX = {InvoiceKind.SALES: "INV", InvoiceKind.PURCHASE: "BILL"}
@@ -98,6 +101,48 @@ class Facility:
 
 
 NO_FACILITY = Facility()
+
+
+@dataclass(frozen=True)
+class SpecialDoc:
+    """An export (PEB) or a bill equivalent to a Faktur Pajak, with its document; empty for none."""
+
+    kind: str = SpecialDocument.NONE
+    number: str = ""
+    date: date | None = None
+
+    def apply(self, invoice: Invoice) -> None:
+        invoice.special_document, invoice.special_document_number, invoice.special_document_date = self.kind, self.number.strip(), self.date
+
+
+NO_SPECIAL = SpecialDoc()
+
+
+def _validate_special(kind: str, special: SpecialDoc, facility: Facility, delivery_kind: str, lines, tax_invoice_number: str) -> None:
+    if not special.kind:
+        if special.number or special.date:
+            raise ValidationFailed(_("Choose the kind of document first."))
+        return
+    if special.kind not in SpecialDocument.values:
+        raise ValidationFailed(_("Choose a valid kind of document."))
+    if bool(special.number.strip()) != bool(special.date):
+        raise ValidationFailed(_("Enter both the document number and its date, or neither (they can be added after issue)."))
+    if special.date:
+        ensure_business_date(special.date)
+    if special.kind in EXPORTS:
+        if kind != InvoiceKind.SALES:
+            raise ValidationFailed(_("An export is a sales invoice."))
+        if facility.vat_facility or delivery_kind:
+            raise ValidationFailed(_("An export has no PPN facility or other type of delivery."))
+        if any(line.tax_rate is not None for line in lines):
+            raise ValidationFailed(_("Exports bear PPN at 0%: leave the lines without a PPN rate."))
+    else:
+        if kind != InvoiceKind.PURCHASE:
+            raise ValidationFailed(_("A bill equivalent to a Faktur Pajak is a purchase."))
+        if tax_invoice_number:
+            raise ValidationFailed(_("A bill equivalent to a Faktur Pajak has no Faktur Pajak number."))
+        if not any(line.tax_rate is not None for line in lines):
+            raise ValidationFailed(_("A bill equivalent to a Faktur Pajak carries PPN on at least one line."))
 
 
 def _validate_facility(organization, kind: str, facility: Facility, lines: Sequence[InvoiceLineInput]) -> None:
@@ -214,12 +259,14 @@ def create_invoice(
     facility: Facility = NO_FACILITY,
     delivery_kind: str = DeliveryKind.NORMAL,
     business_place=None,
+    special: SpecialDoc = NO_SPECIAL,
     created_by=None,
 ) -> Invoice:
     due_date = due_date or date + timedelta(days=contact.payment_terms_days)
     _validate_header(organization, kind, contact, date, due_date)
     _validate_facility(organization, kind, facility, lines)
     _validate_delivery(organization, kind, contact, delivery_kind, business_place)
+    _validate_special(kind, special, facility, delivery_kind, lines, tax_invoice_number)
     totals = _validate_lines(organization, kind, lines, charge_vat=not facility.vat_facility)
     _ensure_plan_allows_new_invoice(organization)
     invoice = Invoice(
@@ -236,6 +283,7 @@ def create_invoice(
         created_by=created_by,
     )
     facility.apply(invoice)
+    special.apply(invoice)
     _apply_totals(invoice, totals)
     invoice.save()
     _save_lines(invoice, lines, totals)
@@ -261,6 +309,7 @@ def update_draft_invoice(
     facility: Facility = NO_FACILITY,
     delivery_kind: str = DeliveryKind.NORMAL,
     business_place=None,
+    special: SpecialDoc = NO_SPECIAL,
 ) -> Invoice:
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     _ensure_draft(invoice)
@@ -269,11 +318,13 @@ def update_draft_invoice(
     _validate_header(organization, invoice.kind, contact, date, due_date)
     _validate_facility(organization, invoice.kind, facility, lines)
     _validate_delivery(organization, invoice.kind, contact, delivery_kind, business_place)
+    _validate_special(invoice.kind, special, facility, delivery_kind, lines, tax_invoice_number)
     invoice.delivery_kind, invoice.business_place = delivery_kind, business_place
     totals = _validate_lines(organization, invoice.kind, lines, charge_vat=not facility.vat_facility)
     invoice.contact, invoice.date, invoice.due_date = contact, date, due_date
     invoice.reference, invoice.tax_invoice_number, invoice.notes = reference, tax_invoice_number, notes
     facility.apply(invoice)
+    special.apply(invoice)
     _apply_totals(invoice, totals)
     invoice.save()
     invoice.lines.all().delete()
@@ -347,6 +398,8 @@ def issue_invoice(*, invoice: Invoice, issued_by=None) -> Invoice:
     )
     _validate_facility(invoice.organization, invoice.kind, facility, inputs)
     _validate_delivery(invoice.organization, invoice.kind, invoice.contact, invoice.delivery_kind, invoice.business_place)
+    special = SpecialDoc(invoice.special_document, invoice.special_document_number, invoice.special_document_date)
+    _validate_special(invoice.kind, special, facility, invoice.delivery_kind, inputs, invoice.tax_invoice_number)
     totals = _validate_lines(invoice.organization, invoice.kind, inputs, charge_vat=not invoice.vat_facility)
     if totals.total <= 0:
         raise ValidationFailed(_("The invoice total must be greater than zero."))
@@ -428,7 +481,7 @@ NO_INCOME_TAX = IncomeTaxInput()
 # The liability for income tax we withheld from suppliers, until the monthly deposit.
 PAYER_ROLES = {
     IncomeTaxWithheld.PPH_23: SystemRole.PPH_23_PAYABLE, IncomeTaxWithheld.PPH_4_2: SystemRole.PPH_4_2_PAYABLE,
-    IncomeTaxWithheld.PPH_21: SystemRole.PPH_21_PAYABLE,
+    IncomeTaxWithheld.PPH_21: SystemRole.PPH_21_PAYABLE, IncomeTaxWithheld.PPH_26: SystemRole.PPH_26_PAYABLE,
 }
 
 
@@ -463,9 +516,10 @@ def ensure_period_open(invoice: Invoice, kind: str, on: date) -> None:
         )
 
 
-def _check_tax_object(kind: str, code: str, rate: Decimal | None) -> None:
+def _check_tax_object(kind: str, code: str, rate: Decimal | None, *, treaty: bool = False) -> None:
     """A tax object code must be one of the kind's, at the rate DJP's reference gives it
-    (Coretax rejects a bukti potong whose rate doesn't match its code)."""
+    (Coretax rejects a bukti potong whose rate doesn't match its code); PPh 26 may be lower
+    under a tax treaty, with the supplier's certificate of residence."""
     if not code:
         return
     from apps.taxes.tax_objects import codes_for, reference_rate
@@ -473,6 +527,8 @@ def _check_tax_object(kind: str, code: str, rate: Decimal | None) -> None:
     if code not in codes_for(kind):
         raise ValidationFailed(_("Choose a tax object code of %(tax)s.") % {"tax": IncomeTaxWithheld(kind).label})
     expected = reference_rate(kind, code)
+    if treaty and kind == IncomeTaxWithheld.PPH_26 and rate is not None and rate < expected:
+        return
     if expected is not None and rate is not None and rate != expected:
         raise ValidationFailed(
             _("Tax object %(code)s is withheld at %(rate)s%%.") % {"code": code, "rate": f"{expected.normalize():f}"}
@@ -493,7 +549,7 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
     if income_tax.kind not in allowed:
         if invoice.is_sales:
             raise ValidationFailed(_("Choose which income tax the buyer withheld."))
-        raise ValidationFailed(_("Choose PPh 23, PPh 4(2) or PPh 21 for income tax withheld from a supplier."))
+        raise ValidationFailed(_("Choose PPh 23, PPh 4(2), PPh 21 or PPh 26 for income tax withheld from a supplier."))
     if invoice.is_sales:
         withheld = income_tax.amount
     else:
@@ -502,8 +558,20 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
                 _("The base of the withholding must be more than zero and at most the bill's subtotal (%(amount)s).")
                 % {"amount": localized_rupiah(invoice.subtotal)}
             )
-        _check_tax_object(income_tax.kind, income_tax.object_code, income_tax.rate)
-        if income_tax.kind == IncomeTaxWithheld.PPH_21:
+        treaty = bool(invoice.contact.treaty_document)
+        _check_tax_object(income_tax.kind, income_tax.object_code, income_tax.rate, treaty=treaty)
+        if income_tax.kind == IncomeTaxWithheld.PPH_26:
+            from apps.taxes.tax_objects import deemed
+
+            if not income_tax.object_code:
+                raise ValidationFailed(_("Choose the tax object code of the PPh 26."))
+            if income_tax.rate is None or not ZERO <= income_tax.rate <= Decimal("20"):
+                raise ValidationFailed(_("Enter the PPh 26 rate: 20%, or a treaty's lower rate."))
+            if not income_tax.rate:
+                raise ValidationFailed(_("Under a 0% treaty rate nothing is withheld: record the payment without it and create the BPNR in Coretax."))
+            share = deemed(income_tax.kind, income_tax.object_code)
+            withheld = round_down_rupiah(income_tax.base * share / Decimal("100") * income_tax.rate / Decimal("100"))
+        elif income_tax.kind == IncomeTaxWithheld.PPH_21:
             from apps.payroll.domain import non_employee_pph21  # pure rules
 
             withheld = non_employee_pph21(income_tax.base, has_tin=invoice.party_has_tin)
@@ -887,6 +955,23 @@ def record_tax_invoice_number(*, invoice: Invoice, number: str) -> Invoice:
         raise ValidationFailed(_("A Faktur Pajak number has 17 digits (16 for fakturs from before 2025)."))
     invoice.tax_invoice_number = digits
     invoice.save(update_fields=["tax_invoice_number", "updated_at"])
+    return invoice
+
+
+@transaction.atomic
+def record_special_document(*, invoice: Invoice, number: str, on: date) -> Invoice:
+    """Record the PEB (or the bill's own document) of an issued export or equivalent bill, once."""
+    invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
+    if invoice.status in (Invoice.Status.DRAFT, Invoice.Status.VOID) or not invoice.special_document:
+        raise InvalidStateTransition(_("Only an issued export or bill equivalent to a faktur takes a document this way."))
+    if invoice.special_document_number:
+        raise InvalidStateTransition(_("This invoice already has its document."))
+    number = number.strip()
+    if not number or len(number) > 100 or on is None:
+        raise ValidationFailed(_("Enter the document number and date."))
+    ensure_business_date(on)
+    invoice.special_document_number, invoice.special_document_date = number, on
+    invoice.save(update_fields=["special_document_number", "special_document_date", "updated_at"])
     return invoice
 
 

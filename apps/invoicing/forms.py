@@ -14,9 +14,9 @@ from apps.tenants.models import BusinessPlace
 
 from .coretax_api import ConnectorName
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment
+from .models import EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment, SpecialDocument
 from .selectors import items_for
-from .services import Facility, IncomeTaxInput, InvoiceLineInput, ReturnLineInput, returnable_quantity
+from .services import Facility, IncomeTaxInput, SpecialDoc, InvoiceLineInput, ReturnLineInput, returnable_quantity
 
 FACILITY_SEPARATOR = "|"
 
@@ -54,7 +54,15 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
         help_text=Invoice._meta.get_field("supporting_document").help_text,
     )
     supporting_document_date = BusinessDateField(label=_("Supporting document date"), required=False)
-    FACILITY_FIELDS = ("delivery_kind", "facility_info_choice", "facility_stamp_choice", "supporting_document", "supporting_document_date")
+    special_document = forms.ChoiceField(label=_("Other tax document"), required=False)
+    special_document_number = forms.CharField(
+        label=_("Document no."), max_length=100, required=False, help_text=Invoice._meta.get_field("special_document_number").help_text,
+    )
+    special_document_date = BusinessDateField(label=_("Document date"), required=False)
+    SPECIAL_FIELDS = ("special_document", "special_document_number", "special_document_date")
+    FACILITY_FIELDS = (
+        "delivery_kind", "facility_info_choice", "facility_stamp_choice", "supporting_document", "supporting_document_date", *SPECIAL_FIELDS,
+    )
 
     class Meta:
         model = Invoice
@@ -78,15 +86,28 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
             self.fields["business_place"].help_text = _("Where the sale is made from: its NITKU and address go on the invoice and the faktur.")
         else:
             del self.fields["business_place"]
+        invoice = self.instance
+        if self.organization.is_pkp:
+            kinds = [SpecialDocument.NONE, *EXPORTS] if kind == InvoiceKind.SALES else [SpecialDocument.NONE, SpecialDocument.EQUIVALENT]
+            self.fields["special_document"].choices = [(k.value, k.label) for k in kinds]
+            self.fields["special_document"].help_text = (
+                _("An export is reported with its PEB, not a faktur; PPN is 0% (leave the lines without PPN).") if kind == InvoiceKind.SALES
+                else _("A bill that is itself the tax document (e.g. electricity, telephone): its PPN is credited as a Dokumen Lain.")
+            )
+            if kind == InvoiceKind.PURCHASE:
+                self.fields["special_document_number"].help_text = _("The bill's own number (e.g. its customer or bill number).")
+            if invoice.pk:
+                for name in self.SPECIAL_FIELDS:
+                    self.initial.setdefault(name, getattr(invoice, name))
         if kind == InvoiceKind.PURCHASE or not self.organization.is_pkp:
             del self.fields["tax_invoice_number"]
-            for name in self.FACILITY_FIELDS:
-                del self.fields[name]
+            for name in self.FACILITY_FIELDS:  # a PKP's bills keep the other tax document
+                if name not in self.SPECIAL_FIELDS or not self.organization.is_pkp:
+                    del self.fields[name]
             return
         self.fields["delivery_kind"].help_text = _("A tourist's VAT refund (the customer identified by a foreign passport) or the sale of an asset not originally for sale.")
         self.fields["facility_info_choice"].choices = _facility_choices(ADDITIONAL_INFO)
         self.fields["facility_stamp_choice"].choices = [("", "—")] + _facility_choices(STAMPS)[1:]
-        invoice = self.instance
         if invoice.pk and invoice.vat_facility:
             self.initial.setdefault("facility_info_choice", f"{invoice.vat_facility}{FACILITY_SEPARATOR}{invoice.facility_info}")
             self.initial.setdefault("facility_stamp_choice", f"{invoice.vat_facility}{FACILITY_SEPARATOR}{invoice.facility_stamp}")
@@ -99,19 +120,34 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
         return [field for field in self.visible_fields() if field.name not in self.FACILITY_FIELDS]
 
     @property
+    def tax_section_label(self) -> str:
+        if self.kind == InvoiceKind.SALES:
+            return _("Tax document: Faktur Pajak type, PPN facility, export")
+        return _("Tax document: bill equivalent to a Faktur Pajak")
+
+    @property
     def facility_fields(self):
         return [field for field in self.visible_fields() if field.name in self.FACILITY_FIELDS]
 
     @property
     def shows_facility(self) -> bool:
         """Open the facility section: one is set, or it has errors."""
-        return bool(self.instance.vat_facility or self.instance.delivery_kind or self.initial.get("supporting_document")) or any(
-            name in self.errors for name in self.FACILITY_FIELDS
-        ) or bool(self.data.get(self.add_prefix("facility_info_choice")) or self.data.get(self.add_prefix("delivery_kind")))
+        return bool(
+            self.instance.vat_facility or self.instance.delivery_kind or self.instance.special_document or self.initial.get("supporting_document")
+        ) or any(name in self.errors for name in self.FACILITY_FIELDS) or bool(
+            self.data.get(self.add_prefix("facility_info_choice")) or self.data.get(self.add_prefix("delivery_kind"))
+            or self.data.get(self.add_prefix("special_document"))
+        )
 
     def clean(self):
-        """The services take the facility as one ``facility`` value (services.Facility)."""
+        """The services take the facility and the other tax document as one value each
+        (``services.Facility``, ``services.SpecialDoc``)."""
         cleaned = super().clean()
+        if "special_document" in self.fields:
+            cleaned["special"] = SpecialDoc(
+                kind=cleaned.pop("special_document", "") or "", number=cleaned.pop("special_document_number", "") or "",
+                date=cleaned.pop("special_document_date", None),
+            )
         if "facility_info_choice" not in self.fields:
             return cleaned
         info = cleaned.pop("facility_info_choice", "") or ""
@@ -388,6 +424,11 @@ class ReturnForm(OrganizationFormMixin, BaseForm):
 
 class TaxInvoiceNumberForm(BaseForm):
     number = forms.CharField(label=_("Faktur Pajak number"), max_length=30, help_text=_("As issued by Coretax, e.g. 04002600000012345."))
+
+
+class SpecialDocumentForm(BaseForm):
+    number = forms.CharField(label=_("Document no."), max_length=100, help_text=_("The PEB number, or the bill's own number."))
+    date = BusinessDateField(label=_("Document date"))
 
 
 class CoretaxConnectionForm(BaseForm):

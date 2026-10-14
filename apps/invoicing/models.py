@@ -93,10 +93,26 @@ class DeliveryKind(models.TextChoices):
     ASSET = "09", _("Asset not originally for sale, Art. 16D (code 09)")
 
 
+class SpecialDocument(models.TextChoices):
+    """Deliveries reported with a document other than a Faktur Pajak (Coretax "Dokumen Lain"):
+    exports under a PEB (sales), and purchases whose bill is itself the tax document (dokumen
+    tertentu yang dipersamakan dengan faktur, e.g. electricity or telephone bills)."""
+
+    NONE = "", _("None: a Faktur Pajak")
+    EXPORT_GOODS = "export_goods", _("Export of goods (PEB)")
+    EXPORT_INTANGIBLE = "export_intangible", _("Export of intangible goods")
+    EXPORT_SERVICES = "export_services", _("Export of services")
+    EQUIVALENT = "equivalent", _("Bill equivalent to a Faktur Pajak (e.g. electricity, telephone)")
+
+
+EXPORTS = (SpecialDocument.EXPORT_GOODS, SpecialDocument.EXPORT_INTANGIBLE, SpecialDocument.EXPORT_SERVICES)
+
+
 class Invoice(TenantOwnedModel):
     Status = InvoiceStatus
     VatFacility = VatFacility
     DeliveryKind = DeliveryKind
+    SpecialDocument = SpecialDocument
 
     OPEN_STATUSES = (Status.ISSUED, Status.PARTIAL)
 
@@ -125,6 +141,14 @@ class Invoice(TenantOwnedModel):
     delivery_kind = models.CharField(
         _("type of delivery"), max_length=2, choices=DeliveryKind.choices, default=DeliveryKind.NORMAL, blank=True,
     )
+    special_document = models.CharField(
+        _("other tax document"), max_length=20, choices=SpecialDocument.choices, default=SpecialDocument.NONE, blank=True,
+    )
+    special_document_number = models.CharField(
+        _("document no."), max_length=100, blank=True,
+        help_text=_("The PEB (export declaration) or the bill's own number; it can be added once after issue."),
+    )
+    special_document_date = models.DateField(_("document date"), null=True, blank=True)
     # Where the sale is made from (its NITKU goes on the faktur); empty for the head office.
     business_place = models.ForeignKey(
         "tenants.BusinessPlace", null=True, blank=True, on_delete=models.PROTECT, related_name="invoices",
@@ -182,6 +206,10 @@ class Invoice(TenantOwnedModel):
 
     def __str__(self):
         return self.display_number
+
+    @property
+    def is_export(self) -> bool:
+        return self.special_document in EXPORTS
 
     @property
     def display_number(self) -> str:
@@ -432,11 +460,13 @@ class IncomeTaxWithheld(models.TextChoices):
     # xgettext:no-python-format
     PPH_4_2 = "pph4_2", _("PPh 4(2) final (e.g. 10% on rent of land or buildings)")
     PPH_21 = "pph21", _("PPh 21 (fee to an individual who is not an employee)")
+    # xgettext:no-python-format
+    PPH_26 = "pph26", _("PPh 26 (supplier abroad, 20% or the treaty rate)")
 
 
 # Which the customer withholds from us (receipts), and which we withhold from suppliers (disbursements).
 RECEIPT_WITHHOLDING = (IncomeTaxWithheld.PPH_22, IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_FINAL)
-PAYER_WITHHOLDING = (IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_4_2, IncomeTaxWithheld.PPH_21)
+PAYER_WITHHOLDING = (IncomeTaxWithheld.PPH_23, IncomeTaxWithheld.PPH_4_2, IncomeTaxWithheld.PPH_21, IncomeTaxWithheld.PPH_26)
 
 
 class Payment(TenantOwnedModel):

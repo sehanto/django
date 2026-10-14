@@ -34,6 +34,7 @@ from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from xml.etree import ElementTree as ET
 
+from django.db import models
 from django.utils.translation import gettext as _
 
 from apps.contacts.models import VatCollector
@@ -41,7 +42,7 @@ from apps.contacts.validators import npwp16
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO
 
-from .models import Invoice, InvoiceKind, Item, ReturnNote
+from .models import Invoice, InvoiceKind, Item, ReturnNote, SpecialDocument
 
 CENTS = Decimal("0.01")
 HUNDRED = Decimal("100")
@@ -136,6 +137,8 @@ def exportable_problem(note: ReturnNote) -> str | None:
         return _("Only a VAT-registered business (PKP) reports returns of input VAT.")
     if len(tin(organization.npwp)) != 16:
         return _("Enter the organization's NPWP in the settings.")
+    if invoice.special_document == SpecialDocument.EQUIVALENT:
+        return _("A return of a bill equivalent to a Faktur Pajak goes in the Retur Dokumen Lain Masukan file.")
     if len(tin(invoice.party_npwp)) != 16:
         return _("The supplier's NPWP was not on the bill when it was issued.")
     if len("".join(ch for ch in invoice.tax_invoice_number if ch.isdigit())) not in (16, 17):
@@ -269,7 +272,7 @@ def _taxed_lines(invoice: Invoice):
 def is_aggregated(invoice: Invoice) -> bool:
     """A PKP retailer's sale to an end consumer without an NPWP or identity document: reported
     in the month's total (Faktur Pajak digunggung) in the SPT Masa PPN instead of uploaded."""
-    return invoice.is_sales and invoice.organization.is_retailer and buyer_identity(invoice) is None
+    return invoice.is_sales and invoice.organization.is_retailer and not invoice.is_export and buyer_identity(invoice) is None
 
 
 def invoice_problem(invoice: Invoice) -> str | None:
@@ -283,6 +286,8 @@ def invoice_problem(invoice: Invoice) -> str | None:
         return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
     if len(tin(organization.npwp)) != 16:
         return _("Enter the organization's NPWP in the settings.")
+    if invoice.is_export:
+        return _("An export is reported with its PEB in the Dokumen Lain Keluaran file, not as a faktur.")
     if is_aggregated(invoice):
         return _("A retail sale to a customer without an NPWP or identity document: it is reported in the month's total (digunggung) in the SPT Masa PPN, not as its own faktur.")
     if buyer_identity(invoice) is None:
@@ -306,14 +311,14 @@ class LineAmounts:
     luxury: Decimal
 
 
-def _line_base(line) -> Decimal:
-    gross = line.unit_price * line.quantity
+def _line_base(line, quantity: Decimal | None = None) -> Decimal:
+    gross = line.unit_price * (line.quantity if quantity is None else quantity)
     return _round(gross - _round(gross * line.discount_percent / HUNDRED))
 
 
-def line_amounts(line) -> LineAmounts:
-    """A taxed line's figures as Coretax shows them."""
-    gross = line.unit_price * line.quantity
+def line_amounts(line, quantity: Decimal | None = None) -> LineAmounts:
+    """A taxed line's figures as Coretax shows them (for ``quantity`` of it, e.g. returned)."""
+    gross = line.unit_price * (line.quantity if quantity is None else quantity)
     discount = _round(gross * line.discount_percent / HUNDRED)
     base = _round(gross - discount)
     other = _round(base * line.tax_dpp_numerator / line.tax_dpp_denominator)
@@ -395,7 +400,10 @@ ANONYMOUS_NIK = "0" * 16
 
 @dataclass(frozen=True)
 class RetailRow:
-    invoice: Invoice
+    serial: int  # numeric (xs:long): the invoice's or the return's id
+    date: date
+    buyer: str
+    info: str  # the document number
     trx_code: str
     goods_or_services: str
     base: Decimal
@@ -404,42 +412,55 @@ class RetailRow:
     luxury: Decimal
 
 
-def month_retail(organization, year: int, month: int) -> tuple[list[RetailRow], list[ReturnNote]]:
+def _retail_group(invoice: Invoice, line) -> tuple[str, str]:
+    code = (invoice.vat_facility or RETAIL_NORMAL) if line.tax_rate_percent is not None else RETAIL_NO_VAT
+    return code, SERVICES if line.item_id and line.item.type == Item.Type.SERVICE else GOODS
+
+
+def _retail_rows(serial, on, buyer, info, invoice, quantities, sign) -> list[RetailRow]:
+    """One row per kind of delivery of ``quantities`` ({line: quantity}) of the invoice's lines."""
+    groups: dict[tuple[str, str], list[Decimal]] = {}
+    for line, quantity in quantities:
+        key = _retail_group(invoice, line)
+        if key[0] == RETAIL_NO_VAT:
+            base = _line_base(line, quantity)
+            amounts = [base, base, ZERO, ZERO]
+        else:
+            a = line_amounts(line, quantity)
+            amounts = [a.base, a.other, a.vat, a.luxury]
+        totals = groups.setdefault(key, [ZERO] * 4)
+        for i, value in enumerate(amounts):
+            totals[i] += value
+    return [
+        RetailRow(serial, on, buyer, info, code, kind, *(sign * value for value in totals))
+        for (code, kind), totals in groups.items()
+    ]
+
+
+def month_retail(organization, year: int, month: int) -> list[RetailRow]:
     """A retailer's sales of the month to anonymous end consumers, one row per invoice and kind
-    of delivery (taxed, facility or without PPN; goods or services), and the month's returns
-    of such sales (to be subtracted in Coretax by hand: the template has no returns)."""
-    invoices = [
-        invoice for invoice in Invoice.objects.for_organization(organization).filter(
-            kind=InvoiceKind.SALES, date__year=year, date__month=month,
-            status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
-        ).order_by("date", "id")
-        if is_aggregated(invoice)
-    ]
+    of delivery (taxed, facility or without PPN; goods or services). Returns of such sales
+    recorded in the month subtract their share as negative rows (the PPN of a return reduces
+    the period of the return; DJP's template has no return field of its own)."""
     rows = []
+    invoices = Invoice.objects.for_organization(organization).filter(
+        kind=InvoiceKind.SALES, date__year=year, date__month=month,
+        status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
+    ).order_by("date", "id")
     for invoice in invoices:
-        groups: dict[tuple[str, str], list] = {}
-        for line in invoice.lines.select_related("item").order_by("id"):
-            taxed = line.tax_rate_percent is not None
-            code = (invoice.vat_facility or RETAIL_NORMAL) if taxed else RETAIL_NO_VAT
-            kind = SERVICES if line.item_id and line.item.type == Item.Type.SERVICE else GOODS
-            groups.setdefault((code, kind), []).append(line)
-        for (code, kind), lines in groups.items():
-            if code == RETAIL_NO_VAT:
-                base = sum((_line_base(l) for l in lines), ZERO)
-                rows.append(RetailRow(invoice, code, kind, base, base, ZERO, ZERO))
-                continue
-            amounts = [line_amounts(l) for l in lines]
-            rows.append(RetailRow(
-                invoice, code, kind, sum((a.base for a in amounts), ZERO), sum((a.other for a in amounts), ZERO),
-                sum((a.vat for a in amounts), ZERO), sum((a.luxury for a in amounts), ZERO),
-            ))
-    returns = [
-        note for note in ReturnNote.objects.for_organization(organization).filter(
-            kind=InvoiceKind.SALES, date__year=year, date__month=month, status=ReturnNote.Status.POSTED,
-        ).select_related("invoice", "invoice__organization").order_by("date", "id")
-        if is_aggregated(note.invoice)
-    ]
-    return rows, returns
+        if is_aggregated(invoice):
+            lines = invoice.lines.select_related("item").order_by("id")
+            rows += _retail_rows(invoice.pk, invoice.date, invoice.party_name, invoice.number, invoice,
+                                 [(line, line.quantity) for line in lines], 1)
+    notes = ReturnNote.objects.for_organization(organization).filter(
+        kind=InvoiceKind.SALES, date__year=year, date__month=month, status=ReturnNote.Status.POSTED,
+    ).select_related("invoice", "invoice__organization").order_by("date", "id")
+    for note in notes:
+        if is_aggregated(note.invoice):
+            returned = [(r.invoice_line, r.quantity) for r in note.lines.select_related("invoice_line__item").order_by("id")]
+            rows += _retail_rows(note.pk, note.date, note.invoice.party_name, f"Retur {note.number} atas {note.invoice.number}",
+                                 note.invoice, returned, -1)
+    return rows
 
 
 def build_retail_xml(organization, year: int, month: int, rows: list[RetailRow]) -> bytes:
@@ -453,14 +474,209 @@ def build_retail_xml(organization, year: int, month: int, rows: list[RetailRow])
     for row in rows:
         element = ET.SubElement(listing, "RetailInvoice")
         for tag, value in [
-            ("TrxCode", row.trx_code), ("BuyerName", row.invoice.party_name or "Konsumen akhir"), ("BuyerIdOpt", "NIK"),
+            ("TrxCode", row.trx_code), ("BuyerName", row.buyer or "Konsumen akhir"), ("BuyerIdOpt", "NIK"),
             ("BuyerIdNumber", ANONYMOUS_NIK), ("GoodServiceOpt", row.goods_or_services),
-            ("SerialNo", str(row.invoice.pk)),  # numeric (xs:long): the invoice number goes in Info
+            ("SerialNo", str(row.serial)),  # numeric (xs:long): the document number goes in Info
             # Whole rupiah (xs:int; DJP's converter rounds them).
-            ("TransactionDate", row.invoice.date.isoformat()), ("TaxBaseSellingPrice", _rupiah(row.base)),
+            ("TransactionDate", row.date.isoformat()), ("TaxBaseSellingPrice", _rupiah(row.base)),
             ("OtherTaxBaseSellingPrice", _rupiah(row.other)), ("VAT", _rupiah(row.vat)), ("STLG", _rupiah(row.luxury)),
-            ("Info", row.invoice.number),
+            ("Info", row.info),
         ]:
             _text(element, tag, value)
     ET.indent(root, space="\t")
     return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
+
+
+# SPT Masa PPN "Dokumen Lain": deliveries and acquisitions on a document other than a Faktur
+# Pajak, in DJP's templates ("Create DOk Lain Keluaran/Masukan", "Retur DOk Lain Masukan" and
+# their sample XML). Codes from the templates' reference sheets: TransactionType 02 export,
+# 03 import, 04 purchase; TransactionDetail 11-13 exports of goods/intangibles/services, 14 import
+# of goods; TransactionDocument 4/5 export notice of goods/of services, 6 import notice and
+# payment (PIB), 8 special documents.
+EXPORT_CODES = {  # special document: (TransactionDetail, TransactionDocument)
+    SpecialDocument.EXPORT_GOODS: ("11", "4"), SpecialDocument.EXPORT_INTANGIBLE: ("12", "5"),
+    SpecialDocument.EXPORT_SERVICES: ("13", "5"),
+}
+
+
+def _issued(queryset):
+    return queryset.filter(status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+
+
+def special_problem(invoice: Invoice) -> str | None:
+    if not invoice.organization.is_pkp:
+        return _("Only a VAT-registered business (PKP) reports Dokumen Lain.")
+    if len(tin(invoice.organization.npwp)) != 16:
+        return _("Enter the organization's NPWP in the settings.")
+    if not invoice.special_document_number:
+        return _("%(number)s: enter its document (PEB or the bill's own number) first.") % {"number": invoice.number}
+    return None
+
+
+def month_exports(organization, year: int, month: int) -> tuple[list[Invoice], list[str]]:
+    """Exports reported in the month: by the date of their export declaration (PEB); those of
+    the month without one yet are listed as problems."""
+    exports = _issued(Invoice.objects.for_organization(organization).filter(kind=InvoiceKind.SALES, special_document__in=list(EXPORT_CODES)))
+    rows = list(exports.filter(special_document_date__year=year, special_document_date__month=month).order_by("special_document_date", "id"))
+    problems = [
+        _("%(number)s: enter its document (PEB or the bill's own number) first.") % {"number": i.number}
+        for i in exports.filter(special_document_number="", date__year=year, date__month=month)
+    ]
+    return rows, problems
+
+
+def build_exports_xml(organization, invoices) -> bytes:
+    root = ET.Element("SpecialDocBulk", {
+        "xsi:noNamespaceSchemaLocation": "schema.xsd", "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    })
+    _text(root, "TIN", tin(organization.npwp))
+    listing = ET.SubElement(root, "ListOfSpecialDoc")
+    for invoice in invoices:
+        detail, document = EXPORT_CODES[invoice.special_document]
+        element = ET.SubElement(listing, "SpecialDoc")
+        for tag, value in [
+            ("TransactionType", "02"), ("TransactionDetail", detail), ("TransactionDocument", document),
+            ("AdditionalInformation", None),  # only for codes 07/08
+            ("DocumentNumber", invoice.special_document_number), ("DocumentDate", invoice.special_document_date.isoformat()),
+            ("Reference", None), ("BuyerTIN", NO_TIN), ("BuyerName", invoice.party_name),
+            ("BuyerAddress", invoice.contact_address or invoice.contact.address or "-"), ("TaxBase", _rupiah(invoice.subtotal)),
+            ("VAT", "0"), ("STLG", "0"),  # exports bear PPN at 0%
+        ]:
+            _text(element, tag, value)
+    ET.indent(root, space="\t")
+    return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
+
+
+@dataclass(frozen=True)
+class SpecialInput:
+    number: str
+    date: date
+    trx_type: str
+    trx_code: str
+    trx_document: str
+    base: Decimal
+    vat: Decimal
+    luxury: Decimal
+    seller_tin: str
+    seller_name: str
+
+
+def _taxed_base(invoice: Invoice, quantities=None) -> tuple[Decimal, Decimal, Decimal]:
+    """(DPP, PPN, PPnBM) of the invoice's taxed lines (or of ``quantities`` {line id: qty})."""
+    base = vat = luxury = ZERO
+    for line in invoice.lines.order_by("id"):
+        if line.tax_rate_percent is None or (quantities is not None and line.pk not in quantities):
+            continue
+        a = line_amounts(line, None if quantities is None else quantities[line.pk])
+        base, vat, luxury = base + a.other, vat + a.vat, luxury + a.luxury
+    return base, vat, luxury
+
+
+def month_special_inputs(organization, year: int, month: int) -> tuple[list[SpecialInput], list[str]]:
+    """The month's Dokumen Lain Masukan: PIBs (PPN impor) and bills equivalent to a faktur
+    (by their document's date), with what keeps others out."""
+    from apps.taxes.models import ImportDeclaration  # taxes reads invoicing too
+
+    rows, problems = [], []
+    for pib in ImportDeclaration.objects.for_organization(organization).filter(
+        date__year=year, date__month=month, status=ImportDeclaration.Status.POSTED,
+    ).order_by("date", "id"):
+        rows.append(SpecialInput(pib.number, pib.date, "03", "14", "6", pib.customs_value, pib.vat, pib.luxury_tax, NO_TIN, pib.supplier_name))
+    bills = _issued(Invoice.objects.for_organization(organization).filter(kind=InvoiceKind.PURCHASE, special_document=SpecialDocument.EQUIVALENT))
+    for bill in bills.filter(special_document_date__year=year, special_document_date__month=month).order_by("special_document_date", "id"):
+        base, vat, luxury = _taxed_base(bill)
+        rows.append(SpecialInput(bill.special_document_number, bill.special_document_date, "04", "01", "8", base, vat, luxury,
+                                 tin(bill.party_npwp) if len(tin(bill.party_npwp)) == 16 else NO_TIN, bill.party_name))
+    for bill in bills.filter(special_document_number="", date__year=year, date__month=month):
+        problems.append(_("%(number)s: enter its document (PEB or the bill's own number) first.") % {"number": bill.number})
+    return rows, problems
+
+
+def build_special_inputs_xml(organization, rows: list[SpecialInput]) -> bytes:
+    root = ET.Element("InputSpecialDocBulk", {
+        "xsi:noNamespaceSchemaLocation": "SpecialInput.xsd", "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    })
+    _text(root, "TIN", tin(organization.npwp))
+    listing = ET.SubElement(root, "ListOfSpecialDoc")
+    for row in rows:
+        element = ET.SubElement(listing, "SpecialDoc")
+        for tag, value in [
+            ("SpecialDocNo", row.number), ("SpecialDocDate", row.date.isoformat()), ("TrxType", row.trx_type), ("TrxCode", row.trx_code),
+            ("TrxDocument", row.trx_document), ("TaxPeriodMonth", str(row.date.month)), ("TaxPeriodYear", str(row.date.year)),
+            ("TotalTaxBase", _rupiah(row.base)), ("TotalVAT", _rupiah(row.vat)), ("TotalSTLG", _rupiah(row.luxury)),
+            ("SellerTin", row.seller_tin), ("SellerName", row.seller_name),
+        ]:
+            _text(element, tag, value)
+    ET.indent(root, space="\t")
+    return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
+
+
+def month_special_returns(organization, year: int, month: int) -> list[ReturnNote]:
+    """Returns of the month on bills equivalent to a faktur (Retur Dokumen Lain Masukan)."""
+    return list(ReturnNote.objects.for_organization(organization).filter(
+        kind=InvoiceKind.PURCHASE, date__year=year, date__month=month, status=ReturnNote.Status.POSTED,
+        invoice__special_document=SpecialDocument.EQUIVALENT,
+    ).exclude(invoice__special_document_number="").select_related("invoice").order_by("date", "id"))
+
+
+def build_special_returns_xml(organization, notes) -> bytes:
+    root = ET.Element("InputSpecialDocReturn")
+    _text(root, "TIN", tin(organization.npwp))
+    listing = ET.SubElement(root, "InputReturnDataList")
+    for note in notes:
+        bill = note.invoice
+        base, vat, luxury = _taxed_base(bill, {line.invoice_line_id: line.quantity for line in note.lines.all()})
+        element = ET.SubElement(listing, "InputReturnData")
+        for tag, value in [
+            ("DocumentNumber", bill.special_document_number), ("ReturnDocumentNumber", note.number), ("TransactionType", "04"),
+            ("DocumentType", "01"), ("TransactionDetail", "01"), ("TransactionDocument", "08"), ("DocumentDate", note.date.isoformat()),
+            ("Period", str(note.date.month)), ("Year", str(note.date.year)),
+            ("SellerTIN", tin(bill.party_npwp) if len(tin(bill.party_npwp)) == 16 else NO_TIN), ("SellerTaxpayerName", bill.party_name),
+            ("ReturnTaxBase", _rupiah(base)), ("ReturnVAT", _rupiah(vat)), ("ReturnSTLG", _rupiah(luxury)),
+        ]:
+            _text(element, tag, value)
+    ET.indent(root, space="\t")
+    return b'<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="utf-8")
+
+
+class SpecialFile(models.TextChoices):
+    """The Dokumen Lain files of a month."""
+
+    OUTPUT = "keluaran", "Dokumen Lain Keluaran"
+    INPUT = "masukan", "Dokumen Lain Masukan"
+    INPUT_RETURNS = "retur-masukan", "Retur Dokumen Lain Masukan"
+
+
+@dataclass(frozen=True)
+class SpecialMonth:
+    month: int
+    exports: int
+    inputs: int
+    returns: int
+    problems: list[str]
+
+
+def special_months(organization, year: int) -> list[SpecialMonth]:
+    """The months of a year with Dokumen Lain to report (PKP only)."""
+    if not organization.is_pkp:
+        return []
+    months = []
+    for month in range(1, 13):
+        exports, export_problems = month_exports(organization, year, month)
+        inputs, input_problems = month_special_inputs(organization, year, month)
+        returns = month_special_returns(organization, year, month)
+        if exports or inputs or returns or export_problems or input_problems:
+            months.append(SpecialMonth(month, len(exports), len(inputs), len(returns), export_problems + input_problems))
+    return months
+
+
+def special_file(organization, year: int, month: int, kind: str) -> bytes | None:
+    """A month's Dokumen Lain file, or None when it has nothing to report."""
+    if kind == SpecialFile.OUTPUT:
+        rows, _problems = month_exports(organization, year, month)
+        return build_exports_xml(organization, rows) if rows else None
+    if kind == SpecialFile.INPUT:
+        rows, _problems = month_special_inputs(organization, year, month)
+        return build_special_inputs_xml(organization, rows) if rows else None
+    notes = month_special_returns(organization, year, month)
+    return build_special_returns_xml(organization, notes) if notes else None

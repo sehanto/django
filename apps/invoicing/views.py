@@ -20,7 +20,10 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
 from . import coretax, coretax_sync, services
 from .coretax_api import ConnectorName
-from .forms import CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, TaxInvoiceNumberForm, VoidForm, line_inputs
+from .forms import (
+    CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, SpecialDocumentForm, TaxInvoiceNumberForm, VoidForm,
+    line_inputs,
+)
 from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
@@ -462,13 +465,43 @@ class MonthRetailCoretaxView(OrganizationMixin, View):
     def get(self, request, year, month):
         if not 1 <= month <= 12:
             raise Http404
-        rows, _returns = coretax.month_retail(self.organization, year, month)
+        rows = coretax.month_retail(self.organization, year, month)
         if not rows or len(coretax.tin(self.organization.npwp)) != 16:
             messages.info(request, _("There are no retail sales of %(period)s to report in total, or the organization has no NPWP.")
                           % {"period": f"{month:02d}/{year}"})
             return redirect(f"{reverse('reports:vat')}?year={year}")
         name = coretax.filename(self.organization, f"{year}-{month:02d}", kind="ppn-digunggung")
         return _xml_download(coretax.build_retail_xml(self.organization, year, month, rows), name)
+
+
+class MonthSpecialDocumentsView(OrganizationMixin, View):
+    """A month's Dokumen Lain file for the SPT Masa PPN: exports (keluaran), PIBs and bills
+    equivalent to a faktur (masukan), or returns of those bills (retur masukan)."""
+
+    def get(self, request, year, month, kind):
+        if not 1 <= month <= 12 or kind not in coretax.SpecialFile.values or not self.organization.is_pkp:
+            raise Http404
+        xml = coretax.special_file(self.organization, year, month, kind)
+        if xml is None:
+            raise Http404
+        return _xml_download(xml, coretax.filename(self.organization, f"{year}-{month:02d}", kind=f"dokumen-lain-{kind}"))
+
+
+class SpecialDocumentNumberView(InvoiceKindMixin, WriteMixin, View):
+    """Record the PEB (or the bill's own document) of an issued export or equivalent bill, once."""
+
+    def post(self, request, kind, pk):
+        invoice = get_object_or_404(invoice_detail(self.organization, pk).filter(kind=self.kind))
+        form = SpecialDocumentForm(request.POST)
+        if form.is_valid():
+            try:
+                services.record_special_document(invoice=invoice, number=form.cleaned_data["number"], on=form.cleaned_data["date"])
+                messages.success(request, _("Document recorded."))
+            except DomainError as exc:
+                flash_domain_error(request, exc)
+        else:
+            messages.error(request, _("Enter the document number and date."))
+        return redirect("invoicing:detail", self.kind, invoice.pk)
 
 
 class TaxInvoiceNumberView(InvoiceKindMixin, WriteMixin, View):

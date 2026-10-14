@@ -41,6 +41,8 @@
     <li class="nav-heading">{% translate "Taxes & reports" %}</li>
     <li><a class="nav-link {% if url.url_name == 'pph_final' %}active{% endif %}" href="{% url 'taxes:pph_final' %}"><i class="bi bi-percent me-2"></i>{% translate "MSME PPh Final" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'withholding' or url.url_name == 'withholding_month' %}active{% endif %}" href="{% url 'taxes:withholding' %}"><i class="bi bi-receipt-cutoff me-2"></i>{% translate "Withheld income tax" %}</a></li>
+    <li><a class="nav-link {% if url.url_name == 'imports' %}active{% endif %}" href="{% url 'taxes:imports' %}"><i class="bi bi-globe2 me-2"></i>{% translate "Imports (PIB)" %}</a></li>
+    <li><a class="nav-link {% if url.url_name == 'self_deposits' %}active{% endif %}" href="{% url 'taxes:self_deposits' %}"><i class="bi bi-bank me-2"></i>{% translate "Self-deposited PPh" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'rates' %}active{% endif %}" href="{% url 'taxes:rates' %}"><i class="bi bi-sliders me-2"></i>{% translate "PPN rates" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'reports' %}active{% endif %}" href="{% url 'reports:index' %}"><i class="bi bi-bar-chart-line me-2"></i>{% translate "Financial reports" %}</a></li>
     {% if can_manage %}

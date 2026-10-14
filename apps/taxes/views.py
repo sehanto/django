@@ -9,7 +9,8 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import CreateView, ListView, TemplateView, UpdateView
+from django.core.exceptions import PermissionDenied
+from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
@@ -17,11 +18,12 @@ from apps.core.sanitizers import csv_safe
 from apps.core.params import int_param, text_param, year_choices, year_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
+from apps.tenants.roles import Permission
 
 from . import ebupot, services
 from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PayerWithholding, PphFinalMonth
-from .forms import PphFinalPaymentForm, TaxObjectForm, TaxRateForm, WithholdingDepositForm
-from .models import PphFinalAccrual, PphFinalPayment, WithholdingDeposit
+from .forms import ImportDeclarationForm, PphFinalPaymentForm, SelfDepositForm, TaxObjectForm, TaxRateForm, WithholdingDepositForm
+from .models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, WithholdingDeposit
 from .selectors import (
     pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, tax_rates_for, withholding_deposits,
     withholding_due, withholdings,
@@ -329,3 +331,93 @@ class WithholdingDepositCancelView(WriteMixin, View):
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect(f"{reverse('taxes:withholding')}?year={deposit.year}")
+
+
+# --- Imports (PIB) and self-deposited income tax ----------------------------------------
+
+
+class ImportDeclarationsView(OrganizationMixin, FormView):
+    """The year's import declarations (PIB) with the taxes paid at customs."""
+
+    template_name = "taxes/imports.html"
+    form_class = ImportDeclarationForm
+
+    def get_initial(self):
+        return {"on": timezone.localdate()}
+
+    def get_context_data(self, **kwargs):
+        year = _selected_year(self.request)
+        declarations = ImportDeclaration.objects.for_organization(self.organization).filter(date__year=year).select_related("journal_entry", "bill")
+        return super().get_context_data(year=year, years=year_choices(), declarations=declarations, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.membership.has_permission(Permission.WRITE):
+            raise PermissionDenied
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        try:
+            declaration = services.record_import_declaration(organization=self.organization, created_by=self.request.user, **data)
+        except DomainError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        messages.success(self.request, _("PIB %(number)s recorded and posted to the ledger.") % {"number": declaration.number})
+        return redirect(f"{reverse('taxes:imports')}?year={declaration.date.year}")
+
+
+class ImportDeclarationCancelView(WriteMixin, View):
+    def post(self, request, pk):
+        declaration = get_object_or_404(ImportDeclaration.objects.for_organization(self.organization), pk=pk)
+        try:
+            services.cancel_import_declaration(declaration=declaration, on=timezone.localdate(), created_by=request.user)
+            messages.success(request, _("PIB cancelled (journal entry reversed)."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect(f"{reverse('taxes:imports')}?year={declaration.date.year}")
+
+
+class SelfDepositsView(OrganizationMixin, FormView):
+    """Final income tax deposited on one's own income (BPSP)."""
+
+    template_name = "taxes/self_deposits.html"
+    form_class = SelfDepositForm
+
+    def get_initial(self):
+        return {"paid_on": timezone.localdate()}
+
+    def get_context_data(self, **kwargs):
+        year = _selected_year(self.request)
+        deposits = SelfDeposit.objects.for_organization(self.organization).filter(year=year).select_related("payment_entry", "invoice")
+        return super().get_context_data(year=year, years=year_choices(), deposits=deposits, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.membership.has_permission(Permission.WRITE):
+            raise PermissionDenied
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        try:
+            deposit = services.record_self_deposit(organization=self.organization, created_by=self.request.user, **form.cleaned_data)
+        except DomainError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Self-deposit recorded and posted to the ledger."))
+        return redirect(f"{reverse('taxes:self_deposits')}?year={deposit.year}")
+
+
+class SelfDepositActionView(WriteMixin, View):
+    def post(self, request, pk, action):
+        deposit = get_object_or_404(SelfDeposit.objects.for_organization(self.organization), pk=pk)
+        try:
+            if action == "cancel":
+                services.cancel_self_deposit(deposit=deposit, on=timezone.localdate(), created_by=request.user)
+                messages.success(request, _("Self-deposit cancelled (journal entries reversed)."))
+            elif action == "slip":
+                services.record_self_deposit_slip(deposit=deposit, number=text_param(request.POST, "number"))
+                messages.success(request, _("BPSP number recorded."))
+            else:
+                raise Http404
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect(f"{reverse('taxes:self_deposits')}?year={deposit.year}")

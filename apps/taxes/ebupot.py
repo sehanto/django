@@ -6,7 +6,9 @@
 * BP21: non-permanent workers (monthly TER, or one record per day for daily workers),
   severance, and PPh 21 on fees to non-employees paid with a bill;
 * BP26: non-resident employees' PPh 26;
-* BPPU: PPh 23 and 4(2) withheld from suppliers.
+* BPPU: PPh 23 and 4(2) withheld from suppliers;
+* BPNR: PPh 26 withheld from suppliers abroad ("BPNR Excel to XML v.2");
+* BPSP: final PPh deposited on one's own income ("BPSP Excel to XML v.3").
 
 Coretax computes each record's tax from gross x deemed % x rate (progressive codes take the
 top bracket rate and are computed by Coretax), so the amounts match what was withheld here.
@@ -33,16 +35,18 @@ ROOTS = {  # root, list, record
     DocumentType.BP26: ("BP26Bulk", "ListOfBP26", "BP26"),
     DocumentType.BPA1: ("A1Bulk", "ListOfA1", "A1"),
     DocumentType.BPPU: ("BpuBulk", "ListOfBpu", "Bpu"),
+    DocumentType.BPNR: ("BPNRBulk", "ListOfBPNR", "BPNR"),
+    DocumentType.BPSP: ("SelfPaymentBulk", "ListOfSelfPayment", "SelfPayment"),
 }
 FILE_NAMES = {
     DocumentType.BPMP: "bpmp", DocumentType.BP21: "bp21", DocumentType.BP26: "bp26", DocumentType.BPA1: "bpa1",
-    DocumentType.BPPU: "bppu",
+    DocumentType.BPPU: "bppu", DocumentType.BPNR: "bpnr", DocumentType.BPSP: "bpsp",
 }
 # Kode objek pajak (DJP's REF sheets).
 PERMANENT, NON_PERMANENT_MONTHLY, DAILY, DAILY_HIGH = "21-100-01", "21-100-35", "21-100-24", "21-100-30"
 SEVERANCE, PPH_26 = "21-401-01", "27-100-99"
 PAYROLL_DOCUMENT, BILL_DOCUMENT = "PaymentProof", "CommercialInvoice"  # Bukti Pembayaran, Surat Tagihan
-PAYSLIP, PAYMENT = "payslip", "payment"
+PAYSLIP, PAYMENT, SELF_DEPOSIT = "payslip", "payment", "self_deposit"
 
 
 @dataclass
@@ -120,6 +124,7 @@ def month_batches(organization, year: int, month: int) -> dict[str, Batch]:
     if run is not None:
         _payroll(batches, run, office)
     _payments(batches, organization, year, month, office)
+    _self_deposits(batches, organization, year, month, office)
     return {kind: batch for kind, batch in batches.items() if batch.records or batch.problems}
 
 
@@ -231,6 +236,9 @@ def _payments(batches: dict[str, Batch], organization, year: int, month: int, of
             continue
         bill = p.invoice
         pph21 = p.income_tax_kind == IncomeTaxWithheld.PPH_21
+        if p.income_tax_kind == IncomeTaxWithheld.PPH_26:
+            _bpnr(batches[DocumentType.BPNR], p, year, month, office)
+            continue
         batch = batches[DocumentType.BP21 if pph21 else DocumentType.BPPU]
         tin = bill.party_tin or (bill.party_id_number if bill.party_id_type == BuyerIdType.NATIONAL_ID else "")
         if not p.income_tax_object:
@@ -251,6 +259,44 @@ def _payments(batches: dict[str, Batch], organization, year: int, month: int, of
             ("TaxCertificate", "N/A"), ("TaxObjectCode", p.income_tax_object), ("TaxBase", p.income_tax_base),
             ("Rate", p.income_tax_rate), *document, ("IDPlaceOfBusinessActivity", office), ("GovTreasurerOpt", "N/A"),
             ("SP2DNumber", NIL), ("WithholdingDate", p.date),
+        ]))
+
+
+def _bpnr(batch: Batch, p, year: int, month: int, office: str) -> None:
+    from .tax_objects import deemed, reference_rate
+
+    bill, contact = p.invoice, p.invoice.contact
+    tin = contact.foreign_tin
+    if not tin:
+        batch.problems.append(_("Payment %(number)s: enter the supplier's foreign tax ID on the contact.") % {"number": p.number})
+        return
+    treaty = p.income_tax_rate is not None and p.income_tax_rate < (reference_rate(p.income_tax_kind, p.income_tax_object) or ZERO)
+    batch.records.append(Record(PAYMENT, p.pk, [
+        *_period(year, month), ("CounterpartTin", tin), ("CounterpartReceiptNumber", contact.treaty_document if treaty else NIL),
+        ("CounterpartName", bill.party_name), ("CounterpartCountry", bill.party_country), ("CounterpartAddress", bill.contact_address or NIL),
+        ("CounterpartDob", NIL), ("CounterpartBirthCity", NIL), ("CounterpartPassport", NIL), ("CounterpartKitas", NIL),
+        ("TaxCertificate", "COD" if treaty else "N/A"), ("TaxObjectCode", p.income_tax_object), ("GrossIncome", p.income_tax_base),
+        ("Deemed", deemed(p.income_tax_kind, p.income_tax_object)), ("Rate", p.income_tax_rate),
+        ("Document", BILL_DOCUMENT), ("DocumentNumber", bill.number), ("DocumentDate", bill.date), ("GovTreasurerOpt", "N/A"),
+        ("SP2DNumber", NIL), ("WithholdingDate", p.date), ("IDPlaceOfBusinessActivity", office),
+    ]))
+
+
+def _self_deposits(batches: dict[str, Batch], organization, year: int, month: int, office: str) -> None:
+    from .models import SelfDeposit
+
+    batch = batches[DocumentType.BPSP]
+    for d in SelfDeposit.objects.for_organization(organization).filter(
+        year=year, month=month, status=SelfDeposit.Status.POSTED, slip_number="",
+    ).order_by("document_date", "id"):
+        batch.records.append(Record(SELF_DEPOSIT, d.pk, [
+            *_period(year, month), ("TaxCertificate", "N/A"), ("TaxObjectCode", d.tax_object), ("TaxBase", d.tax_base),
+            # Only for code 28-411-01 (foreign shipping and airlines).
+            ("IncomeFromIndonesiaTaxBase", ZERO), ("IncomeFromIndonesiaIncomeTax", ZERO), ("IncomeFromForeignCountriesTaxBase", ZERO),
+            ("IncomeFromForeignCountriesIncomeTax", ZERO), ("IncomeTaxArticle24CreditedIncomeTax", ZERO),
+            ("IncomeTaxWithheldByOtherParty", ZERO), ("SelfPaymentIncomeTax", ZERO), ("Rate", d.rate),
+            ("Document", BILL_DOCUMENT), ("DocumentNumber", d.document_number), ("DocumentDate", d.document_date),
+            ("IDPlaceOfBusinessActivity", office), ("WithholdingDate", d.paid_on),
         ]))
 
 
@@ -280,5 +326,12 @@ def record_numbers(submission, items) -> None:
                 payment = Payment.objects.for_organization(submission.organization).filter(pk=pk).first()
                 if payment is not None and not payment.withholding_slip:
                     record_withholding_slip(payment=payment, number=item.number)
+            elif source == SELF_DEPOSIT:
+                from .models import SelfDeposit
+                from .services import record_self_deposit_slip
+
+                deposit = SelfDeposit.objects.for_organization(submission.organization).filter(pk=pk).first()
+                if deposit is not None and not deposit.slip_number:
+                    record_self_deposit_slip(deposit=deposit, number=item.number)
         except (ValidationFailed, InvalidStateTransition) as exc:
             logger.warning("Bukti potong %s for %s %s not recorded: %s", item.number, source, pk, exc)

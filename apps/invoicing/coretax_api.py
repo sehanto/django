@@ -51,10 +51,14 @@ class DocumentType(models.TextChoices):
     BP26 = "bp26", gettext_lazy("BP26: PPh 26")
     BPA1 = "bpa1", gettext_lazy("BPA1: annual PPh 21 (1721-A1)")
     BPPU = "bppu", gettext_lazy("BPPU: PPh 23 and 4(2) (unified)")
+    BPNR = "bpnr", gettext_lazy("BPNR: PPh 26 on payments abroad")
+    BPSP = "bpsp", gettext_lazy("BPSP: final PPh deposited yourself")
 
 
 # The eBupot files: one record per bukti potong, under the root's list element.
-WITHHOLDING_TYPES = (DocumentType.BPMP, DocumentType.BP21, DocumentType.BP26, DocumentType.BPA1, DocumentType.BPPU)
+WITHHOLDING_TYPES = (
+    DocumentType.BPMP, DocumentType.BP21, DocumentType.BP26, DocumentType.BPA1, DocumentType.BPPU, DocumentType.BPNR, DocumentType.BPSP,
+)
 
 
 class SubmissionStatus(models.TextChoices):

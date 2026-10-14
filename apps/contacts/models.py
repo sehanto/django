@@ -63,6 +63,12 @@ class Contact(TenantOwnedModel):
         _("country"), max_length=3, default=INDONESIA, validators=[validate_country_code],
         help_text=_("Three-letter code as used by Coretax, e.g. IDN, SGP or MYS."),
     )
+    # A supplier abroad: what the PPh 26 bukti potong (BPNR) needs.
+    foreign_tin = models.CharField(_("foreign tax ID"), max_length=30, blank=True, help_text=_("A supplier abroad's tax ID in its country."))
+    treaty_document = models.CharField(
+        _("certificate of residence no."), max_length=50, blank=True,
+        help_text=_("A supplier abroad's DGT form (SKD), which allows a tax treaty's lower PPh 26 rate."),
+    )
     email = models.EmailField(_("email"), blank=True)
     phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
     address = models.TextField(_("address"), max_length=500, blank=True)

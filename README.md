@@ -354,7 +354,19 @@ Buyers without an NPWP are left out.
 
 ## Retail sales in total (SPT Masa PPN digunggung)
 
-A retailer (Organization → retailer) reports sales to customers without an NPWP or identity document as a monthly total instead of fakturs. **Reports → PPN** offers each month's import file in DJP's retail format ("Retail_XML Induk IA5 IA9 dan IB" v1.2): one row per invoice and kind of delivery (taxed: 1.A5; facility 07/08: 1.A9; without PPN: 1.B; goods or services), anonymous buyer (NIK of zeros, as in DJP's sample), whole-rupiah amounts, the invoice id as the numeric serial and its number in Info. Import it into the SPT Masa PPN draft in Coretax. Returns of these sales aren't in the template; subtract them in Coretax.
+A retailer (Organization → retailer) reports sales to customers without an NPWP or identity document as a monthly total instead of fakturs. **Reports → PPN** offers each month's import file in DJP's retail format ("Retail_XML Induk IA5 IA9 dan IB" v1.2): one row per invoice and kind of delivery (taxed: 1.A5; facility 07/08: 1.A9; without PPN: 1.B; goods or services), anonymous buyer (NIK of zeros, as in DJP's sample), whole-rupiah amounts, the invoice id as the numeric serial and its number in Info. Import it into the SPT Masa PPN draft in Coretax. Returns of these sales go into the file of the return's month as negative rows (DJP's template has no return field; the PPN of a return reduces the return's period).
+
+## Imports, exports and other tax documents (Dokumen Lain)
+
+DJP's templates "Create DOk Lain Keluaran/Masukan" and "Retur DOk Lain Masukan" report deliveries and acquisitions on a document other than a Faktur Pajak. **Reports → PPN → Other tax documents** offers each month's files, by the date of the document:
+
+| Case | How it's recorded | File and codes |
+|---|---|---|
+| Export of goods, intangibles or services | A sales invoice marked as an export (PPN 0%: no PPN on its lines); its PEB number and date, entered with it or once after issue | Dokumen Lain Keluaran: type 02, detail 11/12/13, document 4/5, buyer TIN of zeros |
+| Import of goods | **Taxes → Imports (PIB)**: the PIB with the import value, PPN impor (input PPN for a PKP, a cost otherwise), PPnBM and import duty (to a cost account) and PPh 22 impor (prepaid tax), paid in cash; the goods are the foreign supplier's bill without PPN. Counted as input PPN in the PIB's month. | Dokumen Lain Masukan: type 03, detail 14, document 6 |
+| Bill equivalent to a Faktur Pajak (electricity, telephone…) | A purchase bill marked so, with its own document number and date (no Faktur Pajak number) | Dokumen Lain Masukan: type 04, detail 01, document 8; its returns in Retur Dokumen Lain Masukan |
+
+Returns of exports and imports have no Dokumen Lain return (DJP's return templates take only domestic codes); corrections go through customs. The PIB and the document numbers are guarded like the Faktur Pajak number (set once; invoicing 0023, taxes 0015).
 
 ## eBupot files (bukti potong)
 
@@ -367,8 +379,10 @@ A retailer (Organization → retailer) reports sales to customers without an NPW
 | BP21 | Non-permanent workers paid monthly (TER); daily workers, one record per day worked (PMK 168/2023), daily TER or 50% at Art. 17 above Rp2,5 juta; severance (final); PPh 21 on fees paid to individuals with a bill | 21-100-35, 21-100-24, 21-100-30, 21-401-01, the fee's code |
 | BP26 | Non-resident employees, with the treaty rate and certificate number (facility `COD`) when given | 27-100-99 |
 | BPPU | PPh 23 and 4(2) withheld from suppliers | the payment's code |
+| BPNR | PPh 26 withheld from suppliers abroad (the contact's foreign tax ID; a treaty rate below 20% with its certificate of residence, facility `COD`) | 27-1xx, with DJP's deemed % |
+| BPSP | Final PPh deposited on your own income (**Taxes → Self-deposited PPh**: rent, construction), posted as an expense of the income's month and its deposit | 28-403-02, 28-409-xx |
 
-Supplier withholdings carry their tax object code (kode objek pajak, DJP's list in `apps/taxes/tax_objects.py`); the rate must match the code's, as Coretax checks. Payments recorded before codes existed get theirs once on the month page. Records that already have a bukti potong number are left out, so nothing is sent twice. Daily wages are split evenly over the days (the remainder on the last), and the PPh 21 withheld is the sum of the days' records, so it equals what Coretax computes.
+BPCY and DDBU are not offered: they are for banks, securities firms, crypto exchanges, marketplaces and government procurement systems withholding in bulk. Supplier withholdings carry their tax object code (kode objek pajak, DJP's list in `apps/taxes/tax_objects.py`); the rate must match the code's, as Coretax checks. Payments recorded before codes existed get theirs once on the month page. Records that already have a bukti potong number are left out, so nothing is sent twice. Daily wages are split evenly over the days (the remainder on the last), and the PPh 21 withheld is the sum of the days' records, so it equals what Coretax computes.
 
 ## REST API
 
