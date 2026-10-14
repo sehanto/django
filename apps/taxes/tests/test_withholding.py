@@ -102,13 +102,16 @@ def test_the_bukti_potong_number_is_recorded_once(auth_client, organization, bil
 
 def test_the_payment_form_withholds_from_suppliers(auth_client, organization, bill, account):
     form = auth_client.get(reverse("invoicing:detail", args=[InvoiceKind.PURCHASE, bill.pk])).context["payment_form"]
-    assert [f.name for f in form.income_tax_fields] == ["income_tax_kind", "income_tax_base", "income_tax_rate", "withholding_slip"]
+    assert [f.name for f in form.income_tax_fields] == [
+        "income_tax_kind", "income_tax_object", "income_tax_base", "income_tax_rate", "withholding_slip",
+    ]
     assert form.initial["income_tax_base"] == D("5000000")
     with translation.override("en"):
         auth_client.post(reverse("invoicing:pay", args=[InvoiceKind.PURCHASE, bill.pk]), {
             "date": "2026-03-10", "amount": "5000000", "cash_account": account("1-1100").pk, "method": Payment.Method.TRANSFER,
-            "income_tax_kind": IncomeTaxWithheld.PPH_4_2, "income_tax_base": "5000000", "income_tax_rate": "10", "withholding_slip": "",
+            "income_tax_kind": IncomeTaxWithheld.PPH_4_2, "income_tax_object": "28-403-02", "income_tax_base": "5000000",
+            "income_tax_rate": "10", "withholding_slip": "",
         })
     payment = bill.payments.get()
-    assert (payment.income_tax_kind, payment.income_tax_withheld) == ("pph4_2", D("500000"))
+    assert (payment.income_tax_kind, payment.income_tax_withheld, payment.income_tax_object) == ("pph4_2", D("500000"), "28-403-02")
     assert account_balance(organization, account("2-1220")) == D("500000")

@@ -63,3 +63,14 @@ class WithholdingDepositForm(OrganizationFormMixin, BaseForm):
         if ntpn:
             ntpn_validator(ntpn)
         return ntpn
+
+
+class TaxObjectForm(BaseForm):
+    """The tax object code of a supplier payment recorded without one."""
+
+    def __init__(self, *args, **kwargs):
+        from apps.invoicing.forms import tax_object_field  # invoicing's payment form uses the same list
+
+        super().__init__(*args, auto_id=False, **kwargs)
+        self.fields["code"] = tax_object_field(required=True)
+        self.fields["code"].widget.attrs.update({"class": "form-select form-select-sm", "aria-label": self.fields["code"].label})

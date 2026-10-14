@@ -4,16 +4,17 @@ DJP doesn't offer a public Coretax API: taxpayers connect through a licensed PJA
 its own API. The app therefore talks to a small adapter contract and ships two adapters:
 
 * ``fake``: an in-process stand-in for development and tests; it accepts every file and gives
-  each faktur a number.
+  each faktur and bukti potong a number.
 * ``http``: a generic JSON adapter for a PJAP (or an in-house bridge) exposing
   ``POST {url}/submissions`` with ``{"document_type", "tin", "file_name", "xml"}`` (the XML
   base64-encoded) answering ``{"id", "status"}``, and ``GET {url}/submissions/{id}`` answering
   ``{"status", "items": [{"reference", "number", "error"}]}``, with ``Authorization: Bearer``.
   Adapt ``HttpConnector`` to your provider's actual API.
 
-The files sent are exactly the ones offered for download (``coretax.py``); a faktur's
-``reference`` is the invoice number (RefDesc), which maps the numbers Coretax issues back to
-the invoices.
+The files sent are exactly the ones offered for download (``coretax.py``, ``taxes/ebupot.py``);
+a faktur's ``reference`` is the invoice number (RefDesc), which maps the numbers Coretax issues
+back to the invoices. eBupot records carry no reference of their own: there ``reference`` is the
+record's 1-based position in the file.
 """
 
 import base64
@@ -44,6 +45,16 @@ class ConnectorName(models.TextChoices):
 class DocumentType(models.TextChoices):
     TAX_INVOICES = "faktur_pk", gettext_lazy("Faktur Pajak Keluaran")
     INPUT_RETURNS = "retur_pm", gettext_lazy("Nota retur (Retur Pajak Masukan)")
+    # eBupot (bukti potong), DJP's converter templates (bp*.zip samples, "Excel to XML" schemas).
+    BPMP = "bpmp", gettext_lazy("BPMP: monthly PPh 21 of permanent employees")
+    BP21 = "bp21", gettext_lazy("BP21: PPh 21 other than permanent employees")
+    BP26 = "bp26", gettext_lazy("BP26: PPh 26")
+    BPA1 = "bpa1", gettext_lazy("BPA1: annual PPh 21 (1721-A1)")
+    BPPU = "bppu", gettext_lazy("BPPU: PPh 23 and 4(2) (unified)")
+
+
+# The eBupot files: one record per bukti potong, under the root's list element.
+WITHHOLDING_TYPES = (DocumentType.BPMP, DocumentType.BP21, DocumentType.BP26, DocumentType.BPA1, DocumentType.BPPU)
 
 
 class SubmissionStatus(models.TextChoices):
@@ -95,6 +106,12 @@ class FakeConnector:
         for faktur in root.iter("TaxInvoice"):
             number = f"{faktur.findtext('TrxCode', '04')}00{next(self._numbers):013d}"
             items.append({"reference": faktur.findtext("RefDesc", ""), "number": number, "error": ""})
+        if document_type in WITHHOLDING_TYPES:
+            records = list(root[1]) if len(root) > 1 else []  # TIN, then the list of records
+            items = [
+                {"reference": str(position), "number": f"{document_type.upper()[:4]}{next(self._numbers):08d}", "error": ""}
+                for position, _record in enumerate(records, start=1)
+            ]
         reference = f"fake-ct-{uuid.uuid4().hex[:16]}"
         cache.set(f"fake-coretax:{reference}", {"status": SubmissionStatus.ACCEPTED, "items": items}, None)
         return Receipt(reference, SubmissionStatus.PENDING)

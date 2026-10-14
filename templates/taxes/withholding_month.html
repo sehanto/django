@@ -7,17 +7,36 @@
   {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>CSV</a>{% endif %}
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
-  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th><th>{% translate "Income tax" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
+  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th><th>{% translate "Income tax" %}</th><th>{% translate "Tax object code" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
   <tbody>{% for p in payments %}
     <tr><td>{{ p.date|date:"d/m/Y" }}<div class="small"><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></div></td>
       <td>{{ p.invoice.party_name }}{% if p.invoice.party_npwp %}<div class="small text-secondary">{{ p.invoice.party_npwp }}</div>{% endif %}</td>
-      <td>{{ p.get_income_tax_kind_display }}</td><td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span class="small">{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
+      <td>{{ p.get_income_tax_kind_display }}</td>
+      <td>{% if p.income_tax_object %}{{ p.income_tax_object }}{% elif can_write %}
+        <form method="post" action="{% url 'taxes:payment_tax_object' p.pk %}" class="d-flex gap-1" style="min-width: 14rem">{% csrf_token %}{{ object_form.code }}<button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>
+        {% else %}<span class="text-secondary">—</span>{% endif %}</td>
+      <td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span class="small">{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
       <td class="num fw-semibold">{{ p.income_tax_withheld|rupiah }}</td>
       <td>{% if p.withholding_slip %}{{ p.withholding_slip }}{% elif can_write %}
         <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="d-flex gap-1">{% csrf_token %}<input type="hidden" name="next" value="withholding">
           <input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'Bukti potong no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No income tax was withheld from suppliers this month." %}</td></tr>{% endfor %}</tbody>
+  {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No income tax was withheld from suppliers this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if run %}<p class="mt-3 mb-0">{% url 'payroll:run' run.pk as url %}{% blocktranslate trimmed with period=run.period %}PPh 21 and PPh 26 withheld from salaries: <a href="{{ url }}">payroll {{ period }}</a>.{% endblocktranslate %}</p>{% endif %}
 <p class="small text-secondary mt-2">{% translate "Create each bukti potong in Coretax (eBupot) from this list, then record its number here." %}</p>
+
+<h2 class="h5 mt-4">{% translate "Coretax eBupot files" %}</h2>
+<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+  <thead><tr><th>{% translate "File" %}</th><th class="num">{% translate "Bukti potong" %}</th><th></th></tr></thead>
+  <tbody>{% for batch in batches %}<tr>
+    <td>{{ batch.label }}{% for problem in batch.problems %}<div class="small text-danger">{{ problem }}</div>{% endfor %}</td>
+    <td class="num">{{ batch.records|length }}</td>
+    <td class="text-end text-nowrap">{% if batch.records %}
+      <a href="{% url 'taxes:ebupot_xml' year month.value batch.document_type %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i>XML</a>
+      {% if can_write and can_send and not batch.problems %}<form method="post" action="{% url 'taxes:ebupot_send' year month.value batch.document_type %}" class="d-inline" data-confirm="{% translate 'Send this file to Coretax?' %}">{% csrf_token %}<button class="btn btn-sm btn-primary"><i class="bi bi-send me-1"></i>{% translate "Send to Coretax" %}</button></form>{% endif %}
+    {% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3" class="text-center text-secondary py-4">{% translate "No bukti potong are waiting for a number this month." %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if batches and not can_send %}<p class="small mt-2 mb-0">{% url 'invoicing:coretax_connection' as url %}{% blocktranslate trimmed %}To send them from here, <a href="{{ url }}">connect to Coretax</a>.{% endblocktranslate %}</p>{% endif %}
+<p class="small text-secondary mt-2">{% translate "Files in DJP's eBupot import format: upload them in Coretax (eBupot → Impor Data), or send them through your Coretax connection, which records the numbers Coretax gives back. Bukti potong that already have a number are left out. Daily workers get one bukti potong per day worked." %}</p>
 {% endblock %}

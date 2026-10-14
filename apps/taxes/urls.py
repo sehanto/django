@@ -18,4 +18,7 @@ urlpatterns = [
     path("withholding/deposits/<int:pk>/cancel/", views.WithholdingDepositCancelView.as_view(), name="withholding_deposit_cancel"),
     path("withholding/<int:year>/<int:month>/", views.WithholdingMonthView.as_view(), name="withholding_month"),
     path("withholding/<int:year>/<int:month>.csv", views.WithholdingMonthView.as_view(), {"csv": True}, name="withholding_month_csv"),
+    path("withholding/<int:year>/<int:month>/ebupot/<str:kind>.xml", views.EbupotXmlView.as_view(), name="ebupot_xml"),
+    path("withholding/<int:year>/<int:month>/ebupot/<str:kind>/send/", views.EbupotSendView.as_view(), name="ebupot_send"),
+    path("withholding/payments/<int:pk>/tax-object/", views.PaymentTaxObjectView.as_view(), name="payment_tax_object"),
 ]

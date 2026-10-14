@@ -193,7 +193,8 @@ def payment_json(p: Payment) -> dict:
     return {
         "id": p.pk, "number": p.number, "invoice": p.invoice_id, "date": p.date.isoformat(), "amount": _money(p.amount),
         "method": p.method, "cash_account": p.cash_account.code, "vat_withheld": _money(p.vat_withheld),
-        "income_tax_kind": p.income_tax_kind or None, "income_tax_withheld": _money(p.income_tax_withheld), "status": p.status,
+        "income_tax_kind": p.income_tax_kind or None, "income_tax_withheld": _money(p.income_tax_withheld),
+        "income_tax_object": p.income_tax_object or None, "status": p.status,
     }
 
 
@@ -332,6 +333,7 @@ def invoice_payments(request, pk: int):
             slip=_text(withheld, "slip", max_length=50),
             base=_decimal(withheld, "base", required=False, default=Decimal("0")),
             rate=_decimal(withheld, "rate", required=False),
+            object_code=_text(withheld, "object_code", max_length=9),
         )
     payment = invoicing.record_payment(
         invoice=invoice, date=_date(data, "date"), amount=_decimal(data, "amount"), cash_account=cash, method=method,

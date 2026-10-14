@@ -352,6 +352,20 @@ With `CORETAX_CONNECTOR` (`fake` or `http`, plus `CORETAX_API_URL` and `CORETAX_
 `--send` sends it instead and records the numbers on the subscription invoices (set once; billing 0008).
 Buyers without an NPWP are left out.
 
+## eBupot files (bukti potong)
+
+**Taxes → Withheld income tax → (month)** builds the month's Coretax eBupot import files in DJP's format (the converter templates' schemas: BPMP v.3, BP21 v.4, BP26, BPA1, BPPU v.3), downloadable as XML or sent through the Coretax connection, which records the bukti potong numbers that come back:
+
+| File | Contents | Tax object code |
+|---|---|---|
+| BPMP | Permanent employees, January–November: gross and TER rate | 21-100-01 |
+| BPA1 | The 1721-A1 of the last period (December or the month they leave), with a previous employer's A1 number when recorded | 21-100-01 |
+| BP21 | Non-permanent workers paid monthly (TER); daily workers, one record per day worked (PMK 168/2023), daily TER or 50% at Art. 17 above Rp2,5 juta; severance (final); PPh 21 on fees paid to individuals with a bill | 21-100-35, 21-100-24, 21-100-30, 21-401-01, the fee's code |
+| BP26 | Non-resident employees, with the treaty rate and certificate number (facility `COD`) when given | 27-100-99 |
+| BPPU | PPh 23 and 4(2) withheld from suppliers | the payment's code |
+
+Supplier withholdings carry their tax object code (kode objek pajak, DJP's list in `apps/taxes/tax_objects.py`); the rate must match the code's, as Coretax checks. Payments recorded before codes existed get theirs once on the month page. Records that already have a bukti potong number are left out, so nothing is sent twice. Daily wages are split evenly over the days (the remainder on the last), and the PPh 21 withheld is the sum of the days' records, so it equals what Coretax computes.
+
 ## REST API
 
 `/api/v1/` serves JSON for integrations (an online shop, a POS). Owners and admins create keys under
@@ -367,7 +381,7 @@ limited to `API_REQUESTS_PER_HOUR` (default 1000) per key; responses and errors 
 | `items/`, `tax-rates/` | GET | |
 | `invoices/` | GET, POST | `?kind=`, `?status=`; POST `{"kind", "contact", "date", "lines": [{"account": "4-1000", "description", "quantity", "unit_price", "tax_rate", "item"}], "issue": true}` |
 | `invoices/<id>/` | GET, POST | POST `{"action": "issue"}` issues a draft |
-| `invoices/<id>/payments/` | POST | `{"date", "amount", "cash_account": "1-1100", "method", "vat_withheld", "income_tax": {"kind", "amount", "account"} (receipts) or {"kind": "pph23", "base", "rate", "slip"} (bills)}` |
+| `invoices/<id>/payments/` | POST | `{"date", "amount", "cash_account": "1-1100", "method", "vat_withheld", "income_tax": {"kind", "amount", "account"} (receipts) or {"kind": "pph23", "base", "rate", "object_code": "24-104-01", "slip"} (bills)}` |
 | `invoices/<id>/returns/` | POST | `{"date", "reason", "lines": [{"line": <invoice line id>, "quantity"}], "cash_account"}` |
 | `journal-entries/` | GET, POST | `?from=`, `?to=`; POST `{"date", "description", "reference", "lines": [{"account", "debit", "credit", "description"}]}` posts a manual entry |
 | `reports/trial-balance/` | GET | `?as_of=` |
@@ -844,6 +858,5 @@ Static files are served by WhiteNoise.
 
 ## Possible next steps
 
-- Coretax eBupot XML files for bukti potong (PPh 21/23/26 are exported as CSV lists today) and sending them through the Coretax connection
-- One bukti potong per day for daily workers, if Coretax keeps requiring it (the app makes one per month)
+- eBupot SPT Masa PPh 21/26 and Unifikasi returns themselves (Coretax builds them from the bukti potong)
 

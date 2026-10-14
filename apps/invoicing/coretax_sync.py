@@ -10,11 +10,14 @@ from apps.core.crypto import decrypt, encrypt
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 
 from . import coretax
-from .coretax_api import ConnectorName, CoretaxConnector, CoretaxError, DocumentType, Result, SubmissionStatus, build_connector
+from .coretax_api import (
+    WITHHOLDING_TYPES, ConnectorName, CoretaxConnector, CoretaxError, DocumentType, Result, SubmissionStatus, build_connector,
+)
 from .models import CoretaxConnection, CoretaxSubmission, Invoice
 from .services import record_tax_invoice_number
 
 logger = logging.getLogger(__name__)
+FILE_LABELS = {kind: kind.upper() for kind in WITHHOLDING_TYPES}
 
 
 def save_connection(*, organization, connector: str, api_url: str = "", token: str = "", is_active: bool = True) -> CoretaxConnection:
@@ -84,6 +87,28 @@ def submit_returns(*, organization, notes, label: str, created_by=None) -> Coret
     return refresh_submission(submission)
 
 
+@transaction.atomic
+def submit_withholdings(*, organization, year: int, month: int, document_type: str, created_by=None) -> CoretaxSubmission:
+    """Send a month's eBupot file (``taxes.ebupot``); the bukti potong numbers that come back are
+    recorded on the payslips and payments."""
+    from apps.taxes import ebupot  # taxes reads invoicing
+
+    connector, name = _connection(organization)
+    batch = ebupot.month_batches(organization, year, month).get(document_type)
+    if batch is None or not batch.records:
+        raise ValidationFailed(_("There is nothing to send in this file."))
+    if batch.problems:
+        raise ValidationFailed(_("Fix these first: %(problems)s") % {"problems": " ".join(batch.problems)})
+    label = f"{FILE_LABELS.get(document_type, document_type)} {month:02d}/{year}"
+    submission = _submit(
+        organization, connector, name, document_type, label, batch.xml(organization),
+        ebupot.file_name(organization, document_type, year, month), created_by,
+    )
+    submission.records = [[r.source, r.pk] for r in batch.records]
+    submission.save(update_fields=["records", "updated_at"])
+    return refresh_submission(submission)
+
+
 def apply_result(submission: CoretaxSubmission, result: Result) -> CoretaxSubmission:
     submission.status = result.status
     submission.results = [{"reference": i.reference, "number": i.number, "error": i.error} for i in result.items]
@@ -92,6 +117,10 @@ def apply_result(submission: CoretaxSubmission, result: Result) -> CoretaxSubmis
         from apps.billing.coretax import record_numbers  # the platform's own subscription fakturs
 
         record_numbers(result.items)
+    if submission.organization_id and submission.document_type in WITHHOLDING_TYPES:
+        from apps.taxes.ebupot import record_numbers
+
+        record_numbers(submission, result.items)
     if submission.organization_id and submission.document_type == DocumentType.TAX_INVOICES:
         invoices = {i.number: i for i in submission.invoices.all()}
         for item in result.items:

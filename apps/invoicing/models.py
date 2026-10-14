@@ -481,6 +481,9 @@ class Payment(TenantOwnedModel):
         _("income tax rate (%)"), max_digits=5, decimal_places=2, null=True, blank=True,
         validators=[MinValueValidator(Decimal("0.01")), MaxValueValidator(100)],
     )
+    income_tax_object = models.CharField(
+        _("tax object code"), max_length=9, blank=True, help_text=_("Kode objek pajak on the bukti potong, e.g. 24-104-01."),
+    )
     status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
     journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="payment")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
@@ -629,6 +632,8 @@ class CoretaxSubmission(TimeStampedModel):
     reference = models.CharField(_("provider reference"), max_length=64)
     status = models.CharField(_("status"), max_length=10, choices=SubmissionStatus.choices, default=SubmissionStatus.PENDING)
     results = models.JSONField(default=list, blank=True)
+    # eBupot: what each record (by position) is a bukti potong of, as [source, id].
+    records = models.JSONField(default=list, blank=True)
     invoices = models.ManyToManyField(Invoice, blank=True, related_name="coretax_submissions")
     returns = models.ManyToManyField(ReturnNote, blank=True, related_name="coretax_submissions")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")

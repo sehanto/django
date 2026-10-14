@@ -91,6 +91,9 @@ class Employee(TenantOwnedModel):
         help_text=_("Only with the employee's certificate of residence (DGT form); empty for the standard 20%."),
     )
     treaty_document = models.CharField(_("certificate of residence no."), max_length=50, blank=True)
+    foreign_tin = models.CharField(
+        _("foreign tax ID"), max_length=30, blank=True, help_text=_("A non-resident's tax ID in their country, for the PPh 26 bukti potong."),
+    )
     gender = models.CharField(_("gender"), max_length=1, choices=Gender.choices, blank=True, default=Gender.UNSPECIFIED)
     address = models.CharField(_("address"), max_length=255, blank=True)
     email = models.EmailField(_("email"), blank=True)

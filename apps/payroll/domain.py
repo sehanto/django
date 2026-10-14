@@ -204,13 +204,53 @@ def with_surcharge(tax: Decimal, has_tin: bool) -> Decimal:
     return tax if has_tin or tax <= 0 else _whole(tax * NO_TIN_SURCHARGE / HUNDRED)
 
 
+@dataclass(frozen=True)
+class DailyRow:
+    """One day's wage and its PPh 21: one bukti potong each (PMK 168/2023, while Coretax has no
+    combined one), as on DJP's BP21 converter."""
+
+    gross: Decimal
+    scheme: str
+    rate: Decimal | None  # daily TER %, or None at the Art. 17 rates
+    tax: Decimal
+
+
+def daily_rows(gross: Decimal, days: int) -> list[DailyRow]:
+    """``gross`` earned in ``days`` days, split evenly (the remainder on the last day)."""
+    whole = gross.quantize(Decimal("1"), rounding=ROUND_FLOOR)
+    each = (whole / days).quantize(Decimal("1"), rounding=ROUND_FLOOR)
+    amounts = [each] * (days - 1) + [gross - each * (days - 1)]
+    rows = []
+    for amount in amounts:
+        for upper, rate in DAILY_TER:
+            if amount <= upper:
+                rows.append(DailyRow(amount, TaxScheme.TER_DAILY, rate, _whole(amount * rate / HUNDRED)))
+                break
+        else:
+            rows.append(DailyRow(amount, TaxScheme.DAILY_ARTICLE_17, None, article_17(amount * NON_EMPLOYEE_BASE / HUNDRED)))
+    return rows
+
+
 def daily_pph21(gross: Decimal, days: int) -> tuple[str, Decimal | None, Decimal]:
-    """(scheme, daily TER %, PPh 21) on ``gross`` earned in ``days`` days by a worker paid by the day."""
-    per_day = gross / days
-    for upper, rate in DAILY_TER:
-        if per_day <= upper:
-            return TaxScheme.TER_DAILY, rate, _whole(gross * rate / HUNDRED)
-    return TaxScheme.DAILY_ARTICLE_17, None, article_17(per_day * NON_EMPLOYEE_BASE / HUNDRED) * days
+    """(scheme, daily TER %, PPh 21) on ``gross`` earned in ``days`` days by a worker paid by the
+    day: the sum of each day's bukti potong (scheme and rate of the first day)."""
+    rows = daily_rows(gross, days)
+    return rows[0].scheme, rows[0].rate, sum((r.tax for r in rows), ZERO)
+
+
+def article_17_bracket(taxable: Decimal) -> Decimal:
+    """The top Art. 17 rate reached (the "Tarif" of a progressive bukti potong row)."""
+    for upper, rate in ARTICLE_17:
+        if upper is None or taxable <= upper:
+            return rate
+    return ARTICLE_17[-1][1]
+
+
+def severance_bracket(amount: Decimal) -> Decimal:
+    for upper, rate in SEVERANCE_LAYERS:
+        if upper is None or amount <= upper:
+            return rate
+    return SEVERANCE_LAYERS[-1][1]
 
 
 def non_employee_pph21(gross: Decimal, *, has_tin: bool = True) -> Decimal:

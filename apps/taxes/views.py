@@ -14,17 +14,17 @@ from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
 from apps.core.sanitizers import csv_safe
-from apps.core.params import int_param, year_choices, year_param
+from apps.core.params import int_param, text_param, year_choices, year_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
-from . import services
+from . import ebupot, services
 from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PayerWithholding, PphFinalMonth
-from .forms import PphFinalPaymentForm, TaxRateForm, WithholdingDepositForm
+from .forms import PphFinalPaymentForm, TaxObjectForm, TaxRateForm, WithholdingDepositForm
 from .models import PphFinalAccrual, PphFinalPayment, WithholdingDeposit
 from .selectors import (
     pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, tax_rates_for, withholding_deposits,
-    withholding_due, withholdings, withholdings_in_year,
+    withholding_due, withholdings,
 )
 
 
@@ -190,22 +190,9 @@ class WithholdingView(OrganizationMixin, TemplateView):
         year = _selected_year(self.request)
         due = withholding_due(self.organization, year)
         deposits = withholding_deposits(self.organization, year)
-        from apps.payroll.models import PayrollRun  # payroll depends on taxes
-
-        runs = {r.month: r.pk for r in PayrollRun.objects.for_organization(self.organization).filter(year=year, status=PayrollRun.Status.POSTED)}
-
-        from_suppliers = set(
-            withholdings_in_year(self.organization, year).values_list("income_tax_kind", "date__month").distinct()
-        )
-
-        def detail_url(kind, month):
-            """The month's bukti potong: supplier payments (with a link to payroll), or the payroll run."""
-            if (kind, month) in from_suppliers or kind not in (PayerWithholding.PPH_21, PayerWithholding.PPH_26):
-                return reverse("taxes:withholding_month", args=[year, month])
-            return reverse("payroll:run", args=[runs[month]]) if month in runs else ""
-
-        rows = [
-            WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)), detail_url(kind, month))
+        rows = [  # each links to the month's bukti potong and eBupot files
+            WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)),
+                           reverse("taxes:withholding_month", args=[year, month]))
             for month in Month for kind in PayerWithholding
             if due.get((kind, month)) or (kind, month) in deposits
         ]
@@ -230,8 +217,13 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
         from apps.payroll.models import PayrollRun  # payroll depends on taxes
 
         run = PayrollRun.objects.for_organization(self.organization).filter(year=year, month=month, status=PayrollRun.Status.POSTED).first()
+        from apps.invoicing.coretax_sync import connector_for
+
         return super().get_context_data(
-            year=year, month=Month(month), payments=withholdings(self.organization, year, month), run=run, **kwargs,
+            year=year, month=Month(month), payments=withholdings(self.organization, year, month), run=run,
+            batches=list(ebupot.month_batches(self.organization, year, month).values()),
+            can_send=connector_for(self.organization) is not None, object_form=TaxObjectForm(),
+            **kwargs,
         )
 
     def render_to_response(self, context, **response_kwargs):
@@ -257,6 +249,58 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
                 p.income_tax_rate if p.income_tax_rate is not None else _("50% × Art. 17"), p.income_tax_withheld, p.withholding_slip,
             )])
         return response
+
+
+def _ebupot_type(kind: str) -> str:
+    if kind not in ebupot.ROOTS:
+        raise Http404
+    return kind
+
+
+class EbupotXmlView(OrganizationMixin, View):
+    """A month's eBupot import file, to upload in Coretax (or send through the connection)."""
+
+    def get(self, request, year, month, kind):
+        document_type = _ebupot_type(kind)
+        if not 1 <= month <= 12:
+            raise Http404
+        batch = ebupot.month_batches(self.organization, year, month).get(document_type)
+        if batch is None or not batch.records:
+            raise Http404
+        response = HttpResponse(batch.xml(self.organization), content_type="application/xml")
+        response["Content-Disposition"] = f'attachment; filename="{ebupot.file_name(self.organization, document_type, year, month)}"'
+        return response
+
+
+class EbupotSendView(WriteMixin, View):
+    def post(self, request, year, month, kind):
+        from apps.invoicing import coretax_sync
+
+        document_type = _ebupot_type(kind)
+        try:
+            submission = coretax_sync.submit_withholdings(
+                organization=self.organization, year=year, month=month, document_type=document_type, created_by=request.user,
+            )
+            messages.success(request, _("Sent to Coretax: %(status)s.") % {"status": submission.get_status_display()})
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("taxes:withholding_month", year, month)
+
+
+class PaymentTaxObjectView(WriteMixin, View):
+    """Set the tax object code of a supplier payment recorded without one."""
+
+    def post(self, request, pk):
+        from apps.invoicing.models import Payment
+        from apps.invoicing.services import record_tax_object
+
+        payment = get_object_or_404(Payment.objects.for_organization(self.organization), pk=pk)
+        try:
+            record_tax_object(payment=payment, code=text_param(request.POST, "code"))
+            messages.success(request, _("Tax object code recorded."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("taxes:withholding_month", payment.date.year, payment.date.month)
 
 
 class WithholdingDepositView(WriteMixin, View):

@@ -20,6 +20,13 @@ from apps.taxes.services import accrue_pph_final, cancel_pph_final_accrual, canc
 D = Decimal
 
 
+@pytest.fixture(autouse=True)
+def english():
+    """Messages are matched in English (the default language is Indonesian)."""
+    with translation.override("en"):
+        yield
+
+
 def cash_sale(organization, account, amount, on):
     create_journal_entry(
         organization=organization, date=on, description="Penjualan tunai",

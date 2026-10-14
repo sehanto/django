@@ -20,7 +20,7 @@ class EmployeeForm(OrganizationFormMixin, BaseModelForm):
         model = Employee
         fields = [
             "name", "kind", "pay_basis", "nationality", "nik", "passport_number", "npwp", "is_resident", "resident_since",
-            "treaty_rate", "treaty_document", "gender", "address", "email", "position", "ptkp_status", "start_date", "end_date",
+            "treaty_rate", "treaty_document", "foreign_tin", "gender", "address", "email", "position", "ptkp_status", "start_date", "end_date",
             "leaves_indonesia", "base_salary", "fixed_allowance", "bpjs_employment", "bpjs_health", "tax_borne_by_employer", "zakat",
             "is_active",
         ]

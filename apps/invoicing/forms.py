@@ -174,19 +174,34 @@ def line_inputs(formset) -> list[InvoiceLineInput]:
     return [f.to_input() for f in formset.forms if f.cleaned_data and not f.cleaned_data.get("DELETE")]
 
 
+def tax_object_field(required=False) -> forms.ChoiceField:
+    """The tax object codes of each withholding kind, grouped (Coretax checks code and rate)."""
+    from apps.taxes.tax_objects import codes_for
+
+    groups = [
+        (kind.label, [(code, f"{code} {name}"[:140]) for code, name in sorted(codes_for(kind.value).items())])
+        for kind in PayerWithholding if codes_for(kind.value)
+    ]
+    return forms.ChoiceField(
+        label=_("Tax object code"), required=required, choices=[("", "---------"), *groups],
+        help_text=_("Kode objek pajak on the bukti potong; its rate must match (e.g. 24-104-01 technical services, 2%)."),
+    )
+
+
 class PaymentForm(OrganizationFormMixin, BaseModelForm):
     """A receipt may record income tax the customer withheld; a payment to a supplier the
     income tax we withhold (PPh 23 or 4(2), as base x rate)."""
 
     RECEIPT_FIELDS = ("income_tax_kind", "income_tax_withheld", "income_tax_account", "withholding_slip")
-    PAYER_FIELDS = ("income_tax_kind", "income_tax_base", "income_tax_rate", "withholding_slip")
+    PAYER_FIELDS = ("income_tax_kind", "income_tax_object", "income_tax_base", "income_tax_rate", "withholding_slip")
     INCOME_TAX_FIELDS = tuple(dict.fromkeys(RECEIPT_FIELDS + PAYER_FIELDS))
 
     class Meta:
         model = Payment
         fields = [
             "date", "amount", "vat_withheld", "cash_account", "method", "reference",
-            "income_tax_kind", "income_tax_withheld", "income_tax_account", "income_tax_base", "income_tax_rate", "withholding_slip",
+            "income_tax_kind", "income_tax_object", "income_tax_withheld", "income_tax_account", "income_tax_base", "income_tax_rate",
+            "withholding_slip",
         ]
         field_classes = {"date": BusinessDateField}
 
@@ -221,6 +236,7 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
             self.initial.setdefault("income_tax_base", invoice.subtotal)
             self.initial.setdefault("income_tax_rate", PAYER_WITHHOLDING_RATES[PayerWithholding.PPH_23])
             self.fields["withholding_slip"].help_text = _("The bukti potong number, if Coretax has issued it already; it can be added later.")
+            self.fields["income_tax_object"] = tax_object_field()
             return
         kinds.choices = [
             (value, label) for value, label in IncomeTaxWithheld.choices
@@ -251,6 +267,9 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
                 self.add_error("income_tax_base", _("Enter the amount the tax is withheld on."))
             if kind and kind != IncomeTaxWithheld.PPH_21 and not cleaned.get("income_tax_rate"):
                 self.add_error("income_tax_rate", _("Enter the withholding rate (%)."))
+            code = cleaned.get("income_tax_object")
+            if code and not kind:
+                self.add_error("income_tax_kind", _("Choose the income tax withheld."))
             return cleaned
         amount = cleaned.get("income_tax_withheld")
         if kind and not amount:
@@ -269,8 +288,8 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
         kind = data.pop("income_tax_kind")
         slip = data.pop("withholding_slip")
         if "income_tax_base" in data:
-            base, rate = data.pop("income_tax_base"), data.pop("income_tax_rate")
-            data["income_tax"] = IncomeTaxInput(kind=kind, base=base or 0, rate=rate, slip=slip) if kind else IncomeTaxInput()
+            base, rate, code = data.pop("income_tax_base"), data.pop("income_tax_rate"), data.pop("income_tax_object", "")
+            data["income_tax"] = IncomeTaxInput(kind=kind, base=base or 0, rate=rate, slip=slip, object_code=code) if kind else IncomeTaxInput()
             return data
         account = data.pop("income_tax_account")
         data["income_tax"] = IncomeTaxInput(

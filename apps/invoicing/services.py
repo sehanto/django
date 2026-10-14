@@ -420,6 +420,7 @@ class IncomeTaxInput:
     slip: str = ""
     base: Decimal = ZERO  # when we withhold: the gross amount the tax is on
     rate: Decimal | None = None  # and its rate (%)
+    object_code: str = ""  # and its tax object code (kode objek pajak), for the bukti potong
 
 
 NO_INCOME_TAX = IncomeTaxInput()
@@ -462,6 +463,22 @@ def ensure_period_open(invoice: Invoice, kind: str, on: date) -> None:
         )
 
 
+def _check_tax_object(kind: str, code: str, rate: Decimal | None) -> None:
+    """A tax object code must be one of the kind's, at the rate DJP's reference gives it
+    (Coretax rejects a bukti potong whose rate doesn't match its code)."""
+    if not code:
+        return
+    from apps.taxes.tax_objects import codes_for, reference_rate
+
+    if code not in codes_for(kind):
+        raise ValidationFailed(_("Choose a tax object code of %(tax)s.") % {"tax": IncomeTaxWithheld(kind).label})
+    expected = reference_rate(kind, code)
+    if expected is not None and rate is not None and rate != expected:
+        raise ValidationFailed(
+            _("Tax object %(code)s is withheld at %(rate)s%%.") % {"code": code, "rate": f"{expected.normalize():f}"}
+        )
+
+
 def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, amount: Decimal) -> JournalLineInput | None:
     """The journal line for income tax withheld from a payment of ``amount`` (cash before it).
 
@@ -485,6 +502,7 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
                 _("The base of the withholding must be more than zero and at most the bill's subtotal (%(amount)s).")
                 % {"amount": localized_rupiah(invoice.subtotal)}
             )
+        _check_tax_object(income_tax.kind, income_tax.object_code, income_tax.rate)
         if income_tax.kind == IncomeTaxWithheld.PPH_21:
             from apps.payroll.domain import non_employee_pph21  # pure rules
 
@@ -592,6 +610,7 @@ def record_payment(
         income_tax_account=income_tax_line.account if income_tax_line and invoice.is_sales else None,
         income_tax_base=income_tax.base if payer else ZERO,
         income_tax_rate=income_tax.rate if payer and income_tax.kind != IncomeTaxWithheld.PPH_21 else None,
+        income_tax_object=income_tax.object_code if payer else "",
         withholding_slip=income_tax.slip if income_tax_line else "", created_by=created_by,
     )
     invoice.amount_paid += amount
@@ -869,6 +888,21 @@ def record_tax_invoice_number(*, invoice: Invoice, number: str) -> Invoice:
     invoice.tax_invoice_number = digits
     invoice.save(update_fields=["tax_invoice_number", "updated_at"])
     return invoice
+
+
+@transaction.atomic
+def record_tax_object(*, payment: Payment, code: str) -> Payment:
+    """Set the tax object code of a payment that withheld tax from a supplier, once."""
+    payment = Payment.objects.select_for_update().select_related("invoice").get(pk=payment.pk)
+    if payment.invoice.is_sales or payment.income_tax_kind not in PAYER_ROLES or payment.income_tax_object:
+        raise InvalidStateTransition(_("This payment's tax object code can't be changed."))
+    code = code.strip()
+    if not code:
+        raise ValidationFailed(_("Choose the tax object code."))
+    _check_tax_object(payment.income_tax_kind, code, payment.income_tax_rate)
+    payment.income_tax_object = code
+    payment.save(update_fields=["income_tax_object", "updated_at"])
+    return payment
 
 
 @transaction.atomic
