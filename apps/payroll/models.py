@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
@@ -108,7 +110,10 @@ class Employee(TenantOwnedModel):
     fixed_allowance = money_field(_("fixed allowances"), validators=[MinValueValidator(0)])
     bpjs_employment = models.BooleanField(_("BPJS Ketenagakerjaan"), default=True, help_text=_("JKK, JKM, JHT and JP."))
     bpjs_health = models.BooleanField(_("BPJS Kesehatan"), default=True)
-    is_active = models.BooleanField(_("active"), default=True)
+    is_active = models.BooleanField(
+        _("active"), default=True,
+        help_text=_("Untick when nothing more is paid to them; a former employee who is still active can be paid severance in instalments."),
+    )
 
     class Meta:
         ordering = ["name"]
@@ -142,6 +147,10 @@ class Employee(TenantOwnedModel):
     def tin(self) -> str:
         """The tax ID on bukti potong: the NPWP, or the NIK of an Indonesian citizen."""
         return self.npwp or (self.nik if self.is_citizen else "")
+
+    def left_before(self, year: int, month: int) -> bool:
+        """They left before the month: only severance (paid in instalments) can still be paid."""
+        return self.end_date is not None and self.end_date < date(year, month, 1)
 
     @property
     def is_daily(self) -> bool:
@@ -210,7 +219,11 @@ class Payslip(TimeStampedModel):
     tax_allowance = money_field(_("tax allowance"))
     benefits_in_kind = money_field(_("benefits in kind"), help_text=_("Taxable, but not paid in cash."))
     severance = money_field(_("severance pay"))
-    severance_tax = money_field(_("final PPh 21 on severance"))
+    severance_tax = money_field(_("PPh 21 on severance"))
+    severance_final = models.BooleanField(
+        _("severance taxed as final"), default=True,
+        help_text=_("Final within two calendar years of the first payment; from the third year the Art. 17 rates (PP 68/2009)."),
+    )
     zakat = money_field(_("zakat deducted"))
     jkk = money_field("JKK")
     jkm = money_field("JKM")
@@ -241,6 +254,10 @@ class Payslip(TimeStampedModel):
 
     def __str__(self):
         return f"{self.employee} {self.run.period}"
+
+    @property
+    def is_severance_only(self) -> bool:
+        return self.tax_scheme == TaxScheme.SEVERANCE_ONLY
 
     @property
     def is_pph26(self) -> bool:

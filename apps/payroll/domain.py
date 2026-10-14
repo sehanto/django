@@ -80,6 +80,7 @@ class TaxScheme(models.TextChoices):
     DAILY_ARTICLE_17 = "daily_art17", _("PPh 21, 50% of daily gross at Art. 17 rates")
     # xgettext:no-python-format
     PPH_26 = "pph26", _("PPh 26 (non-resident, 20%)")
+    SEVERANCE_ONLY = "severance", _("severance only, after leaving")
 
 
 class TerCategory(models.TextChoices):
@@ -180,6 +181,12 @@ def _layered(amount: Decimal, layers) -> Decimal:
 def severance_tax(amount: Decimal, *, paid_before: Decimal = ZERO) -> Decimal:
     """Final PPh 21 on a severance payment, after ``paid_before`` of the same severance."""
     return _layered(paid_before + amount, SEVERANCE_LAYERS) - _layered(paid_before, SEVERANCE_LAYERS)
+
+
+def late_severance_tax(amount: Decimal, *, paid_before: Decimal = ZERO) -> Decimal:
+    """PPh 21 on severance paid in the third calendar year or later (PP 68/2009 Art. 6): the
+    Art. 17 rates on the gross paid in the calendar year, after ``paid_before`` of that year; not final."""
+    return article_17(paid_before + amount) - article_17(paid_before)
 
 
 def gross_up(tax_on) -> Decimal:

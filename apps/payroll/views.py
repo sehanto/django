@@ -102,6 +102,7 @@ def _employees_in(organization, year, month):
     return [
         e for e in Employee.objects.for_organization(organization).filter(start_date__lte=end)
         if (e.end_date is None or e.end_date >= start) and (e.is_active or e.end_date)
+        or e.is_active and e.left_before(year, month)  # severance in instalments
     ]
 
 
@@ -115,7 +116,8 @@ class PayrollRunCreateView(WriteMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
-        return {**super().get_form_kwargs(), "employees": _employees_in(self.organization, self.kwargs["year"], self.kwargs["month"])}
+        year, month = self.kwargs["year"], self.kwargs["month"]
+        return {**super().get_form_kwargs(), "employees": _employees_in(self.organization, year, month), "year": year, "month": month}
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(year=self.kwargs["year"], month=Month(self.kwargs["month"]), **kwargs)

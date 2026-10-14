@@ -85,6 +85,42 @@ def test_severance_bears_final_pph21(organization, account):
     assert st.gross == D("10000000")  # severance is final income, not on the 1721-A1
 
 
+
+def test_severance_paid_in_instalments(organization, account, auth_client):
+    from django.urls import reverse
+
+    from apps.taxes import ebupot
+
+    employee = make(organization, start_date=date(2020, 1, 1), end_date=date(2024, 6, 30))
+    first = run(organization, 6, PayInput(employee, D("10000000"), severance=D("60000000")), year=2024).payslips.get()
+    assert (first.severance_tax, first.severance_final) == (D("500000"), True)  # 10 juta x 5%
+
+    # After they left, only severance: listed in the run form, no PPh 21 period of their own.
+    with pytest.raises(ValidationFailed, match="only severance"):
+        run(organization, 9, PayInput(employee, D("10000000")), year=2024)
+    form = auth_client.get(reverse("payroll:run_create", args=[2024, 9])).context["form"]
+    assert [(e, base) for e, base, *_rest in form.rows] == [(employee, None)]
+    later = run(organization, 9, PayInput(employee, D("0"), severance=D("50000000")), year=2024).payslips.get()
+    # Layers on the cumulative 110 juta: 2,5 juta + 1,5 juta, less the 0,5 juta already withheld.
+    assert (later.tax_scheme, later.pph21, later.severance_tax, later.severance_final) == (TaxScheme.SEVERANCE_ONLY, D("0"), D("3500000"), True)
+    assert later.net_pay == D("50000000") - D("3500000")
+    page = auth_client.get(reverse("payroll:payslip", args=[later.pk]))
+    assert page.status_code == 200 and b"PPh 21 (" not in page.content  # no PPh 21 period of their own
+    assert auth_client.get(reverse("payroll:run", args=[later.run_id])).status_code == 200
+    assert selectors.annual_statement(employee, 2024).gross == D("10000000")  # the 1721-A1 is untouched
+    assert run(organization, 2, PayInput(employee, D("0"), severance=D("20000000")), year=2025).payslips.get().severance_tax == D("3000000")
+
+    # The third calendar year: Art. 17 on that year's total, not final (PP 68/2009 Art. 6).
+    third = run(organization, 3, PayInput(employee, D("0"), severance=D("70000000")), year=2026).payslips.get()
+    assert (third.severance_tax, third.severance_final) == (D("4500000"), False)  # 60 juta x 5% + 10 juta x 15%
+    fourth = run(organization, 4, PayInput(employee, D("0"), severance=D("30000000")), year=2026).payslips.get()
+    assert fourth.severance_tax == D("4500000")  # 30 juta more at 15%
+    organization.npwp = "0123456789012345"
+    organization.save(update_fields=["npwp"])
+    (row,) = ebupot.month_batches(organization, 2026, 3)["bp21"].records
+    fields = dict(row.fields)
+    assert (fields["TaxObjectCode"], fields["Gross"], fields["Rate"]) == ("21-100-25", D("70000000"), D("15"))
+
 def test_income_from_a_previous_employer(organization, client, user):
     employee = make(organization, start_date=date(2026, 9, 1))
     services.add_prior_income(employee=employee, year=2026, employer_name="PT Lama", net_income=D("70000000"), pph21=D("700000"),

@@ -45,6 +45,7 @@ FILE_NAMES = {
 # Kode objek pajak (DJP's REF sheets).
 PERMANENT, NON_PERMANENT_MONTHLY, DAILY, DAILY_HIGH = "21-100-01", "21-100-35", "21-100-24", "21-100-30"
 SEVERANCE, PPH_26 = "21-401-01", "27-100-99"
+LATE_SEVERANCE = "21-100-25"  # severance paid from the third calendar year on: Art. 17 rates
 PAYROLL_DOCUMENT, BILL_DOCUMENT = "PaymentProof", "CommercialInvoice"  # Bukti Pembayaran, Surat Tagihan
 PAYSLIP, PAYMENT, SELF_DEPOSIT = "payslip", "payment", "self_deposit"
 
@@ -185,9 +186,12 @@ def _payroll(batches: dict[str, Batch], run, office: str) -> None:
                 batch.records.append(Record(PAYSLIP, slip.pk, _bp21_fields(year, month, tin, slip.ptkp_status, code, gross, deemed, rate,
                                                                             _payroll_document(run), office, on)))
         if slip.severance and slip.tax_scheme != TaxScheme.PPH_26 and tin:
+            code, rate = (
+                (SEVERANCE, severance_bracket(slip.severance)) if slip.severance_final
+                else (LATE_SEVERANCE, article_17_bracket(slip.severance))
+            )
             batches[DocumentType.BP21].records.append(Record(PAYSLIP, slip.pk, _bp21_fields(
-                year, month, tin, slip.ptkp_status, SEVERANCE, slip.severance, 100, severance_bracket(slip.severance),
-                _payroll_document(run), office, on,
+                year, month, tin, slip.ptkp_status, code, slip.severance, 100, rate, _payroll_document(run), office, on,
             )))
 
 

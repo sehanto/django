@@ -99,7 +99,7 @@ def test_an_employee_who_leaves_is_settled_in_their_last_month(organization, sta
     run(organization, 2, staff)
     march = run(organization, 3, staff, base="4500000", allowance="0").payslips.get()
     assert march.is_final_period and march.pph21 < 0  # three months' income is under PTKP: a refund
-    with pytest.raises(ValidationFailed, match="doesn't work here"):
+    with pytest.raises(ValidationFailed, match="only severance"):
         run(organization, 4, staff)
 
 

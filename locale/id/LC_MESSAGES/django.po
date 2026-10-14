@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 14:15+0700\n"
+"POT-Creation-Date: 2026-10-14 14:50+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -96,7 +96,7 @@ msgstr "Jangan minta kode di perangkat ini selama %(days)s hari"
 msgid "Only on your own device, never on a shared or public computer."
 msgstr "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
 
-#: apps/accounts/models.py:42 apps/contacts/models.py:72 apps/payroll/models.py:99
+#: apps/accounts/models.py:42 apps/contacts/models.py:72 apps/payroll/models.py:101
 #: apps/tenants/models.py:62 apps/tenants/models.py:135
 msgid "email"
 msgstr "email"
@@ -114,7 +114,7 @@ msgid "interface language"
 msgstr "bahasa antarmuka"
 
 #: apps/accounts/models.py:48 apps/contacts/models.py:91 apps/invoicing/models.py:67
-#: apps/invoicing/models.py:645 apps/ledger/models.py:29 apps/payroll/models.py:111
+#: apps/invoicing/models.py:645 apps/ledger/models.py:29 apps/payroll/models.py:114
 #: apps/taxes/models.py:38 apps/tenants/models.py:171
 msgid "active"
 msgstr "aktif"
@@ -302,7 +302,7 @@ msgid "created by"
 msgstr "dibuat oleh"
 
 #: apps/api/models.py:17 apps/assets/models.py:30 apps/contacts/models.py:47
-#: apps/invoicing/models.py:40 apps/payroll/models.py:56 apps/taxes/models.py:18
+#: apps/invoicing/models.py:40 apps/payroll/models.py:58 apps/taxes/models.py:18
 #: apps/tenants/models.py:20 apps/tenants/models.py:164
 msgid "name"
 msgstr "nama"
@@ -328,7 +328,7 @@ msgstr "Kunci API"
 msgid "API keys"
 msgstr "Kunci API"
 
-#: apps/api/pages.py:22 apps/payroll/views.py:161 apps/payroll/views.py:200
+#: apps/api/pages.py:22 apps/payroll/views.py:163 apps/payroll/views.py:202
 #: templates/api/keys.html:14 templates/assets/asset_list.html:23
 #: templates/contacts/contact_list.html:14 templates/invoicing/item_list.html:10
 #: templates/payroll/employee_list.html:9 templates/taxes/taxrate_list.html:12
@@ -541,7 +541,7 @@ msgstr ""
 
 #: apps/assets/models.py:57 apps/billing/models.py:54 apps/billing/models.py:113
 #: apps/invoicing/models.py:157 apps/invoicing/models.py:517 apps/invoicing/models.py:568
-#: apps/invoicing/models.py:667 apps/ledger/models.py:68 apps/payroll/models.py:165
+#: apps/invoicing/models.py:667 apps/ledger/models.py:68 apps/payroll/models.py:174
 #: apps/taxes/models.py:81 apps/taxes/models.py:122 apps/taxes/models.py:163
 #: apps/taxes/models.py:214 apps/taxes/models.py:260
 msgid "status"
@@ -599,13 +599,13 @@ msgstr "perubahan estimasi"
 msgid "changes in estimates"
 msgstr "perubahan estimasi"
 
-#: apps/assets/models.py:174 apps/payroll/models.py:163 apps/payroll/models.py:273
+#: apps/assets/models.py:174 apps/payroll/models.py:172 apps/payroll/models.py:290
 #: apps/taxes/models.py:74 apps/taxes/models.py:104 apps/taxes/models.py:155
 #: apps/taxes/models.py:244
 msgid "year"
 msgstr "tahun"
 
-#: apps/assets/models.py:175 apps/payroll/models.py:164 apps/taxes/models.py:75
+#: apps/assets/models.py:175 apps/payroll/models.py:173 apps/taxes/models.py:75
 #: apps/taxes/models.py:105 apps/taxes/models.py:156 apps/taxes/models.py:245
 msgid "month"
 msgstr "bulan"
@@ -1300,7 +1300,7 @@ msgid "Contacts"
 msgstr "Kontak"
 
 #: apps/contacts/forms.py:13 apps/contacts/models.py:48 apps/payroll/forms.py:17
-#: apps/payroll/models.py:67 apps/tenants/forms.py:16 apps/tenants/models.py:52
+#: apps/payroll/models.py:69 apps/tenants/forms.py:16 apps/tenants/models.py:52
 msgid "tax ID (NPWP)"
 msgstr "NPWP"
 
@@ -1394,7 +1394,7 @@ msgstr "negara"
 msgid "Three-letter code as used by Coretax, e.g. IDN, SGP or MYS."
 msgstr "Kode tiga huruf seperti di Coretax, mis. IDN, SGP atau MYS."
 
-#: apps/contacts/models.py:67 apps/payroll/models.py:95
+#: apps/contacts/models.py:67 apps/payroll/models.py:97
 msgid "foreign tax ID"
 msgstr "nomor identitas pajak luar negeri"
 
@@ -1402,7 +1402,7 @@ msgstr "nomor identitas pajak luar negeri"
 msgid "A supplier abroad's tax ID in its country."
 msgstr "Nomor identitas pajak pemasok luar negeri di negaranya."
 
-#: apps/contacts/models.py:69 apps/payroll/models.py:93
+#: apps/contacts/models.py:69 apps/payroll/models.py:95
 msgid "certificate of residence no."
 msgstr "no. surat keterangan domisili"
 
@@ -1415,7 +1415,7 @@ msgstr ""
 msgid "phone"
 msgstr "telepon"
 
-#: apps/contacts/models.py:74 apps/payroll/models.py:98 apps/tenants/models.py:59
+#: apps/contacts/models.py:74 apps/payroll/models.py:100 apps/tenants/models.py:59
 #: apps/tenants/models.py:169
 msgid "address"
 msgstr "alamat"
@@ -1462,7 +1462,7 @@ msgstr "kontak"
 msgid "Enter the number of the identity document."
 msgstr "Masukkan nomor dokumen identitas."
 
-#: apps/contacts/models.py:112 apps/payroll/models.py:14
+#: apps/contacts/models.py:112 apps/payroll/models.py:16
 msgid "A NIK has 16 digits."
 msgstr "NIK terdiri dari 16 digit."
 
@@ -2007,7 +2007,7 @@ msgid "Partially paid"
 msgstr "Dibayar Sebagian"
 
 #: apps/invoicing/domain.py:23 apps/invoicing/models.py:484 apps/invoicing/models.py:565
-#: apps/payroll/models.py:161 apps/taxes/models.py:64 templates/payroll/run_detail.html:10
+#: apps/payroll/models.py:170 apps/taxes/models.py:64 templates/payroll/run_detail.html:10
 msgid "Void"
 msgstr "Dibatalkan"
 
@@ -2725,7 +2725,7 @@ msgstr "E-Wallet"
 msgid "Cheque/Giro"
 msgstr "Cek/Giro"
 
-#: apps/invoicing/models.py:483 apps/invoicing/models.py:564 apps/payroll/models.py:160
+#: apps/invoicing/models.py:483 apps/invoicing/models.py:564 apps/payroll/models.py:169
 #: apps/taxes/models.py:63 templates/taxes/pph_final.html:35
 msgid "Recorded"
 msgstr "Tercatat"
@@ -3103,7 +3103,7 @@ msgstr "Jumlah pembayaran melebihi sisa tagihan (%(balance)s)."
 msgid "The payment date cannot be before the invoice date."
 msgstr "Tanggal pembayaran tidak boleh sebelum tanggal faktur."
 
-#: apps/invoicing/services.py:642 apps/payroll/services.py:253 apps/taxes/services.py:126
+#: apps/invoicing/services.py:642 apps/payroll/services.py:264 apps/taxes/services.py:126
 #: apps/taxes/services.py:197 apps/taxes/services.py:242
 msgid "Choose a valid cash or bank account."
 msgstr "Pilih akun kas/bank yang valid."
@@ -3252,7 +3252,7 @@ msgstr ""
 msgid "This payment already has its bukti potong number."
 msgstr "Pembayaran ini sudah memiliki nomor bukti potong."
 
-#: apps/invoicing/services.py:1009 apps/payroll/services.py:321
+#: apps/invoicing/services.py:1009 apps/payroll/services.py:332
 msgid "Enter the bukti potong number."
 msgstr "Isi nomor bukti potong."
 
@@ -3351,7 +3351,7 @@ msgstr "Pembayaran %(number)s dicatat."
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:298 apps/payroll/views.py:268
+#: apps/invoicing/views.py:298 apps/payroll/views.py:270
 msgid "Bukti potong number recorded."
 msgstr "Nomor bukti potong dicatat."
 
@@ -3862,146 +3862,151 @@ msgstr "PPh 21, tarif Pasal 17 atas 50% penghasilan bruto harian"
 msgid "PPh 26 (non-resident, 20%)"
 msgstr "PPh 26 (WPLN, 20%)"
 
-#: apps/payroll/forms.py:16 apps/payroll/models.py:64 apps/payroll/views.py:161
-#: apps/payroll/views.py:200 apps/reports/exports.py:306
+#: apps/payroll/domain.py:83
+msgid "severance only, after leaving"
+msgstr "hanya pesangon, setelah berhenti bekerja"
+
+#: apps/payroll/forms.py:16 apps/payroll/models.py:66 apps/payroll/views.py:163
+#: apps/payroll/views.py:202 apps/reports/exports.py:306
 msgid "NIK"
 msgstr "NIK"
 
-#: apps/payroll/forms.py:70 templates/payroll/employee_list.html:9 templates/payroll/payslip.html:10
+#: apps/payroll/forms.py:71 apps/payroll/forms.py:78 apps/payroll/views.py:167
+#: templates/payroll/payslip.html:14
+msgid "Severance pay"
+msgstr "Uang pesangon"
+
+#: apps/payroll/forms.py:74 templates/payroll/employee_list.html:9 templates/payroll/payslip.html:10
 #: templates/payroll/run_form.html:9
 msgid "Base salary"
 msgstr "Gaji pokok"
 
-#: apps/payroll/forms.py:71 templates/payroll/payslip.html:11 templates/payroll/run_form.html:9
+#: apps/payroll/forms.py:75 templates/payroll/payslip.html:11 templates/payroll/run_form.html:9
 msgid "Allowances"
 msgstr "Tunjangan"
 
-#: apps/payroll/forms.py:72 templates/payroll/payslip.html:12 templates/payroll/run_form.html:9
+#: apps/payroll/forms.py:76 templates/payroll/payslip.html:12 templates/payroll/run_form.html:9
 msgid "Bonus / THR"
 msgstr "Bonus / THR"
 
-#: apps/payroll/forms.py:73 apps/payroll/views.py:162 templates/payroll/a1.html:24
+#: apps/payroll/forms.py:77 apps/payroll/views.py:164 templates/payroll/a1.html:24
 msgid "Benefits in kind"
 msgstr "Penerimaan dalam bentuk natura dan kenikmatan"
 
-#: apps/payroll/forms.py:74 apps/payroll/views.py:165 templates/payroll/payslip.html:14
-msgid "Severance pay"
-msgstr "Uang pesangon"
-
-#: apps/payroll/forms.py:77 apps/payroll/views.py:162
+#: apps/payroll/forms.py:81 apps/payroll/views.py:164
 msgid "Days worked"
 msgstr "Hari kerja"
 
-#: apps/payroll/forms.py:103 apps/taxes/forms.py:39 apps/taxes/forms.py:57 apps/taxes/forms.py:139
+#: apps/payroll/forms.py:110 apps/taxes/forms.py:39 apps/taxes/forms.py:57 apps/taxes/forms.py:139
 msgid "Payment date"
 msgstr "Tanggal setor"
 
-#: apps/payroll/forms.py:104 apps/taxes/forms.py:40 apps/taxes/forms.py:58 apps/taxes/forms.py:110
+#: apps/payroll/forms.py:111 apps/taxes/forms.py:40 apps/taxes/forms.py:58 apps/taxes/forms.py:110
 #: apps/taxes/forms.py:140
 msgid "Paid from"
 msgstr "Dibayar dari"
 
-#: apps/payroll/forms.py:112 apps/payroll/models.py:275
+#: apps/payroll/forms.py:119 apps/payroll/models.py:292
 msgid "previous employer's NPWP"
 msgstr "NPWP pemberi kerja sebelumnya"
 
-#: apps/payroll/models.py:21
+#: apps/payroll/models.py:23
 msgid "salary expense account"
 msgstr "akun beban gaji"
 
-#: apps/payroll/models.py:23
+#: apps/payroll/models.py:25
 msgid "BPJS expense account"
 msgstr "akun beban BPJS"
 
-#: apps/payroll/models.py:24
+#: apps/payroll/models.py:26
 msgid "The employer's share of BPJS contributions."
 msgstr "Bagian iuran BPJS yang ditanggung pemberi kerja."
 
-#: apps/payroll/models.py:26
+#: apps/payroll/models.py:28
 msgid "salaries payable account"
 msgstr "akun utang gaji"
 
-#: apps/payroll/models.py:28
+#: apps/payroll/models.py:30
 msgid "JKK rate (%)"
 msgstr "tarif JKK (%)"
 
-#: apps/payroll/models.py:29
+#: apps/payroll/models.py:31
 msgid "Work accident insurance, by risk group: 0.24 to 1.74."
 msgstr "Jaminan kecelakaan kerja, menurut kelompok risiko: 0,24 sampai 1,74."
 
-#: apps/payroll/models.py:32
+#: apps/payroll/models.py:34
 msgid "zakat payable account"
 msgstr "akun utang zakat"
 
-#: apps/payroll/models.py:33
+#: apps/payroll/models.py:35
 msgid "Zakat or religious donations deducted from pay, until you pass them on."
 msgstr "Zakat atau sumbangan keagamaan yang dipotong dari gaji, sampai Anda menyalurkannya."
 
-#: apps/payroll/models.py:35
+#: apps/payroll/models.py:37
 msgid "JP wage cap"
 msgstr "batas upah JP"
 
-#: apps/payroll/models.py:35
+#: apps/payroll/models.py:37
 msgid "Set by BPJS Ketenagakerjaan every year."
 msgstr "Ditetapkan BPJS Ketenagakerjaan setiap tahun."
 
-#: apps/payroll/models.py:36
+#: apps/payroll/models.py:38
 msgid "BPJS Kesehatan wage cap"
 msgstr "batas upah BPJS Kesehatan"
 
-#: apps/payroll/models.py:39 apps/payroll/models.py:40
+#: apps/payroll/models.py:41 apps/payroll/models.py:42
 msgid "payroll settings"
 msgstr "pengaturan penggajian"
 
-#: apps/payroll/models.py:52
+#: apps/payroll/models.py:54
 msgid "Not specified"
 msgstr "Tidak diisi"
 
-#: apps/payroll/models.py:53
+#: apps/payroll/models.py:55
 msgid "Male"
 msgstr "Laki-laki"
 
-#: apps/payroll/models.py:54
+#: apps/payroll/models.py:56
 msgid "Female"
 msgstr "Perempuan"
 
-#: apps/payroll/models.py:57
+#: apps/payroll/models.py:59
 msgid "employment"
 msgstr "status kepegawaian"
 
-#: apps/payroll/models.py:59
+#: apps/payroll/models.py:61
 msgid "paid"
 msgstr "dibayar"
 
-#: apps/payroll/models.py:60
+#: apps/payroll/models.py:62
 msgid "Non-permanent workers paid by the day are taxed at the daily rates."
 msgstr "Pegawai tidak tetap yang dibayar harian dipotong dengan tarif harian."
 
-#: apps/payroll/models.py:62
+#: apps/payroll/models.py:64
 msgid "nationality"
 msgstr "kewarganegaraan"
 
-#: apps/payroll/models.py:63
+#: apps/payroll/models.py:65
 msgid "Country code, e.g. IDN, AUS, JPN."
 msgstr "Kode negara, mis. IDN, AUS, JPN."
 
-#: apps/payroll/models.py:65
+#: apps/payroll/models.py:67
 msgid "16 digits; also the NPWP of an Indonesian citizen."
 msgstr "16 digit; juga berfungsi sebagai NPWP bagi WNI."
 
-#: apps/payroll/models.py:66
+#: apps/payroll/models.py:68
 msgid "passport no."
 msgstr "no. paspor"
 
-#: apps/payroll/models.py:66
+#: apps/payroll/models.py:68
 msgid "For foreign employees."
 msgstr "Untuk karyawan asing."
 
-#: apps/payroll/models.py:69
+#: apps/payroll/models.py:71
 msgid "Indonesian tax resident"
 msgstr "Wajib pajak dalam negeri"
 
-#: apps/payroll/models.py:70
+#: apps/payroll/models.py:72
 msgid ""
 "Foreigners in Indonesia for less than 183 days in 12 months are not: their pay bears 20% PPh 26 "
 "instead of PPh 21."
@@ -4009,29 +4014,29 @@ msgstr ""
 "WNA yang berada di Indonesia kurang dari 183 hari dalam 12 bulan bukan wajib pajak dalam negeri: "
 "penghasilannya dipotong PPh 26 sebesar 20%, bukan PPh 21."
 
-#: apps/payroll/models.py:73
+#: apps/payroll/models.py:75
 msgid "tax resident since"
 msgstr "wajib pajak dalam negeri sejak"
 
-#: apps/payroll/models.py:74
+#: apps/payroll/models.py:76
 msgid "For someone who moved to Indonesia: in that year their income is annualised at year end."
 msgstr ""
 "Bagi yang pindah ke Indonesia: pada tahun itu penghasilannya disetahunkan pada masa pajak "
 "terakhir."
 
-#: apps/payroll/models.py:77
+#: apps/payroll/models.py:79
 msgid "leaves Indonesia for good at the end date"
 msgstr "meninggalkan Indonesia untuk selamanya pada tanggal berhenti"
 
-#: apps/payroll/models.py:78
+#: apps/payroll/models.py:80
 msgid "Their last month's PPh 21 is then computed on annualised income."
 msgstr "PPh 21 masa terakhirnya dihitung atas penghasilan yang disetahunkan."
 
-#: apps/payroll/models.py:81
+#: apps/payroll/models.py:83
 msgid "the employer pays the PPh 21"
 msgstr "PPh 21 ditanggung pemberi kerja"
 
-#: apps/payroll/models.py:82
+#: apps/payroll/models.py:84
 msgid ""
 "A tax allowance equal to the tax is added to the pay (gross-up), so the take-home pay is "
 "unchanged."
@@ -4039,11 +4044,11 @@ msgstr ""
 "Tunjangan PPh sebesar pajaknya ditambahkan ke gaji (gross-up), sehingga gaji yang diterima tidak "
 "berubah."
 
-#: apps/payroll/models.py:85
+#: apps/payroll/models.py:87
 msgid "zakat per month"
 msgstr "zakat per bulan"
 
-#: apps/payroll/models.py:86
+#: apps/payroll/models.py:88
 msgid ""
 "Zakat or a compulsory religious donation deducted from pay for an official body; it lowers the "
 "year's taxable income."
@@ -4051,287 +4056,307 @@ msgstr ""
 "Zakat atau sumbangan keagamaan wajib yang dipotong dari gaji untuk badan/lembaga yang disahkan "
 "pemerintah; mengurangi penghasilan kena pajak setahun."
 
-#: apps/payroll/models.py:89
+#: apps/payroll/models.py:91
 msgid "tax treaty rate for PPh 26 (%)"
 msgstr "tarif P3B untuk PPh 26 (%)"
 
-#: apps/payroll/models.py:91
+#: apps/payroll/models.py:93
 msgid "Only with the employee's certificate of residence (DGT form); empty for the standard 20%."
 msgstr ""
 "Hanya dengan Surat Keterangan Domisili karyawan (formulir DGT); kosongkan untuk tarif standar 20%."
 
-#: apps/payroll/models.py:95
+#: apps/payroll/models.py:97
 msgid "A non-resident's tax ID in their country, for the PPh 26 bukti potong."
 msgstr "Nomor identitas pajak WPLN di negaranya, untuk bukti potong PPh 26."
 
-#: apps/payroll/models.py:97
+#: apps/payroll/models.py:99
 msgid "gender"
 msgstr "jenis kelamin"
 
-#: apps/payroll/models.py:100
+#: apps/payroll/models.py:102
 msgid "position"
 msgstr "jabatan"
 
-#: apps/payroll/models.py:102 apps/payroll/models.py:206 apps/payroll/views.py:161
-#: apps/payroll/views.py:200 templates/payroll/a1.html:16 templates/payroll/employee_list.html:9
+#: apps/payroll/models.py:104 apps/payroll/models.py:215 apps/payroll/views.py:163
+#: apps/payroll/views.py:202 templates/payroll/a1.html:16 templates/payroll/employee_list.html:9
 msgid "PTKP status"
 msgstr "Status PTKP"
 
-#: apps/payroll/models.py:103
+#: apps/payroll/models.py:105
 msgid "Marital status and dependents on 1 January of the year."
 msgstr "Status kawin dan tanggungan pada 1 Januari tahun berjalan."
 
-#: apps/payroll/models.py:105
+#: apps/payroll/models.py:107
 msgid "start date"
 msgstr "tanggal mulai"
 
-#: apps/payroll/models.py:106
+#: apps/payroll/models.py:108
 msgid "end date"
 msgstr "tanggal berhenti"
 
-#: apps/payroll/models.py:106
+#: apps/payroll/models.py:108
 msgid "Their last month is then the last PPh 21 period of the year."
 msgstr "Bulan terakhirnya menjadi masa pajak terakhir PPh 21 tahun itu."
 
-#: apps/payroll/models.py:107 apps/payroll/models.py:207
+#: apps/payroll/models.py:109 apps/payroll/models.py:216
 msgid "base salary"
 msgstr "gaji pokok"
 
-#: apps/payroll/models.py:107
+#: apps/payroll/models.py:109
 msgid "A month's; for daily workers, a day's wage."
 msgstr "Sebulan; untuk pekerja harian, upah sehari."
 
-#: apps/payroll/models.py:108
+#: apps/payroll/models.py:110
 msgid "fixed allowances"
 msgstr "tunjangan tetap"
 
-#: apps/payroll/models.py:109
+#: apps/payroll/models.py:111
 msgid "BPJS Ketenagakerjaan"
 msgstr "BPJS Ketenagakerjaan"
 
-#: apps/payroll/models.py:109
+#: apps/payroll/models.py:111
 msgid "JKK, JKM, JHT and JP."
 msgstr "JKK, JKM, JHT dan JP."
 
-#: apps/payroll/models.py:110
+#: apps/payroll/models.py:112
 msgid "BPJS Kesehatan"
 msgstr "BPJS Kesehatan"
 
 #: apps/payroll/models.py:115
+msgid ""
+"Untick when nothing more is paid to them; a former employee who is still active can be paid "
+"severance in instalments."
+msgstr ""
+"Hapus centang bila tidak ada lagi yang dibayarkan kepadanya; mantan pegawai yang masih aktif dapat"
+" dibayar pesangon secara bertahap."
+
+#: apps/payroll/models.py:120
 msgid "employee"
 msgstr "karyawan"
 
-#: apps/payroll/models.py:116
+#: apps/payroll/models.py:121
 msgid "employees"
 msgstr "karyawan"
 
-#: apps/payroll/models.py:125
+#: apps/payroll/models.py:130
 msgid "Enter the NIK of an Indonesian citizen."
 msgstr "Isi NIK untuk WNI."
 
-#: apps/payroll/models.py:127
+#: apps/payroll/models.py:132
 msgid "Enter the passport number of a foreign employee."
 msgstr "Isi nomor paspor karyawan asing."
 
-#: apps/payroll/models.py:129
+#: apps/payroll/models.py:134
 msgid "The end date can't be before the start date."
 msgstr "Tanggal berhenti tidak boleh sebelum tanggal mulai."
 
-#: apps/payroll/models.py:131
+#: apps/payroll/models.py:136
 msgid "Enter the date they stop working here."
 msgstr "Isi tanggal karyawan berhenti bekerja di sini."
 
-#: apps/payroll/models.py:133
+#: apps/payroll/models.py:138
 msgid "A treaty rate needs the certificate of residence."
 msgstr "Tarif P3B memerlukan surat keterangan domisili."
 
-#: apps/payroll/models.py:166
+#: apps/payroll/models.py:175
 msgid "salaries and allowances"
 msgstr "gaji dan tunjangan"
 
-#: apps/payroll/models.py:167
+#: apps/payroll/models.py:176
 msgid "employer BPJS"
 msgstr "BPJS pemberi kerja"
 
-#: apps/payroll/models.py:168
+#: apps/payroll/models.py:177
 msgid "employee BPJS"
 msgstr "BPJS karyawan"
 
-#: apps/payroll/models.py:169 apps/payroll/models.py:233
+#: apps/payroll/models.py:178 apps/payroll/models.py:246
 msgid "PPh 21"
 msgstr "PPh 21"
 
-#: apps/payroll/models.py:170
+#: apps/payroll/models.py:179
 msgid "PPh 26"
 msgstr "PPh 26"
 
-#: apps/payroll/models.py:171 apps/payroll/models.py:214
+#: apps/payroll/models.py:180 apps/payroll/models.py:227
 msgid "zakat deducted"
 msgstr "zakat yang dipotong"
 
-#: apps/payroll/models.py:172 apps/payroll/models.py:234
+#: apps/payroll/models.py:181 apps/payroll/models.py:247
 msgid "net pay"
 msgstr "gaji bersih"
 
-#: apps/payroll/models.py:174
+#: apps/payroll/models.py:183
 msgid "salaries paid on"
 msgstr "gaji dibayar pada"
 
-#: apps/payroll/models.py:176
+#: apps/payroll/models.py:185
 msgid "BPJS paid on"
 msgstr "BPJS dibayar pada"
 
-#: apps/payroll/models.py:182
+#: apps/payroll/models.py:191
 msgid "payroll run"
 msgstr "penggajian"
 
-#: apps/payroll/models.py:183
+#: apps/payroll/models.py:192
 msgid "payroll runs"
 msgstr "penggajian"
 
-#: apps/payroll/models.py:208
+#: apps/payroll/models.py:217
 msgid "allowances"
 msgstr "tunjangan"
 
-#: apps/payroll/models.py:209
+#: apps/payroll/models.py:218
 msgid "bonus / THR"
 msgstr "bonus / THR"
 
-#: apps/payroll/models.py:210
+#: apps/payroll/models.py:219
 msgid "tax allowance"
 msgstr "tunjangan PPh"
 
-#: apps/payroll/models.py:211
+#: apps/payroll/models.py:220
 msgid "benefits in kind"
 msgstr "natura dan kenikmatan"
 
-#: apps/payroll/models.py:211
+#: apps/payroll/models.py:220
 msgid "Taxable, but not paid in cash."
 msgstr "Dikenai pajak, tetapi tidak dibayar tunai."
 
-#: apps/payroll/models.py:212
+#: apps/payroll/models.py:221
 msgid "severance pay"
 msgstr "uang pesangon"
 
-#: apps/payroll/models.py:213
-msgid "final PPh 21 on severance"
-msgstr "PPh 21 final atas pesangon"
+#: apps/payroll/models.py:222
+msgid "PPh 21 on severance"
+msgstr "PPh 21 atas pesangon"
 
-#: apps/payroll/models.py:217
+#: apps/payroll/models.py:224
+msgid "severance taxed as final"
+msgstr "pesangon dikenai PPh final"
+
+#: apps/payroll/models.py:225
+msgid ""
+"Final within two calendar years of the first payment; from the third year the Art. 17 rates (PP "
+"68/2009)."
+msgstr ""
+"Final dalam dua tahun kalender sejak pembayaran pertama; mulai tahun ketiga dengan tarif Pasal 17 "
+"(PP 68/2009)."
+
+#: apps/payroll/models.py:230
 msgid "JHT (employer)"
 msgstr "JHT (pemberi kerja)"
 
-#: apps/payroll/models.py:218
+#: apps/payroll/models.py:231
 msgid "JP (employer)"
 msgstr "JP (pemberi kerja)"
 
-#: apps/payroll/models.py:219
+#: apps/payroll/models.py:232
 msgid "BPJS Kesehatan (employer)"
 msgstr "BPJS Kesehatan (pemberi kerja)"
 
-#: apps/payroll/models.py:220 templates/payroll/payslip.html:16
+#: apps/payroll/models.py:233 templates/payroll/payslip.html:16
 msgid "JHT (employee)"
 msgstr "JHT (karyawan)"
 
-#: apps/payroll/models.py:221 templates/payroll/payslip.html:17
+#: apps/payroll/models.py:234 templates/payroll/payslip.html:17
 msgid "JP (employee)"
 msgstr "JP (karyawan)"
 
-#: apps/payroll/models.py:222 templates/payroll/payslip.html:18
+#: apps/payroll/models.py:235 templates/payroll/payslip.html:18
 msgid "BPJS Kesehatan (employee)"
 msgstr "BPJS Kesehatan (karyawan)"
 
-#: apps/payroll/models.py:223
+#: apps/payroll/models.py:236
 msgid "gross income for PPh 21"
 msgstr "penghasilan bruto PPh 21"
 
-#: apps/payroll/models.py:224 apps/payroll/views.py:161
+#: apps/payroll/models.py:237 apps/payroll/views.py:163
 msgid "TER category"
 msgstr "kategori TER"
 
-#: apps/payroll/models.py:225
+#: apps/payroll/models.py:238
 msgid "TER rate (%)"
 msgstr "tarif TER (%)"
 
-#: apps/payroll/models.py:226
+#: apps/payroll/models.py:239
 msgid "last period of the year"
 msgstr "masa pajak terakhir"
 
-#: apps/payroll/models.py:227
+#: apps/payroll/models.py:240
 msgid "tax computed as"
 msgstr "dasar penghitungan pajak"
 
-#: apps/payroll/models.py:228
+#: apps/payroll/models.py:241
 msgid "days worked"
 msgstr "hari kerja"
 
-#: apps/payroll/models.py:229 templates/payroll/_tax.html:1 templates/payroll/payslip.html:19
+#: apps/payroll/models.py:242 templates/payroll/_tax.html:1 templates/payroll/payslip.html:19
 msgid "annualised"
 msgstr "disetahunkan"
 
-#: apps/payroll/models.py:230
+#: apps/payroll/models.py:243
 msgid "PPh 26 rate (%)"
 msgstr "Tarif PPh 26 (%)"
 
-#: apps/payroll/models.py:232
+#: apps/payroll/models.py:245
 #, no-python-format
 msgid "without NPWP (20% higher)"
 msgstr "tanpa NPWP (20% lebih tinggi)"
 
-#: apps/payroll/models.py:233
+#: apps/payroll/models.py:246
 msgid "PPh 26 when the scheme says so."
 msgstr "PPh 26 bila skemanya PPh 26."
 
-#: apps/payroll/models.py:235
+#: apps/payroll/models.py:248
 msgid "bukti potong no."
 msgstr "no. bukti potong"
 
-#: apps/payroll/models.py:239
+#: apps/payroll/models.py:252
 msgid "payslip"
 msgstr "slip gaji"
 
-#: apps/payroll/models.py:240
+#: apps/payroll/models.py:253
 msgid "payslips"
 msgstr "slip gaji"
 
-#: apps/payroll/models.py:274
+#: apps/payroll/models.py:291
 msgid "previous employer"
 msgstr "pemberi kerja sebelumnya"
 
-#: apps/payroll/models.py:276
+#: apps/payroll/models.py:293
 msgid "their 1721-A1 no."
 msgstr "no. 1721-A1 dari mereka"
 
-#: apps/payroll/models.py:277
+#: apps/payroll/models.py:294
 msgid "from month"
 msgstr "dari masa"
 
-#: apps/payroll/models.py:278
+#: apps/payroll/models.py:295
 msgid "to month"
 msgstr "sampai masa"
 
-#: apps/payroll/models.py:279
+#: apps/payroll/models.py:296
 msgid "net income"
 msgstr "penghasilan neto"
 
-#: apps/payroll/models.py:279
+#: apps/payroll/models.py:296
 msgid "Line 13 of their 1721-A1."
 msgstr "Angka 13 pada 1721-A1 mereka."
 
-#: apps/payroll/models.py:280 apps/payroll/views.py:203 templates/payroll/annual.html:10
+#: apps/payroll/models.py:297 apps/payroll/views.py:205 templates/payroll/annual.html:10
 #: templates/payroll/employee_form.html:13
 msgid "PPh 21 withheld"
 msgstr "PPh 21 yang dipotong"
 
-#: apps/payroll/models.py:280
+#: apps/payroll/models.py:297
 msgid "Line 21 of their 1721-A1."
 msgstr "Angka 21 pada 1721-A1 mereka."
 
-#: apps/payroll/models.py:284
+#: apps/payroll/models.py:301
 msgid "income from a previous employer"
 msgstr "penghasilan dari pemberi kerja sebelumnya"
 
-#: apps/payroll/models.py:285
+#: apps/payroll/models.py:302
 msgid "income from previous employers"
 msgstr "penghasilan dari pemberi kerja sebelumnya"
 
@@ -4351,91 +4376,97 @@ msgstr "Utang gaji harus berupa akun liabilitas jangka pendek."
 msgid "Zakat payable must be one of your current liability accounts."
 msgstr "Utang zakat harus berupa salah satu akun liabilitas jangka pendek Anda."
 
-#: apps/payroll/services.py:127
+#: apps/payroll/services.py:131
 msgid "Pay amounts can't be negative."
 msgstr "Jumlah gaji tidak boleh negatif."
 
-#: apps/payroll/services.py:143
+#: apps/payroll/services.py:147
 #, python-format
 msgid "Enter the days %(name)s worked in the month."
 msgstr "Isi jumlah hari kerja %(name)s dalam bulan ini."
 
-#: apps/payroll/services.py:184
+#: apps/payroll/services.py:190
 #, python-format
 msgid "The %(tax)s for %(period)s has already been deposited. Cancel that deposit first."
 msgstr "%(tax)s masa %(period)s sudah disetor. Batalkan setoran itu terlebih dahulu."
 
-#: apps/payroll/services.py:194 apps/taxes/views.py:153
+#: apps/payroll/services.py:200 apps/taxes/views.py:153
 msgid "Choose a month."
 msgstr "Pilih bulan."
 
-#: apps/payroll/services.py:198
+#: apps/payroll/services.py:204
 #, python-format
 msgid "The payroll for %(period)s has already been recorded."
 msgstr "Penggajian masa %(period)s sudah dicatat."
 
-#: apps/payroll/services.py:202
+#: apps/payroll/services.py:208
 msgid "Enter the pay of at least one employee."
 msgstr "Isi gaji minimal satu karyawan."
 
-#: apps/payroll/services.py:204
+#: apps/payroll/services.py:210
 msgid "Each employee is paid once per run."
 msgstr "Setiap karyawan dibayar sekali per penggajian."
 
-#: apps/payroll/services.py:210
+#: apps/payroll/services.py:216
 msgid "Employee not found."
 msgstr "Karyawan tidak ditemukan."
 
-#: apps/payroll/services.py:212
+#: apps/payroll/services.py:218
 #, python-format
 msgid "%(name)s doesn't work here in %(period)s."
 msgstr "%(name)s tidak bekerja di sini pada %(period)s."
 
-#: apps/payroll/services.py:224
+#: apps/payroll/services.py:221
+#, python-format
+msgid "%(name)s left on %(date)s: only severance can still be paid to them."
+msgstr ""
+"%(name)s berhenti bekerja pada %(date)s: hanya pesangon yang masih dapat dibayarkan kepadanya."
+
+#: apps/payroll/services.py:235
 msgid "Choose the zakat payable account first (Payroll → Settings)."
 msgstr "Pilih akun utang zakat terlebih dahulu (Penggajian → Pengaturan)."
 
-#: apps/payroll/services.py:261
+#: apps/payroll/services.py:272
 msgid "These salaries have already been paid."
 msgstr "Gaji ini sudah dibayar."
 
-#: apps/payroll/services.py:280
+#: apps/payroll/services.py:291
 msgid "This BPJS has already been paid."
 msgstr "Iuran BPJS ini sudah dibayar."
 
-#: apps/payroll/services.py:283
+#: apps/payroll/services.py:294
 msgid "This payroll has no BPJS contributions."
 msgstr "Penggajian ini tidak memiliki iuran BPJS."
 
-#: apps/payroll/services.py:301
+#: apps/payroll/services.py:312
 msgid "This payroll has already been voided."
 msgstr "Penggajian ini sudah dibatalkan."
 
-#: apps/payroll/services.py:303
+#: apps/payroll/services.py:314
 msgid "Salaries or BPJS of this payroll have been paid; it can't be voided."
 msgstr "Gaji atau BPJS penggajian ini sudah dibayar; tidak dapat dibatalkan."
 
-#: apps/payroll/services.py:305
+#: apps/payroll/services.py:316
 msgid "Later payrolls of the year build on this one. Void them first."
 msgstr ""
 "Penggajian bulan berikutnya tahun ini bergantung pada penggajian ini. Batalkan terlebih dahulu."
 
-#: apps/payroll/services.py:318
+#: apps/payroll/services.py:329
 msgid "This payslip already has its bukti potong number."
 msgstr "Slip gaji ini sudah memiliki nomor bukti potong."
 
-#: apps/payroll/services.py:330
+#: apps/payroll/services.py:341
 #, python-format
 msgid "%(name)s's PPh 21 for %(year)s has been settled; void that payroll first."
 msgstr ""
 "PPh 21 %(name)s tahun %(year)s sudah dihitung pada masa terakhir; batalkan penggajian itu terlebih"
 " dahulu."
 
-#: apps/payroll/services.py:340
+#: apps/payroll/services.py:351
 msgid "Enter the months of that employment."
 msgstr "Isi masa kerja di pemberi kerja tersebut."
 
-#: apps/payroll/services.py:342
+#: apps/payroll/services.py:353
 msgid "Amounts can't be negative."
 msgstr "Jumlah tidak boleh negatif."
 
@@ -4451,130 +4482,130 @@ msgstr "Penghasilan dari pemberi kerja sebelumnya dicatat."
 msgid "Income from the previous employer removed."
 msgstr "Penghasilan dari pemberi kerja sebelumnya dihapus."
 
-#: apps/payroll/views.py:132
+#: apps/payroll/views.py:134
 msgid "Payroll recorded and posted to the ledger."
 msgstr "Penggajian dicatat dan dijurnal."
 
-#: apps/payroll/views.py:161 apps/payroll/views.py:200
+#: apps/payroll/views.py:163 apps/payroll/views.py:202
 msgid "Passport no."
 msgstr "No. paspor"
 
-#: apps/payroll/views.py:161 apps/payroll/views.py:200
+#: apps/payroll/views.py:163 apps/payroll/views.py:202
 msgid "Country"
 msgstr "Negara"
 
-#: apps/payroll/views.py:161 apps/payroll/views.py:200 apps/taxes/views.py:243
+#: apps/payroll/views.py:163 apps/payroll/views.py:202 apps/taxes/views.py:243
 #: templates/billing/invoice_detail.html:33 templates/billing/invoice_detail.html:45
 #: templates/contacts/contact_list.html:14 templates/invoicing/_invoice_body.html:8
 #: templates/invoicing/invoice_print.html:10
 msgid "NPWP"
 msgstr "NPWP"
 
-#: apps/payroll/views.py:161
+#: apps/payroll/views.py:163
 msgid "Tax computed as"
 msgstr "Dasar penghitungan pajak"
 
-#: apps/payroll/views.py:162 templates/payroll/a1.html:20 templates/payroll/payslip.html:13
+#: apps/payroll/views.py:164 templates/payroll/a1.html:20 templates/payroll/payslip.html:13
 msgid "Tax allowance"
 msgstr "Tunjangan PPh"
 
-#: apps/payroll/views.py:162 apps/payroll/views.py:201 templates/payroll/annual.html:10
+#: apps/payroll/views.py:164 apps/payroll/views.py:203 templates/payroll/annual.html:10
 msgid "Gross income"
 msgstr "Penghasilan bruto"
 
-#: apps/payroll/views.py:162 apps/taxes/views.py:244
+#: apps/payroll/views.py:164 apps/taxes/views.py:244
 msgid "Rate (%)"
 msgstr "Tarif (%)"
 
-#: apps/payroll/views.py:164
+#: apps/payroll/views.py:166
 #, no-python-format
 msgid "Without NPWP (20% higher)"
 msgstr "Tanpa NPWP (20% lebih tinggi)"
 
-#: apps/payroll/views.py:165 apps/taxes/views.py:244
+#: apps/payroll/views.py:167 apps/taxes/views.py:244
 msgid "Tax withheld"
 msgstr "PPh dipotong"
 
-#: apps/payroll/views.py:165 templates/payroll/payslip.html:20
+#: apps/payroll/views.py:167 templates/payroll/payslip.html:20
 msgid "Final PPh 21 on severance"
 msgstr "PPh 21 final atas pesangon"
 
-#: apps/payroll/views.py:165 apps/payroll/views.py:203 apps/taxes/views.py:244
+#: apps/payroll/views.py:167 apps/payroll/views.py:205 apps/taxes/views.py:244
 #: templates/invoicing/invoice_detail.html:71 templates/payroll/run_detail.html:14
 #: templates/payroll/run_detail.html:20 templates/taxes/withholding_month.html:10
 #: templates/taxes/withholding_month.html:22
 msgid "Bukti potong no."
 msgstr "No. bukti potong"
 
-#: apps/payroll/views.py:172
+#: apps/payroll/views.py:174
 msgid "yes"
 msgstr "ya"
 
-#: apps/payroll/views.py:200
+#: apps/payroll/views.py:202
 msgid "First month"
 msgstr "Masa awal"
 
-#: apps/payroll/views.py:200
+#: apps/payroll/views.py:202
 msgid "Last month"
 msgstr "Masa akhir"
 
-#: apps/payroll/views.py:201
+#: apps/payroll/views.py:203
 msgid "Occupational costs"
 msgstr "Biaya jabatan"
 
-#: apps/payroll/views.py:201
+#: apps/payroll/views.py:203
 msgid "Pension contributions"
 msgstr "Iuran pensiun/JHT"
 
-#: apps/payroll/views.py:201 templates/payroll/payslip.html:21
+#: apps/payroll/views.py:203 templates/payroll/payslip.html:21
 msgid "Zakat"
 msgstr "Zakat"
 
-#: apps/payroll/views.py:201 templates/payroll/employee_form.html:13
+#: apps/payroll/views.py:203 templates/payroll/employee_form.html:13
 msgid "Net income"
 msgstr "Penghasilan neto"
 
-#: apps/payroll/views.py:202 templates/payroll/a1.html:32
+#: apps/payroll/views.py:204 templates/payroll/a1.html:32
 msgid "Net income from earlier periods"
 msgstr "Penghasilan neto masa pajak sebelumnya"
 
-#: apps/payroll/views.py:202
+#: apps/payroll/views.py:204
 msgid "Net income for the year (annualised)"
 msgstr "Penghasilan neto setahun/disetahunkan"
 
-#: apps/payroll/views.py:202
+#: apps/payroll/views.py:204
 msgid "PTKP"
 msgstr "PTKP"
 
-#: apps/payroll/views.py:202 templates/payroll/annual.html:10
+#: apps/payroll/views.py:204 templates/payroll/annual.html:10
 msgid "Taxable income"
 msgstr "PKP"
 
-#: apps/payroll/views.py:203 templates/payroll/annual.html:10
+#: apps/payroll/views.py:205 templates/payroll/annual.html:10
 msgid "PPh 21 for the year"
 msgstr "PPh 21 setahun"
 
-#: apps/payroll/views.py:203 templates/payroll/a1.html:37
+#: apps/payroll/views.py:205 templates/payroll/a1.html:37
 msgid "PPh 21 withheld in earlier periods"
 msgstr "PPh 21 yang telah dipotong masa pajak sebelumnya"
 
-#: apps/payroll/views.py:203 templates/payroll/a1.html:38
+#: apps/payroll/views.py:205 templates/payroll/a1.html:38
 msgid "PPh 21 due"
 msgstr "PPh 21 terutang"
 
-#: apps/payroll/views.py:249
+#: apps/payroll/views.py:251
 msgid "Payroll voided (journal entry reversed)."
 msgstr "Penggajian dibatalkan (jurnal dibalik)."
 
-#: apps/payroll/views.py:253 apps/taxes/views.py:122 apps/taxes/views.py:313
+#: apps/payroll/views.py:255 apps/taxes/views.py:122 apps/taxes/views.py:313
 msgid "The payment details are incomplete."
 msgstr "Data setoran tidak lengkap."
 
-#: apps/payroll/views.py:257
+#: apps/payroll/views.py:259
 msgid "Payment recorded and posted to the ledger."
 msgstr "Pembayaran dicatat dan dijurnal."
 
-#: apps/payroll/views.py:292
+#: apps/payroll/views.py:294
 msgid "Payroll settings saved."
 msgstr "Pengaturan penggajian disimpan."
 
@@ -5090,36 +5121,36 @@ msgstr "PPh 21 (gaji dan honorarium)"
 msgid "PPh 26 (non-resident employees)"
 msgstr "PPh 26 (karyawan WPLN)"
 
-#: apps/taxes/ebupot.py:117
+#: apps/taxes/ebupot.py:118
 msgid "Enter the organization's NPWP first."
 msgstr "Isi NPWP organisasi terlebih dahulu."
 
-#: apps/taxes/ebupot.py:144
+#: apps/taxes/ebupot.py:145
 #, python-format
 msgid "%(name)s: enter their foreign tax ID or passport number."
 msgstr "%(name)s: isi nomor identitas pajak luar negeri atau nomor paspornya."
 
-#: apps/taxes/ebupot.py:168
+#: apps/taxes/ebupot.py:169
 #, python-format
 msgid "%(name)s: enter their NPWP."
 msgstr "%(name)s: isi NPWP-nya."
 
-#: apps/taxes/ebupot.py:174
+#: apps/taxes/ebupot.py:175
 #, python-format
 msgid "%(name)s: enter their NIK or NPWP."
 msgstr "%(name)s: isi NIK atau NPWP-nya."
 
-#: apps/taxes/ebupot.py:245
+#: apps/taxes/ebupot.py:249
 #, python-format
 msgid "Payment %(number)s: choose its tax object code."
 msgstr "Pembayaran %(number)s: pilih kode objek pajaknya."
 
-#: apps/taxes/ebupot.py:248
+#: apps/taxes/ebupot.py:252
 #, python-format
 msgid "Payment %(number)s: the supplier has no NPWP or NIK."
 msgstr "Pembayaran %(number)s: pemasok tidak memiliki NPWP atau NIK."
 
-#: apps/taxes/ebupot.py:271
+#: apps/taxes/ebupot.py:275
 #, python-format
 msgid "Payment %(number)s: enter the supplier's foreign tax ID on the contact."
 msgstr "Pembayaran %(number)s: isi nomor identitas pajak luar negeri pemasok pada kontak."
@@ -7937,6 +7968,10 @@ msgid_plural "50%% × Art. 17, %(days)s days"
 msgstr[0] "50%% × Pasal 17, %(days)s hari"
 
 #: templates/payroll/_tax.html:1
+msgid "severance only"
+msgstr "hanya pesangon"
+
+#: templates/payroll/_tax.html:1
 #, python-format
 msgid "daily, %(days)s day"
 msgid_plural "daily, %(days)s days"
@@ -8207,6 +8242,10 @@ msgctxt "salary"
 msgid "Pay"
 msgstr "Gaji"
 
+#: templates/payroll/payslip.html:20
+msgid "PPh 21 on severance (Art. 17)"
+msgstr "PPh 21 atas pesangon (Pasal 17)"
+
 #: templates/payroll/payslip.html:24
 #, python-format
 msgid "Benefits in kind of %(amount)s are included in the gross income for PPh 21."
@@ -8258,6 +8297,11 @@ msgstr "gross-up"
 #, python-format
 msgid "incl. %(amount)s final on severance"
 msgstr "termasuk %(amount)s final atas pesangon"
+
+#: templates/payroll/run_detail.html:19
+#, python-format
+msgid "incl. %(amount)s on severance (Art. 17, third year on)"
+msgstr "termasuk %(amount)s atas pesangon (Pasal 17, tahun ketiga dan seterusnya)"
 
 #: templates/payroll/run_detail.html:21
 #, python-format
@@ -8324,23 +8368,32 @@ msgstr "WPLN (PPh 26)"
 msgid "tax paid by employer"
 msgstr "pajak ditanggung pemberi kerja"
 
-#: templates/payroll/run_form.html:14
+#: templates/payroll/run_form.html:13
+#, python-format
+msgid "Left on %(date)s: severance only"
+msgstr "Berhenti pada %(date)s: hanya pesangon"
+
+#: templates/payroll/run_form.html:15
 msgid "No employee works here in this month."
 msgstr "Tidak ada karyawan yang bekerja pada bulan ini."
 
-#: templates/payroll/run_form.html:17
+#: templates/payroll/run_form.html:18
 msgid ""
 "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances,"
 " PPh 21 on everything paid. For daily workers enter the days worked; leave their base salary empty"
 " to pay the days at their daily wage. Benefits in kind are the taxable value of goods or "
-"facilities given (not paid out here); severance bears final PPh 21."
+"facilities given (not paid out here); severance bears final PPh 21 within two calendar years of "
+"its first payment, and the Art. 17 rates from the third year on. Former employees who are still "
+"active are listed for severance paid in instalments."
 msgstr ""
-"Biarkan 0 untuk karyawan yang tidak diikutkan. BPJS dihitung dari gaji dan tunjangan, PPh 21 dari "
-"seluruh yang dibayar. Untuk pekerja harian isi jumlah hari kerja; kosongkan gaji pokoknya agar "
-"dibayar sesuai upah hariannya. Natura adalah nilai barang atau fasilitas yang diberikan yang "
-"dikenai pajak (tidak dibayarkan di sini); pesangon dikenai PPh 21 final."
+"Biarkan jumlah seorang pegawai 0 untuk tidak menyertakannya. BPJS dihitung dari gaji dan "
+"tunjangan, PPh 21 dari seluruh yang dibayarkan. Untuk pekerja harian isi jumlah hari kerja; "
+"kosongkan gaji pokok untuk membayar hari kerja dengan upah hariannya. Natura adalah nilai kena "
+"pajak barang atau fasilitas yang diberikan (tidak dibayarkan di sini); pesangon dikenai PPh 21 "
+"final dalam dua tahun kalender sejak pembayaran pertamanya, dan tarif Pasal 17 mulai tahun ketiga."
+" Mantan pegawai yang masih aktif ditampilkan untuk pesangon yang dibayar bertahap."
 
-#: templates/payroll/run_form.html:18
+#: templates/payroll/run_form.html:19
 msgid "Calculate & post"
 msgstr "Hitung & jurnal"
 

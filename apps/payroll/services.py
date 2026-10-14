@@ -19,7 +19,7 @@ from apps.ledger.services import JournalLineInput, create_journal_entry, get_sys
 
 from .domain import (
     PPH_26_RATE, TER_CATEGORY, AnnualTax, EmployeeKind, PtkpStatus, TaxScheme, annual_pph21, contributions, daily_pph21, gross_up,
-    monthly_pph21, pph26, severance_tax, with_surcharge,
+    late_severance_tax, monthly_pph21, pph26, severance_tax, with_surcharge,
 )
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 
@@ -62,7 +62,7 @@ def month_end(year: int, month: int) -> date:
 def is_final_period(employee: Employee, year: int, month: int) -> bool:
     """For a permanent, resident employee: December, or the month they leave. PPh 21 is then
     computed for the year."""
-    if employee.kind != EmployeeKind.PERMANENT or not employee.is_resident:
+    if employee.kind != EmployeeKind.PERMANENT or not employee.is_resident or employee.left_before(year, month):
         return False
     end = employee.end_date
     return month == 12 or (end is not None and (end.year, end.month) == (year, month))
@@ -112,12 +112,16 @@ def _earlier_slips(employee: Employee, year: int, month: int):
     ).order_by("run__month"))
 
 
-def _severance_paid_before(employee: Employee, year: int) -> Decimal:
-    """Severance paid in this and the previous calendar year: the layers apply to the
-    cumulative amount (paid at once or within two calendar years)."""
-    return sum((p.severance for p in Payslip.objects.filter(
-        employee=employee, run__year__gte=year - 1, run__status=PayrollRun.Status.POSTED,
-    )), ZERO)
+def _severance_tax(employee: Employee, year: int, amount: Decimal, has_tin: bool) -> tuple[Decimal, bool]:
+    """(PPh 21, final?) on severance paid in ``year``. PP 68/2009: what is paid within two
+    calendar years bears the final layers on the cumulative amount; what is paid from the third
+    calendar year on bears the Art. 17 rates on each year's total, not final."""
+    paid = Payslip.objects.filter(employee=employee, run__status=PayrollRun.Status.POSTED, run__year__lte=year, severance__gt=0)
+    first = min(paid.values_list("run__year", flat=True), default=year)
+    if year >= first + 2:
+        before = sum((p.severance for p in paid.filter(run__year=year)), ZERO)
+        return with_surcharge(late_severance_tax(amount, paid_before=before), has_tin), False
+    return severance_tax(amount, paid_before=sum((p.severance for p in paid), ZERO)), True
 
 
 def compute_payslip(settings: PayrollSettings, employee: Employee, year: int, month: int, pay: PayInput) -> Payslip:
@@ -147,7 +151,9 @@ def compute_payslip(settings: PayrollSettings, employee: Employee, year: int, mo
         """Set the slip's tax for pay including ``allowance``; return the tax."""
         slip.tax_allowance, slip.taxable_gross = allowance, base_gross + allowance
         gross = slip.taxable_gross
-        if not employee.is_resident:
+        if employee.left_before(year, month) and employee.is_resident:
+            slip.tax_scheme, slip.ter_rate, slip.pph21 = TaxScheme.SEVERANCE_ONLY, None, ZERO  # their PPh 21 periods are over
+        elif not employee.is_resident:
             rate = employee.treaty_rate if employee.treaty_rate is not None else PPH_26_RATE
             slip.tax_scheme, slip.ter_rate, slip.pph26_rate = TaxScheme.PPH_26, None, rate
             slip.pph21 = pph26(gross + pay.severance, rate)  # PP 68/2009 is for residents
@@ -168,7 +174,7 @@ def compute_payslip(settings: PayrollSettings, employee: Employee, year: int, mo
 
     assess(gross_up(assess) if employee.tax_borne_by_employer else ZERO)
     if pay.severance and employee.is_resident:
-        slip.severance_tax = severance_tax(pay.severance, paid_before=_severance_paid_before(employee, year))
+        slip.severance_tax, slip.severance_final = _severance_tax(employee, year, pay.severance, has_tin)
     slip.net_pay = wage + pay.bonus + slip.tax_allowance + pay.severance - c.employee - slip.pph21 - slip.severance_tax - slip.zakat
     return slip
 
@@ -208,8 +214,13 @@ def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], cr
         employee = pay.employee
         if employee.organization_id != organization.pk:
             raise ValidationFailed(_("Employee not found."))
-        if employee.start_date > on or (employee.end_date and employee.end_date < date(year, month, 1)):
+        if employee.start_date > on:
             raise ValidationFailed(_("%(name)s doesn't work here in %(period)s.") % {"name": employee.name, "period": f"{month:02d}/{year}"})
+        if employee.left_before(year, month) and (pay.base_salary or pay.allowances or pay.bonus or pay.benefits_in_kind):
+            raise ValidationFailed(
+                _("%(name)s left on %(date)s: only severance can still be paid to them.")
+                % {"name": employee.name, "date": f"{employee.end_date:%d/%m/%Y}"}
+            )
         slips.append(compute_payslip(settings, employee, year, month, pay))
 
     pay_total = sum((s.pay for s in slips), ZERO)

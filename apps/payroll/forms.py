@@ -62,10 +62,14 @@ def _money(label, initial):
 class PayrollRunForm(OrganizationFormMixin, BaseForm):
     """One row of pay fields per employee working in the month."""
 
-    def __init__(self, *args, employees, **kwargs):
+    def __init__(self, *args, employees, year: int, month: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.employees = list(employees)
+        self.year, self.month = year, month
         for e in self.employees:
+            if e.left_before(year, month):  # severance in instalments only
+                self.fields[f"severance_{e.pk}"] = _money(_("Severance pay"), 0)
+                continue
             # Daily workers: the month's wages, or the days worked at their daily wage.
             self.fields[f"base_{e.pk}"] = _money(_("Base salary"), None if e.is_daily else e.base_salary)
             self.fields[f"allowance_{e.pk}"] = _money(_("Allowances"), e.fixed_allowance)
@@ -80,11 +84,14 @@ class PayrollRunForm(OrganizationFormMixin, BaseForm):
 
     @property
     def rows(self):
-        return [
-            (e, self[f"base_{e.pk}"], self[f"allowance_{e.pk}"], self[f"bonus_{e.pk}"], self[f"natura_{e.pk}"], self[f"severance_{e.pk}"],
-             self[f"days_{e.pk}"] if e.is_daily else None)
-            for e in self.employees
-        ]
+        rows = []
+        for e in self.employees:
+            if e.left_before(self.year, self.month):
+                rows.append((e, None, None, None, None, self[f"severance_{e.pk}"], None))
+                continue
+            rows.append((e, self[f"base_{e.pk}"], self[f"allowance_{e.pk}"], self[f"bonus_{e.pk}"], self[f"natura_{e.pk}"],
+                         self[f"severance_{e.pk}"], self[f"days_{e.pk}"] if e.is_daily else None))
+        return rows
 
     def pays(self) -> list[PayInput]:
         data, pays = self.cleaned_data, []
