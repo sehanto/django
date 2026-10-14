@@ -196,7 +196,7 @@ class WithholdingView(OrganizationMixin, TemplateView):
             WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)),
                            reverse("taxes:withholding_month", args=[year, month]))
             for month in Month for kind in PayerWithholding
-            if due.get((kind, month)) or (kind, month) in deposits
+            if (kind, month) in due or (kind, month) in deposits  # a 0% treaty rate still takes a BPNR
         ]
         return super().get_context_data(
             year=year, years=year_choices(), rows=rows, today=timezone.localdate(),

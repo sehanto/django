@@ -529,7 +529,11 @@ class Payment(TenantOwnedModel):
             models.CheckConstraint(
                 name="payment_income_tax_withheld_within_amount",
                 condition=Q(income_tax_withheld__gte=0, income_tax_withheld__lte=F("amount") - F("vat_withheld"))
-                & (Q(income_tax_kind="", income_tax_withheld=0) | (~Q(income_tax_kind="") & Q(income_tax_withheld__gt=0))),
+                & (
+                    Q(income_tax_kind="", income_tax_withheld=0) | (~Q(income_tax_kind="") & Q(income_tax_withheld__gt=0))
+                    # PPh 26 at a treaty's 0% rate: nothing withheld, reported all the same (BPNR)
+                    | Q(income_tax_kind=IncomeTaxWithheld.PPH_26, income_tax_withheld=0, income_tax_rate=0)
+                ),
             ),
         ]
 

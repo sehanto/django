@@ -267,7 +267,8 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
             self.fields["income_tax_rate"].help_text = _(
                 # xgettext:no-python-format
                 "Usually 2% for PPh 23 on services, 10% for PPh 4(2) on rent of land or buildings. "
-                "PPh 21 on an individual's fee needs no rate: it is the Art. 17 rates on 50% of the base (20% more without an NPWP or NIK)."
+                "PPh 21 on an individual's fee needs no rate: it is the Art. 17 rates on 50% of the base (20% more without an NPWP or NIK). "
+                "PPh 26 is 20%, or the treaty's rate (0% included) when the contact has a certificate of residence."
             )
             self.initial.setdefault("income_tax_base", invoice.subtotal)
             self.initial.setdefault("income_tax_rate", PAYER_WITHHOLDING_RATES[PayerWithholding.PPH_23])
@@ -301,7 +302,7 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
         if "income_tax_base" in self.fields:  # we withhold from a supplier
             if kind and not cleaned.get("income_tax_base"):
                 self.add_error("income_tax_base", _("Enter the amount the tax is withheld on."))
-            if kind and kind != IncomeTaxWithheld.PPH_21 and not cleaned.get("income_tax_rate"):
+            if kind and kind != IncomeTaxWithheld.PPH_21 and cleaned.get("income_tax_rate") is None:
                 self.add_error("income_tax_rate", _("Enter the withholding rate (%)."))
             code = cleaned.get("income_tax_object")
             if code and not kind:

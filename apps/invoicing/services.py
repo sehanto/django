@@ -535,6 +535,11 @@ def _check_tax_object(kind: str, code: str, rate: Decimal | None, *, treaty: boo
         )
 
 
+def _treaty_exempt(invoice: Invoice, income_tax: IncomeTaxInput) -> bool:
+    """PPh 26 at a treaty's 0% rate: nothing is withheld, yet the payment is reported (BPNR)."""
+    return not invoice.is_sales and income_tax.kind == IncomeTaxWithheld.PPH_26 and income_tax.rate == ZERO
+
+
 def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, amount: Decimal) -> JournalLineInput | None:
     """The journal line for income tax withheld from a payment of ``amount`` (cash before it).
 
@@ -567,8 +572,6 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
                 raise ValidationFailed(_("Choose the tax object code of the PPh 26."))
             if income_tax.rate is None or not ZERO <= income_tax.rate <= Decimal("20"):
                 raise ValidationFailed(_("Enter the PPh 26 rate: 20%, or a treaty's lower rate."))
-            if not income_tax.rate:
-                raise ValidationFailed(_("Under a 0% treaty rate nothing is withheld: record the payment without it and create the BPNR in Coretax."))
             share = deemed(income_tax.kind, income_tax.object_code)
             withheld = round_down_rupiah(income_tax.base * share / Decimal("100") * income_tax.rate / Decimal("100"))
         elif income_tax.kind == IncomeTaxWithheld.PPH_21:
@@ -579,10 +582,12 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
             if income_tax.rate is None or not ZERO < income_tax.rate <= Decimal("100"):
                 raise ValidationFailed(_("Enter the withholding rate (%)."))
             withheld = round_down_rupiah(income_tax.base * income_tax.rate / Decimal("100"))
-    if withheld <= 0 or withheld > amount:
+    if not _treaty_exempt(invoice, income_tax) and (withheld <= 0 or withheld > amount):
         raise ValidationFailed(_("The income tax withheld must be more than zero and at most %(amount)s.") % {"amount": localized_rupiah(amount)})
     ensure_period_open(invoice, income_tax.kind, on)
-    if not invoice.is_sales:
+    if _treaty_exempt(invoice, income_tax):
+        line = None  # nothing to post, but the payment still takes its BPNR
+    elif not invoice.is_sales:
         line = JournalLineInput(get_system_account(organization, PAYER_ROLES[income_tax.kind]), credit=withheld)
     elif income_tax.kind == IncomeTaxWithheld.PPH_FINAL:
         if not organization.uses_pph_final:
@@ -595,8 +600,8 @@ def _withholding_line(invoice: Invoice, on: date, income_tax: IncomeTaxInput, am
         line = JournalLineInput(account, debit=withheld)
     # A refund gives back the income tax withheld on what it refunds (create_return), so one
     # invoice's payments withhold one kind of tax, into one account.
-    earlier = {(p.income_tax_kind, p.income_tax_account_id) for p in invoice._posted_payments() if p.income_tax_withheld}
-    account_id = line.account.pk if invoice.is_sales and income_tax.kind != IncomeTaxWithheld.PPH_FINAL else None
+    earlier = {(p.income_tax_kind, p.income_tax_account_id) for p in invoice._posted_payments() if p.income_tax_kind}
+    account_id = line.account.pk if line and invoice.is_sales and income_tax.kind != IncomeTaxWithheld.PPH_FINAL else None
     if earlier and earlier != {(income_tax.kind, account_id)}:
         raise ValidationFailed(_("Earlier payments of this invoice withheld another income tax or used another account. Record the same kind here."))
     return line
@@ -646,6 +651,7 @@ def record_payment(
             )
     income_tax_line = _withholding_line(invoice, date, income_tax, amount - vat_withheld)
     withheld_income_tax = (income_tax_line.debit or income_tax_line.credit) if income_tax_line else ZERO
+    reported = income_tax_line is not None or _treaty_exempt(invoice, income_tax)
 
     number = next_document_number(organization, PAYMENT_PREFIX[invoice.kind], date)
     if invoice.is_sales:
@@ -669,17 +675,17 @@ def record_payment(
         organization=organization, date=date, description=description, reference=number,
         source=JournalEntry.Source.PAYMENT, lines=lines, created_by=created_by,
     )
-    payer = income_tax_line is not None and not invoice.is_sales
+    payer = reported and not invoice.is_sales
     payment = Payment.objects.create(
         organization=organization, number=number, invoice=invoice, date=date, amount=amount,
         cash_account=cash_account, method=method, reference=reference, vat_withheld=vat_withheld, journal_entry=entry,
-        income_tax_kind=income_tax.kind if income_tax_line else IncomeTaxWithheld.NONE,
+        income_tax_kind=income_tax.kind if reported else IncomeTaxWithheld.NONE,
         income_tax_withheld=withheld_income_tax,
         income_tax_account=income_tax_line.account if income_tax_line and invoice.is_sales else None,
         income_tax_base=income_tax.base if payer else ZERO,
         income_tax_rate=income_tax.rate if payer and income_tax.kind != IncomeTaxWithheld.PPH_21 else None,
         income_tax_object=income_tax.object_code if payer else "",
-        withholding_slip=income_tax.slip if income_tax_line else "", created_by=created_by,
+        withholding_slip=income_tax.slip if reported else "", created_by=created_by,
     )
     invoice.amount_paid += amount
     _refresh_payment_status(invoice)
@@ -994,7 +1000,7 @@ def record_tax_object(*, payment: Payment, code: str) -> Payment:
 def record_withholding_slip(*, payment: Payment, number: str) -> Payment:
     """Record the bukti potong number Coretax gave the income tax we withheld from a supplier (once)."""
     payment = Payment.objects.select_for_update().select_related("invoice").get(pk=payment.pk)
-    if payment.invoice.is_sales or not payment.income_tax_withheld or payment.status != Payment.Status.POSTED:
+    if payment.invoice.is_sales or not payment.income_tax_kind or payment.status != Payment.Status.POSTED:
         raise InvalidStateTransition(_("Only a payment to a supplier with income tax withheld takes a bukti potong number this way."))
     if payment.withholding_slip:
         raise InvalidStateTransition(_("This payment already has its bukti potong number."))

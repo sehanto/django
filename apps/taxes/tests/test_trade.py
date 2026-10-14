@@ -169,6 +169,38 @@ def test_pph26_on_a_payment_abroad(books, abroad, account):
         "SG-200012345K", "COD", "DGT-SGP-2026", D("100"), D("10"))
 
 
+
+def test_pph26_at_a_zero_treaty_rate_is_still_reported(books, abroad, account, auth_client):
+    bill = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+        organization=books, kind=InvoiceKind.PURCHASE, contact=abroad, date=date(2026, 3, 1),
+        lines=[InvoiceLineInput("Konsultasi", account("6-1700"), D("1"), D("10000000"))],
+    ))
+    zero = IncomeTaxInput(IncomeTaxWithheld.PPH_26, base=D("10000000"), rate=D("0"), object_code="27-104-01")
+    with pytest.raises(ValidationFailed, match="withheld at 20%"):  # only with the certificate of residence
+        invoicing.record_payment(invoice=bill, date=date(2026, 3, 5), amount=D("4000000"), cash_account=account("1-1100"), income_tax=zero)
+    abroad.treaty_document = "DGT-SGP-2026"
+    abroad.save()
+    payment = invoicing.record_payment(invoice=bill, date=date(2026, 3, 5), amount=D("4000000"), cash_account=account("1-1100"), income_tax=zero)
+    assert (payment.income_tax_kind, payment.income_tax_withheld, payment.income_tax_rate) == ("pph26", D("0"), D("0"))
+    assert [line.credit for line in payment.journal_entry.lines.filter(credit__gt=0)] == [D("4000000")]  # all of it is paid out
+    assert account_balance(books, account("2-1250")) == D("0")
+    with pytest.raises(ValidationFailed, match="Earlier payments"):  # one kind per bill
+        invoicing.record_payment(invoice=bill, date=date(2026, 3, 6), amount=D("1000000"), cash_account=account("1-1100"),
+                                 income_tax=IncomeTaxInput(IncomeTaxWithheld.PPH_23, base=D("1000000"), rate=D("2"), object_code="24-104-01"))
+
+    assert withholding_due(books, 2026) == {("pph26", 3): D("0")}
+    with pytest.raises(ValidationFailed, match="No PPh 26"):  # nothing to deposit
+        services.record_withholding_deposit(organization=books, kind="pph26", year=2026, month=3, paid_on=date(2026, 4, 10),
+                                            cash_account=account("1-1100"))
+    page = auth_client.get(reverse("taxes:withholding"), {"year": 2026})
+    assert [(row.kind, row.due) for row in page.context["rows"]] == [("pph26", D("0"))]  # still listed: its BPNR is due
+
+    (row,) = ebupot.month_batches(books, 2026, 3)[DocumentType.BPNR].records
+    fields = dict(row.fields)
+    assert (fields["TaxCertificate"], fields["CounterpartReceiptNumber"], fields["Rate"]) == ("COD", "DGT-SGP-2026", D("0"))
+    invoicing.record_withholding_slip(payment=payment, number="BPNR-0001")
+    assert DocumentType.BPNR not in ebupot.month_batches(books, 2026, 3)
+
 def test_self_deposited_final_pph_on_rent(books, customer, account):
     deposit = services.record_self_deposit(
         organization=books, tax_object="28-403-02", tax_base=D("5000000"), document_number="INV/2026/03/0007",
