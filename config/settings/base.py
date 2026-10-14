@@ -193,6 +193,11 @@ TRUSTED_PROXY_COUNT = env.int("TRUSTED_PROXY_COUNT", default=0)
 # default is 3 days). Requests are throttled per address and per IP to stop email bombing.
 PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60)
 PASSWORD_RESET_EMAILS_PER_ADDRESS_PER_HOUR = 3
+# Account enumeration: sign-up and password reset answer the same whether or not the address has an
+# account, and take at least this long, so the time taken doesn't tell either.
+ACCOUNT_RESPONSE_MIN_SECONDS = env.float("ACCOUNT_RESPONSE_MIN_SECONDS", default=1.0)
+# Notices to an address that already has an account (someone signed up or chose it again), per hour.
+ACCOUNT_NOTICE_EMAILS_PER_ADDRESS_PER_HOUR = 3
 PASSWORD_RESET_REQUESTS_PER_IP_PER_HOUR = 10
 SITE_NAME = env("SITE_NAME", default="EA-System")  # shown in emails
 

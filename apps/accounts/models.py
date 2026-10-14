@@ -49,6 +49,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_("staff status"), default=False)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     email_verified_at = models.DateTimeField(_("email verified at"), null=True, blank=True)
+    # A corrected address waiting for its link to be opened: it replaces ``email`` only then, so
+    # choosing an address never tells whether another account has it.
+    pending_email = models.EmailField(_("new email, not yet confirmed"), blank=True)
 
     objects = UserManager()
 

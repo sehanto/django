@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 16:03+0700\n"
+"POT-Creation-Date: 2026-10-14 16:54+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -34,7 +34,7 @@ msgstr "Tanggal"
 msgid "Users"
 msgstr "Pengguna"
 
-#: apps/accounts/forms.py:17 apps/accounts/forms.py:60 apps/accounts/forms.py:89
+#: apps/accounts/forms.py:17 apps/accounts/forms.py:60 apps/accounts/forms.py:87
 #: templates/accounts/profile.html:6 templates/tenants/members.html:8
 msgid "Email"
 msgstr "Email"
@@ -43,7 +43,7 @@ msgstr "Email"
 msgid "Please complete the security check, then sign in again."
 msgstr "Selesaikan pemeriksaan keamanan, lalu masuk kembali."
 
-#: apps/accounts/forms.py:48 apps/accounts/views.py:287
+#: apps/accounts/forms.py:48 apps/accounts/views.py:328
 msgid "Please complete the security check, then submit the form again."
 msgstr "Selesaikan pemeriksaan keamanan, lalu kirim formulir kembali."
 
@@ -63,36 +63,32 @@ msgstr "Nama usaha"
 msgid "Legal form"
 msgstr "Bentuk usaha"
 
-#: apps/accounts/forms.py:69 apps/accounts/services.py:87
-msgid "This email is already registered."
-msgstr "Email sudah terdaftar."
-
-#: apps/accounts/forms.py:113
+#: apps/accounts/forms.py:111
 msgid "Correct email address"
 msgstr "Alamat email yang benar"
 
-#: apps/accounts/forms.py:114 apps/accounts/forms.py:167
+#: apps/accounts/forms.py:112 apps/accounts/forms.py:165
 msgid "Current password"
 msgstr "Kata sandi saat ini"
 
-#: apps/accounts/forms.py:123 apps/accounts/forms.py:176
+#: apps/accounts/forms.py:121 apps/accounts/forms.py:174
 msgid "Your password is incorrect."
 msgstr "Kata sandi Anda salah."
 
-#: apps/accounts/forms.py:132
+#: apps/accounts/forms.py:130
 msgid "Authentication code"
 msgstr "Kode autentikasi"
 
-#: apps/accounts/forms.py:133
+#: apps/accounts/forms.py:131
 msgid "The 6-digit code from your authenticator app, or one of your backup codes."
 msgstr "Kode 6 digit dari aplikasi autentikator Anda, atau salah satu kode cadangan Anda."
 
-#: apps/accounts/forms.py:158
+#: apps/accounts/forms.py:156
 #, python-format
 msgid "Don't ask for a code on this device for %(days)s days"
 msgstr "Jangan minta kode di perangkat ini selama %(days)s hari"
 
-#: apps/accounts/forms.py:159
+#: apps/accounts/forms.py:157
 msgid "Only on your own device, never on a shared or public computer."
 msgstr "Hanya di perangkat milik Anda sendiri, jangan di komputer bersama atau umum."
 
@@ -131,77 +127,81 @@ msgstr "bergabung"
 msgid "email verified at"
 msgstr "email dikonfirmasi pada"
 
-#: apps/accounts/models.py:60 apps/audit/models.py:18 apps/audit/models.py:71
+#: apps/accounts/models.py:54
+msgid "new email, not yet confirmed"
+msgstr "email baru, belum dikonfirmasi"
+
+#: apps/accounts/models.py:63 apps/audit/models.py:18 apps/audit/models.py:71
 msgid "user"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:61
+#: apps/accounts/models.py:64
 msgid "users"
 msgstr "pengguna"
 
-#: apps/accounts/models.py:87
+#: apps/accounts/models.py:90
 msgid "device"
 msgstr "perangkat"
 
-#: apps/accounts/models.py:88
+#: apps/accounts/models.py:91
 msgid "remembered on"
 msgstr "diingat pada"
 
-#: apps/accounts/models.py:89 apps/api/models.py:20
+#: apps/accounts/models.py:92 apps/api/models.py:20
 msgid "last used"
 msgstr "terakhir dipakai"
 
-#: apps/accounts/models.py:90 apps/tenants/models.py:138
+#: apps/accounts/models.py:93 apps/tenants/models.py:138
 msgid "expires"
 msgstr "berlaku sampai"
 
-#: apps/accounts/models.py:94
+#: apps/accounts/models.py:97
 msgid "remembered device"
 msgstr "perangkat yang diingat"
 
-#: apps/accounts/models.py:95
+#: apps/accounts/models.py:98
 msgid "remembered devices"
 msgstr "perangkat yang diingat"
 
-#: apps/accounts/models.py:119
+#: apps/accounts/models.py:122
 msgid "authenticator app"
 msgstr "aplikasi autentikator"
 
-#: apps/accounts/models.py:120
+#: apps/accounts/models.py:123
 msgid "authenticator apps"
 msgstr "aplikasi autentikator"
 
-#: apps/accounts/models.py:174 apps/accounts/models.py:175
+#: apps/accounts/models.py:177 apps/accounts/models.py:178
 msgid "backup codes"
 msgstr "kode cadangan"
 
-#: apps/accounts/services.py:61
+#: apps/accounts/services.py:93
 msgid "This confirmation link has expired. Request a new one."
 msgstr "Tautan konfirmasi ini sudah kedaluwarsa. Minta tautan baru."
 
-#: apps/accounts/services.py:63 apps/accounts/services.py:66
+#: apps/accounts/services.py:95 apps/accounts/services.py:100 apps/accounts/services.py:104
 msgid "This confirmation link is not valid."
 msgstr "Tautan konfirmasi ini tidak valid."
 
-#: apps/accounts/services.py:85
+#: apps/accounts/services.py:126
 msgid "A confirmed email address can't be changed here."
 msgstr "Alamat email yang sudah dikonfirmasi tidak dapat diubah di sini."
 
-#: apps/accounts/services.py:95
+#: apps/accounts/services.py:134
 msgid "Two-factor authentication was turned on for your account."
 msgstr "Autentikasi dua faktor telah dihidupkan untuk akun Anda."
 
-#: apps/accounts/services.py:96
+#: apps/accounts/services.py:135
 msgid "Two-factor authentication was turned off for your account."
 msgstr "Autentikasi dua faktor telah dimatikan untuk akun Anda."
 
-#: apps/accounts/services.py:97
+#: apps/accounts/services.py:136
 msgid "New two-factor backup codes were created for your account. The old codes no longer work."
 msgstr ""
 "Kode cadangan autentikasi dua faktor yang baru telah dibuat untuk akun Anda. Kode lama tidak "
 "berlaku lagi."
 
-#: apps/accounts/services.py:99
+#: apps/accounts/services.py:138
 #, python-format
 msgid ""
 "A device was remembered for two-factor sign-in and won't be asked for a code for %(days)s days: "
@@ -210,61 +210,62 @@ msgstr ""
 "Sebuah perangkat diingat untuk masuk dengan autentikasi dua faktor dan tidak akan diminta kode "
 "selama %(days)s hari: %(device)s."
 
-#: apps/accounts/views.py:141
+#: apps/accounts/views.py:178
 msgid "Profile updated."
 msgstr "Profil diperbarui."
 
-#: apps/accounts/views.py:159
+#: apps/accounts/views.py:196
 msgid "Password changed successfully."
 msgstr "Kata sandi berhasil diubah."
 
-#: apps/accounts/views.py:289
+#: apps/accounts/views.py:330
 #, python-format
 msgid "We sent a new confirmation link to %(email)s."
 msgstr "Kami telah mengirim tautan konfirmasi baru ke %(email)s."
 
-#: apps/accounts/views.py:291
+#: apps/accounts/views.py:332
 msgid "Too many emails were requested. Please wait an hour and try again."
 msgstr "Terlalu banyak permintaan email. Tunggu satu jam lalu coba lagi."
 
-#: apps/accounts/views.py:303
+#: apps/accounts/views.py:342
 #, python-format
-msgid "Email address updated. We sent a confirmation link to %(email)s."
-msgstr "Alamat email diperbarui. Kami telah mengirim tautan konfirmasi ke %(email)s."
+msgid "We sent a confirmation link to %(email)s. Your address changes when you open it."
+msgstr ""
+"Kami mengirim tautan konfirmasi ke %(email)s. Alamat Anda berubah setelah tautan itu dibuka."
 
-#: apps/accounts/views.py:320
+#: apps/accounts/views.py:362
 msgid "Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has been set up."
 msgstr "Alamat email dikonfirmasi. Selamat datang! Bagan akun standar SAK EMKM telah disiapkan."
 
-#: apps/accounts/views.py:322
+#: apps/accounts/views.py:364
 msgid "Email address confirmed. You can sign in now."
 msgstr "Alamat email dikonfirmasi. Sekarang Anda dapat masuk."
 
-#: apps/accounts/views.py:332
+#: apps/accounts/views.py:374
 #, python-format
 msgid "Too many wrong codes. Wait %(seconds)s second and try again."
 msgid_plural "Too many wrong codes. Wait %(seconds)s seconds and try again."
 msgstr[0] "Terlalu banyak kode salah. Tunggu %(seconds)s detik lalu coba lagi."
 
-#: apps/accounts/views.py:354
+#: apps/accounts/views.py:396
 msgid "Please sign in again."
 msgstr "Silakan masuk kembali."
 
-#: apps/accounts/views.py:366 apps/accounts/views.py:462 apps/accounts/views.py:565
+#: apps/accounts/views.py:408 apps/accounts/views.py:504 apps/accounts/views.py:607
 msgid "That code is not valid. Check your authenticator app and try again."
 msgstr "Kode tersebut tidak valid. Periksa aplikasi autentikator Anda lalu coba lagi."
 
-#: apps/accounts/views.py:368
+#: apps/accounts/views.py:410
 msgid "Too many wrong codes. Please sign in again."
 msgstr "Terlalu banyak kode salah. Silakan masuk kembali."
 
-#: apps/accounts/views.py:386
+#: apps/accounts/views.py:428
 #, python-format
 msgid "You signed in with a backup code. %(count)s backup code is left."
 msgid_plural "You signed in with a backup code. %(count)s backup codes are left."
 msgstr[0] "Anda masuk dengan kode cadangan. Tersisa %(count)s kode cadangan."
 
-#: apps/accounts/views.py:420
+#: apps/accounts/views.py:462
 #, python-format
 msgid "%(count)s remembered device forgotten. It will be asked for a code at the next sign-in."
 msgid_plural ""
@@ -272,24 +273,24 @@ msgid_plural ""
 msgstr[0] ""
 "%(count)s perangkat yang diingat telah dilupakan. Kode akan diminta lagi saat masuk berikutnya."
 
-#: apps/accounts/views.py:495
+#: apps/accounts/views.py:537
 msgid "That code is not valid. Check that the time on your phone is correct and try again."
 msgstr "Kode tersebut tidak valid. Pastikan jam di ponsel Anda tepat lalu coba lagi."
 
-#: apps/accounts/views.py:501
+#: apps/accounts/views.py:543
 msgid "Two-factor authentication is on."
 msgstr "Autentikasi dua faktor aktif."
 
-#: apps/accounts/views.py:531
+#: apps/accounts/views.py:573
 msgid "New backup codes created. The old ones no longer work."
 msgstr "Kode cadangan baru dibuat. Kode lama tidak berlaku lagi."
 
-#: apps/accounts/views.py:557 templates/accounts/two_factor_disable.html:7
+#: apps/accounts/views.py:599 templates/accounts/two_factor_disable.html:7
 #, python-format
 msgid "You can't turn off two-factor authentication while %(organizations)s requires it."
 msgstr "Anda tidak dapat mematikan autentikasi dua faktor selama %(organizations)s mewajibkannya."
 
-#: apps/accounts/views.py:571
+#: apps/accounts/views.py:613
 msgid "Two-factor authentication is off. Your account is protected by your password only."
 msgstr "Autentikasi dua faktor dimatikan. Akun Anda kini hanya dilindungi kata sandi."
 
@@ -328,7 +329,7 @@ msgstr "Kunci API"
 msgid "API keys"
 msgstr "Kunci API"
 
-#: apps/api/pages.py:22 apps/payroll/views.py:163 apps/payroll/views.py:202
+#: apps/api/pages.py:22 apps/payroll/views.py:164 apps/payroll/views.py:203
 #: templates/api/keys.html:14 templates/assets/asset_list.html:23
 #: templates/contacts/contact_list.html:14 templates/invoicing/item_list.html:10
 #: templates/payroll/employee_list.html:9 templates/taxes/taxrate_list.html:12
@@ -1408,7 +1409,7 @@ msgid "Customer"
 msgstr "Pelanggan"
 
 #: apps/contacts/models.py:44 apps/invoicing/forms.py:81 apps/invoicing/views.py:45
-#: apps/taxes/views.py:243 templates/invoicing/return_detail.html:23
+#: apps/taxes/views.py:244 templates/invoicing/return_detail.html:23
 #: templates/taxes/withholding_month.html:10
 msgid "Supplier"
 msgstr "Pemasok"
@@ -1649,7 +1650,7 @@ msgstr "Penurunan ke nilai realisasi neto"
 msgid "Item"
 msgstr "Barang/Jasa"
 
-#: apps/inventory/forms.py:14 apps/inventory/forms.py:37 apps/taxes/views.py:243
+#: apps/inventory/forms.py:14 apps/inventory/forms.py:37 apps/taxes/views.py:244
 #: templates/billing/overview.html:93 templates/inventory/stock_card.html:14
 #: templates/invoicing/_invoice_body.html:12 templates/invoicing/coretax_connection.html:18
 #: templates/invoicing/invoice_list.html:19 templates/invoicing/payment_list.html:11
@@ -3399,7 +3400,7 @@ msgstr "Pembayaran %(number)s dicatat."
 msgid "Payment %(number)s voided."
 msgstr "Pembayaran %(number)s dibatalkan."
 
-#: apps/invoicing/views.py:298 apps/payroll/views.py:270
+#: apps/invoicing/views.py:298 apps/payroll/views.py:278
 msgid "Bukti potong number recorded."
 msgstr "Nomor bukti potong dicatat."
 
@@ -3453,7 +3454,7 @@ msgstr "Isi nomor Faktur Pajak."
 msgid "Coretax connection saved."
 msgstr "Koneksi Coretax disimpan."
 
-#: apps/invoicing/views.py:579 apps/taxes/views.py:286 templates/invoicing/invoice_detail.html:30
+#: apps/invoicing/views.py:579 apps/taxes/views.py:287 templates/invoicing/invoice_detail.html:30
 #, python-format
 msgid "Sent to Coretax: %(status)s."
 msgstr "Dikirim ke Coretax: %(status)s."
@@ -3606,7 +3607,7 @@ msgstr "Diposting"
 msgid "General journal"
 msgstr "Jurnal Umum"
 
-#: apps/ledger/domain.py:113 apps/taxes/views.py:243
+#: apps/ledger/domain.py:113 apps/taxes/views.py:244
 msgid "Payment"
 msgstr "Pembayaran"
 
@@ -3914,12 +3915,12 @@ msgstr "PPh 26 (WPLN, 20%)"
 msgid "severance only, after leaving"
 msgstr "hanya pesangon, setelah berhenti bekerja"
 
-#: apps/payroll/forms.py:17 apps/payroll/models.py:67 apps/payroll/views.py:163
-#: apps/payroll/views.py:202 apps/reports/exports.py:318
+#: apps/payroll/forms.py:17 apps/payroll/models.py:67 apps/payroll/views.py:164
+#: apps/payroll/views.py:203 apps/reports/exports.py:318
 msgid "NIK"
 msgstr "NIK"
 
-#: apps/payroll/forms.py:76 apps/payroll/forms.py:83 apps/payroll/views.py:167
+#: apps/payroll/forms.py:76 apps/payroll/forms.py:83 apps/payroll/views.py:168
 #: templates/payroll/payslip.html:14
 msgid "Severance pay"
 msgstr "Uang pesangon"
@@ -3937,11 +3938,11 @@ msgstr "Tunjangan"
 msgid "Bonus / THR"
 msgstr "Bonus / THR"
 
-#: apps/payroll/forms.py:82 apps/payroll/views.py:164 templates/payroll/a1.html:24
+#: apps/payroll/forms.py:82 apps/payroll/views.py:165 templates/payroll/a1.html:24
 msgid "Benefits in kind"
 msgstr "Penerimaan dalam bentuk natura dan kenikmatan"
 
-#: apps/payroll/forms.py:86 apps/payroll/views.py:164
+#: apps/payroll/forms.py:86 apps/payroll/views.py:165
 msgid "Days worked"
 msgstr "Hari kerja"
 
@@ -4125,8 +4126,8 @@ msgstr "jenis kelamin"
 msgid "position"
 msgstr "jabatan"
 
-#: apps/payroll/models.py:104 apps/payroll/models.py:215 apps/payroll/views.py:163
-#: apps/payroll/views.py:202 templates/payroll/a1.html:16 templates/payroll/employee_list.html:9
+#: apps/payroll/models.py:104 apps/payroll/models.py:215 apps/payroll/views.py:164
+#: apps/payroll/views.py:203 templates/payroll/a1.html:16 templates/payroll/employee_list.html:9
 msgid "PTKP status"
 msgstr "Status PTKP"
 
@@ -4318,7 +4319,7 @@ msgstr "BPJS Kesehatan (karyawan)"
 msgid "gross income for PPh 21"
 msgstr "penghasilan bruto PPh 21"
 
-#: apps/payroll/models.py:237 apps/payroll/views.py:163
+#: apps/payroll/models.py:237 apps/payroll/views.py:164
 msgid "TER category"
 msgstr "kategori TER"
 
@@ -4391,7 +4392,7 @@ msgstr "penghasilan neto"
 msgid "Line 13 of their 1721-A1."
 msgstr "Angka 13 pada 1721-A1 mereka."
 
-#: apps/payroll/models.py:297 apps/payroll/views.py:205 templates/payroll/annual.html:10
+#: apps/payroll/models.py:297 apps/payroll/views.py:206 templates/payroll/annual.html:10
 #: templates/payroll/employee_form.html:14
 msgid "PPh 21 withheld"
 msgstr "PPh 21 yang dipotong"
@@ -4438,7 +4439,7 @@ msgstr "Isi jumlah hari kerja %(name)s dalam bulan ini."
 msgid "The %(tax)s for %(period)s has already been deposited. Cancel that deposit first."
 msgstr "%(tax)s masa %(period)s sudah disetor. Batalkan setoran itu terlebih dahulu."
 
-#: apps/payroll/services.py:200 apps/taxes/views.py:153
+#: apps/payroll/services.py:200 apps/taxes/views.py:154
 msgid "Choose a month."
 msgstr "Pilih bulan."
 
@@ -4518,142 +4519,142 @@ msgstr "Isi masa kerja di pemberi kerja tersebut."
 msgid "Amounts can't be negative."
 msgstr "Jumlah tidak boleh negatif."
 
-#: apps/payroll/views.py:42
+#: apps/payroll/views.py:43
 msgid "Employee saved."
 msgstr "Karyawan disimpan."
 
-#: apps/payroll/views.py:69
+#: apps/payroll/views.py:70
 msgid "Income from the previous employer recorded."
 msgstr "Penghasilan dari pemberi kerja sebelumnya dicatat."
 
-#: apps/payroll/views.py:80
+#: apps/payroll/views.py:81
 msgid "Income from the previous employer removed."
 msgstr "Penghasilan dari pemberi kerja sebelumnya dihapus."
 
-#: apps/payroll/views.py:134
+#: apps/payroll/views.py:135
 msgid "Payroll recorded and posted to the ledger."
 msgstr "Penggajian dicatat dan dijurnal."
 
-#: apps/payroll/views.py:163 apps/payroll/views.py:202
+#: apps/payroll/views.py:164 apps/payroll/views.py:203
 msgid "Passport no."
 msgstr "No. paspor"
 
-#: apps/payroll/views.py:163 apps/payroll/views.py:202
+#: apps/payroll/views.py:164 apps/payroll/views.py:203
 msgid "Country"
 msgstr "Negara"
 
-#: apps/payroll/views.py:163 apps/payroll/views.py:202 apps/taxes/views.py:243
+#: apps/payroll/views.py:164 apps/payroll/views.py:203 apps/taxes/views.py:244
 #: templates/billing/invoice_detail.html:33 templates/billing/invoice_detail.html:45
 #: templates/contacts/contact_list.html:14 templates/invoicing/_invoice_body.html:8
 #: templates/invoicing/invoice_print.html:10
 msgid "NPWP"
 msgstr "NPWP"
 
-#: apps/payroll/views.py:163
+#: apps/payroll/views.py:164
 msgid "Tax computed as"
 msgstr "Dasar penghitungan pajak"
 
-#: apps/payroll/views.py:164 templates/payroll/a1.html:20 templates/payroll/payslip.html:13
+#: apps/payroll/views.py:165 templates/payroll/a1.html:20 templates/payroll/payslip.html:13
 msgid "Tax allowance"
 msgstr "Tunjangan PPh"
 
-#: apps/payroll/views.py:164 apps/payroll/views.py:203 templates/payroll/annual.html:10
+#: apps/payroll/views.py:165 apps/payroll/views.py:204 templates/payroll/annual.html:10
 msgid "Gross income"
 msgstr "Penghasilan bruto"
 
-#: apps/payroll/views.py:164 apps/taxes/views.py:244
+#: apps/payroll/views.py:165 apps/taxes/views.py:245
 msgid "Rate (%)"
 msgstr "Tarif (%)"
 
-#: apps/payroll/views.py:166
+#: apps/payroll/views.py:167
 #, no-python-format
 msgid "Without NPWP (20% higher)"
 msgstr "Tanpa NPWP (20% lebih tinggi)"
 
-#: apps/payroll/views.py:167 apps/taxes/views.py:244
+#: apps/payroll/views.py:168 apps/taxes/views.py:245
 msgid "Tax withheld"
 msgstr "PPh dipotong"
 
-#: apps/payroll/views.py:167 templates/payroll/payslip.html:20
+#: apps/payroll/views.py:168 templates/payroll/payslip.html:20
 msgid "Final PPh 21 on severance"
 msgstr "PPh 21 final atas pesangon"
 
-#: apps/payroll/views.py:167 apps/payroll/views.py:205 apps/taxes/views.py:244
+#: apps/payroll/views.py:168 apps/payroll/views.py:206 apps/taxes/views.py:245
 #: templates/invoicing/invoice_detail.html:72 templates/payroll/run_detail.html:14
 #: templates/payroll/run_detail.html:20 templates/taxes/withholding_month.html:10
 #: templates/taxes/withholding_month.html:22
 msgid "Bukti potong no."
 msgstr "No. bukti potong"
 
-#: apps/payroll/views.py:174
+#: apps/payroll/views.py:175
 msgid "yes"
 msgstr "ya"
 
-#: apps/payroll/views.py:202
+#: apps/payroll/views.py:203
 msgid "First month"
 msgstr "Masa awal"
 
-#: apps/payroll/views.py:202
+#: apps/payroll/views.py:203
 msgid "Last month"
 msgstr "Masa akhir"
 
-#: apps/payroll/views.py:203
+#: apps/payroll/views.py:204
 msgid "Occupational costs"
 msgstr "Biaya jabatan"
 
-#: apps/payroll/views.py:203
+#: apps/payroll/views.py:204
 msgid "Pension contributions"
 msgstr "Iuran pensiun/JHT"
 
-#: apps/payroll/views.py:203 templates/payroll/payslip.html:21
+#: apps/payroll/views.py:204 templates/payroll/payslip.html:21
 msgid "Zakat"
 msgstr "Zakat"
 
-#: apps/payroll/views.py:203 templates/payroll/employee_form.html:14
+#: apps/payroll/views.py:204 templates/payroll/employee_form.html:14
 msgid "Net income"
 msgstr "Penghasilan neto"
 
-#: apps/payroll/views.py:204 templates/payroll/a1.html:32
+#: apps/payroll/views.py:205 templates/payroll/a1.html:32
 msgid "Net income from earlier periods"
 msgstr "Penghasilan neto masa pajak sebelumnya"
 
-#: apps/payroll/views.py:204
+#: apps/payroll/views.py:205
 msgid "Net income for the year (annualised)"
 msgstr "Penghasilan neto setahun/disetahunkan"
 
-#: apps/payroll/views.py:204
+#: apps/payroll/views.py:205
 msgid "PTKP"
 msgstr "PTKP"
 
-#: apps/payroll/views.py:204 templates/payroll/annual.html:10
+#: apps/payroll/views.py:205 templates/payroll/annual.html:10
 msgid "Taxable income"
 msgstr "PKP"
 
-#: apps/payroll/views.py:205 templates/payroll/annual.html:10
+#: apps/payroll/views.py:206 templates/payroll/annual.html:10
 msgid "PPh 21 for the year"
 msgstr "PPh 21 setahun"
 
-#: apps/payroll/views.py:205 templates/payroll/a1.html:37
+#: apps/payroll/views.py:206 templates/payroll/a1.html:37
 msgid "PPh 21 withheld in earlier periods"
 msgstr "PPh 21 yang telah dipotong masa pajak sebelumnya"
 
-#: apps/payroll/views.py:205 templates/payroll/a1.html:38
+#: apps/payroll/views.py:206 templates/payroll/a1.html:38
 msgid "PPh 21 due"
 msgstr "PPh 21 terutang"
 
-#: apps/payroll/views.py:251
+#: apps/payroll/views.py:259
 msgid "Payroll voided (journal entry reversed)."
 msgstr "Penggajian dibatalkan (jurnal dibalik)."
 
-#: apps/payroll/views.py:255 apps/taxes/views.py:122 apps/taxes/views.py:313
+#: apps/payroll/views.py:263 apps/taxes/views.py:123 apps/taxes/views.py:314
 msgid "The payment details are incomplete."
 msgstr "Data setoran tidak lengkap."
 
-#: apps/payroll/views.py:259
+#: apps/payroll/views.py:267
 msgid "Payment recorded and posted to the ledger."
 msgstr "Pembayaran dicatat dan dijurnal."
 
-#: apps/payroll/views.py:294
+#: apps/payroll/views.py:302
 msgid "Payroll settings saved."
 msgstr "Pengaturan penggajian disimpan."
 
@@ -4955,7 +4956,7 @@ msgstr "Setoran PPh 23 dan 4(2) yang dipotong dari pemasok."
 msgid "Imports (PIB) and the taxes paid at customs."
 msgstr "Impor (PIB) dan pajak yang dibayar di pabean."
 
-#: apps/reports/exports.py:282 apps/taxes/views.py:243 templates/invoicing/invoice_print.html:15
+#: apps/reports/exports.py:282 apps/taxes/views.py:244 templates/invoicing/invoice_print.html:15
 msgid "Bill"
 msgstr "Tagihan"
 
@@ -5684,74 +5685,74 @@ msgstr "Setoran sendiri ini sudah memiliki nomor BPSP."
 msgid "Enter the BPSP number."
 msgstr "Isi nomor BPSP."
 
-#: apps/taxes/views.py:50
+#: apps/taxes/views.py:51
 msgid "Tax rate saved."
 msgstr "Tarif pajak disimpan."
 
-#: apps/taxes/views.py:128
+#: apps/taxes/views.py:129
 msgid "PPh Final payment recorded and posted to the ledger."
 msgstr "Setoran PPh Final dicatat dan dijurnal."
 
-#: apps/taxes/views.py:142
+#: apps/taxes/views.py:143
 msgid "PPh Final payment cancelled (journal entry reversed)."
 msgstr "Setoran PPh Final dibatalkan (jurnal dibalik)."
 
-#: apps/taxes/views.py:157
+#: apps/taxes/views.py:158
 msgid "PPh Final expense recorded and posted to the ledger."
 msgstr "Beban PPh Final dicatat dan dijurnal."
 
-#: apps/taxes/views.py:170
+#: apps/taxes/views.py:171
 msgid "PPh Final expense cancelled (journal entry reversed)."
 msgstr "Beban PPh Final dibatalkan (jurnal dibalik)."
 
-#: apps/taxes/views.py:243
+#: apps/taxes/views.py:244
 msgid "NIK/ID"
 msgstr "NIK/ID"
 
-#: apps/taxes/views.py:243 templates/reports/notes.html:40 templates/taxes/withholding.html:9
+#: apps/taxes/views.py:244 templates/reports/notes.html:40 templates/taxes/withholding.html:9
 #: templates/taxes/withholding_month.html:10
 msgid "Income tax"
 msgstr "Pajak penghasilan"
 
-#: apps/taxes/views.py:244 templates/taxes/pph_final.html:23 templates/taxes/self_deposits.html:9
+#: apps/taxes/views.py:245 templates/taxes/pph_final.html:23 templates/taxes/self_deposits.html:9
 #: templates/taxes/withholding_month.html:10
 msgid "Tax base"
 msgstr "Dasar Pengenaan"
 
-#: apps/taxes/views.py:251
+#: apps/taxes/views.py:252
 msgid "50% × Art. 17"
 msgstr "50% × Pasal 17"
 
-#: apps/taxes/views.py:302
+#: apps/taxes/views.py:303
 msgid "Tax object code recorded."
 msgstr "Kode objek pajak dicatat."
 
-#: apps/taxes/views.py:317
+#: apps/taxes/views.py:318
 msgid "Deposit recorded and posted to the ledger."
 msgstr "Setoran dicatat dan dijurnal."
 
-#: apps/taxes/views.py:330
+#: apps/taxes/views.py:331
 msgid "Deposit cancelled (journal entry reversed)."
 msgstr "Setoran dibatalkan (jurnal dibalik)."
 
-#: apps/taxes/views.py:365
+#: apps/taxes/views.py:366
 #, python-format
 msgid "PIB %(number)s recorded and posted to the ledger."
 msgstr "PIB %(number)s dicatat dan dijurnal."
 
-#: apps/taxes/views.py:374
+#: apps/taxes/views.py:375
 msgid "PIB cancelled (journal entry reversed)."
 msgstr "PIB dibatalkan (jurnal dibalik)."
 
-#: apps/taxes/views.py:405
+#: apps/taxes/views.py:406
 msgid "Self-deposit recorded and posted to the ledger."
 msgstr "Setoran sendiri dicatat dan dijurnal."
 
-#: apps/taxes/views.py:415
+#: apps/taxes/views.py:423
 msgid "Self-deposit cancelled (journal entries reversed)."
 msgstr "Setoran sendiri dibatalkan (jurnal dibalik)."
 
-#: apps/taxes/views.py:418
+#: apps/taxes/views.py:426
 msgid "BPSP number recorded."
 msgstr "Nomor BPSP dicatat."
 
@@ -6030,36 +6031,36 @@ msgstr[0] "Paket %(plan)s hanya mengizinkan %(limit)s pengguna. Silakan tingkatk
 msgid "No user with that email is registered yet. Ask them to sign up first."
 msgstr "Pengguna dengan email tersebut belum terdaftar. Minta mereka mendaftar terlebih dahulu."
 
-#: apps/tenants/services.py:84
+#: apps/tenants/services.py:84 apps/tenants/services.py:97
 msgid "This user is already a member of the organization."
 msgstr "Pengguna sudah menjadi anggota organisasi ini."
 
-#: apps/tenants/services.py:86 apps/tenants/services.py:98
+#: apps/tenants/services.py:86 apps/tenants/services.py:99
 msgid "The owner role cannot be given to a new member."
 msgstr "Peran pemilik tidak dapat diberikan melalui undangan."
 
-#: apps/tenants/services.py:126
+#: apps/tenants/services.py:127
 msgid "This invitation is no longer valid. Ask for a new one."
 msgstr "Undangan ini sudah tidak berlaku. Mintalah undangan baru."
 
-#: apps/tenants/services.py:129
+#: apps/tenants/services.py:130
 #, python-format
 msgid "This invitation was sent to %(email)s. Sign in with that address to accept it."
 msgstr "Undangan ini dikirim ke %(email)s. Masuk dengan alamat itu untuk menerimanya."
 
-#: apps/tenants/services.py:132
+#: apps/tenants/services.py:133
 msgid "You are already a member of this organization."
 msgstr "Anda sudah menjadi anggota organisasi ini."
 
-#: apps/tenants/services.py:153
+#: apps/tenants/services.py:154
 msgid "The organization owner cannot be removed."
 msgstr "Pemilik organisasi tidak dapat dihapus."
 
-#: apps/tenants/services.py:155
+#: apps/tenants/services.py:156
 msgid "You cannot remove yourself."
 msgstr "Anda tidak dapat menghapus diri sendiri."
 
-#: apps/tenants/services.py:166
+#: apps/tenants/services.py:167
 #, python-format
 msgid "The organization has %(count)s user, more than the %(plan)s plan allows (%(limit)s)."
 msgid_plural "The organization has %(count)s users, more than the %(plan)s plan allows (%(limit)s)."
@@ -6093,20 +6094,16 @@ msgstr "Organisasi %(name)s berhasil dibuat."
 msgid "Invitation sent to %(email)s."
 msgstr "Undangan dikirim ke %(email)s."
 
-#: apps/tenants/views.py:122
-msgid "Member added."
-msgstr "Anggota berhasil ditambahkan."
-
-#: apps/tenants/views.py:131
+#: apps/tenants/views.py:125
 msgid "Invitation revoked."
 msgstr "Undangan dicabut."
 
-#: apps/tenants/views.py:155
+#: apps/tenants/views.py:149
 #, python-format
 msgid "Welcome to %(organization)s."
 msgstr "Selamat datang di %(organization)s."
 
-#: apps/tenants/views.py:167
+#: apps/tenants/views.py:161
 msgid "Member removed."
 msgstr "Anggota dihapus."
 
@@ -6134,11 +6131,38 @@ msgstr "Halaman tidak ditemukan"
 msgid "Simple accounting for Indonesian MSMEs, following SAK EMKM"
 msgstr "Akuntansi sederhana untuk UMKM Indonesia, sesuai SAK EMKM"
 
-#: templates/accounts/emails/password_reset.txt:1 templates/accounts/emails/security_notice.txt:1
-#: templates/accounts/emails/verify_email.txt:1 templates/tenants/emails/two_factor_required.txt:1
+#: templates/accounts/emails/account_exists.txt:1 templates/accounts/emails/password_reset.txt:1
+#: templates/accounts/emails/security_notice.txt:1 templates/accounts/emails/verify_email.txt:1
+#: templates/tenants/emails/two_factor_required.txt:1
 #, python-format
 msgid "Hello %(name)s,"
 msgstr "Halo %(name)s,"
+
+#: templates/accounts/emails/account_exists.txt:3
+#, python-format
+msgid ""
+"Someone tried to create a %(site_name)s account with this email address, or to use it for another "
+"account. It already belongs to your account, so nothing was changed."
+msgstr ""
+"Seseorang mencoba membuat akun %(site_name)s dengan alamat email ini, atau memakainya untuk akun "
+"lain. Alamat ini sudah dipakai akun Anda, jadi tidak ada yang diubah."
+
+#: templates/accounts/emails/account_exists.txt:5
+msgid "If it was you, sign in here:"
+msgstr "Jika itu Anda, masuk di sini:"
+
+#: templates/accounts/emails/account_exists.txt:8
+msgid "Forgot your password? Choose a new one here:"
+msgstr "Lupa kata sandi? Buat yang baru di sini:"
+
+#: templates/accounts/emails/account_exists.txt:11
+msgid "If it wasn't you, you can ignore this email; your account is safe."
+msgstr "Jika itu bukan Anda, abaikan email ini; akun Anda aman."
+
+#: templates/accounts/emails/account_exists_subject.txt:1
+#, python-format
+msgid "You already have a %(site_name)s account"
+msgstr "Anda sudah memiliki akun %(site_name)s"
 
 #: templates/accounts/emails/password_reset.txt:3
 #, python-format
@@ -6321,6 +6345,7 @@ msgid "Request a new link"
 msgstr "Minta tautan baru"
 
 #: templates/accounts/password_reset_done.html:2 templates/accounts/password_reset_done.html:4
+#: templates/accounts/signup_done.html:2 templates/accounts/signup_done.html:4
 msgid "Check your email"
 msgstr "Periksa email Anda"
 
@@ -6469,6 +6494,33 @@ msgstr "Daftar & buat usaha Anda"
 #: templates/accounts/signup.html:10
 msgid "Already have an account?"
 msgstr "Sudah punya akun?"
+
+#: templates/accounts/signup_done.html:5
+#, python-format
+msgid "We sent an email to <strong>%(email)s</strong>."
+msgstr "Kami mengirim email ke <strong>%(email)s</strong>."
+
+#: templates/accounts/signup_done.html:5
+msgid "We sent you an email."
+msgstr "Kami mengirim email kepada Anda."
+
+#: templates/accounts/signup_done.html:6
+msgid "Open the link in it to confirm your address, then sign in."
+msgstr "Buka tautan di dalamnya untuk mengonfirmasi alamat Anda, lalu masuk."
+
+#: templates/accounts/signup_done.html:7
+#, python-format
+msgid ""
+"The link expires in %(lifetime)s. If no email arrives within a few minutes, check your spam "
+"folder. If you already have an account with this address, the email tells you how to sign in "
+"instead."
+msgstr ""
+"Tautan berlaku selama %(lifetime)s. Jika email tidak masuk dalam beberapa menit, periksa folder "
+"spam. Jika Anda sudah memiliki akun dengan alamat ini, email tersebut menjelaskan cara masuk."
+
+#: templates/accounts/signup_done.html:10
+msgid "Go to sign in"
+msgstr "Ke halaman masuk"
 
 #: templates/accounts/two_factor_backup_codes.html:2
 #: templates/accounts/two_factor_backup_codes.html:4

@@ -14,6 +14,7 @@ class ThrottleScope(StrEnum):
     API = "api"
     LOGIN_FAILURE_IP = "login-failure-ip"
     LOGIN_FAILURE_EMAIL = "login-failure-email"
+    ACCOUNT_NOTICE = "account-notice"
 
 
 def _key(scope: ThrottleScope, identity: str) -> str:

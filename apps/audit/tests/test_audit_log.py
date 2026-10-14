@@ -187,10 +187,10 @@ def test_member_changes_are_recorded(auth_client, organization, user, make_membe
     member = make_member(Role.VIEWER, email="kasir@example.com")
     organization.memberships.filter(user=member).delete()
     auth_client.post(reverse("tenants:members"), {"email": member.email, "role": Role.ACCOUNTANT})
-    added = events(A.MEMBER_ADDED, organization=organization).get()
-    assert (added.target, added.details["role"]) == (member.email, Role.ACCOUNTANT)
+    invited = events(A.MEMBER_INVITED, organization=organization).get()
+    assert (invited.target, invited.details["role"]) == (member.email, Role.ACCOUNTANT)
 
-    membership = organization.memberships.get(user=member)
+    membership = organization.memberships.create(user=member, role=Role.ACCOUNTANT)
     auth_client.post(reverse("tenants:remove_member", args=[membership.pk]))
     assert events(A.MEMBER_REMOVED, organization=organization, target=member.email).exists()
 

@@ -64,10 +64,8 @@ class SignUpForm(CaptchaFirstFormMixin, BaseForm):
     legal_form = forms.ChoiceField(label=_("Legal form"), choices=Organization.LegalForm.choices)
 
     def clean_email(self):
-        email = self.cleaned_data["email"].lower()
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_("This email is already registered."))
-        return email
+        # Never "already registered": the view answers the same either way (account enumeration).
+        return self.cleaned_data["email"].lower()
 
     def clean_password(self):
         password = self.cleaned_data["password"]

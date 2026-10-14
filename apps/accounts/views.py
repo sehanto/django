@@ -5,7 +5,9 @@ from urllib.parse import urlsplit
 from axes.utils import reset as axes_reset
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.hashers import make_password
+from django.db import IntegrityError, transaction
 from django_otp import login as otp_login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -23,9 +25,9 @@ from apps.audit.domain import AuditAction
 from apps.audit.selectors import account_events
 from apps.core.exceptions import DomainError
 from apps.core.params import int_param
+from apps.core.timing import minimum_duration
 from apps.tenants.selectors import organizations_requiring_two_factor
 from apps.tenants.services import register_owner_with_organization
-from apps.tenants.session import set_current_organization
 
 from . import captcha, services, throttle, trusted_devices, two_factor
 from .client_ip import client_ip
@@ -47,6 +49,7 @@ from .middleware import SUPPORTED_LANGUAGES
 from .models import BackupCodeDevice
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 def remember_language(response, request, language: str) -> None:
@@ -109,20 +112,54 @@ class SignUpView(FormView):
             return redirect("dashboard:home")
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        with minimum_duration(settings.ACCOUNT_RESPONSE_MIN_SECONDS):  # creating an account takes longer
+            return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
+        """The same answer whether or not the address has an account (no "already registered"):
+        a new account gets its confirmation link, an existing one a notice. Nobody is signed in
+        here; the link confirms the address, then they sign in."""
         data = form.cleaned_data
-        user, organization = register_owner_with_organization(
-            email=data["email"],
-            password=data["password"],
-            full_name=data["full_name"],
-            organization_name=data["organization_name"],
-            legal_form=data["legal_form"],
-            language=self.request.LANGUAGE_CODE,
+        existing = User.objects.filter(email__iexact=data["email"]).first()
+        if existing is None:
+            try:
+                with transaction.atomic():
+                    user, _organization = register_owner_with_organization(
+                        email=data["email"],
+                        password=data["password"],
+                        full_name=data["full_name"],
+                        organization_name=data["organization_name"],
+                        legal_form=data["legal_form"],
+                        language=self.request.LANGUAGE_CODE,
+                    )
+            except IntegrityError:  # registered meanwhile
+                existing = User.objects.filter(email__iexact=data["email"]).first()
+            else:
+                services.send_verification_email(user)
+        if existing is not None:
+            make_password(data["password"])  # the same hashing work as a new account
+            services.send_account_exists_notice(existing)
+        self.request.session[SIGNUP_EMAIL_SESSION_KEY] = data["email"]
+        return redirect("accounts:signup_done")
+
+
+SIGNUP_EMAIL_SESSION_KEY = "signup_email"
+
+
+class SignUpDoneView(TemplateView):
+    template_name = "accounts/signup_done.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard:home")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            email=self.request.session.get(SIGNUP_EMAIL_SESSION_KEY, ""),
+            lifetime=timedelta(seconds=settings.EMAIL_VERIFICATION_TIMEOUT), **kwargs,
         )
-        login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
-        set_current_organization(self.request, organization)
-        services.send_verification_email(user)
-        return redirect("accounts:verify_email_pending")
 
 
 class ProfileView(LoginRequiredMixin, UpdateView):
@@ -200,6 +237,10 @@ class PasswordResetView(auth_views.PasswordResetView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(captcha=captcha.widget(captcha.CaptchaAction.PASSWORD_RESET), **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        with minimum_duration(settings.ACCOUNT_RESPONSE_MIN_SECONDS):  # emailing a link takes longer than not
+            return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         email = form.cleaned_data["email"].lower()
@@ -297,10 +338,9 @@ class ChangeEmailView(LoginRequiredMixin, View):
         form = ChangeEmailForm(request.POST, user=request.user, request=request)
         if form.is_valid():
             try:
-                previous = request.user.email
                 services.change_unverified_email(user=request.user, new_email=form.cleaned_data["email"])
-                audit.record(AuditAction.EMAIL_CHANGED, request=request, target=request.user.email, previous=previous)
-                messages.success(request, _("Email address updated. We sent a confirmation link to %(email)s.") % {"email": request.user.email})
+                messages.success(request, _("We sent a confirmation link to %(email)s. Your address changes when you open it.")
+                                 % {"email": services.verification_address(request.user)})
                 return redirect("accounts:verify_email_pending")
             except DomainError as exc:
                 form.add_error("email", exc.message)
@@ -312,10 +352,12 @@ class VerifyEmailView(View):
 
     def get(self, request, token):
         try:
-            user = services.verify_email(token)
+            user, previous = services.verify_email(token)
         except DomainError as exc:
             messages.error(request, exc.message)
             return redirect("accounts:verify_email_pending" if request.user.is_authenticated else "accounts:login")
+        if previous:
+            audit.record(AuditAction.EMAIL_CHANGED, request=request, target=user.email, previous=previous)
         if request.user.is_authenticated and request.user.pk == user.pk:
             messages.success(request, _("Email address confirmed. Welcome! A standard SAK EMKM chart of accounts has been set up."))
             return redirect("tenants:settings")

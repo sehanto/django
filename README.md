@@ -570,9 +570,26 @@ Every input is handled in layers, so no single mistake lets bad data through:
 | **Bound request parameters** | Filters, searches, years and IDs from the URL go through typed helpers: whitelisted choices, sanitized search text capped at 100 characters, bounded integers and years. Malformed values fall back to defaults instead of reaching the database. Invoice and journal forms accept at most 100 lines. | `apps/core/params.py` |
 | **Protect outputs** | Django templates auto-escape everything (no `|safe` / `mark_safe` anywhere), and all queries go through the ORM. CSV exports escape cells that a spreadsheet would run as formulas (`=`, `+`, `-`, `@`). Payment links from the gateway must be HTTPS before a customer is redirected to them. | templates, `csv_safe`, billing services |
 | **External callbacks** | Webhooks must carry the gateway's token and a JSON object. Only well-formed references are looked up, and the payment status is always re-fetched from the gateway. | `apps/billing` |
+| **API input** | The JSON body must be an object; text is sanitized and capped; numbers must be numbers (not booleans or lists) that fit the column they go to (money 16+2 digits, quantities 11+3, percentages 3+2); dates must exist (`2026-02-30` is refused); `kind`/`status` filters must be values of their enumeration. Errors are a 400 with a message, never a 500. | `apps/api/views.py` |
+| **Enumerations** | Every fixed set of values (statuses, kinds, tax codes, URL actions such as a payroll run's pay/void) is a `TextChoices`/`StrEnum`, and input is checked against it before use. Unknown values give a 404 (URLs) or a form/API error. Region codes are checked against the Kemendagri list. | `domain.py`, models, views |
 
 `test_every_project_form_sanitizes_input` fails if a new form doesn't inherit `BaseForm` /
 `BaseModelForm`.
+
+### Account and record enumeration
+
+Nothing the app answers tells a stranger, or another tenant, whether an account or a record
+exists:
+
+| Where | What the app does |
+|---|---|
+| Sign-up | The same answer for a new and a registered address: "Check your email". Nobody is signed in at sign-up. A new address gets its confirmation link (then the owner signs in); a registered one gets a notice to its owner instead ("you already have an account: sign in or reset your password"), at most 3 an hour. The password is hashed either way. |
+| Password reset | Always "If an account exists for that address, we have sent it a link". |
+| Timing | Sign-up and password reset take at least `ACCOUNT_RESPONSE_MIN_SECONDS` (1 s), so how long the work took (creating an account, sending an email) doesn't tell either. |
+| Correcting an unconfirmed address | Never "already registered": the new address waits as `pending_email` and replaces the old one only when its link is opened. If another account has it, that account's owner gets the notice and no link is sent. |
+| Team invitations | Every address gets an invitation link, registered or not, with the same answer ("Invitation sent"). A registered user joins through the link like anyone else. |
+| Sign-in | One message for a wrong email or password; lockouts and the CAPTCHA count failed attempts per address and IP whether or not the account exists, and Django hashes a password for unknown addresses too. |
+| Records | Every lookup is scoped to the current organization: another tenant's invoice, contact or entry is a 404, exactly like a number that doesn't exist (web and API). Tokens in links (invitations, confirmation, reset) are random or signed, never sequential. |
 
 ## Two-factor authentication
 
@@ -657,15 +674,17 @@ their identity; they can then sign in with the password and set up 2FA again.
 
 ## Email verification
 
-New accounts must confirm their email address before using the app. After sign-up the user
-is signed in, but every page except the verification flow, sign-out, the language switch and
-the Django admin redirects to **"Confirm your email address"** until they open the emailed link.
+New accounts must confirm their email address before using the app. Sign-up ends on a
+"Check your email" page without signing in (see [Account and record
+enumeration](#account-and-record-enumeration)). A user who signs in before confirming finds
+every page except the verification flow, sign-out, the language switch and the Django admin
+redirecting to **"Confirm your email address"** until they open the emailed link.
 
 | Behaviour | Detail |
 |---|---|
 | Link | Signed and timestamped (`django.core.signing`), valid for **3 days** (`EMAIL_VERIFICATION_TIMEOUT`). It names the user *and* the address, so it stops working if the address changes. Built from `SITE_URL`, emailed in the user's language. Works whether or not the person is signed in. |
 | Resend | "Send the link again", at most 3 emails per hour per account. |
-| Typos | "Wrong email address?" lets the user correct the address after entering their current password. The old link stops working and a new one is sent. |
+| Typos | "Wrong email address?" lets the user correct the address after entering their current password. The new address waits as `pending_email` and replaces the old one when its link is opened; the old link stops working. |
 | Password reset | Completing a reset also confirms the address, since it proves control of the mailbox. |
 | Existing accounts | Accounts created before this feature were marked as verified by a migration. Superusers made with `createsuperuser` are verified automatically. |
 

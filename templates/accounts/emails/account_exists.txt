@@ -1,0 +1,14 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate trimmed with name=user.get_short_name %}Hello {{ name }},{% endblocktranslate %}
+
+{% blocktranslate trimmed %}Someone tried to create a {{ site_name }} account with this email address, or to use it for another account. It already belongs to your account, so nothing was changed.{% endblocktranslate %}
+
+{% translate "If it was you, sign in here:" %}
+{{ login_url }}
+
+{% translate "Forgot your password? Choose a new one here:" %}
+{{ reset_url }}
+
+{% translate "If it wasn't you, you can ignore this email; your account is safe." %}
+
+{{ site_name }}
+{% endautoescape %}

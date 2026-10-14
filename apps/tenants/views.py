@@ -110,16 +110,10 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
         return super().get_context_data(members=members_of(self.organization), invitations=invitations, **kwargs)
 
     def perform(self, form):
-        result = services.invite_member(organization=self.organization, invited_by=self.request.user, **form.cleaned_data)
-        if isinstance(result, Invitation):
-            audit.record(AuditAction.MEMBER_INVITED, request=self.request, organization=self.organization, target=result.email, role=result.role)
-            messages.success(self.request, _("Invitation sent to %(email)s.") % {"email": result.email})
-        else:
-            audit.record(
-                AuditAction.MEMBER_ADDED, request=self.request, organization=self.organization,
-                target=result.user.email, role=result.role,
-            )
-            messages.success(self.request, _("Member added."))
+        invitation = services.invite_member(organization=self.organization, invited_by=self.request.user, **form.cleaned_data)
+        audit.record(AuditAction.MEMBER_INVITED, request=self.request, organization=self.organization, target=invitation.email,
+                     role=invitation.role)
+        messages.success(self.request, _("Invitation sent to %(email)s.") % {"email": invitation.email})
         return redirect(self.success_url)
 
 

@@ -80,8 +80,16 @@ def test_an_invitation_can_be_revoked_and_a_new_one_replaces_it(auth_client, roo
     assert not second.is_pending
 
 
-def test_a_registered_user_is_added_at_once(auth_client, roomy):
+def test_inviting_reveals_nothing_about_who_has_an_account(auth_client, client, roomy):
     known = User.objects.create_user(email="kenal@example.com", password="Rahasia-123", full_name="Kenal", email_verified_at=timezone.now())
-    invite(auth_client, email="kenal@example.com")
+    answers = [invite(auth_client, email=email) for email in ("kenal@example.com", "asing@example.com")]
+    assert {a["Location"] for a in answers} == {reverse("tenants:members")}
+    messages = [str(m) for m in auth_client.get(reverse("tenants:members")).context["messages"]]
+    assert len(messages) == 2 and all(m.startswith(("Invitation sent", "Undangan dikirim")) for m in messages)
+    assert not Membership.objects.filter(organization=roomy, user=known).exists()  # they join through the link, like anyone
+    assert sorted(m.to[0] for m in mail.outbox) == ["asing@example.com", "kenal@example.com"]
+    client.force_login(known)
+    path = link_in(next(m for m in mail.outbox if m.to == ["kenal@example.com"])).split("://", 1)[1].split("/", 1)[1]
+    with translation.override("en"):
+        client.post("/" + path)
     assert Membership.objects.filter(organization=roomy, user=known).exists()
-    assert not mail.outbox and not Invitation.objects.exists()

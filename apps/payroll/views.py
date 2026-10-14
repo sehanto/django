@@ -1,4 +1,5 @@
 import csv
+from enum import StrEnum
 
 from django.contrib import messages
 from django.http import Http404, HttpResponse
@@ -238,15 +239,22 @@ class PayslipView(OrganizationMixin, DetailView):
         return Payslip.objects.filter(run__organization=self.organization).select_related("employee", "run")
 
 
-class PayrollActionView(WriteMixin, View):
-    ACTIONS = ("pay", "bpjs", "void")
+class PayrollAction(StrEnum):
+    """What can be done to a posted run (the URL's last part)."""
 
+    PAY = "pay"
+    BPJS = "bpjs"
+    VOID = "void"
+
+
+class PayrollActionView(WriteMixin, View):
     def post(self, request, pk, action):
-        if action not in self.ACTIONS:
+        if action not in PayrollAction:
             raise Http404
+        action = PayrollAction(action)
         run = get_object_or_404(PayrollRun.objects.for_organization(self.organization), pk=pk)
         try:
-            if action == "void":
+            if action == PayrollAction.VOID:
                 services.void_payroll(run=run, on=timezone.localdate(), voided_by=request.user)
                 messages.success(request, _("Payroll voided (journal entry reversed)."))
             else:
@@ -254,7 +262,7 @@ class PayrollActionView(WriteMixin, View):
                 if not form.is_valid():
                     messages.error(request, _("The payment details are incomplete."))
                     return redirect("payroll:run", run.pk)
-                pay = services.pay_salaries if action == "pay" else services.pay_bpjs
+                pay = services.pay_salaries if action == PayrollAction.PAY else services.pay_bpjs
                 pay(run=run, created_by=request.user, **form.cleaned_data)
                 messages.success(request, _("Payment recorded and posted to the ledger."))
         except DomainError as exc:

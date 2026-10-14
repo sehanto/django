@@ -15,6 +15,7 @@ urlpatterns = [
     path("security/two-factor/verify/", views.TwoFactorVerifySessionView.as_view(), name="two_factor_verify_session"),
     path("security/devices/forget/", views.ForgetTrustedDeviceView.as_view(), name="forget_trusted_device"),
     path("signup/", views.SignUpView.as_view(), name="signup"),
+    path("signup/check-your-email/", views.SignUpDoneView.as_view(), name="signup_done"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("password/", views.PasswordChangeView.as_view(), name="password_change"),
     path("language/", views.SetLanguageView.as_view(), name="set_language"),

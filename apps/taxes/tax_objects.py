@@ -4,6 +4,8 @@ on fees to non-employees (50% of gross at the Art. 17 rates). Official names; ge
 
 from decimal import Decimal
 
+from .domain import PayerWithholding
+
 PPH_23 = {
     "24-100-01": ("Hadiah, Penghargaan, Bonus dan Lainnya Selain yang Telah Dipotong PPh Pasal 21 Ayat (1) Huruf E UU PPh", Decimal("15")),
     "24-100-02": ("Sewa dan Penghasilan Lain Sehubungan Dengan Penggunaan Harta Kecuali Sewa Tanah dan/atau Bangunan yang Telah Dikenai PPh Pasal 4 Ayat (2) UU PPh.", Decimal("2")),
@@ -203,22 +205,22 @@ PPH_26 = {
 
 def codes_for(kind: str) -> dict:
     """{code: name} for a withholding kind (``PayerWithholding`` value)."""
-    if kind == "pph21":
+    if kind == PayerWithholding.PPH_21:
         return NON_EMPLOYEE_PPH_21
-    if kind == "pph26":
+    if kind == PayerWithholding.PPH_26:
         return {code: name for code, (name, _deemed, _rate) in PPH_26.items()}
-    table = {"pph23": PPH_23, "pph4_2": PPH_4_2}.get(kind, {})
+    table = {PayerWithholding.PPH_23: PPH_23, PayerWithholding.PPH_4_2: PPH_4_2}.get(kind, {})
     return {code: name for code, (name, _rate) in table.items()}
 
 
 def reference_rate(kind: str, code: str) -> Decimal | None:
     """The rate (%) DJP's reference gives the code (Coretax checks it); None for PPh 21 fees."""
-    if kind == "pph26":
+    if kind == PayerWithholding.PPH_26:
         return PPH_26[code][2] if code in PPH_26 else None
-    entry = {"pph23": PPH_23, "pph4_2": PPH_4_2}.get(kind, {}).get(code)
+    entry = {PayerWithholding.PPH_23: PPH_23, PayerWithholding.PPH_4_2: PPH_4_2}.get(kind, {}).get(code)
     return entry[1] if entry else None
 
 
 def deemed(kind: str, code: str) -> Decimal:
     """The share (%) of the gross the tax is on (PPh 26 codes; 100 otherwise)."""
-    return PPH_26[code][1] if kind == "pph26" and code in PPH_26 else Decimal("100")
+    return PPH_26[code][1] if kind == PayerWithholding.PPH_26 and code in PPH_26 else Decimal("100")

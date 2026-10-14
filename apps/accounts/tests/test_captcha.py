@@ -110,7 +110,8 @@ def test_sign_up_reveals_nothing_about_existing_accounts_without_the_captcha(cli
     errors = response.context["form"].errors
     assert list(errors) == ["__all__"]  # only the security check, no "already registered"
     assert "already registered" not in str(errors) and "sudah terdaftar" not in str(errors)
-    assert "email" in sign_up(client, email=user.email, token=FAKE_PASSING_TOKEN).context["form"].errors
+    solved = sign_up(client, email=user.email, token=FAKE_PASSING_TOKEN)  # and with it, the same answer as for a new address
+    assert solved.status_code == 302 and solved["Location"] == reverse("accounts:signup_done")
 
 
 # --- Password reset: always required ---------------------------------------------------
@@ -135,7 +136,8 @@ def test_password_reset_needs_a_solved_captcha_before_anything_happens(client, u
 
 
 def test_resending_the_confirmation_link_needs_a_solved_captcha(client, db):
-    sign_up(client, token=FAKE_PASSING_TOKEN)  # signed in, email not confirmed yet; one email sent
+    sign_up(client, token=FAKE_PASSING_TOKEN)  # email not confirmed yet; one email sent
+    client.force_login(User.objects.get(email="dewi@example.com"))
     page = client.get(reverse("accounts:verify_email_pending")).content.decode()
     assert 'data-action="resend_verification"' in page and captcha.SCRIPT_URL in page
 
@@ -150,6 +152,7 @@ def test_resending_the_confirmation_link_needs_a_solved_captcha(client, db):
 
 def test_correcting_the_address_needs_a_solved_captcha_before_the_password_is_checked(client, db):
     sign_up(client, email="dewi@exmaple.com", token=FAKE_PASSING_TOKEN)
+    client.force_login(User.objects.get(email="dewi@exmaple.com"))
     page = client.get(reverse("accounts:verify_email_pending")).content.decode()
     assert 'data-action="change_email"' in page and 'data-action="resend_verification"' in page
 
@@ -159,7 +162,7 @@ def test_correcting_the_address_needs_a_solved_captcha_before_the_password_is_ch
     assert User.objects.filter(email="dewi@exmaple.com").exists() and len(mail.outbox) == 1
 
     client.post(change, {"email": "dewi@example.com", "password": "Kuat-Sekali-99", RESPONSE_FIELD: FAKE_PASSING_TOKEN})
-    assert User.objects.filter(email="dewi@example.com").exists()
+    assert User.objects.filter(email="dewi@exmaple.com", pending_email="dewi@example.com").exists()  # until its link is opened
 
 
 # --- Changing the password: always required --------------------------------------------

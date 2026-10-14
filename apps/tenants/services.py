@@ -89,11 +89,12 @@ def add_member(*, organization: Organization, email: str, role: str) -> Membersh
 
 
 @transaction.atomic
-def invite_member(*, organization: Organization, email: str, role: str, invited_by) -> Membership | Invitation:
-    """Add a registered user at once; email anyone else an invitation link (valid for
-    ``Invitation.VALID_FOR_DAYS``) that adds them once they sign up with that address."""
-    if User.objects.filter(email__iexact=email).exists():
-        return add_member(organization=organization, email=email, role=role)
+def invite_member(*, organization: Organization, email: str, role: str, invited_by) -> Invitation:
+    """Email an invitation link (valid for ``Invitation.VALID_FOR_DAYS``) that adds whoever
+    signs in, or signs up, with that address. Registered or not, the answer is the same, so
+    inviting can't be used to find out who has an account."""
+    if Membership.objects.filter(organization=organization, user__email__iexact=email).exists():
+        raise ValidationFailed(_("This user is already a member of the organization."))  # listed on the page anyway
     if role == Role.OWNER:
         raise ValidationFailed(_("The owner role cannot be given to a new member."))
     _ensure_user_capacity(organization)

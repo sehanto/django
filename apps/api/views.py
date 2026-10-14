@@ -20,6 +20,7 @@ from apps.contacts.forms import ContactForm
 from apps.contacts.models import Contact
 from apps.contacts.services import create_contact
 from apps.core.exceptions import DomainError
+from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.core.sanitizers import sanitize_text
 from apps.invoicing import services as invoicing
 from apps.invoicing.domain import InvoiceStatus
@@ -92,6 +93,14 @@ def _body(request) -> dict:
     return data
 
 
+def _filter(request, name: str, allowed) -> str:
+    """An optional query-string filter, one of ``allowed`` (an enumeration's values)."""
+    value = request.GET.get(name, "")
+    if value and value not in allowed:
+        raise ApiError(f"'{name}' must be one of {', '.join(allowed)}.")
+    return value
+
+
 def _text(data: dict, name: str, *, required: bool = False, max_length: int = 255) -> str:
     value = data.get(name, "")
     if not isinstance(value, str):
@@ -102,17 +111,28 @@ def _text(data: dict, name: str, *, required: bool = False, max_length: int = 25
     return value
 
 
-def _decimal(data: dict, name: str, *, required: bool = True, default: Decimal | None = None) -> Decimal:
+# (max digits, decimal places) as stored: money, quantities, percentages.
+MONEY, QUANTITY, PERCENT = (MONEY_MAX_DIGITS, MONEY_DECIMAL_PLACES), (14, 3), (5, 2)
+
+
+def _decimal(data: dict, name: str, *, required: bool = True, default: Decimal | None = None,
+             digits: tuple[int, int] = MONEY) -> Decimal:
     if name not in data or data[name] in (None, ""):
         if required:
             raise ApiError(f"'{name}' is required.")
         return default
+    value = data[name]
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        raise ApiError(f"'{name}' must be a number.")
     try:
-        value = Decimal(str(data[name]))
+        value = Decimal(str(value).strip())
     except InvalidOperation:
         raise ApiError(f"'{name}' must be a number.") from None
     if not value.is_finite():
         raise ApiError(f"'{name}' must be a number.")
+    max_digits, places = digits
+    if -value.as_tuple().exponent > places or abs(value) >= Decimal(10) ** (max_digits - places):
+        raise ApiError(f"'{name}' must have at most {max_digits - places} digits before and {places} after the decimal point.")
     return value
 
 
@@ -122,7 +142,10 @@ def _date(data, name: str, *, required: bool = True) -> date | None:
         if required:
             raise ApiError(f"'{name}' is required (YYYY-MM-DD).")
         return None
-    parsed = parse_date(value) if isinstance(value, str) else None
+    try:
+        parsed = parse_date(value) if isinstance(value, str) else None
+    except ValueError:  # well formed, but no such day (e.g. 2026-02-30)
+        parsed = None
     if parsed is None:
         raise ApiError(f"'{name}' must be a date (YYYY-MM-DD).")
     return parsed
@@ -229,7 +252,7 @@ def contacts(request):
             return JsonResponse({"error": "Invalid contact.", "fields": form.errors.get_json_data()}, status=400)
         return JsonResponse(contact_json(create_contact(organization=organization, **form.cleaned_data)), status=201)
     queryset = Contact.objects.for_organization(organization).order_by("name", "id")
-    if kind := request.GET.get("kind"):
+    if kind := _filter(request, "kind", Contact.Kind.values):
         queryset = queryset.filter(kind__in=[kind, Contact.Kind.BOTH])
     page, meta = _page(request, queryset)
     return JsonResponse({"results": [contact_json(c) for c in page], **meta})
@@ -262,9 +285,9 @@ def _line(organization, kind: str, data) -> invoicing.InvoiceLineInput:
         raise ApiError("Each line needs an 'account' code (or an item with a default account).")
     return invoicing.InvoiceLineInput(
         description=_text(data, "description") or (item.name if item else ""), account=account,
-        quantity=_decimal(data, "quantity", required=False, default=Decimal("1")),
+        quantity=_decimal(data, "quantity", required=False, default=Decimal("1"), digits=QUANTITY),
         unit_price=_decimal(data, "unit_price", required=item is None, default=item.sale_price if item and kind == InvoiceKind.SALES else (item.purchase_price if item else None)),
-        discount_percent=_decimal(data, "discount_percent", required=False, default=Decimal("0")),
+        discount_percent=_decimal(data, "discount_percent", required=False, default=Decimal("0"), digits=PERCENT),
         tax_rate=_one(TaxRate.objects.for_organization(organization), data.get("tax_rate"), "tax_rate"),
         item=item,
     )
@@ -294,11 +317,9 @@ def invoices(request):
             invoice = invoicing.issue_invoice(invoice=invoice, issued_by=request.api_user)
         return JsonResponse(invoice_json(Invoice.objects.get(pk=invoice.pk), lines=True), status=201)
     queryset = Invoice.objects.for_organization(organization).order_by("-date", "-id")
-    if kind := request.GET.get("kind"):
+    if kind := _filter(request, "kind", InvoiceKind.values):
         queryset = queryset.filter(kind=kind)
-    if status := request.GET.get("status"):
-        if status not in InvoiceStatus.values:
-            raise ApiError(f"'status' must be one of {', '.join(InvoiceStatus.values)}.")
+    if status := _filter(request, "status", InvoiceStatus.values):
         queryset = queryset.filter(status=status)
     page, meta = _page(request, queryset.select_related("contact"))
     return JsonResponse({"results": [invoice_json(i) for i in page], **meta})
@@ -336,7 +357,7 @@ def invoice_payments(request, pk: int):
             account=_one(Account.objects.for_organization(organization), withheld.get("account"), "income_tax.account", "code"),
             slip=_text(withheld, "slip", max_length=50),
             base=_decimal(withheld, "base", required=False, default=Decimal("0")),
-            rate=_decimal(withheld, "rate", required=False),
+            rate=_decimal(withheld, "rate", required=False, digits=PERCENT),
             object_code=_text(withheld, "object_code", max_length=9),
         )
     payment = invoicing.record_payment(
@@ -371,7 +392,7 @@ def invoice_returns(request, pk: int):
     for line in lines:
         if not isinstance(line, dict):
             raise ApiError("Each line must be an object.")
-        inputs.append(invoicing.ReturnLineInput(_one(invoice_lines, line.get("line"), "line"), _decimal(line, "quantity")))
+        inputs.append(invoicing.ReturnLineInput(_one(invoice_lines, line.get("line"), "line"), _decimal(line, "quantity", digits=QUANTITY)))
     note = invoicing.create_return(
         invoice=invoice, date=_date(data, "date"), reason=_text(data, "reason", required=True), lines=inputs,
         cash_account=_one(Account.objects.for_organization(organization), data.get("cash_account"), "cash_account", "code"),

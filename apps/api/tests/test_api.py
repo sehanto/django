@@ -71,6 +71,32 @@ def test_errors_are_json(client, key):
     assert bad.status_code == 400 and "npwp" in bad.json()["fields"]
 
 
+@pytest.mark.parametrize("line, error", [
+    ({"unit_price": "1e30"}, "unit_price"),            # would overflow the column
+    ({"unit_price": "10.123"}, "unit_price"),          # rupiah have 2 decimal places
+    ({"unit_price": True}, "unit_price"),              # not a number
+    ({"unit_price": ["1"]}, "unit_price"),
+    ({"unit_price": "NaN"}, "unit_price"),
+    ({"quantity": "1.0001"}, "quantity"),              # 3 decimal places
+    ({"discount_percent": "1000"}, "discount_percent"),
+])
+def test_numbers_are_checked_against_what_is_stored(client, key, organization, customer, line, error):
+    body = {"kind": "sales", "contact": customer.pk, "date": "2026-03-05",
+            "lines": [{"description": "Kopi", "account": "4-1000", "quantity": "1", "unit_price": "1000", **line}]}
+    response = call(client, "post", "invoices", key, body=body)
+    assert response.status_code == 400 and error in response.json()["error"]
+
+
+def test_dates_and_filters_are_checked(client, key, customer):
+    body = {"kind": "sales", "contact": customer.pk, "date": "2026-02-30",
+            "lines": [{"description": "Kopi", "account": "4-1000", "unit_price": "1000"}]}
+    response = call(client, "post", "invoices", key, body=body)  # well formed, no such day
+    assert response.status_code == 400 and "date" in response.json()["error"]
+    for name, params in (("invoices", {"kind": "gift"}), ("invoices", {"status": "lost"}), ("contacts", {"kind": "x\x00"})):
+        response = call(client, "get", name, key, **params)
+        assert response.status_code == 400 and "must be one of" in response.json()["error"]
+
+
 def test_keys_are_managed_by_owners(auth_client, organization):
     with translation.override("en"):
         page = auth_client.post(reverse("api_keys:list"), {"name": "Kasir"})

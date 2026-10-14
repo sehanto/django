@@ -1,6 +1,7 @@
 import csv
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import StrEnum
 
 from django.contrib import messages
 from django.http import Http404, HttpResponse
@@ -406,18 +407,23 @@ class SelfDepositsView(OrganizationMixin, FormView):
         return redirect(f"{reverse('taxes:self_deposits')}?year={deposit.year}")
 
 
+class SelfDepositAction(StrEnum):
+    CANCEL = "cancel"
+    SLIP = "slip"  # record the BPSP number
+
+
 class SelfDepositActionView(WriteMixin, View):
     def post(self, request, pk, action):
+        if action not in SelfDepositAction:
+            raise Http404
         deposit = get_object_or_404(SelfDeposit.objects.for_organization(self.organization), pk=pk)
         try:
-            if action == "cancel":
+            if action == SelfDepositAction.CANCEL:
                 services.cancel_self_deposit(deposit=deposit, on=timezone.localdate(), created_by=request.user)
                 messages.success(request, _("Self-deposit cancelled (journal entries reversed)."))
-            elif action == "slip":
+            else:
                 services.record_self_deposit_slip(deposit=deposit, number=text_param(request.POST, "number"))
                 messages.success(request, _("BPSP number recorded."))
-            else:
-                raise Http404
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect(f"{reverse('taxes:self_deposits')}?year={deposit.year}")

@@ -38,12 +38,16 @@ class StockMovement(TenantOwnedModel):
             models.CheckConstraint(
                 name="stock_movement_sign_follows_kind",
                 condition=(
-                    models.Q(kind__in=["purchase", "sale_return", "increase", "purchase_return_voided"], quantity__gt=0, value__gte=0)
+                    models.Q(
+                        kind__in=[MovementKind.PURCHASE, MovementKind.SALE_RETURN, MovementKind.INCREASE, MovementKind.PURCHASE_RETURN_VOIDED],
+                        quantity__gt=0, value__gte=0,
+                    )
                     | models.Q(
-                        kind__in=["sale", "purchase_reversal", "decrease", "purchase_return", "sale_return_voided"],
+                        kind__in=[MovementKind.SALE, MovementKind.PURCHASE_REVERSAL, MovementKind.DECREASE, MovementKind.PURCHASE_RETURN,
+                                  MovementKind.SALE_RETURN_VOIDED],
                         quantity__lt=0, value__lte=0,
                     )
-                    | models.Q(kind="write_down", quantity=0, value__lt=0)
+                    | models.Q(kind=MovementKind.WRITE_DOWN, quantity=0, value__lt=0)
                 ),
             ),
         ]
