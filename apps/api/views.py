@@ -15,6 +15,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 
 from apps.accounts.throttle import ThrottleScope, allow
+from apps.audit.context import set_actor
 from apps.contacts.forms import ContactForm
 from apps.contacts.models import Contact
 from apps.contacts.services import create_contact
@@ -65,6 +66,7 @@ def endpoint(*methods: str):
                 if not allow(ThrottleScope.API, str(key.pk), limit=settings.API_REQUESTS_PER_HOUR, window_seconds=3600):
                     return _error("Too many requests. Try again later.", 429)
                 request.organization, request.api_user = key.organization, key.user
+                set_actor(key.user, f"{key.user.email} (API key {key.prefix}…)")  # reset by AuditActorMiddleware
                 try:
                     return view(request, *args, **kwargs)
                 except ApiError as exc:

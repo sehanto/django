@@ -56,3 +56,10 @@ def audit_summary(event) -> str:
     if action == AuditAction.BOOKS_EXPORTED and details.get("via") == "command":
         return _("By the system operator")
     return event.target
+
+
+@register.inclusion_tag("audit/_history_link.html", takes_context=True)
+def history_link(context, obj):
+    """A link to the record's change history, for those who may read it."""
+    show = bool(context.get("can_manage") and obj is not None and getattr(obj, "pk", None))
+    return {"show": show, "table": obj._meta.db_table if show else "", "record": obj.pk if show else ""}

@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load i18n money ui %}
+{% extends "base.html" %}{% load audit i18n money ui %}
 {% block title %}{{ invoice.display_number }}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
@@ -6,6 +6,7 @@
     <a href="{% url 'invoicing:list' kind %}" class="small text-decoration-none">&larr; {{ labels.plural }}</a>
     <h1 class="h4 mb-0">{{ invoice.display_number }}
       <span class="badge align-middle text-bg-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.status_label }}{% endif %}</span></h1>
+    {% history_link invoice %}
   </div>
   <div class="d-flex flex-wrap gap-2">
     {% if invoice.status != invoice.Status.DRAFT %}<a href="{% url 'invoicing:print' kind invoice.pk %}" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> {% translate "Print" %}</a>{% endif %}

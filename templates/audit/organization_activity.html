@@ -3,6 +3,7 @@
 {% block content %}
 <h1 class="h4 mb-1">{% translate "Activity log" %}</h1>
 <p class="text-secondary small mb-3">{% translate "Sensitive changes in this organization: settings, members, exports and the subscription. Entries cannot be edited or deleted." %}</p>
+{% include "audit/_tabs.html" with url_name="organization" %}
 <form class="row g-2 mb-3" method="get">
   <div class="col-md-4"><select name="category" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Category' %}">
     <option value="">{% translate "All activity" %}</option>

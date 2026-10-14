@@ -20,6 +20,9 @@ APP_ROLE_GRANTS = (
     "REVOKE EXECUTE ON FUNCTION {schema}.ledger_purge_organization(bigint) FROM {role}",
     # Migration history is the owner's business.
     "REVOKE INSERT, UPDATE, DELETE ON {schema}.django_migrations FROM {role}",
+    # The audit trail is written only by the database (audit 0010): the app may read it.
+    "DO $$ BEGIN IF to_regclass('{schema}.audit_recordchange') IS NOT NULL THEN "
+    "REVOKE INSERT, UPDATE, DELETE ON {schema}.audit_recordchange FROM {role}; END IF; END $$",
     # Reference data (manage.py load_regions, as the owner): the app only reads it.
     "DO $$ BEGIN IF to_regclass('{schema}.regions_village') IS NOT NULL THEN "
     "REVOKE INSERT, UPDATE, DELETE ON {schema}.regions_province, {schema}.regions_regency, {schema}.regions_district, "

@@ -6,4 +6,5 @@ app_name = "audit"
 
 urlpatterns = [
     path("", views.OrganizationActivityView.as_view(), name="organization"),
+    path("changes/", views.RecordChangesView.as_view(), name="changes"),
 ]

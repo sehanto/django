@@ -8,6 +8,7 @@ business data is exported as recorded.
 
 import csv
 import io
+import json
 import zipfile
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
@@ -21,6 +22,8 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
+from apps.audit.models import RecordChange
+from apps.audit.selectors import trail_head
 from apps.contacts.models import Contact
 from apps.inventory.models import StockMovement
 from apps.core.sanitizers import csv_safe
@@ -72,6 +75,8 @@ def _format(value) -> str:
         return timezone.localtime(value).isoformat(timespec="seconds")
     if isinstance(value, date):
         return value.isoformat()
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
     return str(value)  # Decimal: plain "1234.50", whatever the interface language
 
 
@@ -325,6 +330,14 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         )),
         PriorIncome, "organization", ("year", "employee__name", "id"),
     ),
+    (
+        Table("change_history.csv", gettext_lazy("The audit trail: every record created, changed or deleted, by whom and when, "
+                                                 "hash-chained."), (
+            C("sequence"), C("changed_at"), C("actor_label"), C("db_role"), C("transaction_id"), C("table_name"), C("record_id"),
+            C("operation"), C("changes"), C("previous_hash"), C("change_hash"),
+        )),
+        RecordChange, "organization", ("sequence",),
+    ),
 )
 ORGANIZATION_FIELDS = (
     C("name"), C("legal_form"), C("npwp"), C("nib"), *ADDRESS, C("phone"), C("email"), C("is_pkp"), C("is_retailer"),
@@ -350,6 +363,7 @@ def _organization_rows(organization: Organization) -> Iterator[list[str]]:
 
 def _readme(organization: Organization, exported_at: datetime, exported_by, as_of: date) -> str:
     head = chain_head(organization)
+    trail = trail_head(organization)
     files = [
         (ORGANIZATION_FILE, _("Business profile.")),
         *((table.filename, str(table.description)) for table, *_rest in TABLES),
@@ -374,6 +388,10 @@ def _readme(organization: Organization, exported_at: datetime, exported_by, as_o
         _("Each posted journal entry carries a SHA-256 hash that includes the previous entry's hash. Keep this "
           "head: if any posted entry is later changed or removed, the chain no longer leads to it "
           "(manage.py verify_ledger --expect-head)."),
+        "",
+        _("Audit trail head: %(head)s") % {"head": f"{trail[0]}:{trail[1]}" if trail else "-"},
+        _("Every recorded change (change_history.csv) is chained the same way "
+          "(manage.py verify_audit_trail --expect-head)."),
     ]
     return "\r\n".join(lines) + "\r\n"
 

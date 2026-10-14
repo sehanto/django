@@ -7,6 +7,7 @@ class AuditConfig(AppConfig):
     verbose_name = _("Audit log")
 
     def ready(self):
-        from . import signals
+        from . import context, signals
 
         signals.connect()
+        context.connect()

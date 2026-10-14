@@ -149,7 +149,7 @@ Key design decisions:
   recomputes the chain, so even owner-level edits or deletions that bypass the triggers
   are reported. `--expect-head SEQ:HASH` compares against a head recorded earlier; the
   books export README includes it, which catches a fully rewritten chain.
-  Chart-of-accounts changes are in the audit log.
+  Every other change is in the [change history](#change-history-audit-trail).
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -283,7 +283,8 @@ the time, user, organization, IP address, browser and what changed.
 | System | Encryption keys rotated |
 
 Bookkeeping is audited by the ledger itself: entries are immutable and record their
-author. Passwords, codes and keys are never recorded.
+author. Every other record is in the change history below. Passwords, codes and keys are
+never recorded.
 
 - **Who sees it:** owners and admins see their organization's events under **Settings →
   Activity log**. Every user sees their own sign-ins and security changes on the
@@ -305,6 +306,52 @@ author. Passwords, codes and keys are never recorded.
   organization events lose their IP address and browser after 90 days as well, but still
   show who did what and when. Which
   categories are kept longer is `KEPT_LONGER` in `apps/audit/domain.py`.
+
+### Change history (audit trail)
+
+The database records every row created, changed or deleted in a tenant table
+(`audit.RecordChange`, migration `audit/0010`). This covers the ledger, invoices,
+payments, returns, payroll, stock, fixed assets, tax payments, and also everything the
+immutable documents don't: contacts, items, accounts, tax rates, employees, settings,
+places of business, team members, invitations, API keys and drafts. Each change holds the
+table, the record, the operation, and the data: the new row, the old row, or the columns
+that changed, old → new. It also holds who made the change, the database role, the
+transaction (one business action, e.g. an invoice with its lines and journal entry, shares
+one) and the time.
+
+- **Written by the database, not the app.** An `AFTER` trigger on each table
+  (`audit_record_change()`, `SECURITY DEFINER`) writes the trail, so only changes that
+  passed the guards are recorded, and nothing the app does can skip it. The app role may
+  read the trail but not insert, change or delete trail rows (`apps/core/db_roles.py`).
+  Secrets (token and key hashes, encrypted tokens) and bookkeeping columns (`updated_at`,
+  an API key's last use) are left out.
+- **Who:** `apps.audit.context` names the actor for the database: the signed-in user of a
+  web request (`AuditActorMiddleware`), the API key's creator for API calls, or
+  `command:<name>` for management commands and cron jobs. Changes with no named actor
+  still record the database role. The actor is a session setting reset after every
+  request, so use session pooling, not transaction pooling (e.g. PgBouncer in
+  transaction mode), in front of PostgreSQL.
+- **Append-only and chained:** trail rows can't be updated or deleted (a trigger rejects
+  it for every role). Each organization's changes carry a gap-free `sequence` and a
+  SHA-256 `change_hash` over the change and the previous hash, like posted entries.
+  `manage.py verify_audit_trail` (daily in cron) recomputes the chain;
+  `--organization ID --expect-head SEQ:HASH` checks against a head noted earlier (shown
+  on the page and in the books export README). Only `delete_organization` (the schema
+  owner) removes an organization's trail, together with the organization.
+- **Where:** owners and admins see it under **Settings → Activity log → Change history**,
+  filtered by kind of record. Contacts, items, accounts, employees, fixed assets, invoices
+  and journal entries link to their own history. The books export includes it as
+  `change_history.csv`.
+- **New tables:** add the trigger in a migration with
+  `audit/0010_audit_trail.track_sql(table, "organization_id", *left_out_columns)`.
+  `apps/audit/tests/test_audit_trail.py` fails for a tenant table that isn't recorded.
+
+Three more tables are guarded with it:
+
+- document number sequences only count up, one at a time, and are never deleted, so a
+  number is never reused;
+- income from a previous employer (1721-A1) is fixed once the employee's year is settled;
+- Coretax submissions keep what was sent and their final result.
 
 To record a new sensitive action, add an `AuditAction` (with its category) and call
 `apps.audit.services.record(action, request=..., organization=..., target=..., **details)`
@@ -824,6 +871,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
 | `post_depreciation` | Daily 02:00 | Post the fixed asset depreciation of months that have ended (each month once, missed months caught up; organizations with a locked month are skipped and reported) |
 | `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain; failures are mailed (`MAILTO`) |
+| `verify_audit_trail` | Daily 04:10 | Recompute the hash chain of the change history; failures are mailed (`MAILTO`) |
 | `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's

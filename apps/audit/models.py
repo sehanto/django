@@ -39,3 +39,50 @@ class AuditEvent(models.Model):
 
     def __str__(self):
         return f"{self.created_at:%Y-%m-%d %H:%M} {self.action} {self.actor_email}"
+
+
+class RecordChange(models.Model):
+    """One row inserted, changed or deleted in a tenant table: the audit trail of the books.
+
+    Written only by the database (``audit_record_change()``, a trigger on every tenant table,
+    migration 0009), never by the application: the app role may read this table but not
+    write it. Each organization's changes form a hash chain like the posted ledger
+    (``sequence``, ``previous_hash``, ``change_hash``), checked by ``manage.py
+    verify_audit_trail``. Rows are never updated or deleted, except when the schema owner
+    deletes the whole organization."""
+
+    class Operation(models.TextChoices):
+        INSERT = "I", _("Created")
+        UPDATE = "U", _("Changed")
+        DELETE = "D", _("Deleted")
+
+    organization = models.ForeignKey(
+        "tenants.Organization", on_delete=models.DO_NOTHING, db_constraint=False, related_name="+",
+        verbose_name=_("organization"),
+    )
+    sequence = models.BigIntegerField(_("sequence"), editable=False)
+    table_name = models.CharField(_("table"), max_length=63, editable=False)
+    record_id = models.CharField(_("record"), max_length=64, editable=False)
+    operation = models.CharField(_("operation"), max_length=1, choices=Operation.choices, editable=False)
+    # INSERT: the new row; DELETE: the old row; UPDATE: {column: [old, new]} for the columns that changed.
+    changes = models.JSONField(_("changes"), editable=False)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.DO_NOTHING, db_constraint=False, related_name="+",
+        verbose_name=_("user"),
+    )
+    actor_label = models.CharField(_("changed by"), max_length=254, blank=True, editable=False)
+    db_role = models.CharField(_("database role"), max_length=63, editable=False)
+    transaction_id = models.BigIntegerField(_("transaction"), editable=False)
+    changed_at = models.DateTimeField(_("time"), editable=False)
+    previous_hash = models.CharField(max_length=64, editable=False)
+    change_hash = models.CharField(max_length=64, editable=False)
+
+    class Meta:
+        ordering = ["-sequence"]
+        verbose_name = _("record change")
+        verbose_name_plural = _("record changes")
+        constraints = [models.UniqueConstraint(fields=["organization", "sequence"], name="unique_record_change_sequence")]
+        indexes = [models.Index(fields=["organization", "table_name", "record_id"], name="audit_change_record")]
+
+    def __str__(self):
+        return f"{self.table_name} {self.record_id} {self.operation}"

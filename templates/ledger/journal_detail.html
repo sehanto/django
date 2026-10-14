@@ -1,9 +1,10 @@
-{% extends "base.html" %}{% load i18n money ui %}
+{% extends "base.html" %}{% load audit i18n money ui %}
 {% block title %}{{ entry.number }}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
   <div>
     <h1 class="h4 mb-1">{{ entry.number }} <span class="badge text-bg-{{ entry.status|status_badge }} align-middle">{{ entry.get_status_display }}</span></h1>
+{% history_link entry %}
     <div class="text-secondary">{{ entry.date|date:"d F Y" }} · {{ entry.get_source_display }}{% if entry.reference %} · {% translate "Reference" %}: {{ entry.reference }}{% endif %}</div>
   </div>
   {% if can_write %}<div class="d-flex gap-2 no-print">
