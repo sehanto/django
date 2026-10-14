@@ -245,9 +245,15 @@ postcodes, from [cahyadsn/wilayah](https://github.com/cahyadsn/wilayah) and
   are edited. A contact abroad and a non-resident employee write their address in full,
   without a region.
 - Only the kelurahan/desa code is stored (`village`); the levels above it and the postcode
-  follow from it. The API takes and returns `village` (the code) with `region` and
-  `postal_code`.
-- Invoices keep the region line as issued (`contact_city`/`seller_city`).
+  follow from it. The postcode can also be typed instead: it must be on the list, fills the
+  selects when one kelurahan/desa has it (or narrows them when several share it, e.g. 15330:
+  Jatake and Malang Nengah), and must match the kelurahan/desa chosen. The API takes
+  `village` (and checks `postal_code` the same way) and returns `village`, `region`,
+  `postal_code` and `region_codes` (the code of each level).
+- Issued invoices keep the region as issued: the region line (`contact_city`/`seller_city`) and
+  the kelurahan/desa code (`contact_village`/`seller_village`); subscription invoices keep
+  `buyer_village`. Documents issued before these codes existed keep only the text.
+- Contacts can be filtered by province (list and API `?province=36`).
 - `manage.py load_regions` loads the list after `migrate` and updates it when Kemendagri
   revises the codes: new codes are added, renamed ones updated, and codes no longer listed
   are deactivated (never deleted, since addresses may still use them). To update, replace

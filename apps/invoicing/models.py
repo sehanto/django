@@ -187,11 +187,20 @@ class Invoice(TenantOwnedModel):
     contact_country = models.CharField(_("contact country"), max_length=3, blank=True, editable=False)
     contact_address = models.TextField(_("contact address"), blank=True, editable=False)
     contact_city = models.CharField(_("contact region"), max_length=255, blank=True, editable=False)
+    # The region as a Kemendagri code too, so issued documents can be grouped and checked by region.
+    contact_village = models.ForeignKey(
+        "regions.Village", null=True, blank=True, on_delete=models.PROTECT, related_name="+", editable=False,
+        verbose_name=_("contact kelurahan/desa"),
+    )
     seller_name = models.CharField(_("seller name"), max_length=200, blank=True, editable=False)
     seller_npwp = models.CharField(_("seller NPWP"), max_length=16, blank=True, editable=False)
     seller_nitku = models.CharField(_("seller NITKU"), max_length=22, blank=True, editable=False)
     seller_address = models.TextField(_("seller address"), blank=True, editable=False)
     seller_city = models.CharField(_("seller region"), max_length=255, blank=True, editable=False)
+    seller_village = models.ForeignKey(
+        "regions.Village", null=True, blank=True, on_delete=models.PROTECT, related_name="+", editable=False,
+        verbose_name=_("seller kelurahan/desa"),
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
@@ -224,12 +233,11 @@ class Invoice(TenantOwnedModel):
         self.contact_id_type, self.contact_id_number = contact.id_type, contact.id_number
         self.buyer_vat_collector = contact.vat_collector if self.is_sales else VatCollector.NONE
         # contact_city/seller_city hold the region line: kelurahan/desa, kecamatan, kabupaten/kota, province, postcode.
-        self.contact_address, self.contact_city = contact.address, contact.region_line
+        self.contact_address, self.contact_city, self.contact_village_id = contact.address, contact.region_line, contact.village_id
         self.seller_name, self.seller_npwp = organization.name, organization.npwp
         place = self.business_place
-        self.seller_address, self.seller_city = organization.address, organization.region_line
-        if place is not None and (place.address or place.village_id):
-            self.seller_address, self.seller_city = place.address, place.region_line
+        seller = place if place is not None and (place.address or place.village_id) else organization
+        self.seller_address, self.seller_city, self.seller_village_id = seller.address, seller.region_line, seller.village_id
         self.seller_nitku = place.nitku if place is not None else ""
 
     def _party(self, snapshot: str, live) -> str:

@@ -31,8 +31,8 @@ class ContactForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
     def clean_country(self):
         return (self.cleaned_data.get("country") or INDONESIA).upper()
 
-    def address_required(self, cleaned_data) -> bool:
-        return cleaned_data.get("country", INDONESIA) == INDONESIA and super().address_required(cleaned_data)
+    def is_domestic(self, cleaned_data) -> bool:
+        return cleaned_data.get("country", INDONESIA) == INDONESIA
 
     def clean(self):
         cleaned = super().clean()

@@ -12,6 +12,8 @@ from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
 from .forms import ContactForm
+from apps.regions.models import Province
+
 from .models import Contact
 from .selectors import contacts_for
 
@@ -22,12 +24,15 @@ class ContactListView(OrganizationMixin, ListView):
 
     def get_queryset(self):
         params = self.request.GET
-        return contacts_for(
+        self.provinces = list(Province.objects.filter(is_active=True))
+        province = choice_param(params, "province", [p.code for p in self.provinces])
+        contacts = contacts_for(
             self.organization, query=text_param(params, "q"), kind=choice_param(params, "kind", Contact.Kind.values)
         ).select_related("village__district__regency")
+        return contacts.filter(village__district__regency__province_id=province) if province else contacts
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(kinds=Contact.Kind.choices, **kwargs)
+        return super().get_context_data(kinds=Contact.Kind.choices, provinces=self.provinces, **kwargs)
 
 
 class ContactFormMixin(WriteMixin):

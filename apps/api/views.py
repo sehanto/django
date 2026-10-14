@@ -18,6 +18,7 @@ from apps.accounts.throttle import ThrottleScope, allow
 from apps.audit.context import set_actor
 from apps.contacts.forms import ContactForm
 from apps.contacts.models import Contact
+from apps.regions.models import Province
 from apps.contacts.services import create_contact
 from apps.core.exceptions import DomainError
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
@@ -180,10 +181,19 @@ def account_json(a: Account) -> dict:
     return {"code": a.code, "name": a.name, "category": a.category, "system_role": a.system_role or None, "is_active": a.is_active}
 
 
+def _region_codes(village) -> dict | None:
+    """The Kemendagri codes of each level (null for an address without a region)."""
+    if village is None:
+        return None
+    district = village.district
+    return {"province": district.regency.province_id, "regency": district.regency_id, "district": district.pk, "village": village.pk}
+
+
 def contact_json(c: Contact) -> dict:
     return {
         "id": c.pk, "kind": c.kind, "name": c.name, "npwp": c.npwp, "email": c.email, "phone": c.phone,
         "address": c.address, "village": c.village_id, "region": c.region_line, "postal_code": c.postal_code,
+        "region_codes": _region_codes(c.village),
         "city": c.regency_name,  # kept for clients of the earlier free-text field
         "payment_terms_days": c.payment_terms_days, "is_active": c.is_active,
     }
@@ -251,9 +261,11 @@ def contacts(request):
         if not form.is_valid():
             return JsonResponse({"error": "Invalid contact.", "fields": form.errors.get_json_data()}, status=400)
         return JsonResponse(contact_json(create_contact(organization=organization, **form.cleaned_data)), status=201)
-    queryset = Contact.objects.for_organization(organization).order_by("name", "id")
+    queryset = Contact.objects.for_organization(organization).select_related("village__district__regency").order_by("name", "id")
     if kind := _filter(request, "kind", Contact.Kind.values):
         queryset = queryset.filter(kind__in=[kind, Contact.Kind.BOTH])
+    if province := _filter(request, "province", list(Province.objects.values_list("code", flat=True))):
+        queryset = queryset.filter(village__district__regency__province_id=province)
     page, meta = _page(request, queryset)
     return JsonResponse({"results": [contact_json(c) for c in page], **meta})
 

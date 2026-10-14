@@ -30,9 +30,9 @@ class EmployeeForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
     def clean_nationality(self):
         return (self.cleaned_data.get("nationality") or "").upper()
 
-    def address_required(self, cleaned_data) -> bool:
+    def is_domestic(self, cleaned_data) -> bool:
         """A non-resident may live abroad: their address is then written in full."""
-        return cleaned_data.get("is_resident", True) and super().address_required(cleaned_data)
+        return bool(cleaned_data.get("is_resident", True))
 
 
 class PayrollSettingsForm(OrganizationFormMixin, BaseModelForm):

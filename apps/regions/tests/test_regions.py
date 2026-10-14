@@ -170,3 +170,58 @@ def test_the_api_takes_and_returns_the_region(client, organization, user, region
     assert (body["village"], body["postal_code"], body["city"]) == (JATAKE, "15330", "Kabupaten Tangerang")
     assert body["region"] == "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
 
+
+
+def test_the_postcode_finds_the_village_and_is_checked(organization, regions):
+    regions(JATAKE, "36.03.22.2011", "36.03.22.2003")  # Jatake and Malang Nengah share 15330; Pagedangan has 15339
+    base = {"kind": "customer", "name": "PT Pelanggan", "payment_terms_days": "30", "document_language": "id", "address": "Jl. Raya 1"}
+    form = ContactForm(data={**base, "postal_code": "15339"}, organization=organization)
+    assert form.is_valid(), form.errors
+    assert form.cleaned_data["village"].code == "36.03.22.2003"  # one kelurahan/desa has it
+    form = ContactForm(data={**base, "postal_code": "15330"}, organization=organization)
+    assert not form.is_valid() and "Several" in form.errors["village"][0]
+    form = ContactForm(data={**base, "postal_code": "15339", "village": JATAKE}, organization=organization)
+    assert form.errors["postal_code"] == ["The postcode of Jatake is 15330."]
+    for wrong in ("99999", "1533", "abcde"):
+        assert "postal_code" in ContactForm(data={**base, "postal_code": wrong}, organization=organization).errors
+    abroad = ContactForm(data={**base, "country": "SGP", "address": "1 Raffles Place", "postal_code": "04861"}, organization=organization)
+    assert abroad.is_valid(), abroad.errors  # not looked up for an address abroad
+
+
+def test_the_postcode_endpoint(auth_client, regions):
+    regions(JATAKE, "36.03.22.2011")
+    url = reverse("regions:choices")
+    villages = auth_client.get(url, {"postcode": "15330"}).json()["villages"]
+    assert [(v["code"], v["district"], v["regency"], v["province"]) for v in villages] == [
+        (JATAKE, "36.03.22", "36.03", "36"), ("36.03.22.2011", "36.03.22", "36.03", "36"),
+    ]
+    assert villages[0]["label"] == "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
+    assert auth_client.get(url, {"postcode": "1533x"}).status_code == 404
+
+
+def test_issued_documents_keep_the_region_code(organization, customer, account, regions):
+    villages = regions(JATAKE, CATURTUNGGAL)
+    organization.village = villages[JATAKE]
+    organization.save()
+    customer.village = villages[CATURTUNGGAL]
+    customer.save()
+    invoice = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+        organization=organization, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 5),
+        lines=[InvoiceLineInput("Kopi", account("4-1000"), D("1"), D("100000"))],
+    ))
+    assert (invoice.contact_village_id, invoice.seller_village_id) == (CATURTUNGGAL, JATAKE)
+
+
+def test_contacts_are_filtered_by_province(auth_client, client, organization, user, regions):
+    villages = regions(JATAKE, CATURTUNGGAL)
+    Contact.objects.create(organization=organization, name="PT Banten", village=villages[JATAKE])
+    Contact.objects.create(organization=organization, name="CV Jogja", village=villages[CATURTUNGGAL])
+    page = auth_client.get(reverse("contacts:list"), {"province": "36"})
+    assert [c.name for c in page.context["object_list"]] == ["PT Banten"]
+    assert len(auth_client.get(reverse("contacts:list"), {"province": "99"}).context["object_list"]) == 2  # unknown: no filter
+    key = create_key(organization=organization, user=user, name="Toko online")[1]
+    listed = client.get(reverse("api:contacts"), {"province": "34"}, HTTP_AUTHORIZATION=f"Bearer {key}").json()["results"]
+    assert [(c["name"], c["region_codes"]) for c in listed] == [
+        ("CV Jogja", {"province": "34", "regency": "34.04", "district": "34.04.07", "village": CATURTUNGGAL}),
+    ]
+    assert client.get(reverse("api:contacts"), {"province": "99"}, HTTP_AUTHORIZATION=f"Bearer {key}").status_code == 400

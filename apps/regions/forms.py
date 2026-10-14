@@ -7,7 +7,8 @@ from django import forms
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from .models import District, Province, Regency, Village
+from .models import District, Province, Regency, Village, postal_code_validator
+from .selectors import villages_with_postcode
 from .services import CODE
 
 LEVELS = ("province", "regency", "district", "village")
@@ -34,8 +35,8 @@ def _select(level: str) -> dict:
 
 
 class RegionFieldsMixin:
-    """Adds the region selects after the ``address`` field. ``address_required(cleaned_data)``
-    says whether this address must name its kelurahan/desa."""
+    """Adds the region selects and the postcode after the ``address`` field. ``is_domestic(cleaned_data)``
+    says whether the address is in Indonesia (an address abroad is written in full, without them)."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,9 +64,13 @@ class RegionFieldsMixin:
                 empty_label="—", widget=(VillageSelect if level == "village" else forms.Select)(attrs=_select(level)),
             )
         fields["postal_code"] = forms.CharField(
-            label=_("Postcode"), required=False, disabled=True, initial=village.postal_code if village else "",
-            widget=forms.TextInput(attrs={"data-region-postal-code": "", "readonly": True}),
-            help_text=_("Follows from the kelurahan/desa."),
+            label=_("Postcode"), required=False, max_length=5, initial=village.postal_code if village else "",
+            validators=[postal_code_validator],
+            widget=forms.TextInput(attrs={
+                "data-region-postal-code": "", "data-region-url": reverse("regions:choices"), "inputmode": "numeric",
+                "pattern": "[0-9]{5}", "maxlength": 5, "autocomplete": "postal-code",
+            }),
+            help_text=_("Type it to find the kelurahan/desa, or choose them above: the postcode follows."),
         )
         ordered = {}
         for name, field in self.fields.items():
@@ -76,13 +81,28 @@ class RegionFieldsMixin:
                 ordered.update(fields)
         self.fields = ordered
 
+    def is_domestic(self, cleaned_data) -> bool:
+        return True
+
     def address_required(self, cleaned_data) -> bool:
-        """By default: whenever any part of the address is given."""
-        return bool(cleaned_data.get("address") or any(cleaned_data.get(level) for level in LEVELS))
+        """A domestic address with any part given names its kelurahan/desa."""
+        parts = (cleaned_data.get("address"), cleaned_data.get("postal_code"), *(cleaned_data.get(level) for level in LEVELS))
+        return self.is_domestic(cleaned_data) and any(parts)
 
     def clean(self):
         cleaned = super().clean()
         village = cleaned.get("village")
+        postcode = cleaned.get("postal_code") or ""
+        if village is None and postcode and self.is_domestic(cleaned) and not self.errors.get("village"):  # only the postcode: one kelurahan/desa has it?
+            matches = list(villages_with_postcode(postcode)[:2])
+            if len(matches) == 1:
+                village = cleaned["village"] = matches[0]
+            elif matches:
+                self.add_error("village", _("Several kelurahan/desa have postcode %(postcode)s: choose yours.") % {"postcode": postcode})
+            else:
+                self.add_error("postal_code", _("No kelurahan/desa has postcode %(postcode)s.") % {"postcode": postcode})
+        elif village is not None and postcode and postcode != village.postal_code:
+            self.add_error("postal_code", _("The postcode of %(village)s is %(postcode)s.") % {"village": village.name, "postcode": village.postal_code})
         if village is not None:
             district = village.district
             parents = {"district": district, "regency": district.regency, "province": district.regency.province}
@@ -90,7 +110,7 @@ class RegionFieldsMixin:
                 given = cleaned.get(level)
                 if given is not None and given != parent:
                     self.add_error(level, _("This doesn't match the kelurahan/desa chosen."))
-        elif self.address_required(cleaned) and not self.errors.get("village"):
+        elif self.address_required(cleaned) and not self.errors.get("village") and not self.errors.get("postal_code"):
             self.add_error("village", _("Choose the province, regency/city, district and kelurahan/desa."))
         for helper in (*LEVELS[:-1], "postal_code"):  # only the village is stored
             cleaned.pop(helper, None)

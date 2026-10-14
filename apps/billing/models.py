@@ -35,6 +35,9 @@ class SubscriptionInvoice(TimeStampedModel):
     buyer_name = models.CharField(_("buyer name"), max_length=200)
     buyer_npwp = models.CharField(_("buyer NPWP"), max_length=16, blank=True)
     buyer_address = models.TextField(_("buyer address"), blank=True)
+    buyer_village = models.ForeignKey(  # the region of buyer_address, as a Kemendagri code (set at creation)
+        "regions.Village", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("buyer kelurahan/desa"),
+    )
     buyer_email = models.EmailField(_("buyer email"), blank=True)
 
     subtotal = money_field(_("subtotal"))

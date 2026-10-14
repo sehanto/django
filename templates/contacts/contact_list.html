@@ -6,8 +6,9 @@
   {% if can_write %}<a href="{% url 'contacts:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New contact" %}</a>{% endif %}
 </div>
 <form class="row g-2 mb-3" method="get">
-  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search name, email, NPWP' %}"></div>
-  <div class="col-md-4"><select name="kind" class="form-select"><option value="">{% translate "All types" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-md-4"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search name, email, NPWP' %}"></div>
+  <div class="col-md-3"><select name="province" class="form-select" aria-label="{% translate 'Province' %}"><option value="">{% translate "All provinces" %}</option>{% for p in provinces %}<option value="{{ p.code }}" {% if request.GET.province == p.code %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+  <div class="col-md-3"><select name="kind" class="form-select"><option value="">{% translate "All types" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
