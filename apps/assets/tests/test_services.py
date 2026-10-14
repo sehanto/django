@@ -29,11 +29,11 @@ def test_registering_posts_nothing_and_uses_the_organization_policy(organization
 
 
 @pytest.mark.parametrize("overrides, message", [
-    ({"asset_account": "1-2900"}, "fixed asset account"),  # the contra account
-    ({"asset_account": "6-1600"}, "fixed asset account"),
-    ({"residual_value": D("4800000")}, "residual value"),
+    ({"asset_account": "1-2900"}, "fixed asset or intangible asset account"),  # the contra account
+    ({"asset_account": "6-1600"}, "fixed asset or intangible asset account"),
+    ({"residual_value": D("4800000")}, "without a residual value"),
     ({"useful_life_months": None}, "useful life"),
-    ({"accumulated_depreciation_account": "1-2300"}, "accumulated depreciation account"),
+    ({"accumulated_depreciation_account": "1-2300"}, "same kind as the asset account"),
     ({"depreciation_expense_account": "4-1000"}, "expense account"),
     ({"depreciated_before_until": date(2025, 12, 31)}, "before the acquisition date"),
 ])
@@ -123,8 +123,8 @@ def test_selling_above_book_value_books_a_gain(organization, account, make_asset
 
 def test_writing_off_books_a_loss(organization, account, make_asset):
     asset = make_asset()
-    services.dispose_asset(asset=asset, on=date(2026, 2, 1), gain_loss_account=account("7-1100"))
-    assert balance(account, "7-1100") == D("4700000")  # cost less January's depreciation
+    services.dispose_asset(asset=asset, on=date(2026, 2, 1), gain_loss_account=account("7-1900"))
+    assert balance(account, "7-1900") == D("4700000")  # cost less January's depreciation
 
 
 @pytest.mark.parametrize("kwargs, message", [
@@ -142,7 +142,7 @@ def test_disposal_cannot_undercut_posted_depreciation(organization, account, mak
     asset = make_asset()
     services.post_depreciation(organization=organization, through=date(2026, 5, 31))
     with pytest.raises(ValidationFailed, match="05/2026"):
-        services.dispose_asset(asset=asset, on=date(2026, 3, 15), gain_loss_account=account("7-1100"))
+        services.dispose_asset(asset=asset, on=date(2026, 3, 15), gain_loss_account=account("7-1900"))
 
 
 def test_command_posts_for_every_organization_and_reports_locked_ones(organization, other_organization, make_asset, capsys):

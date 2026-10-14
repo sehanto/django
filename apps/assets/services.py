@@ -22,6 +22,8 @@ from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 
 NUMBER_PREFIX = "AT"
+# Fixed assets (Bab 11) and separately acquired intangible assets (Bab 12), amortised alike.
+REGISTER_CATEGORIES = (AccountCategory.FIXED_ASSET, AccountCategory.INTANGIBLE_ASSET)
 EDITABLE_ONCE_DEPRECIATED = ("name", "description")
 
 
@@ -32,18 +34,21 @@ def _belongs(account, organization) -> bool:
 def _validate(organization, data: dict) -> None:
     ensure_business_date(data["acquisition_date"])
     asset_account = data["asset_account"]
-    if not _belongs(asset_account, organization) or asset_account.category != AccountCategory.FIXED_ASSET or asset_account.is_contra:
-        raise ValidationFailed(_("Choose a fixed asset account (not accumulated depreciation)."))
-    cost, residual = quantize(data["cost"]), quantize(data.get("residual_value") or ZERO)
-    if cost <= 0 or residual < 0 or residual >= cost:
-        raise ValidationFailed(_("The cost must be positive and the residual value lower than the cost."))
+    if not _belongs(asset_account, organization) or asset_account.category not in REGISTER_CATEGORIES or asset_account.is_contra:
+        raise ValidationFailed(_("Choose a fixed asset or intangible asset account (not accumulated depreciation)."))
+    if quantize(data["cost"]) <= 0:
+        raise ValidationFailed(_("The cost must be positive."))
+    if quantize(data.get("residual_value") or ZERO):
+        raise ValidationFailed(_("SAK EMKM depreciates and amortises without a residual value: leave it at 0."))
     if not data["is_depreciable"]:
+        if asset_account.category == AccountCategory.INTANGIBLE_ASSET:
+            raise ValidationFailed(_("An intangible asset has a limited useful life and is amortised (SAK EMKM 12.10)."))
         return
     if not data.get("useful_life_months"):
         raise ValidationFailed(_("Enter the useful life of a depreciable asset."))
     accumulated, expense = data.get("accumulated_depreciation_account"), data.get("depreciation_expense_account")
-    if not _belongs(accumulated, organization) or accumulated.category != AccountCategory.FIXED_ASSET or not accumulated.is_contra:
-        raise ValidationFailed(_("Choose an accumulated depreciation account (a contra fixed asset account)."))
+    if not _belongs(accumulated, organization) or accumulated.category != asset_account.category or not accumulated.is_contra:
+        raise ValidationFailed(_("Choose an accumulated depreciation (or, for an intangible asset, amortisation) account of the same kind as the asset account."))
     if not _belongs(expense, organization) or expense.category not in (AccountCategory.OPERATING_EXPENSE, AccountCategory.COST_OF_SALES):
         raise ValidationFailed(_("Choose an expense account for the depreciation."))
     until = data.get("depreciated_before_until")
@@ -122,8 +127,12 @@ def post_depreciation(*, organization, through: date, created_by=None) -> list[J
             lines.append(JournalLineInput(asset.depreciation_expense_account, debit=scheduled.amount, description=label))
             lines.append(JournalLineInput(asset.accumulated_depreciation_account, credit=scheduled.amount, description=label))
         # Journal descriptions are stored business records and stay in Indonesian.
+        intangible = any(asset.asset_account.category == AccountCategory.INTANGIBLE_ASSET for asset, _scheduled in items)
+        tangible = any(asset.asset_account.category != AccountCategory.INTANGIBLE_ASSET for asset, _scheduled in items)
+        what = {(True, False): "Penyusutan aset tetap", (False, True): "Amortisasi aset takberwujud"}.get(
+            (tangible, intangible), "Penyusutan aset tetap dan amortisasi aset takberwujud")
         entry = create_journal_entry(
-            organization=organization, date=month_end(year, month), description=f"Penyusutan aset tetap masa {_period(year, month)}",
+            organization=organization, date=month_end(year, month), description=f"{what} masa {_period(year, month)}",
             source=JournalEntry.Source.FIXED_ASSET, created_by=created_by, lines=lines,
         )
         DepreciationPosting.objects.bulk_create(
@@ -248,7 +257,7 @@ def first_revisable_month(asset: FixedAsset) -> date:
 
 @transaction.atomic
 def revise_estimate(
-    *, asset: FixedAsset, effective_from: date, useful_life_months: int, residual_value: Decimal, reason: str,
+    *, asset: FixedAsset, effective_from: date, useful_life_months: int, reason: str, residual_value: Decimal = ZERO,
     method: str | None = None, created_by=None,
 ) -> AssetRevision:
     """Change the useful life, residual value or depreciation method from a month on (a change
@@ -278,6 +287,8 @@ def revise_estimate(
             elapsed + 1,
         ) % {"period": _period(starts.year, starts.month), "months": elapsed + 1})
     residual_value = quantize(residual_value or ZERO)
+    if residual_value:  # an earlier residual value can only be revised away
+        raise ValidationFailed(_("SAK EMKM depreciates and amortises without a residual value: leave it at 0."))
     method = DepreciationMethod(method or asset.current_method)
     if (useful_life_months, residual_value, method) == (asset.current_useful_life_months, asset.current_residual_value, asset.current_method):
         raise ValidationFailed(_("Change the useful life, the residual value or the depreciation method."))

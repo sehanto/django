@@ -29,6 +29,7 @@ STATUS_BADGES = {
     InvoiceStatus.ISSUED: "primary",
     InvoiceStatus.PARTIAL: "warning",
     InvoiceStatus.PAID: "success",
+    InvoiceStatus.WRITTEN_OFF: "dark",
     InvoiceStatus.VOID: "dark",
     InvoiceStatusFilter.OVERDUE: "danger",
     Payment.Status.POSTED: "success",

@@ -72,6 +72,14 @@ class JournalEntry(TenantOwnedModel):
         verbose_name=_("reverses entry"),
     )
     posted_at = models.DateTimeField(_("posted at"), null=True, blank=True)
+    # A correction of a prior period's error (SAK EMKM 7.16): posted on its own date, but the
+    # financial statements show it in the year it corrects, so the comparatives are restated
+    # and the current year's profit is not affected (ledger 0018).
+    restates_year = models.PositiveSmallIntegerField(
+        _("corrects an error of"), null=True, blank=True,
+        help_text=_("For a correction of an error in an earlier year's books: that year. The statements then show the "
+                    "correction in that year (comparatives restated) instead of in this year's profit."),
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )

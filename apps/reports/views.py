@@ -18,7 +18,7 @@ from apps.invoicing import coretax
 from apps.invoicing.models import Invoice, InvoiceKind, ReturnNote
 from apps.invoicing.models import CoretaxConnection
 from apps.invoicing.selectors import aging_report, vat_summary
-from apps.ledger.selectors import account_balances, account_ledger
+from apps.ledger.selectors import account_balances, account_ledger, prior_period_corrections, restated_since
 from apps.accounts.throttle import ThrottleScope, allow
 from apps.assets.selectors import revisions_in
 from apps.audit import services as audit
@@ -27,7 +27,7 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin
 
 from .exports import archive_filename, write_books_archive
 from .forms import AsOfForm, LedgerForm, PeriodForm, end_of_previous_year, one_year_earlier, start_of_year
-from .statements import FinancialNotes, build_balance_sheet, build_income_statement, build_trial_balance
+from .statements import FinancialNotes, build_balance_sheet, build_income_statement, build_trial_balance, number_notes
 
 
 class ExportFormat(models.TextChoices):
@@ -46,11 +46,13 @@ def csv_response(filename: str, rows) -> HttpResponse:
 def income_statement(organization, date_from, date_to):
     """The period with the same period a year earlier as the comparative."""
     previous_from, previous_to = one_year_earlier(date_from), one_year_earlier(date_to)
-    return build_income_statement(
-        account_balances(organization, date_from=date_from, date_to=date_to), date_from, date_to,
-        previous_balances=account_balances(organization, date_from=previous_from, date_to=previous_to),
+    report = build_income_statement(
+        account_balances(organization, date_from=date_from, date_to=date_to, restated=True), date_from, date_to,
+        previous_balances=account_balances(organization, date_from=previous_from, date_to=previous_to, restated=True),
         previous_from=previous_from, previous_to=previous_to,
     )
+    report.comparative_restated = restated_since(organization, previous_to)
+    return report
 
 
 def balance_sheet(organization, as_of):
@@ -58,13 +60,15 @@ def balance_sheet(organization, as_of):
     previous_as_of = end_of_previous_year(as_of)
 
     def before_year(on):
-        return account_balances(organization, date_to=start_of_year(on) - timedelta(days=1))
+        return account_balances(organization, date_to=start_of_year(on) - timedelta(days=1), restated=True)
 
-    return build_balance_sheet(
-        account_balances(organization, date_to=as_of), before_year(as_of), as_of,
-        previous_balances_to_date=account_balances(organization, date_to=previous_as_of),
+    report = build_balance_sheet(
+        account_balances(organization, date_to=as_of, restated=True), before_year(as_of), as_of,
+        previous_balances_to_date=account_balances(organization, date_to=previous_as_of, restated=True),
         previous_balances_before_year=before_year(previous_as_of), previous_as_of=previous_as_of,
     )
+    report.comparative_restated = restated_since(organization, previous_as_of)
+    return report
 
 
 class ReportView(OrganizationMixin, TemplateView):
@@ -106,7 +110,9 @@ class IncomeStatementView(ReportView):
     csv_name = "income-statement.csv"
 
     def build(self, data):
-        return income_statement(self.organization, data["date_from"], data["date_to"])
+        report = income_statement(self.organization, data["date_from"], data["date_to"])
+        number_notes(balance_sheet(self.organization, data["date_to"]), report)  # the notes as of the period's end
+        return report
 
 
 class BalanceSheetView(ReportView):
@@ -115,7 +121,9 @@ class BalanceSheetView(ReportView):
     csv_name = "balance-sheet.csv"
 
     def build(self, data):
-        return balance_sheet(self.organization, data["as_of"])
+        report = balance_sheet(self.organization, data["as_of"])
+        number_notes(report, income_statement(self.organization, start_of_year(data["as_of"]), data["as_of"]))
+        return report
 
 
 class NotesView(ReportView):
@@ -126,12 +134,15 @@ class NotesView(ReportView):
 
     def build(self, data):
         as_of = data["as_of"]
-        return FinancialNotes(
+        notes = FinancialNotes(
             organization=self.organization,
             balance_sheet=balance_sheet(self.organization, as_of),
             income_statement=income_statement(self.organization, start_of_year(as_of), as_of),
             estimate_changes=list(revisions_in(self.organization, start_of_year(as_of), as_of)),
+            corrections=prior_period_corrections(self.organization, start_of_year(as_of), as_of),
         )
+        number_notes(notes.balance_sheet, notes.income_statement)
+        return notes
 
 
 class GeneralLedgerView(ReportView):

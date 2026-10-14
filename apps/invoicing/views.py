@@ -10,7 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 
-from apps.core.exceptions import DomainError
+from apps.core.exceptions import DomainError, ValidationFailed
+from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
@@ -22,9 +23,9 @@ from . import coretax, coretax_sync, services
 from .coretax_api import ConnectorName
 from .forms import (
     CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, SpecialDocumentForm, TaxInvoiceNumberForm, VoidForm,
-    line_inputs,
+    WriteOffForm, line_inputs,
 )
-from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter
+from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
 from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
 # Complete phrases rather than fragments, so each language can word them naturally.
@@ -195,6 +196,8 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
                 },
             ),
             void_form=VoidForm(initial={"date": today}),
+            write_off_form=WriteOffForm(initial={"date": max(today, invoice.date)}) if invoice.is_sales and invoice.is_open else None,
+            write_offs=list(invoice.write_offs.all()),
             returns=returns,
             has_posted_returns=any(r.status == r.Status.POSTED for r in returns),
             **kwargs,
@@ -242,6 +245,32 @@ class InvoiceVoidView(InvoiceActionView):
         services.void_invoice(invoice=invoice, on=on, voided_by=self.request.user)
         messages.success(self.request, _("Invoice %(number)s voided; its journal entry was reversed.") % {"number": invoice.number})
         return self.detail_url(invoice)
+
+
+class InvoiceWriteOffView(InvoiceActionView):
+    """Write off the rest of a sales invoice as uncollectible (SAK EMKM 8.11)."""
+
+    def act(self, invoice):
+        form = WriteOffForm(self.request.POST)
+        if not form.is_valid():
+            raise ValidationFailed("; ".join(e for errs in form.errors.values() for e in errs))
+        write_off = services.write_off_receivable(invoice=invoice, created_by=self.request.user, **form.cleaned_data)
+        messages.success(self.request, _("%(amount)s written off as uncollectible and posted to the ledger.")
+                         % {"amount": localized_rupiah(write_off.amount)})
+        return self.detail_url(invoice)
+
+
+class WriteOffVoidView(WriteMixin, View):
+    def post(self, request, pk):
+        write_off = get_object_or_404(ReceivableWriteOff.objects.for_organization(self.organization).select_related("invoice"), pk=pk)
+        form = VoidForm(request.POST)
+        on = form.cleaned_data["date"] if form.is_valid() else timezone.localdate()
+        try:
+            services.void_write_off(write_off=write_off, on=on, voided_by=request.user)
+            messages.success(request, _("Write-off voided: its journal entry was reversed and the invoice is open again."))
+        except DomainError as exc:
+            flash_domain_error(request, exc)
+        return redirect("invoicing:detail", kind=write_off.invoice.kind, pk=write_off.invoice_id)
 
 
 class InvoiceDeleteView(InvoiceActionView):

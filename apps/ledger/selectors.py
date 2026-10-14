@@ -5,7 +5,8 @@ from datetime import date
 from decimal import Decimal
 
 from django.db import connection
-from django.db.models import Case, Q, QuerySet, Sum, When
+from django.db.models import Case, DateField, F, Func, Q, QuerySet, Sum, Value, When
+from django.db.models.functions import Coalesce
 
 from apps.core.money import ZERO
 
@@ -26,14 +27,28 @@ def journal_entries_for(organization) -> QuerySet[JournalEntry]:
     return JournalEntry.objects.for_organization(organization).select_related("posted_by").prefetch_related("lines__account")
 
 
-def posted_lines(organization, *, date_from: date | None = None, date_to: date | None = None) -> QuerySet[JournalLine]:
+def reporting_date():
+    """When an entry counts in the financial statements: its date, or for a prior-period
+    correction the last day of the year it corrects (SAK EMKM 7.16, comparatives restated)."""
+    year_end = Func(F("entry__restates_year"), Value(12), Value(31), function="make_date", output_field=DateField())
+    return Coalesce(year_end, F("entry__date"))
+
+
+def posted_lines(
+    organization, *, date_from: date | None = None, date_to: date | None = None, restated: bool = False,
+) -> QuerySet[JournalLine]:
+    """Posted lines by the entries' dates (the books), or ``restated`` as the financial
+    statements show them (prior-period corrections in the year they correct)."""
     qs = JournalLine.objects.filter(
         entry__organization=organization, entry__status=JournalEntry.Status.POSTED
     )
+    on = "entry__date"
+    if restated:
+        qs, on = qs.annotate(reported_on=reporting_date()), "reported_on"
     if date_from:
-        qs = qs.filter(entry__date__gte=date_from)
+        qs = qs.filter(**{f"{on}__gte": date_from})
     if date_to:
-        qs = qs.filter(entry__date__lte=date_to)
+        qs = qs.filter(**{f"{on}__lte": date_to})
     return qs
 
 
@@ -54,11 +69,11 @@ class AccountBalance:
 
 
 def account_balances(
-    organization, *, date_from: date | None = None, date_to: date | None = None, include_zero: bool = False
+    organization, *, date_from: date | None = None, date_to: date | None = None, include_zero: bool = False, restated: bool = False,
 ) -> list[AccountBalance]:
     totals = {
         row["account_id"]: row
-        for row in posted_lines(organization, date_from=date_from, date_to=date_to)
+        for row in posted_lines(organization, date_from=date_from, date_to=date_to, restated=restated)
         .values("account_id")
         .annotate(debit=Sum("debit"), credit=Sum("credit"))
     }
@@ -236,3 +251,31 @@ def head_mismatch(organization, expected: ChainHead) -> str | None:
     if recorded != expected.entry_hash:
         return f"entry {expected.sequence} no longer has the recorded hash: the chain was rewritten"
     return None
+
+
+@dataclass(frozen=True)
+class PriorPeriodCorrection:
+    entry: JournalEntry
+    profit_effect: Decimal  # on the profit of the year it corrects (negative: lower)
+
+
+def prior_period_corrections(organization, date_from: date, date_to: date) -> list[PriorPeriodCorrection]:
+    """Corrections of earlier years' errors posted in the period (disclosed in the notes, SAK EMKM 7.16)."""
+    entries = (
+        JournalEntry.objects.for_organization(organization)
+        .filter(status=JournalEntry.Status.POSTED, restates_year__isnull=False, date__gte=date_from, date__lte=date_to)
+        .prefetch_related("lines__account").order_by("date", "id")
+    )
+    return [
+        PriorPeriodCorrection(entry, sum(
+            (line.credit - line.debit for line in entry.lines.all() if not line.account.account_type.is_balance_sheet), ZERO,
+        ))
+        for entry in entries
+    ]
+
+
+def restated_since(organization, period_end: date) -> bool:
+    """Whether corrections posted after ``period_end`` restate that period or an earlier one."""
+    return JournalEntry.objects.for_organization(organization).filter(
+        status=JournalEntry.Status.POSTED, restates_year__lte=period_end.year, date__gt=period_end,
+    ).exists()

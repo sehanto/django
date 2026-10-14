@@ -17,6 +17,7 @@
   {% translate "OPERATING PROFIT" as label %}{% include "reports/_total.html" with current=report.operating_profit previous=report.previous_operating_profit %}
   {% include "reports/_section.html" with section=report.other_income %}
   {% include "reports/_section.html" with section=report.other_expenses %}
+  {% if report.finance_costs.rows %}{% include "reports/_section.html" with section=report.finance_costs %}{% endif %}
   {% translate "PROFIT BEFORE TAX" as label %}{% include "reports/_total.html" with current=report.profit_before_tax previous=report.previous_profit_before_tax %}
   {% include "reports/_section.html" with section=report.income_tax %}
   {% translate "NET PROFIT (LOSS)" as label %}{% include "reports/_total.html" with current=report.net_profit previous=report.previous_net_profit negative_red=True %}

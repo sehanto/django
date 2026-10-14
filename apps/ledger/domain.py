@@ -44,6 +44,7 @@ class AccountCategory(models.TextChoices):
     INVENTORY = "inventory", _("Inventory")
     OTHER_CURRENT_ASSET = "other_current_asset", _("Other current assets")
     FIXED_ASSET = "fixed_asset", _("Fixed assets")
+    INTANGIBLE_ASSET = "intangible_asset", _("Intangible assets")
     CURRENT_LIABILITY = "current_liability", _("Current liabilities")
     LONG_TERM_LIABILITY = "long_term_liability", _("Long-term liabilities")
     EQUITY = "equity", _("Equity")
@@ -52,6 +53,7 @@ class AccountCategory(models.TextChoices):
     COST_OF_SALES = "cost_of_sales", _("Cost of sales")
     OPERATING_EXPENSE = "operating_expense", _("Operating expenses")
     OTHER_EXPENSE = "other_expense", _("Other expenses")
+    FINANCE_COST = "finance_cost", _("Finance costs")
     INCOME_TAX = "income_tax", _("Income tax expense")
 
     @property
@@ -65,6 +67,7 @@ CATEGORY_TYPES = {
     AccountCategory.INVENTORY: AccountType.ASSET,
     AccountCategory.OTHER_CURRENT_ASSET: AccountType.ASSET,
     AccountCategory.FIXED_ASSET: AccountType.ASSET,
+    AccountCategory.INTANGIBLE_ASSET: AccountType.ASSET,
     AccountCategory.CURRENT_LIABILITY: AccountType.LIABILITY,
     AccountCategory.LONG_TERM_LIABILITY: AccountType.LIABILITY,
     AccountCategory.EQUITY: AccountType.EQUITY,
@@ -73,6 +76,7 @@ CATEGORY_TYPES = {
     AccountCategory.COST_OF_SALES: AccountType.EXPENSE,
     AccountCategory.OPERATING_EXPENSE: AccountType.EXPENSE,
     AccountCategory.OTHER_EXPENSE: AccountType.EXPENSE,
+    AccountCategory.FINANCE_COST: AccountType.EXPENSE,
     AccountCategory.INCOME_TAX: AccountType.EXPENSE,
 }
 
@@ -99,6 +103,7 @@ class SystemRole(models.TextChoices):
     PPH_21_PAYABLE = "pph21_payable", _("Withheld PPh 21 payable")
     PPH_26_PAYABLE = "pph26_payable", _("Withheld PPh 26 payable")
     BPJS_PAYABLE = "bpjs_payable", _("BPJS contributions payable")
+    BAD_DEBT_EXPENSE = "bad_debt_expense", _("Bad debts written off")
 
 
 class JournalStatus(models.TextChoices):
@@ -116,6 +121,7 @@ class JournalSource(models.TextChoices):
     INVENTORY = "inventory", _("Inventory")
     PAYROLL = "payroll", _("Payroll")
     REVERSAL = "reversal", _("Reversal")
+    WRITE_OFF = "write_off", _("Receivable written off")
 
 
 def normal_balance_for(category: str, is_contra: bool) -> NormalBalance:

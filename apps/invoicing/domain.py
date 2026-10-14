@@ -20,6 +20,7 @@ class InvoiceStatus(models.TextChoices):
     ISSUED = "issued", _("Unpaid")
     PARTIAL = "partial", _("Partially paid")
     PAID = "paid", _("Paid")
+    WRITTEN_OFF = "written_off", _("Written off")  # uncollectible: the rest was written off (SAK EMKM 8.11)
     VOID = "void", _("Void")
 
 
@@ -122,11 +123,12 @@ def allocate(amount: Decimal, weights: Sequence[Decimal]) -> list[Decimal]:
     return shares
 
 
-def payment_state(total: Decimal, amount_paid: Decimal) -> InvoiceStatus:
-    if amount_paid <= 0:
+def payment_state(total: Decimal, amount_paid: Decimal, written_off: Decimal = Decimal("0")) -> InvoiceStatus:
+    """``amount_paid``: what payments and returns settled; ``written_off``: what was written off as uncollectible."""
+    if amount_paid + written_off <= 0:
         return InvoiceStatus.ISSUED
-    if amount_paid >= total:
-        return InvoiceStatus.PAID
+    if amount_paid + written_off >= total:
+        return InvoiceStatus.WRITTEN_OFF if written_off > 0 else InvoiceStatus.PAID
     return InvoiceStatus.PARTIAL
 
 

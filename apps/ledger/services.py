@@ -25,9 +25,9 @@ from django.utils.translation import gettext as _
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
-from apps.core.validators import ensure_business_date
+from apps.core.validators import EARLIEST_BUSINESS_DATE, ensure_business_date
 
-from .chart_template import DEFAULT_CHART
+from .chart_template import DEFAULT_CHART, PT_CHART
 from .domain import LineAmount, SystemRole, ensure_period_open, validate_lines
 from .models import Account, JournalEntry, JournalLine
 
@@ -43,6 +43,7 @@ NUMBER_PREFIX = {
     Source.INVENTORY: "JI",
     Source.PAYROLL: "JG",
     Source.REVERSAL: "JR",
+    Source.WRITE_OFF: "JH",  # hapus piutang
 }
 
 
@@ -68,7 +69,7 @@ def seed_chart_of_accounts(organization) -> None:
                 system_role=role,
                 is_contra=is_contra,
             )
-            for code, name, category, role, is_contra in DEFAULT_CHART
+            for code, name, category, role, is_contra in (*DEFAULT_CHART, *(PT_CHART if organization.is_limited_company else ()))
         ]
     )
 
@@ -139,6 +140,16 @@ def _validate(organization, entry_date: date, lines: Sequence[JournalLineInput],
         ensure_period_open(entry_date, organization.lock_date)
 
 
+def _validate_restatement(restates_year: int | None, entry_date: date, source: str) -> None:
+    """A prior-period correction is a general journal (or its reversal) for an earlier year."""
+    if restates_year is None:
+        return
+    if source not in (Source.MANUAL, Source.REVERSAL):
+        raise ValidationFailed(_("Only a general journal entry can correct a prior period."))
+    if not EARLIEST_BUSINESS_DATE.year <= restates_year < entry_date.year:
+        raise ValidationFailed(_("A prior-period correction restates an earlier year than the entry's date."))
+
+
 def _write_lines(entry: JournalEntry, lines: Sequence[JournalLineInput]) -> None:
     JournalLine.objects.bulk_create(
         [
@@ -166,8 +177,10 @@ def create_journal_entry(
     created_by=None,
     post: bool = True,
     reversal_of: JournalEntry | None = None,
+    restates_year: int | None = None,
 ) -> JournalEntry:
     _validate(organization, date, lines, posting=post)
+    _validate_restatement(restates_year, date, source)
     entry = JournalEntry.objects.create(
         organization=organization,
         number=next_document_number(organization, NUMBER_PREFIX[source], date),
@@ -177,6 +190,7 @@ def create_journal_entry(
         source=source,
         status=JournalEntry.Status.DRAFT,  # the database only accepts posting as a draft -> posted update
         reversal_of=reversal_of,
+        restates_year=restates_year,
         created_by=created_by,
     )
     _write_lines(entry, lines)
@@ -203,11 +217,13 @@ def _ensure_editable_manual_draft(entry: JournalEntry) -> None:
 
 @transaction.atomic
 def update_draft_journal_entry(
-    *, entry: JournalEntry, date: date, description: str, reference: str, lines: Sequence[JournalLineInput]
+    *, entry: JournalEntry, date: date, description: str, reference: str, lines: Sequence[JournalLineInput],
+    restates_year: int | None = None,
 ) -> JournalEntry:
     _ensure_editable_manual_draft(entry)
     _validate(entry.organization, date, lines, posting=False)
-    entry.date, entry.description, entry.reference = date, description, reference
+    _validate_restatement(restates_year, date, entry.source)
+    entry.date, entry.description, entry.reference, entry.restates_year = date, description, reference, restates_year
     entry.save()
     entry.lines.all().delete()
     _write_lines(entry, lines)
@@ -254,6 +270,7 @@ def reverse_journal_entry(*, entry: JournalEntry, date: date, created_by=None, d
         reference=entry.number,
         created_by=created_by,
         reversal_of=entry,
+        restates_year=entry.restates_year,  # undoing a correction restates the same year back
     )
     return reversal
 

@@ -26,17 +26,23 @@
   <li class="mb-2"><strong>{% translate "Presentation currency" %}.</strong>
     {% translate "The financial statements are presented in Rupiah, the currency of the business's main economic environment." %}</li>
   <li class="mb-2"><strong>{% translate "Revenue and expenses" %}.</strong>
-    {% blocktranslate trimmed %}Revenue from the sale of goods and services is recognised when the invoice is issued, that is when the goods have been delivered or the services rendered. Expenses are recognised when they are incurred, regardless of when they are paid. Sales and purchase returns are recorded in the period of the return.{% endblocktranslate %}</li>
+    {% blocktranslate trimmed %}Revenue from the sale of goods and services is recognised when the invoice is issued, that is when the goods have been delivered or the services rendered, at the gross amount excluding PPN. Payments received before the goods or services are delivered are a liability (revenue received in advance) until then. Interest and dividends are recognised when received; rent and royalties straight-line over the contract. Grants are income when received, unless they are in substance a contribution of capital by the owner. Expenses are recognised when they are incurred, regardless of when they are paid; rent is expensed straight-line over the lease. Sales and purchase returns are recorded in the period of the return.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Receivables" %}.</strong>
-    {% translate "Trade receivables are stated at the amount the business expects to receive." %}</li>
+    {% blocktranslate trimmed %}Trade receivables are stated at the amount invoiced, less what has been received. As SAK EMKM provides (8.10), no allowance for doubtful debts is made; a receivable that is unlikely to be collected is written off and the loss is recognised as an expense (8.11).{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Inventory" %}.</strong>
     {% blocktranslate trimmed with formula=org.get_inventory_cost_formula_display %}Inventory is measured at cost: the purchase price and the other costs of bringing it to its present location and condition. The cost of inventory sold is determined using the {{ formula }} formula. Stock is recorded perpetually: purchases are added to inventory, and the cost of goods sold is recognised when each sale is invoiced. Goods bought without stock records are expensed when purchased. Inventory that can no longer be sold for its cost is written down to its net realisable value, and the loss is recognised in the period.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Fixed assets" %}.</strong>
-    {% blocktranslate trimmed with method=org.get_depreciation_method_display %}Fixed assets are measured at cost less accumulated depreciation. Land is not depreciated; other fixed assets are depreciated monthly over their useful lives using the {{ method }} method, from the month they are acquired. Changes in useful life, residual value or depreciation method are applied prospectively. When an asset is sold or written off, the difference between the proceeds and its book value is recognised as a gain or loss.{% endblocktranslate %}</li>
+    {% blocktranslate trimmed with method=org.get_depreciation_method_display %}Fixed assets are measured at cost less accumulated depreciation; no impairment is recognised. Land is not depreciated; other fixed assets are depreciated monthly over their useful lives using the {{ method }} method, without a residual value, from the month they are acquired and ready for use. Repairs and maintenance are expensed. Changes in useful life or depreciation method are changes in estimate, applied prospectively. When an asset is sold, the difference between the proceeds and its book value is other income or expense; when it is given away or scrapped, its book value is an other expense.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Intangible assets" %}.</strong>
+    {% blocktranslate trimmed %}Intangible assets acquired separately (e.g. software, licences, franchises) are measured at cost less accumulated amortisation, amortised over their limited useful lives without a residual value; no impairment is recognised. Intangible items generated internally, such as research, brands, start-up costs, training and advertising, are expensed.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Employee benefits" %}.</strong>
-    {% translate "Salaries, allowances and the employer's BPJS contributions are expenses of the month in which the employees earn them. PPh 21 and PPh 26 withheld and BPJS contributions not yet paid are presented as liabilities." %}</li>
+    {% translate "Salaries, allowances and the employer's BPJS contributions are expenses of the month in which the employees earn them, at the undiscounted amount payable; severance is an expense when the termination is decided. PPh 21 and PPh 26 withheld and BPJS contributions not yet paid are presented as liabilities." %}</li>
   <li class="mb-2"><strong>{% translate "Liabilities" %}.</strong>
-    {% translate "Liabilities are stated at the amount needed to settle them." %}</li>
+    {% blocktranslate trimmed %}Liabilities are stated at the amount needed to settle them; loans at the amount borrowed less repayments. Borrowing costs and the transaction costs of loans are expensed when incurred. Provisions and contingent liabilities are not recognised; material ones are disclosed under additional information.{% endblocktranslate %}</li>
+  <li class="mb-2"><strong>{% translate "Foreign currency" %}.</strong>
+    {% translate "Transactions in a foreign currency are recorded in Rupiah at the spot rate on the date of the transaction." %}</li>
+  <li class="mb-2"><strong>{% translate "Accounting policies, estimates and errors" %}.</strong>
+    {% blocktranslate trimmed %}The policies above are applied consistently. Changes in estimates are applied prospectively; errors of prior periods are corrected retrospectively, restating the comparative figures.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Income tax" %}.</strong>
     {% if org.uses_pph_final %}{% blocktranslate trimmed %}Income tax is the final income tax for MSMEs under PP 55/2022, 0.5% of gross turnover. It is recognised as an expense in the month the turnover arises, and any amount not yet paid is presented as a liability. Because the tax is final, no deferred tax is recognised.{% endblocktranslate %}
     {% else %}{% blocktranslate trimmed %}Income tax expense is the tax payable for the period under the tax regulations. As SAK EMKM provides, no deferred tax is recognised.{% endblocktranslate %}{% endif %}
@@ -48,17 +54,17 @@
 {% blocktranslate trimmed with start=pl.date_from|date:"d/m/Y" end=pl.date_to|date:"d/m/Y" asvar period %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% blocktranslate trimmed with start=pl.previous_from|date:"d/m/Y" end=pl.previous_to|date:"d/m/Y" asvar previous_period %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% for note in report.item_notes %}{% with section=note.section %}
-<h2 class="h6 fw-bold">{{ forloop.counter|add:2 }}. {{ section.title }}</h2>
+<h2 class="h6 fw-bold" id="note-{{ section.note }}">{{ section.note }}. {{ section.title }}</h2>
 <div class="table-responsive mb-4"><table class="table table-sm table-statement mb-0 small">
-  {% if note.is_balance_sheet %}{% include "reports/_columns.html" with compare=True current=bs.as_of|date:"d/m/Y" previous=bs.previous_as_of|date:"d/m/Y" %}
-  {% else %}{% include "reports/_columns.html" with compare=True current=period previous=previous_period %}{% endif %}
+  {% if note.is_balance_sheet %}{% include "reports/_columns.html" with compare=True current=bs.as_of|date:"d/m/Y" previous=bs.previous_as_of|date:"d/m/Y" restated=bs.comparative_restated %}
+  {% else %}{% include "reports/_columns.html" with compare=True current=period previous=previous_period restated=pl.comparative_restated %}{% endif %}
   {% for row in section.rows %}<tr><td class="text-secondary" style="width:110px">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-secondary">{{ row.previous|rupiah }}</td></tr>{% endfor %}
   <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-secondary">{{ section.previous_total|rupiah }}</td></tr>
 </table></div>
 {% endwith %}{% endfor %}
 
 {% if report.estimate_changes %}
-<h2 class="h6 fw-bold">{{ report.item_notes|length|add:3 }}. {% translate "Changes in accounting estimates" %}</h2>
+<h2 class="h6 fw-bold" id="note-{{ report.estimates_note }}">{{ report.estimates_note }}. {% translate "Changes in accounting estimates" %}</h2>
 <p class="small">{% translate "The useful life, residual value or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
 <div class="table-responsive mb-4"><table class="table table-sm mb-0 small">
   <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
@@ -70,7 +76,19 @@
 </table></div>
 {% endif %}
 
-<h2 class="h6 fw-bold">{% if report.estimate_changes %}{{ report.item_notes|length|add:4 }}{% else %}{{ report.item_notes|length|add:3 }}{% endif %}. {% translate "Additional information" %}</h2>
+{% if report.corrections %}
+<h2 class="h6 fw-bold" id="note-{{ report.corrections_note }}">{{ report.corrections_note }}. {% translate "Corrections of prior period errors" %}</h2>
+<p class="small">{% translate "These errors in earlier years' books were found and corrected in this period. As SAK EMKM requires (7.16), they are corrected retrospectively: the statements show each correction in the year it concerns, so the comparative figures are restated and the effect on earlier years reaches this year's opening retained earnings, not this year's profit." %}</p>
+<div class="table-responsive mb-4"><table class="table table-sm mb-0 small">
+  <thead><tr><th>{% translate "Journal entry" %}</th><th>{% translate "Recorded on" %}</th><th>{% translate "Year corrected" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Effect on that year's profit" %}</th></tr></thead>
+  <tbody>{% for c in report.corrections %}
+    <tr><td><a href="{% url 'ledger:journal_detail' c.entry.pk %}">{{ c.entry.number }}</a></td><td>{{ c.entry.date|date:"d/m/Y" }}</td><td>{{ c.entry.restates_year }}</td>
+      <td>{{ c.entry.description }}</td><td class="num">{{ c.profit_effect|rupiah }}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% endif %}
+
+<h2 class="h6 fw-bold" id="note-{{ report.additional_note }}">{{ report.additional_note }}. {% translate "Additional information" %}</h2>
 <p class="small mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-secondary">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
 </div></div>
 {% endwith %}{% endif %}

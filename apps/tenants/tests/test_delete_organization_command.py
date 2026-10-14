@@ -59,7 +59,7 @@ def test_deletes_the_fixed_asset_register_too(organization, account):
     )
     assets.post_depreciation(organization=organization, through=date(2026, 2, 28))
     assets.revise_estimate(asset=asset, effective_from=date(2026, 3, 1), useful_life_months=24, residual_value=Decimal("0"), reason="x")
-    assets.dispose_asset(asset=asset, on=date(2026, 3, 2), gain_loss_account=account("7-1100"))
+    assets.dispose_asset(asset=asset, on=date(2026, 3, 2), gain_loss_account=account("7-1900"))
     call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
     assert not FixedAsset.objects.filter(organization_id=organization.pk).exists()
     assert not DepreciationPosting.objects.filter(organization_id=organization.pk).exists()

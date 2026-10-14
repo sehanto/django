@@ -29,6 +29,7 @@ class StatementRow:
 class Section:
     title: str
     rows: list[StatementRow] = field(default_factory=list)
+    note: int | None = None  # its note in the notes to the financial statements (SAK EMKM 6.4)
 
     @property
     def total(self) -> Decimal:
@@ -83,9 +84,11 @@ class IncomeStatement:
     operating_expenses: Section
     other_income: Section
     other_expenses: Section
+    finance_costs: Section
     income_tax: Section
     previous_from: date | None = None
     previous_to: date | None = None
+    comparative_restated: bool = False  # a later prior-period correction changed it (SAK EMKM 7.16)
 
     @property
     def has_comparative(self) -> bool:
@@ -98,7 +101,8 @@ class IncomeStatement:
         return self._gross_profit(previous) - _total(self.operating_expenses, previous)
 
     def _profit_before_tax(self, previous=False) -> Decimal:
-        return self._operating_profit(previous) + _total(self.other_income, previous) - _total(self.other_expenses, previous)
+        return (self._operating_profit(previous) + _total(self.other_income, previous) - _total(self.other_expenses, previous)
+                - _total(self.finance_costs, previous))
 
     def _net_profit(self, previous=False) -> Decimal:
         return self._profit_before_tax(previous) - _total(self.income_tax, previous)
@@ -115,14 +119,15 @@ class IncomeStatement:
     def csv_rows(self):
         columns = [_period_label(self.date_from, self.date_to)]
         if self.has_comparative:
-            columns.append(_period_label(self.previous_from, self.previous_to))
+            columns.append(_period_label(self.previous_from, self.previous_to) + (f" ({_('restated')})" if self.comparative_restated else ""))
         yield [_("Income statement"), _("Amounts in Rupiah"), *columns]
         for section, subtotal, previous in [
             (self.revenue, None, None),
             (self.cost_of_sales, (_("Gross profit"), self.gross_profit), self.previous_gross_profit),
             (self.operating_expenses, (_("Operating profit"), self.operating_profit), self.previous_operating_profit),
             (self.other_income, None, None),
-            (self.other_expenses, (_("Profit before tax"), self.profit_before_tax), self.previous_profit_before_tax),
+            (self.other_expenses, None, None),
+            (self.finance_costs, (_("Profit before tax"), self.profit_before_tax), self.previous_profit_before_tax),
             (self.income_tax, (_("Net profit"), self.net_profit), self.previous_net_profit),
         ]:
             yield from _section_csv(section, self.has_comparative)
@@ -148,6 +153,7 @@ def build_income_statement(
         operating_expenses=section(_("Operating expenses"), C.OPERATING_EXPENSE, exp),
         other_income=section(_("Other income"), C.OTHER_INCOME, rev),
         other_expenses=section(_("Other expenses"), C.OTHER_EXPENSE, exp),
+        finance_costs=section(_("Finance costs"), C.FINANCE_COST, exp),
         income_tax=section(_("Income tax expense"), C.INCOME_TAX, exp),
         previous_from=previous_from if previous_balances is not None else None,
         previous_to=previous_to if previous_balances is not None else None,
@@ -170,6 +176,7 @@ class BalanceSheet:
     as_of: date
     current_assets: Section
     fixed_assets: Section
+    intangible_assets: Section
     current_liabilities: Section
     long_term_liabilities: Section
     equity: Section
@@ -178,13 +185,14 @@ class BalanceSheet:
     previous_as_of: date | None = None
     previous_prior_years_earnings: Decimal = ZERO
     previous_current_year_earnings: Decimal = ZERO
+    comparative_restated: bool = False  # a later prior-period correction changed it (SAK EMKM 7.16)
 
     @property
     def has_comparative(self) -> bool:
         return self.previous_as_of is not None
 
     def _total_assets(self, previous=False) -> Decimal:
-        return _total(self.current_assets, previous) + _total(self.fixed_assets, previous)
+        return _total(self.current_assets, previous) + _total(self.fixed_assets, previous) + _total(self.intangible_assets, previous)
 
     def _total_liabilities(self, previous=False) -> Decimal:
         return _total(self.current_liabilities, previous) + _total(self.long_term_liabilities, previous)
@@ -212,7 +220,8 @@ class BalanceSheet:
 
     def csv_rows(self):
         compare = self.has_comparative
-        columns = [f"{self.as_of:%d-%m-%Y}", *([f"{self.previous_as_of:%d-%m-%Y}"] if compare else [])]
+        restated = f" ({_('restated')})" if self.comparative_restated else ""
+        columns = [f"{self.as_of:%d-%m-%Y}", *([f"{self.previous_as_of:%d-%m-%Y}{restated}"] if compare else [])]
 
         def row(label, current, previous):
             return ["", label, current, *([previous] if compare else [])]
@@ -220,6 +229,7 @@ class BalanceSheet:
         yield [_("Statement of financial position"), _("Amounts in Rupiah"), *columns]
         yield from _section_csv(self.current_assets, compare)
         yield from _section_csv(self.fixed_assets, compare)
+        yield from _section_csv(self.intangible_assets, compare)
         yield row(_("TOTAL ASSETS"), self.total_assets, self.previous_total_assets)
         yield from _section_csv(self.current_liabilities, compare)
         yield from _section_csv(self.long_term_liabilities, compare)
@@ -254,6 +264,7 @@ def build_balance_sheet(
         as_of=as_of,
         current_assets=section(_("Current assets"), CURRENT_ASSET_CATEGORIES, asset),
         fixed_assets=section(_("Fixed assets"), {C.FIXED_ASSET}, asset),
+        intangible_assets=section(_("Intangible assets"), {C.INTANGIBLE_ASSET}, asset),
         current_liabilities=section(_("Current liabilities"), {C.CURRENT_LIABILITY}, liability),
         long_term_liabilities=section(_("Long-term liabilities"), {C.LONG_TERM_LIABILITY}, liability),
         equity=section(_("Capital"), {C.EQUITY}, equity),
@@ -285,14 +296,39 @@ class FinancialNotes:
     balance_sheet: BalanceSheet
     income_statement: IncomeStatement
     estimate_changes: list = field(default_factory=list)  # fixed asset revisions effective in the period
+    corrections: list = field(default_factory=list)  # prior-period corrections posted in the period (7.16)
 
     @property
     def item_notes(self) -> list[ItemNote]:
         """One note per statement line group that has a balance in either period."""
-        bs, pl = self.balance_sheet, self.income_statement
-        notes = [ItemNote(s, True) for s in (bs.current_assets, bs.fixed_assets, bs.current_liabilities, bs.long_term_liabilities, bs.equity)]
-        notes += [ItemNote(s, False) for s in (pl.revenue, pl.cost_of_sales, pl.operating_expenses, pl.other_income, pl.other_expenses, pl.income_tax)]
-        return [note for note in notes if note.section.rows]
+        return item_notes(self.balance_sheet, self.income_statement)
+
+    def _after_items(self) -> list[str]:
+        return [*(["estimates"] if self.estimate_changes else []), *(["corrections"] if self.corrections else []), "additional"]
+
+    def _number(self, name: str) -> int:
+        return FIRST_ITEM_NOTE + len(self.item_notes) + self._after_items().index(name)
+
+    estimates_note = property(lambda self: self._number("estimates"))
+    corrections_note = property(lambda self: self._number("corrections"))
+    additional_note = property(lambda self: self._number("additional"))
+
+
+FIRST_ITEM_NOTE = 3  # 1: general information, 2: accounting policies
+
+
+def item_notes(bs: "BalanceSheet", pl: "IncomeStatement") -> list[ItemNote]:
+    notes = [ItemNote(s, True) for s in (bs.current_assets, bs.fixed_assets, bs.intangible_assets, bs.current_liabilities,
+                                         bs.long_term_liabilities, bs.equity)]
+    notes += [ItemNote(s, False) for s in (pl.revenue, pl.cost_of_sales, pl.operating_expenses, pl.other_income, pl.other_expenses,
+                                          pl.finance_costs, pl.income_tax)]
+    return [note for note in notes if note.section.rows]
+
+
+def number_notes(bs: "BalanceSheet", pl: "IncomeStatement") -> None:
+    """Give each statement line group the number of its note, so each item refers to the notes."""
+    for number, note in enumerate(item_notes(bs, pl), start=FIRST_ITEM_NOTE):
+        note.section.note = number
 
 
 # --- Trial balance -----------------------------------------------------------
@@ -340,7 +376,8 @@ def build_trial_balance(balances: list[AccountBalance], as_of: date) -> TrialBal
 
 
 def _section_csv(section: Section, compare: bool = False):
-    yield [section.title, "", ""] + ([""] if compare else [])
+    note = _("Note %(number)s") % {"number": section.note} if section.note else ""
+    yield [section.title, note, ""] + ([""] if compare else [])
     for row in section.rows:
         yield [row.code, row.name, row.amount, *([row.previous] if compare else [])]
     yield ["", _("Total %(section)s") % {"section": section.title}, section.total, *([section.previous_total] if compare else [])]

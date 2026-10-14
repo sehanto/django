@@ -34,7 +34,7 @@ from apps.contacts.models import BuyerIdType
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
 from .models import (
     EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, DeliveryKind, IncomeTaxWithheld, Invoice, InvoiceKind, InvoiceLine, Item, Payment,
-    ReturnLine, ReturnNote, SpecialDocument,
+    ReceivableWriteOff, ReturnLine, ReturnNote, SpecialDocument,
 )
 from .selectors import invoices_created_this_month
 
@@ -457,8 +457,8 @@ def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
 
 def _refresh_payment_status(invoice: Invoice) -> None:
     """Payments and returns credited together settle the invoice (the database checks both)."""
-    invoice.status = payment_state(invoice.total, invoice.amount_paid + invoice.amount_credited)
-    invoice.save(update_fields=["amount_paid", "amount_credited", "status", "updated_at"])
+    invoice.status = payment_state(invoice.total, invoice.amount_paid + invoice.amount_credited, invoice.amount_written_off)
+    invoice.save(update_fields=["amount_paid", "amount_credited", "amount_written_off", "status", "updated_at"])
 
 
 @dataclass(frozen=True)
@@ -1010,3 +1010,59 @@ def record_withholding_slip(*, payment: Payment, number: str) -> Payment:
     payment.withholding_slip = number
     payment.save(update_fields=["withholding_slip", "updated_at"])
     return payment
+
+
+# --- Receivables written off (SAK EMKM 8.11) ------------------------------------------
+
+
+@transaction.atomic
+def write_off_receivable(*, invoice: Invoice, date: date, reason: str, created_by=None) -> ReceivableWriteOff:
+    """Write off what is still owed on a sales invoice as uncollectible: the receivable is
+    derecognized and the loss is an expense (Beban Piutang Tak Tertagih), dated ``date``. The
+    PPN on it stays deposited (there is no PPN relief for bad debts)."""
+    invoice = Invoice.objects.select_for_update().select_related("organization", "contact").get(pk=invoice.pk)
+    organization = invoice.organization
+    if not invoice.is_sales or not invoice.is_open:
+        raise InvalidStateTransition(_("Only an unpaid or partly paid sales invoice can be written off."))
+    reason = " ".join(reason.split())
+    if not reason:
+        raise ValidationFailed(_("Give the reason the receivable can't be collected."))
+    ensure_business_date(date)
+    if date < invoice.date:
+        raise ValidationFailed(_("A receivable can't be written off before its invoice date."))
+    amount = invoice.balance_due
+    if amount <= 0:
+        raise InvalidStateTransition(_("Nothing is owed on this invoice."))
+    entry = create_journal_entry(
+        organization=organization, date=date, reference=invoice.number, source=JournalEntry.Source.WRITE_OFF, created_by=created_by,
+        description=f"Penghapusan piutang tak tertagih {invoice.number} {invoice.party_name}",
+        lines=[
+            JournalLineInput(get_system_account(organization, SystemRole.BAD_DEBT_EXPENSE), debit=amount),
+            JournalLineInput(get_system_account(organization, SystemRole.RECEIVABLE), credit=amount),
+        ],
+    )
+    write_off = ReceivableWriteOff.objects.create(
+        organization=organization, invoice=invoice, date=date, amount=amount, reason=reason[:255], journal_entry=entry,
+        created_by=created_by,
+    )
+    invoice.amount_written_off += amount
+    _refresh_payment_status(invoice)
+    return write_off
+
+
+@transaction.atomic
+def void_write_off(*, write_off: ReceivableWriteOff, on: date, voided_by=None) -> ReceivableWriteOff:
+    """Undo a mistaken write-off: its journal entry is reversed and the invoice is open again."""
+    write_off = ReceivableWriteOff.objects.select_for_update().get(pk=write_off.pk)
+    if write_off.status != ReceivableWriteOff.Status.POSTED:
+        raise InvalidStateTransition(_("This write-off is already void."))
+    invoice = Invoice.objects.select_for_update().get(pk=write_off.invoice_id)
+    reverse_journal_entry(
+        entry=write_off.journal_entry, date=max(on, write_off.date), created_by=voided_by,
+        description=f"Pembatalan penghapusan piutang {invoice.number}",
+    )
+    write_off.status = ReceivableWriteOff.Status.VOID
+    write_off.save(update_fields=["status", "updated_at"])
+    invoice.amount_written_off -= write_off.amount
+    _refresh_payment_status(invoice)
+    return write_off

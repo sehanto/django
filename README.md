@@ -363,17 +363,24 @@ The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan 
 
 | Requirement | How it is met |
 |---|---|
-| Minimum statements | Laporan Posisi Keuangan, Laporan Laba Rugi and Catatan atas Laporan Keuangan (Reports → Notes). |
+| Minimum statements (3.9) | Laporan Posisi Keuangan, Laporan Laba Rugi and Catatan atas Laporan Keuangan (Reports → Notes). |
+| Cross-references (6.4) | Every line group on the two statements links to its numbered note (screen and CSV). |
+| Statement items (4.2, 5.2) | Current assets, fixed assets, intangible assets, current and long-term liabilities (incl. short-term bank loans and revenue received in advance), equity (with additional paid-in capital for a PT, 13.8); revenue, cost of sales, operating and other expenses, finance costs (beban keuangan) and income tax expense, each its own section. |
 | Accrual basis | Sales and purchases post when the invoice is issued, payments separately; PPh Final is accrued at each month's end and settled by the deposit. |
 | Historical cost, entity concept | Amounts are recorded at transaction value. Owner withdrawals go to *Prive*, a contra-equity account. |
 | Statement identification | Business name, date or period and "Amounts in Rupiah" on every statement. |
 | Comparative information | The position is compared with the previous year end; the income statement with the same period a year earlier (screen and CSV). |
 | Notes | Statement of compliance, basis of preparation, policies for revenue, receivables, inventory, fixed assets, liabilities, income tax and PPN (wording follows the organization's settings), one note per statement line group, and free-text additional information. |
 | Inventory | At cost, FIFO or weighted average (organization policy), recorded perpetually for tracked items: cost of goods sold with each sale; other goods are expensed when bought. |
-| Fixed assets | Cost less accumulated depreciation from the fixed asset register; land not depreciated; monthly depreciation from the month of acquisition; gain or loss on disposal. |
+| Fixed assets (Bab 11) | Cost less accumulated depreciation from the fixed asset register; land not depreciated; monthly depreciation from the month of acquisition, **without a residual value** (11.14: the register refuses one; assets registered earlier keep theirs until their estimate is revised); no impairment; gain or loss on disposal to other income/expense. |
+| Intangible assets (Bab 12) | Bought separately (software, licences): registered like fixed assets on 1-2500 Aset Takberwujud, amortised over a limited life without a residual value (1-2950, 6-1650 Beban Amortisasi; the monthly entry says "Amortisasi aset takberwujud"). Internally generated items are expensed. |
+| Receivables (8.10-8.13) | No allowance for doubtful debts. A receivable that can't be collected is written off from its sales invoice (**Write off**): the remaining balance goes to 6-1800 Beban Piutang Tak Tertagih, the invoice shows "Written off" (`ReceivableWriteOff`, guarded like returns, invoicing 0028) and a mistake is voided by reversal. |
+| Prior-period errors (7.16) | A general journal can be marked "Correction of an earlier year's error" (`JournalEntry.restates_year`, fixed once posted and part of the hash). It is posted on its own date (the general ledger and trial balance show it there), but the statements show it in the year it corrects: that year's comparative figures are restated ("restated" on the column), this year's profit is not affected, and the notes list each correction with its effect on that year's profit. |
+| Consistent policies (7.5) | The inventory cost formula and the default depreciation method are fixed in the settings once stock has been valued or assets registered with them; a change is a retrospective restatement (7.8-7.9) recorded as a prior-period correction. |
 | Changes in estimates | A revised useful life, residual value or depreciation method applies from a month after the depreciation already posted: the remaining book value less the new residual value is depreciated over the remaining months with the (new) method; declining balance continues at twice the rate of the remaining life. Past depreciation is not restated; the notes list the revisions that took effect in the period. |
 | Policy choices | Inventory cost formula (FIFO or weighted average) and depreciation method (straight line or declining balance) are organization settings, stated in the notes. |
-| Income tax | Current tax only (PPh Final or regular); no deferred tax. |
+| Income tax (Bab 15) | Current tax only (PPh Final, or regular tax through 8-1100 Beban Pajak Penghasilan / 2-1260 Utang PPh Pasal 25/29); no deferred tax. |
+| Other policies | Revenue received in advance is a liability (14.4a, 2-1500); interest and dividends when received (14.6); grants as income when received (14.10, 4-2200); employee benefits undiscounted (14.12); borrowing and loan transaction costs expensed (14.14, 8.8); no provisions or contingent liabilities recognised (13.5); foreign currency at the spot rate on the transaction date (16.3). All are stated in the notes. |
 
 Valuation follows the order in which documents are posted, not their dates: a backdated purchase
 doesn't change the cost of sales posted before it. Stock that can no longer be sold for its cost is

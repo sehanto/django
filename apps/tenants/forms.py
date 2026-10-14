@@ -33,6 +33,12 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
     def __init__(self, *args, acting_user, **kwargs):
         self.acting_user = acting_user
         super().__init__(*args, **kwargs)
+        # SAK EMKM 7.5: a policy, once applied, is applied consistently. Changing it means
+        # restating the books (7.8-7.9), which is an accountant's adjusting entry, not a setting.
+        for name, (in_use, help_text) in policies_in_use(self.instance).items():
+            if in_use:
+                self.fields[name].disabled = True
+                self.fields[name].help_text = help_text
 
     def clean_require_two_factor(self):
         required = self.cleaned_data["require_two_factor"]
@@ -46,6 +52,27 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
         if lock_date and lock_date > timezone.localdate():
             raise forms.ValidationError(_("The lock date cannot be in the future."))
         return lock_date
+
+
+def policies_in_use(organization) -> dict[str, tuple[bool, str]]:
+    """{policy field: (already applied, why it can't change)}."""
+    from apps.assets.models import FixedAsset  # these apps depend on tenants
+    from apps.inventory.models import StockMovement
+
+    if organization.pk is None:
+        return {}
+    return {
+        "inventory_cost_formula": (
+            StockMovement.objects.filter(organization=organization).exists(),
+            _("Fixed: stock has been valued with it. SAK EMKM applies a policy consistently (7.5); a change is applied retrospectively "
+              "with an adjustment to retained earnings (7.8-7.9), which your accountant records as a prior-period correction."),
+        ),
+        "depreciation_method": (
+            FixedAsset.objects.filter(organization=organization, is_depreciable=True).exists(),
+            _("Fixed: assets in the register use it, and similar assets are depreciated alike (SAK EMKM 7.5). To change how one "
+              "asset is depreciated, revise its estimate on the asset's page."),
+        ),
+    }
 
 
 class OrganizationCreateForm(BaseForm):

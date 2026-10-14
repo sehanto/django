@@ -121,6 +121,11 @@ class Organization(TimeStampedModel, Address):
         """Wajib Pajak Orang Pribadi gets the Rp500 juta PPh Final threshold."""
         return self.legal_form == self.LegalForm.PERORANGAN
 
+    @property
+    def is_limited_company(self) -> bool:
+        """A PT: its equity shows share capital and additional paid-in capital (SAK EMKM 13.8)."""
+        return self.legal_form in (self.LegalForm.PT, self.LegalForm.PT_PERORANGAN)
+
 
 class Invitation(TimeStampedModel):
     """An invitation by email to join an organization, for someone without an account yet.

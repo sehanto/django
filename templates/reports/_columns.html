@@ -1,1 +1,1 @@
-<thead><tr class="small text-secondary"><th colspan="2"></th><th class="num fw-normal">{{ current }}</th>{% if compare %}<th class="num fw-normal">{{ previous }}</th>{% endif %}</tr></thead>
+{% load i18n %}<thead><tr class="small text-secondary"><th colspan="2"></th><th class="num fw-normal">{{ current }}</th>{% if compare %}<th class="num fw-normal">{{ previous }}{% if report.comparative_restated or restated %}<div class="small">{% translate "restated" %}</div>{% endif %}</th>{% endif %}</tr></thead>

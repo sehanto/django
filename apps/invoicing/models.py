@@ -154,7 +154,7 @@ class Invoice(TenantOwnedModel):
         "tenants.BusinessPlace", null=True, blank=True, on_delete=models.PROTECT, related_name="invoices",
         verbose_name=_("place of business"),
     )
-    status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.DRAFT)
+    status = models.CharField(_("status"), max_length=15, choices=Status.choices, default=Status.DRAFT)
 
     subtotal = money_field(_("subtotal"))
     tax_amount = money_field(_("PPN (VAT)"))
@@ -165,6 +165,7 @@ class Invoice(TenantOwnedModel):
     # Returns credited against the balance (not the part refunded in cash): with the payments,
     # it settles the invoice. The database checks it against the posted returns (invoicing 0011).
     amount_credited = money_field(_("returns credited"))
+    amount_written_off = money_field(_("written off as uncollectible"))
 
     journal_entry = models.OneToOneField(
         "ledger.JournalEntry", null=True, blank=True, on_delete=models.PROTECT, related_name="invoice"
@@ -318,7 +319,7 @@ class Invoice(TenantOwnedModel):
 
     @property
     def balance_due(self):
-        return self.total - self.amount_paid - self.amount_credited
+        return self.total - self.amount_paid - self.amount_credited - self.amount_written_off
 
     @property
     def status_label(self) -> str:
@@ -548,6 +549,36 @@ class Payment(TenantOwnedModel):
     @property
     def cash_received(self):
         return self.amount - self.vat_withheld - self.income_tax_withheld
+
+
+class ReceivableWriteOff(TenantOwnedModel):
+    """A receivable written off as uncollectible (SAK EMKM 8.11(b)): what is still owed on a
+    sales invoice leaves the receivables and is a loss (8.13). SAK EMKM allows no allowance for
+    doubtful debts (8.10), so a receivable stays at its full amount until it is written off.
+
+    Final once posted (invoicing 0028); a mistake is undone by voiding it, which reverses its
+    journal entry and reopens the invoice."""
+
+    class Status(models.TextChoices):
+        POSTED = "posted", _("Recorded")
+        VOID = "void", _("Void")
+
+    status = models.CharField(_("status"), max_length=10, choices=Status.choices, default=Status.POSTED)
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="write_offs", verbose_name=_("invoice"))
+    date = models.DateField(_("date"))
+    amount = money_field(_("amount written off"))
+    reason = models.CharField(_("reason"), max_length=255, help_text=_("Why it can no longer be collected, e.g. the customer went bankrupt."))
+    journal_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="write_off")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-date", "-id"]
+        verbose_name = _("receivable written off")
+        verbose_name_plural = _("receivables written off")
+        constraints = [models.CheckConstraint(condition=Q(amount__gt=0), name="write_off_amount_positive")]
+
+    def __str__(self):
+        return f"{self.invoice} {self.amount}"
 
 
 class ReturnNote(TenantOwnedModel):

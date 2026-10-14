@@ -15,7 +15,7 @@ from .models import FixedAsset
 from .services import InvoicedSale
 from .selectors import accumulated_depreciation_accounts, depreciation_expense_accounts, fixed_asset_accounts, gain_loss_accounts
 
-DEPRECIATION_FIELDS = ("useful_life_months", "residual_value", "accumulated_depreciation_account", "depreciation_expense_account")
+DEPRECIATION_FIELDS = ("useful_life_months", "accumulated_depreciation_account", "depreciation_expense_account")
 
 
 class FixedAssetForm(OrganizationFormMixin, BaseModelForm):
@@ -23,7 +23,7 @@ class FixedAssetForm(OrganizationFormMixin, BaseModelForm):
         model = FixedAsset
         fields = [
             "name", "description", "asset_account", "acquisition_date", "cost", "is_depreciable", "useful_life_months",
-            "residual_value", "accumulated_depreciation_account", "depreciation_expense_account", "depreciated_before_until",
+            "accumulated_depreciation_account", "depreciation_expense_account", "depreciated_before_until",
         ]
         field_classes = {"acquisition_date": BusinessDateField}
         widgets = {"depreciated_before_until": DateInput()}
@@ -34,7 +34,10 @@ class FixedAssetForm(OrganizationFormMixin, BaseModelForm):
         self.fields["asset_account"].queryset = fixed_asset_accounts(organization)
         self.fields["accumulated_depreciation_account"].queryset = accumulated_depreciation_accounts(organization)
         self.fields["depreciation_expense_account"].queryset = expense = depreciation_expense_accounts(organization)
-        self.fields["residual_value"].required = False
+        self.fields["asset_account"].help_text = _(
+            "A fixed asset, or an intangible asset bought separately (software, licence, franchise), which is amortised. "
+            "SAK EMKM depreciates and amortises without a residual value."
+        )
         if not self.instance.pk:
             self.initial.setdefault("accumulated_depreciation_account", accumulated_depreciation_accounts(organization).first())
             self.initial.setdefault("depreciation_expense_account", expense.filter(name__icontains="penyusutan").first())
@@ -48,7 +51,7 @@ class FixedAssetForm(OrganizationFormMixin, BaseModelForm):
         cleaned = super().clean()
         if cleaned.get("is_depreciable"):
             for name in DEPRECIATION_FIELDS:
-                if name != "residual_value" and not cleaned.get(name) and name not in self.errors:
+                if not cleaned.get(name) and name not in self.errors:
                     self.add_error(name, _("Required for a depreciable asset."))
         return cleaned
 
@@ -99,9 +102,6 @@ class RevisionForm(BaseForm):
     useful_life_months = forms.IntegerField(
         label=_("Useful life (months)"), min_value=1, max_value=MAX_USEFUL_LIFE_MONTHS,
         help_text=_("The whole useful life, counted from the month of acquisition."),
-    )
-    residual_value = forms.DecimalField(
-        label=_("Residual value"), max_digits=MONEY_MAX_DIGITS, decimal_places=MONEY_DECIMAL_PLACES, min_value=0, required=False,
     )
     method = forms.ChoiceField(
         label=_("Depreciation method"), choices=DepreciationMethod.choices,

@@ -340,6 +340,14 @@ class VoidForm(BaseForm):
     date = BusinessDateField(label=_("Void date"))
 
 
+class WriteOffForm(BaseForm):
+    date = BusinessDateField(label=_("Date"))
+    reason = forms.CharField(
+        label=_("Reason"), max_length=255,
+        help_text=_("Why it can no longer be collected, e.g. the customer went bankrupt or can't be found."),
+    )
+
+
 class ItemForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Item

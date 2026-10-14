@@ -1,8 +1,10 @@
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
 from apps.core.money import ZERO
+from apps.core.validators import EARLIEST_BUSINESS_DATE
 
 from .models import Account, JournalEntry
 from .selectors import accounts_for
@@ -32,8 +34,19 @@ class AccountForm(OrganizationFormMixin, BaseModelForm):
 class JournalEntryForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = JournalEntry
-        fields = ["date", "description", "reference"]
+        fields = ["date", "description", "reference", "restates_year"]
         field_classes = {"date": BusinessDateField}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        this_year = timezone.localdate().year
+        years = range(this_year - 1, EARLIEST_BUSINESS_DATE.year - 1, -1)
+        self.fields["restates_year"] = forms.TypedChoiceField(
+            label=_("Correction of an earlier year's error"), required=False, coerce=int, empty_value=None,
+            choices=[("", _("No: an entry of its own date"))] + [(year, str(year)) for year in years],
+            initial=self.instance.restates_year,
+            help_text=JournalEntry._meta.get_field("restates_year").help_text,
+        )
 
 
 class JournalLineForm(OrganizationFormMixin, BaseForm):

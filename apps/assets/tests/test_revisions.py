@@ -65,7 +65,7 @@ def test_only_assets_with_posted_depreciation_are_revised(make_asset):
 @pytest.mark.parametrize("kwargs, message", [
     ({"on": date(2026, 2, 1)}, "from 04/2026"),  # February is posted
     ({"months": 3}, "at least 4 months"),
-    ({"residual": "4600000"}, "more than the book value"),  # 4.500.000 left
+    ({"residual": "100000"}, "without a residual value"),  # SAK EMKM 11.14
     ({"reason": "  "}, "reason"),
     ({"months": 48}, "Change the useful life"),  # nothing changes
 ])

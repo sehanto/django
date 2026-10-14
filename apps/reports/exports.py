@@ -27,7 +27,7 @@ from apps.audit.selectors import trail_head
 from apps.contacts.models import Contact
 from apps.inventory.models import StockMovement
 from apps.core.sanitizers import csv_safe
-from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReturnLine, ReturnNote
+from apps.invoicing.models import Invoice, InvoiceLine, Item, Payment, ReceivableWriteOff, ReturnLine, ReturnNote
 from apps.ledger.models import Account, JournalLine
 from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, TaxRate, WithholdingDeposit
@@ -196,6 +196,13 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         ReturnNote, "organization", ("date", "id"),
+    ),
+    (
+        Table("receivables_written_off.csv", gettext_lazy("Receivables written off as uncollectible."), (
+            C("invoice__number", gettext_lazy("Invoice number")), C("invoice__contact_name", gettext_lazy("Customer")), C("date"),
+            C("amount"), C("reason"), C("status"), C("journal_entry__number", gettext_lazy("Journal entry")),
+        )),
+        ReceivableWriteOff, "organization", ("date", "id"),
     ),
     (
         Table("return_lines.csv", gettext_lazy("Return lines (linked by return number)."), (

@@ -21,11 +21,15 @@ def assets_for(organization) -> QuerySet[FixedAsset]:
 
 
 def fixed_asset_accounts(organization) -> QuerySet[Account]:
-    return accounts_for(organization, active_only=True).filter(category=AccountCategory.FIXED_ASSET, is_contra=False)
+    return accounts_for(organization, active_only=True).filter(
+        category__in=[AccountCategory.FIXED_ASSET, AccountCategory.INTANGIBLE_ASSET], is_contra=False,
+    )
 
 
 def accumulated_depreciation_accounts(organization) -> QuerySet[Account]:
-    return accounts_for(organization, active_only=True).filter(category=AccountCategory.FIXED_ASSET, is_contra=True)
+    return accounts_for(organization, active_only=True).filter(
+        category__in=[AccountCategory.FIXED_ASSET, AccountCategory.INTANGIBLE_ASSET], is_contra=True,
+    )
 
 
 def depreciation_expense_accounts(organization) -> QuerySet[Account]:

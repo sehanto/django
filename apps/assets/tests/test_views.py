@@ -34,7 +34,7 @@ def test_register_post_and_dispose_through_the_pages(auth_client, organization, 
     assert asset.postings.first().journal_entry.number in detail
 
     auth_client.post(reverse("assets:dispose", args=[asset.pk]), {
-        "on": date.today().isoformat(), "proceeds": "0", "gain_loss_account": account("7-1100").pk,
+        "on": date.today().isoformat(), "proceeds": "0", "gain_loss_account": account("7-1900").pk,
     })
     asset.refresh_from_db()
     assert asset.status == FixedAsset.Status.DISPOSED

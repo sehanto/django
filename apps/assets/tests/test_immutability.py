@@ -58,7 +58,7 @@ def test_postings_are_append_only(depreciated):
 def test_disposal_needs_its_journal_entry_and_is_final(organization, depreciated, account):
     with refused():
         update(depreciated, status=FixedAsset.Status.DISPOSED, disposed_on=date(2026, 3, 1))
-    services.dispose_asset(asset=depreciated, on=date(2026, 3, 1), gain_loss_account=account("7-1100"))
+    services.dispose_asset(asset=depreciated, on=date(2026, 3, 1), gain_loss_account=account("7-1900"))
     for change in ({"status": FixedAsset.Status.ACTIVE}, {"disposal_proceeds": D("5")}, {"disposed_on": date(2026, 3, 2)}):
         with refused():
             update(depreciated, **change)

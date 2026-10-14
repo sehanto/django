@@ -26,7 +26,8 @@
   <dt class="col-sm-4">{% translate "Acquisition date" %}</dt><dd class="col-sm-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
   <dt class="col-sm-4">{% translate "Fixed asset account" %}</dt><dd class="col-sm-8">{{ asset.asset_account }}</dd>
   {% if asset.is_depreciable %}
-  <dt class="col-sm-4">{% translate "Residual value" %}</dt><dd class="col-sm-8">{{ asset.current_residual_value|rupiah }}</dd>
+  {% if asset.current_residual_value %}<dt class="col-sm-4">{% translate "Residual value" %}</dt><dd class="col-sm-8">{{ asset.current_residual_value|rupiah }}
+    <div class="small text-secondary">{% translate "Registered before SAK EMKM's rule was applied here: depreciation is without a residual value (11.14). Revise the estimate to remove it from a month on." %}</div></dd>{% endif %}
   <dt class="col-sm-4">{% translate "Accumulated depreciation account" %}</dt><dd class="col-sm-8">{{ asset.accumulated_depreciation_account }}</dd>
   <dt class="col-sm-4">{% translate "Depreciation expense account" %}</dt><dd class="col-sm-8">{{ asset.depreciation_expense_account }}</dd>
   {% if asset.depreciated_before_until %}<dt class="col-sm-4">{% translate "Already depreciated through" %}</dt><dd class="col-sm-8">{{ asset.depreciated_before_until|date:"F Y" }}</dd>{% endif %}
