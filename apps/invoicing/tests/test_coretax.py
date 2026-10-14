@@ -146,8 +146,8 @@ GOOD_SERVICE_TAGS = [
 
 
 @pytest.fixture
-def sale(books, customer, account):
-    customer.npwp, customer.address, customer.city, customer.email = "3174061502560010", "Jl. Merdeka 1", "Bandung", "beli@example.com"
+def sale(books, customer, account, jatake):
+    customer.npwp, customer.address, customer.village, customer.email = "3174061502560010", "Jl. Merdeka 1", jatake, "beli@example.com"
     customer.save()
     ppn = TaxRate.objects.filter(organization=books, dpp_numerator=11).first()
     service = Item.objects.create(organization=books, name="Pelatihan", type=Item.Type.SERVICE, unit="jam")
@@ -173,7 +173,7 @@ def test_sales_invoices_follow_djp_layout(books, sale):
         "2026-03-05", "Normal", "04", sale.number, "0012345678901234000000",
     ]
     assert [faktur.findtext(t) for t in ("BuyerTin", "BuyerDocument", "BuyerCountry", "BuyerDocumentNumber", "BuyerName", "BuyerAdress", "BuyerEmail", "BuyerIDTKU")] == [
-        "3174061502560010", "TIN", "IDN", "-", "PT Pelanggan", "Jl. Merdeka 1, Bandung", "beli@example.com", "3174061502560010000000",
+        "3174061502560010", "TIN", "IDN", "-", "PT Pelanggan", "Jl. Merdeka 1, Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330", "beli@example.com", "3174061502560010000000",
     ]
     kopi, training = faktur.find("ListOfGoodService")
     assert [child.tag for child in kopi] == GOOD_SERVICE_TAGS
@@ -445,12 +445,12 @@ def test_buyers_without_an_npwp_are_identified_by_their_document(books, customer
     ]
 
 
-def test_branches_use_their_nitku(books, customer, account):
+def test_branches_use_their_nitku(books, customer, account, jatake):
     from django.core.exceptions import ValidationError
 
     from apps.tenants.models import BusinessPlace
 
-    branch = BusinessPlace(organization=books, name="Cabang Sleman", nitku="0012345678901234000001", address="Jl. Kaliurang 5", city="Sleman")
+    branch = BusinessPlace(organization=books, name="Cabang Sleman", nitku="0012345678901234000001", address="Jl. Kaliurang 5", village=jatake)
     branch.full_clean()
     branch.save()
     customer.npwp, customer.nitku = "3174061502560010", "3174061502560010000002"
@@ -471,7 +471,7 @@ def test_branches_use_their_nitku(books, customer, account):
     faktur, other = ET.fromstring(coretax.build_invoices_xml(books, [invoice, head_office])).find("ListOfTaxInvoice")
     assert (faktur.findtext("SellerIDTKU"), faktur.findtext("BuyerIDTKU")) == ("0012345678901234000001", "3174061502560010000002")
     assert other.findtext("SellerIDTKU") == "0012345678901234000000"
-    assert (invoice.seller["address"], invoice.seller["city"]) == ("Jl. Kaliurang 5", "Sleman")
+    assert (invoice.seller["address"], invoice.seller["city"]) == ("Jl. Kaliurang 5", "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330")
     branch.is_active = False
     branch.save()
     with pytest.raises(Exception, match="inactive"):

@@ -7,12 +7,13 @@ from django.utils import timezone
 
 from apps.core.forms import BaseForm, BaseModelForm, DateInput, DigitsField, OrganizationFormMixin
 from apps.core.validators import nib_validator
+from apps.regions.forms import RegionFieldsMixin
 
 from .models import BusinessPlace, Organization
 from .roles import Role
 
 
-class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
+class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
     npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator],
                        help_text=_("15 or 16 digits; dots and dashes are removed."))
     nib = DigitsField(label=_("business ID (NIB)"), max_length=13, required=False, validators=[nib_validator])
@@ -20,7 +21,7 @@ class OrganizationSettingsForm(OrganizationFormMixin, BaseModelForm):
     class Meta:
         model = Organization
         fields = [
-            "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email",
+            "name", "legal_form", "npwp", "nib", "address", "village", "phone", "email",
             "is_pkp", "is_retailer", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
             "lock_date", "require_two_factor",
         ]
@@ -61,13 +62,13 @@ class AddMemberForm(OrganizationFormMixin, BaseForm):
     )
 
 
-class BusinessPlaceForm(OrganizationFormMixin, BaseModelForm):
+class BusinessPlaceForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
     nitku = DigitsField(label=_("NITKU"), max_length=22, validators=[nitku_validator],
                         help_text=BusinessPlace._meta.get_field("nitku").help_text)
 
     class Meta:
         model = BusinessPlace
-        fields = ["name", "nitku", "address", "city", "is_active"]
+        fields = ["name", "nitku", "address", "village", "is_active"]
         widgets = {"address": forms.Textarea(attrs={"rows": 2})}
 
     def __init__(self, *args, **kwargs):

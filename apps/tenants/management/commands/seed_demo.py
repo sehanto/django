@@ -21,6 +21,7 @@ from apps.inventory import services as inventory
 from apps.invoicing import services as invoicing
 from apps.invoicing.models import InvoiceKind, Item, Payment
 from apps.ledger.models import Account
+from apps.regions.models import Village
 from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.taxes.models import TaxRate
 from apps.tenants.models import Organization, Plan
@@ -45,12 +46,18 @@ class Command(BaseCommand):
         User = get_user_model()
         if User.objects.filter(email=email).exists():
             raise CommandError(f"User {email} already exists.")
+        if not Village.objects.exists():  # addresses pick their region from this list
+            raise CommandError("Load the regions first: manage.py load_regions")
+
+        def village(code):
+            return Village.objects.get(code=code)
+
         user = User.objects.create_user(
             email=email, password=password, full_name="Rina Wulandari", email_verified_at=timezone.now()
         )
         org = create_organization(
             owner=user, name="Kopi Nusantara Rina", legal_form=Organization.LegalForm.PERORANGAN, is_pkp=True,
-            npwp="0123456789012345", address="Jl. Malioboro No. 12", city="Yogyakarta", phone="0812-3456-7890",
+            npwp="0123456789012345", address="Jl. Malioboro No. 12", village=village("34.71.05.1001"), phone="0812-3456-7890",
         )
 
         pro = Plan.objects.filter(code="pro").first()
@@ -74,16 +81,23 @@ class Command(BaseCommand):
         )
 
         customers = [
-            Contact.objects.create(organization=org, kind=Contact.Kind.CUSTOMER, name=name, payment_terms_days=terms, city=city, npwp=npwp)
-            for name, terms, city, npwp in [
-                ("PT Hotel Merapi Indah", 30, "Sleman", "0987654321098765"),
-                ("Kafe Senja", 14, "Yogyakarta", ""),
-                ("CV Oleh-Oleh Jogja", 7, "Bantul", ""),
+            Contact.objects.create(
+                organization=org, kind=Contact.Kind.CUSTOMER, name=name, payment_terms_days=terms, address=street, village=village(code),
+                npwp=npwp,
+            )
+            for name, terms, street, code, npwp in [
+                ("PT Hotel Merapi Indah", 30, "Jl. Kaliurang Km 5", "34.04.07.2001", "0987654321098765"),
+                ("Kafe Senja", 14, "Jl. Brigjen Katamso 21", "34.71.10.1002", ""),
+                ("CV Oleh-Oleh Jogja", 7, "Jl. Jenderal Sudirman 8", "34.02.08.2004", ""),
             ]
         ]
         suppliers = [
-            Contact.objects.create(organization=org, kind=Contact.Kind.SUPPLIER, name=name, payment_terms_days=30, city=city)
-            for name, city in [("UD Petani Kopi Temanggung", "Temanggung"), ("Toko Kemasan Sejahtera", "Yogyakarta")]
+            Contact.objects.create(
+                organization=org, kind=Contact.Kind.SUPPLIER, name=name, payment_terms_days=30, address=street, village=village(code),
+            )
+            for name, street, code in [
+                ("UD Petani Kopi Temanggung", "Jl. Gajah Mada 3", "33.23.03.1003"), ("Toko Kemasan Sejahtera", "Jl. Mataram 40", "34.71.04.1001"),
+            ]
         ]
         arabika = Item.objects.create(
             organization=org, code="KOPI-ARB", name="Kopi Arabika Gayo 1 kg", unit="kg",

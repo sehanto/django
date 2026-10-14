@@ -10,6 +10,7 @@ from apps.contacts.countries import INDONESIA
 from apps.contacts.models import validate_country_code
 from apps.contacts.validators import npwp_format_validator
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.regions.models import Address
 
 from .domain import BpjsRates, EmployeeKind, PayBasis, PtkpStatus, TaxScheme, TerCategory
 
@@ -45,7 +46,7 @@ class PayrollSettings(TimeStampedModel):
         return BpjsRates(jkk=self.jkk_rate, jp_wage_cap=self.jp_wage_cap, health_wage_cap=self.health_wage_cap)
 
 
-class Employee(TenantOwnedModel):
+class Employee(TenantOwnedModel, Address):
     PtkpStatus = PtkpStatus
     Kind = EmployeeKind
     PayBasis = PayBasis
@@ -97,7 +98,6 @@ class Employee(TenantOwnedModel):
         _("foreign tax ID"), max_length=30, blank=True, help_text=_("A non-resident's tax ID in their country, for the PPh 26 bukti potong."),
     )
     gender = models.CharField(_("gender"), max_length=1, choices=Gender.choices, blank=True, default=Gender.UNSPECIFIED)
-    address = models.CharField(_("address"), max_length=255, blank=True)
     email = models.EmailField(_("email"), blank=True)
     position = models.CharField(_("position"), max_length=100, blank=True)
     ptkp_status = models.CharField(

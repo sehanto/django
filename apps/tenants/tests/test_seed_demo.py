@@ -7,7 +7,8 @@ from apps.reports.statements import build_trial_balance
 from apps.tenants.models import Organization
 
 
-def test_demo_books_balance_and_include_depreciation(organization, capsys):  # ``organization`` provides the default plan
+def test_demo_books_balance_and_include_depreciation(organization, regions, capsys):  # ``organization`` provides the default plan
+    regions("34.71.05.1001", "34.04.07.2001", "34.71.10.1002", "34.02.08.2004", "33.23.03.1003", "34.71.04.1001")
     call_command("seed_demo", "--email", "demo-test@example.com")
     demo = Organization.objects.get(name="Kopi Nusantara Rina")
     asset = FixedAsset.objects.get(organization=demo)

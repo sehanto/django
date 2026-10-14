@@ -77,6 +77,7 @@ def test_owner_grants_row_access_but_not_migration_history():
     assert 'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "public" TO "msme_app"' in statements
     assert 'REVOKE INSERT, UPDATE, DELETE ON "public".django_migrations FROM "msme_app"' in statements
     assert 'REVOKE EXECUTE ON FUNCTION "public".ledger_purge_organization(bigint) FROM "msme_app"' in statements
+    assert any('REVOKE INSERT, UPDATE, DELETE ON "public".regions_province' in s for s in statements)  # reference data: read only
     assert not any(word in s for s in statements for word in ("TRUNCATE", "TRIGGER", "CREATE ON", "ALL PRIVILEGES", "GRANT EXECUTE"))
 
 

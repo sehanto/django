@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
 from apps.core.validators import phone_validator
+from apps.regions.models import Address
 
 from .countries import COUNTRY_CODES, INDONESIA
 from .validators import format_npwp, nitku_validator, npwp_format_validator, validate_nitku_of
@@ -34,7 +35,7 @@ def validate_country_code(value: str) -> None:
         raise ValidationError(_("Enter a three-letter country code, e.g. IDN, SGP or MYS."))
 
 
-class Contact(TenantOwnedModel):
+class Contact(TenantOwnedModel, Address):
     VatCollector = VatCollector
     BuyerIdType = BuyerIdType
 
@@ -71,8 +72,6 @@ class Contact(TenantOwnedModel):
     )
     email = models.EmailField(_("email"), blank=True)
     phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
-    address = models.TextField(_("address"), max_length=500, blank=True)
-    city = models.CharField(_("city/regency"), max_length=100, blank=True)
     payment_terms_days = models.PositiveSmallIntegerField(
         _("payment terms (days)"), default=30, validators=[MaxValueValidator(365)]
     )

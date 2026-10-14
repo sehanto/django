@@ -9,6 +9,7 @@ from apps.inventory.domain import CostFormula as InventoryCostFormula
 from apps.contacts.validators import nitku_validator, npwp_format_validator, validate_nitku_of
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
+from apps.regions.models import Address
 
 from .roles import Role
 
@@ -34,7 +35,7 @@ class Plan(TimeStampedModel):
         return self.name
 
 
-class Organization(TimeStampedModel):
+class Organization(TimeStampedModel, Address):
     InventoryCostFormula = InventoryCostFormula
     DepreciationMethod = DepreciationMethod
 
@@ -56,8 +57,6 @@ class Organization(TimeStampedModel):
         _("business ID (NIB)"), max_length=13, blank=True, validators=[nib_validator],
         help_text=_("Nomor Induk Berusaha, issued through OSS."),
     )
-    address = models.TextField(_("address"), max_length=500, blank=True)
-    city = models.CharField(_("city/regency"), max_length=100, blank=True)
     phone = models.CharField(_("phone"), max_length=30, blank=True, validators=[phone_validator])
     email = models.EmailField(_("email"), blank=True)
 
@@ -156,7 +155,7 @@ class Invitation(TimeStampedModel):
         return self.accepted_at is None and self.revoked_at is None and self.expires_at > timezone.now()
 
 
-class BusinessPlace(TenantOwnedModel):
+class BusinessPlace(TenantOwnedModel, Address):
     """A branch or other place of business (tempat kegiatan usaha) registered with DJP under
     its own NITKU. A sales invoice made from it carries that NITKU and address; invoices
     without one come from the head office (the NPWP followed by 000000)."""
@@ -166,8 +165,6 @@ class BusinessPlace(TenantOwnedModel):
         _("NITKU"), max_length=22, validators=[nitku_validator],
         help_text=_("22 digits: the organization's 16-digit NPWP followed by the 6 digits of this place, as registered in Coretax."),
     )
-    address = models.TextField(_("address"), max_length=500, blank=True)
-    city = models.CharField(_("city/regency"), max_length=100, blank=True)
     is_active = models.BooleanField(_("active"), default=True)
 
     class Meta:

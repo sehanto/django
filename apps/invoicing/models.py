@@ -185,12 +185,12 @@ class Invoice(TenantOwnedModel):
     contact_id_number = models.CharField(_("contact identity document number"), max_length=30, blank=True, editable=False)
     contact_country = models.CharField(_("contact country"), max_length=3, blank=True, editable=False)
     contact_address = models.TextField(_("contact address"), blank=True, editable=False)
-    contact_city = models.CharField(_("contact city"), max_length=100, blank=True, editable=False)
+    contact_city = models.CharField(_("contact region"), max_length=255, blank=True, editable=False)
     seller_name = models.CharField(_("seller name"), max_length=200, blank=True, editable=False)
     seller_npwp = models.CharField(_("seller NPWP"), max_length=16, blank=True, editable=False)
     seller_nitku = models.CharField(_("seller NITKU"), max_length=22, blank=True, editable=False)
     seller_address = models.TextField(_("seller address"), blank=True, editable=False)
-    seller_city = models.CharField(_("seller city"), max_length=100, blank=True, editable=False)
+    seller_city = models.CharField(_("seller region"), max_length=255, blank=True, editable=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 
     class Meta:
@@ -222,12 +222,13 @@ class Invoice(TenantOwnedModel):
         self.contact_nitku, self.contact_country = contact.nitku, contact.country
         self.contact_id_type, self.contact_id_number = contact.id_type, contact.id_number
         self.buyer_vat_collector = contact.vat_collector if self.is_sales else VatCollector.NONE
-        self.contact_address, self.contact_city = contact.address, contact.city
+        # contact_city/seller_city hold the region line: kelurahan/desa, kecamatan, kabupaten/kota, province, postcode.
+        self.contact_address, self.contact_city = contact.address, contact.region_line
         self.seller_name, self.seller_npwp = organization.name, organization.npwp
         place = self.business_place
-        self.seller_address, self.seller_city = organization.address, organization.city
-        if place is not None and (place.address or place.city):
-            self.seller_address, self.seller_city = place.address, place.city
+        self.seller_address, self.seller_city = organization.address, organization.region_line
+        if place is not None and (place.address or place.village_id):
+            self.seller_address, self.seller_city = place.address, place.region_line
         self.seller_nitku = place.nitku if place is not None else ""
 
     def _party(self, snapshot: str, live) -> str:
@@ -303,16 +304,16 @@ class Invoice(TenantOwnedModel):
 
     @property
     def party_city(self) -> str:
-        return self._party("contact_city", self.contact.city)
+        return self._party("contact_city", self.contact.region_line)
 
     @property
     def seller(self) -> dict:
         org = self.organization
         if self.status == self.Status.DRAFT:
             place = self.business_place
-            if place is not None and (place.address or place.city):
-                return {"name": org.name, "npwp": org.npwp, "address": place.address, "city": place.city}
-            return {"name": org.name, "npwp": org.npwp, "address": org.address, "city": org.city}
+            if place is not None and (place.address or place.village_id):
+                return {"name": org.name, "npwp": org.npwp, "address": place.address, "city": place.region_line}
+            return {"name": org.name, "npwp": org.npwp, "address": org.address, "city": org.region_line}
         return {"name": self.seller_name, "npwp": self.seller_npwp, "address": self.seller_address, "city": self.seller_city}
 
     @property

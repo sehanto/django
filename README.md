@@ -178,6 +178,10 @@ See [Database roles](#database-roles). Then:
 ```
 
 ```bash
+.venv/bin/python manage.py load_regions
+```
+
+```bash
 .venv/bin/python manage.py seed_demo
 ```
 
@@ -196,7 +200,7 @@ The app uses two PostgreSQL roles:
 | Role | Used by | Can |
 |---|---|---|
 | Owner (`msme_user`, `DATABASE_OWNER_URL`) | `migrate`, `createcachetable`, the test runner | Everything on its tables: DDL, `DISABLE TRIGGER`, `TRUNCATE` |
-| App (`msme_app`, `DATABASE_URL`) | The web app, `seed_demo`, `process_billing` and other commands | `SELECT`/`INSERT`/`UPDATE`/`DELETE` on rows only |
+| App (`msme_app`, `DATABASE_URL`) | The web app, `seed_demo`, `process_billing` and other commands | `SELECT`/`INSERT`/`UPDATE`/`DELETE` on rows only; only `SELECT` on the region list (`load_regions` runs as the owner) |
 
 The app role cannot alter tables, disable triggers, switch the ledger guard off, or
 delete an organization's ledger. It has no way to remove posted entries. The ledger's immutability
@@ -222,6 +226,32 @@ all tables (`apps/core/db_roles.py`), so new tables need no manual grants.
 Without `DATABASE_OWNER_URL`, one role does everything, which is fine for a quick
 local setup. `manage.py check --deploy` warns (`core.W001`) when the app connects as an
 owner or superuser.
+
+### Addresses
+
+Every Indonesian address has a street line (jalan, nomor, RT/RW) typed in, and a region
+picked from the official list: province, kabupaten/kota, kecamatan and kelurahan/desa, in
+cascading selects. The kelurahan/desa fixes the postcode (kode pos), e.g. Jatake,
+Pagedangan, Kabupaten Tangerang, Banten 15330. The list (`apps/regions`, shared by every
+organization) holds the 38 provinces, 514 kabupaten/kota, 7,285 kecamatan and 83,762
+kelurahan/desa with their Kemendagri codes (Kepmendagri No. 300.2.2-2138 Tahun 2025) and
+postcodes, from [cahyadsn/wilayah](https://github.com/cahyadsn/wilayah) and
+[cahyadsn/wilayah_kodepos](https://github.com/cahyadsn/wilayah_kodepos) (MIT;
+`apps/regions/data/NOTICE.txt`).
+
+- Organizations, places of business, contacts and employees use it. An address with any
+  part filled in must be chosen down to its kelurahan/desa; records saved before this
+  had their old city appended to the street line and ask for the region the next time they
+  are edited. A contact abroad and a non-resident employee write their address in full,
+  without a region.
+- Only the kelurahan/desa code is stored (`village`); the levels above it and the postcode
+  follow from it. The API takes and returns `village` (the code) with `region` and
+  `postal_code`.
+- Invoices keep the region line as issued (`contact_city`/`seller_city`).
+- `manage.py load_regions` loads the list after `migrate` and updates it when Kemendagri
+  revises the codes: new codes are added, renamed ones updated, and codes no longer listed
+  are deactivated (never deleted, since addresses may still use them). To update, replace
+  `apps/regions/data/wilayah.csv.gz` (`code,name,postal_code`, gzipped) and run it again.
 
 ### Deleting an organization
 

@@ -158,7 +158,9 @@ def account_json(a: Account) -> dict:
 def contact_json(c: Contact) -> dict:
     return {
         "id": c.pk, "kind": c.kind, "name": c.name, "npwp": c.npwp, "email": c.email, "phone": c.phone,
-        "address": c.address, "city": c.city, "payment_terms_days": c.payment_terms_days, "is_active": c.is_active,
+        "address": c.address, "village": c.village_id, "region": c.region_line, "postal_code": c.postal_code,
+        "city": c.regency_name,  # kept for clients of the earlier free-text field
+        "payment_terms_days": c.payment_terms_days, "is_active": c.is_active,
     }
 
 

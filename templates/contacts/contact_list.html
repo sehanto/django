@@ -11,12 +11,12 @@
   <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "NPWP" %}</th><th>{% translate "Phone" %}</th><th>{% translate "City" %}</th><th></th></tr></thead>
+  <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "NPWP" %}</th><th>{% translate "Phone" %}</th><th>{% translate "Regency/city" %}</th><th></th></tr></thead>
   <tbody>
   {% for c in object_list %}
     <tr class="{% if not c.is_active %}text-secondary{% endif %}">
       <td>{{ c.name }}{% if not c.is_active %} <span class="badge text-bg-secondary">{% translate "inactive" %}</span>{% endif %}</td>
-      <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.city }}</td>
+      <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.regency_name }}</td>
       <td class="text-end text-nowrap">
         {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}"><i class="bi bi-receipt"></i></a>{% endif %}
         {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}"><i class="bi bi-bag"></i></a>{% endif %}

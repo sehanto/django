@@ -32,7 +32,7 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
         return {**super().get_form_kwargs(), "acting_user": self.request.user}
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(places=BusinessPlace.objects.for_organization(self.organization), **kwargs)
+        return super().get_context_data(places=BusinessPlace.objects.for_organization(self.organization).select_related("village__district__regency"), **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)

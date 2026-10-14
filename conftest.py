@@ -81,6 +81,29 @@ def supplier(organization):
 
 
 @pytest.fixture
+def regions(db):
+    """``regions("36.03.22.2008", ...)`` loads those kelurahan/desa (and the levels above them)
+    from the real Kemendagri list and returns them by code."""
+    from apps.regions.models import Village
+    from apps.regions.services import load_regions, read_rows
+
+    rows, wanted = read_rows(), set()
+
+    def load(*codes):
+        wanted.update(code.rsplit(".", depth)[0] for code in codes for depth in range(4))  # with its district, regency, province
+        load_regions([row for row in rows if row[0] in wanted])
+        return {v.code: v for v in Village.objects.filter(code__in=codes).select_related("district__regency__province")}
+
+    return load
+
+
+@pytest.fixture
+def jatake(regions):
+    """Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330."""
+    return regions("36.03.22.2008")["36.03.22.2008"]
+
+
+@pytest.fixture
 def auth_client(client, user, organization):
     client.force_login(user)
     return client

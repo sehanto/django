@@ -24,7 +24,7 @@ class ContactListView(OrganizationMixin, ListView):
         params = self.request.GET
         return contacts_for(
             self.organization, query=text_param(params, "q"), kind=choice_param(params, "kind", Contact.Kind.values)
-        )
+        ).select_related("village__district__regency")
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(kinds=Contact.Kind.choices, **kwargs)

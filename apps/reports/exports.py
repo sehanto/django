@@ -96,6 +96,13 @@ def _rows(queryset: QuerySet, columns: tuple[Column, ...]) -> Iterator[list[str]
 
 
 C = Column
+# An address: the street line and its region from the Kemendagri list.
+ADDRESS = (
+    C("address"), C("village__code", gettext_lazy("Kemendagri code")), C("village__name", gettext_lazy("Kelurahan/desa")),
+    C("village__district__name", gettext_lazy("District (kecamatan)")),
+    C("village__district__regency__name", gettext_lazy("Regency/city")),
+    C("village__district__regency__province__name", gettext_lazy("Province")), C("village__postal_code"),
+)
 ENTRY_LINES = Table(
     "journal_entries.csv",
     gettext_lazy("General journal: one row per line, drafts and posted entries."),
@@ -121,7 +128,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (
         Table("contacts.csv", gettext_lazy("Customers and suppliers."), (
             C("name"), C("kind"), C("npwp"), C("nitku"), C("id_type"), C("id_number"), C("country"), C("foreign_tin"),
-            C("treaty_document"), C("email"), C("phone"), C("address"), C("city"),
+            C("treaty_document"), C("email"), C("phone"), *ADDRESS,
             C("payment_terms_days"), C("document_language"), C("vat_collector"), C("notes"), C("is_active"),
         )),
         Contact, "organization", ("name", "id"),
@@ -211,7 +218,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
     (
         Table("business_places.csv", gettext_lazy("Places of business (branches) and their NITKU."), (
-            C("name"), C("nitku"), C("address"), C("city"), C("is_active"),
+            C("name"), C("nitku"), *ADDRESS, C("is_active"),
         )),
         BusinessPlace, "organization", ("name", "id"),
     ),
@@ -288,7 +295,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         Table("employees.csv", gettext_lazy("Employees."), (
             C("name"), C("kind"), C("pay_basis"), C("nationality"), C("nik"), C("passport_number"), C("npwp"), C("is_resident"),
             C("resident_since"), C("leaves_indonesia"), C("treaty_rate"), C("treaty_document"), C("tax_borne_by_employer"), C("zakat"),
-            C("gender"), C("address"), C("email"), C("position"), C("ptkp_status"),
+            C("gender"), *ADDRESS, C("email"), C("position"), C("ptkp_status"),
             C("start_date"), C("end_date"), C("base_salary"), C("fixed_allowance"), C("bpjs_employment"), C("bpjs_health"), C("is_active"),
         )),
         Employee, "organization", ("name", "id"),
@@ -320,8 +327,8 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     ),
 )
 ORGANIZATION_FIELDS = (
-    "name", "legal_form", "npwp", "nib", "address", "city", "phone", "email", "is_pkp", "is_retailer", "uses_pph_final",
-    "inventory_cost_formula", "depreciation_method", "additional_notes", "lock_date",
+    C("name"), C("legal_form"), C("npwp"), C("nib"), *ADDRESS, C("phone"), C("email"), C("is_pkp"), C("is_retailer"),
+    C("uses_pph_final"), C("inventory_cost_formula"), C("depreciation_method"), C("additional_notes"), C("lock_date"),
 )
 ORGANIZATION_FILE = "organization.csv"
 TRIAL_BALANCE_FILE = "trial_balance.csv"
@@ -337,8 +344,8 @@ def _write_csv(archive: zipfile.ZipFile, filename: str, rows: Iterable[list]) ->
 
 def _organization_rows(organization: Organization) -> Iterator[list[str]]:
     yield [_("Field"), _("Value")]
-    for name in ORGANIZATION_FIELDS:
-        yield [_header(Organization, Column(name)), _value(organization, _fields(Organization, name))]
+    for column in ORGANIZATION_FIELDS:
+        yield [_header(Organization, column), _value(organization, _fields(Organization, column.path))]
 
 
 def _readme(organization: Organization, exported_at: datetime, exported_by, as_of: date) -> str:

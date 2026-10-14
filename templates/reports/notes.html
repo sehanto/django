@@ -13,7 +13,7 @@
   <dt class="col-sm-3">{% translate "Legal form" %}</dt><dd class="col-sm-9">{{ org.get_legal_form_display }}</dd>
   {% if org.npwp %}<dt class="col-sm-3">{% translate "Tax ID (NPWP)" %}</dt><dd class="col-sm-9">{{ org.npwp }}</dd>{% endif %}
   {% if org.nib %}<dt class="col-sm-3">{% translate "Business ID (NIB)" %}</dt><dd class="col-sm-9">{{ org.nib }}</dd>{% endif %}
-  {% if org.address or org.city %}<dt class="col-sm-3">{% translate "Address" %}</dt><dd class="col-sm-9">{{ org.address }}{% if org.address and org.city %}, {% endif %}{{ org.city }}</dd>{% endif %}
+  {% if org.full_address %}<dt class="col-sm-3">{% translate "Address" %}</dt><dd class="col-sm-9">{{ org.full_address }}</dd>{% endif %}
   <dt class="col-sm-3">{% translate "Reporting period" %}</dt><dd class="col-sm-9">{% blocktranslate trimmed with start=pl.date_from|date:"d F Y" end=pl.date_to|date:"d F Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</dd>
 </dl>
 

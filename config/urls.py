@@ -31,6 +31,7 @@ urlpatterns = [
     path("organization/", include("apps.tenants.urls")),
     path("ledger/", include("apps.ledger.urls")),
     path("contacts/", include("apps.contacts.urls")),
+    path("regions/", include("apps.regions.urls")),
     path("taxes/", include("apps.taxes.urls")),
     path("reports/", include("apps.reports.urls")),
     path("fixed-assets/", include("apps.assets.urls")),

@@ -21,10 +21,10 @@
     <a href="{% url 'tenants:place_create' %}" class="btn btn-outline-primary"><i class="bi bi-plus me-1"></i>{% translate "Add place" %}</a>
   </div>
   {% if places %}<div class="table-responsive mt-3"><table class="table table-sm mb-0">
-    <thead><tr><th>{% translate "Name" %}</th><th>{% translate "NITKU" %}</th><th>{% translate "City/regency" %}</th><th></th></tr></thead>
+    <thead><tr><th>{% translate "Name" %}</th><th>{% translate "NITKU" %}</th><th>{% translate "Regency/city" %}</th><th></th></tr></thead>
     <tbody>{% for place in places %}<tr class="{% if not place.is_active %}text-secondary{% endif %}">
       <td>{{ place.name }}{% if not place.is_active %} <span class="badge text-bg-secondary">{% translate "Inactive" %}</span>{% endif %}</td>
-      <td class="font-monospace small">{{ place.nitku }}</td><td>{{ place.city }}</td>
+      <td class="font-monospace small">{{ place.nitku }}</td><td>{{ place.regency_name }}</td>
       <td class="text-end"><a href="{% url 'tenants:place_update' place.pk %}" class="small">{% translate "Edit" %}</a></td></tr>{% endfor %}</tbody>
   </table></div>{% endif %}
 </div></div>

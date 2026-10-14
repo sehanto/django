@@ -20,6 +20,10 @@ APP_ROLE_GRANTS = (
     "REVOKE EXECUTE ON FUNCTION {schema}.ledger_purge_organization(bigint) FROM {role}",
     # Migration history is the owner's business.
     "REVOKE INSERT, UPDATE, DELETE ON {schema}.django_migrations FROM {role}",
+    # Reference data (manage.py load_regions, as the owner): the app only reads it.
+    "DO $$ BEGIN IF to_regclass('{schema}.regions_village') IS NOT NULL THEN "
+    "REVOKE INSERT, UPDATE, DELETE ON {schema}.regions_province, {schema}.regions_regency, {schema}.regions_district, "
+    "{schema}.regions_village FROM {role}; END IF; END $$",
 )
 
 

@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.validators import npwp_format_validator
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, DigitsField, OrganizationFormMixin
+from apps.regions.forms import RegionFieldsMixin
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.ledger.domain import AccountCategory
 from apps.ledger.models import Account
@@ -12,7 +13,7 @@ from .models import Employee, PayrollSettings, PriorIncome, nik_validator
 from .services import PayInput
 
 
-class EmployeeForm(OrganizationFormMixin, BaseModelForm):
+class EmployeeForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
     nik = DigitsField(label=_("NIK"), max_length=16, required=False, validators=[nik_validator], help_text=Employee._meta.get_field("nik").help_text)
     npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator])
 
@@ -20,7 +21,7 @@ class EmployeeForm(OrganizationFormMixin, BaseModelForm):
         model = Employee
         fields = [
             "name", "kind", "pay_basis", "nationality", "nik", "passport_number", "npwp", "is_resident", "resident_since",
-            "treaty_rate", "treaty_document", "foreign_tin", "gender", "address", "email", "position", "ptkp_status", "start_date", "end_date",
+            "treaty_rate", "treaty_document", "foreign_tin", "gender", "address", "village", "email", "position", "ptkp_status", "start_date", "end_date",
             "leaves_indonesia", "base_salary", "fixed_allowance", "bpjs_employment", "bpjs_health", "tax_borne_by_employer", "zakat",
             "is_active",
         ]
@@ -28,6 +29,10 @@ class EmployeeForm(OrganizationFormMixin, BaseModelForm):
 
     def clean_nationality(self):
         return (self.cleaned_data.get("nationality") or "").upper()
+
+    def address_required(self, cleaned_data) -> bool:
+        """A non-resident may live abroad: their address is then written in full."""
+        return cleaned_data.get("is_resident", True) and super().address_required(cleaned_data)
 
 
 class PayrollSettingsForm(OrganizationFormMixin, BaseModelForm):

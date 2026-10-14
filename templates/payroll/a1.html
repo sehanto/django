@@ -12,7 +12,7 @@
     <div class="col-sm-6"><div class="fw-semibold">{% translate "Employer" %}</div>{{ current_organization.name }}<br>NPWP {{ current_organization.npwp|default:"—" }}</div>
     <div class="col-sm-6"><div class="fw-semibold">{% translate "Employee" %}</div>{{ st.employee.name }}{% if st.employee.position %} · {{ st.employee.position }}{% endif %}<br>
       {% if st.employee.tin %}NPWP/NIK {{ st.employee.tin }}{% else %}{% translate "Passport" %} {{ st.employee.passport_number }}{% endif %} · {{ st.employee.nationality }}{% if st.employee.gender %} · {{ st.employee.get_gender_display }}{% endif %}<br>
-      {% if st.employee.address %}{{ st.employee.address }}<br>{% endif %}
+      {% if st.employee.full_address %}{{ st.employee.full_address }}<br>{% endif %}
       {% translate "PTKP status" %} {{ st.final_slip.ptkp_status }} · {% blocktranslate trimmed with first=st.first_month|stringformat:"02d" last=st.last_month|stringformat:"02d" %}Period {{ first }}–{{ last }}{% endblocktranslate %}</div>
   </div>
   <table class="table table-sm mt-3 mb-0">

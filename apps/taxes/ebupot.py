@@ -146,7 +146,7 @@ def _payroll(batches: dict[str, Batch], run, office: str) -> None:
                 continue
             batch.records.append(Record(PAYSLIP, slip.pk, [
                 *_period(year, month), ("CounterpartTin", tin), ("CounterpartReceiptNumber", e.treaty_document or "-"),
-                ("CounterpartName", e.name), ("CounterpartCountry", e.nationality), ("CounterpartAddress", e.address or NIL),
+                ("CounterpartName", e.name), ("CounterpartCountry", e.nationality), ("CounterpartAddress", e.full_address or NIL),
                 ("CounterpartDob", NIL), ("CounterpartBirthCity", NIL), ("CounterpartPassport", e.passport_number or NIL),
                 ("CounterpartKitas", NIL), ("TaxCertificate", "COD" if slip.pph26_rate is not None and e.treaty_document else "N/A"),
                 ("TaxObjectCode", PPH_26), ("Gross", slip.taxable_gross + slip.severance), ("Deemed", 100),

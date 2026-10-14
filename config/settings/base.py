@@ -35,6 +35,7 @@ LOCAL_APPS = [
     "apps.accounts",
     "apps.tenants",
     "apps.ledger",
+    "apps.regions",
     "apps.contacts",
     "apps.taxes",
     "apps.invoicing",

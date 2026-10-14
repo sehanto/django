@@ -38,16 +38,16 @@ def test_out_of_range_report_dates_are_reported_to_the_user(auth_client):
 
 def contact_post(**overrides):
     data = {
-        "kind": "customer", "name": "PT Pelanggan", "npwp": "", "email": "", "phone": "", "address": "", "city": "",
+        "kind": "customer", "name": "PT Pelanggan", "npwp": "", "email": "", "phone": "", "address": "",
         "payment_terms_days": "30", "document_language": "id", "notes": "", "is_active": "on",
     }
     return {**data, **overrides}
 
 
-def test_contact_input_is_normalized_and_validated(auth_client, organization):
+def test_contact_input_is_normalized_and_validated(auth_client, organization, jatake):
     response = auth_client.post(reverse("contacts:create"), contact_post(
         name="  PT‮ Hotel\x00  Merapi ", npwp="01.234.567.8-901.000", phone="0812-3456-7890",
-        address="Jl. Kaliurang\r\n\r\n\r\nKm 5 ",
+        address="Jl. Kaliurang\r\n\r\n\r\nKm 5 ", village=jatake.code,
     ))
     assert response.status_code == 302
     contact = Contact.objects.get(organization=organization)
