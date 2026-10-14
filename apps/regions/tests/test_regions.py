@@ -171,7 +171,6 @@ def test_the_api_takes_and_returns_the_region(client, organization, user, region
     assert body["region"] == "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
 
 
-
 def test_the_postcode_finds_the_village_and_is_checked(organization, regions):
     regions(JATAKE, "36.03.22.2011", "36.03.22.2003")  # Jatake and Malang Nengah share 15330; Pagedangan has 15339
     base = {"kind": "customer", "name": "PT Pelanggan", "payment_terms_days": "30", "document_language": "id", "address": "Jl. Raya 1"}

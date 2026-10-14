@@ -76,19 +76,6 @@ def _ensure_user_capacity(organization: Organization, plan: Plan | None = None) 
 
 
 @transaction.atomic
-def add_member(*, organization: Organization, email: str, role: str) -> Membership:
-    user = User.objects.filter(email__iexact=email).first()
-    if user is None:
-        raise ValidationFailed(_("No user with that email is registered yet. Ask them to sign up first."))
-    if Membership.objects.filter(organization=organization, user=user).exists():
-        raise ValidationFailed(_("This user is already a member of the organization."))
-    if role == Role.OWNER:
-        raise ValidationFailed(_("The owner role cannot be given to a new member."))
-    _ensure_user_capacity(organization)
-    return Membership.objects.create(organization=organization, user=user, role=role)
-
-
-@transaction.atomic
 def invite_member(*, organization: Organization, email: str, role: str, invited_by) -> Invitation:
     """Email an invitation link (valid for ``Invitation.VALID_FOR_DAYS``) that adds whoever
     signs in, or signs up, with that address. Registered or not, the answer is the same, so

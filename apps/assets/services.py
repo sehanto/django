@@ -13,11 +13,12 @@ from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.validators import ensure_business_date
+from apps.core.periods import month_end
 from apps.ledger.domain import AccountCategory
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import DepreciationMethod, accumulated_before, add_months, month_end, months_between
+from .domain import DepreciationMethod, accumulated_before, add_months, months_between
 from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 
@@ -153,6 +154,36 @@ class InvoicedSale:
     tax_rate: object = None  # taxes.TaxRate | None
 
 
+def _check_disposal(asset: FixedAsset, on: date, proceeds: Decimal, cash_account, sale) -> None:
+    if asset.status != FixedAsset.Status.ACTIVE:
+        raise InvalidStateTransition(_("This asset has already been disposed."))
+    ensure_business_date(on)
+    if on < asset.acquisition_date:
+        raise ValidationFailed(_("The disposal date can't be before the acquisition date."))
+    if proceeds < 0:
+        raise ValidationFailed(_("The sale proceeds can't be negative."))
+    if sale is not None and not proceeds:
+        raise ValidationFailed(_("Enter the sale price to invoice."))
+    if proceeds and sale is None and (
+        cash_account is None or not cash_account.is_cash or cash_account.organization_id != asset.organization_id
+    ):
+        raise ValidationFailed(_("Choose the cash or bank account that received the proceeds."))
+
+
+def _is_gain_loss_account(account, organization) -> bool:
+    return (
+        account is not None and account.organization_id == organization.pk and account.is_active
+        and account.category in (AccountCategory.OTHER_INCOME, AccountCategory.OTHER_EXPENSE)
+    )
+
+
+def _signed_line(account, amount: Decimal, description: str) -> JournalLineInput:
+    """A debit of ``amount``, or a credit when it is negative."""
+    if amount >= 0:
+        return JournalLineInput(account, debit=amount, description=description)
+    return JournalLineInput(account, credit=-amount, description=description)
+
+
 @transaction.atomic
 def dispose_asset(
     *, asset: FixedAsset, on: date, proceeds: Decimal = ZERO, cash_account=None, gain_loss_account=None,
@@ -166,20 +197,8 @@ def dispose_asset(
     credits them to the asset account, and the disposal entry removes the rest of the cost."""
     asset = FixedAsset.objects.select_for_update().get(pk=asset.pk)
     organization = asset.organization
-    if asset.status != FixedAsset.Status.ACTIVE:
-        raise InvalidStateTransition(_("This asset has already been disposed."))
-    ensure_business_date(on)
-    if on < asset.acquisition_date:
-        raise ValidationFailed(_("The disposal date can't be before the acquisition date."))
     proceeds = quantize(proceeds or ZERO)
-    if proceeds < 0:
-        raise ValidationFailed(_("The sale proceeds can't be negative."))
-    if sale is not None and not proceeds:
-        raise ValidationFailed(_("Enter the sale price to invoice."))
-    if proceeds and sale is None and (
-        cash_account is None or not cash_account.is_cash or cash_account.organization_id != organization.pk
-    ):
-        raise ValidationFailed(_("Choose the cash or bank account that received the proceeds."))
+    _check_disposal(asset, on, proceeds, cash_account, sale)
 
     previous_month_end = month_end(*add_months(on.year, on.month, -1))
     post_depreciation(organization=organization, through=previous_month_end, created_by=created_by)
@@ -190,32 +209,22 @@ def dispose_asset(
         )
     accumulated = accumulated_depreciation(asset)
     difference = asset.cost - accumulated - proceeds  # positive: loss, negative: gain
-    if difference and (
-        gain_loss_account is None or gain_loss_account.organization_id != organization.pk or not gain_loss_account.is_active
-        or gain_loss_account.category not in (AccountCategory.OTHER_INCOME, AccountCategory.OTHER_EXPENSE)
-    ):
+    if difference and not _is_gain_loss_account(gain_loss_account, organization):
         raise ValidationFailed(_("Choose an other income or other expense account for the gain or loss."))
 
     label = f"{asset.number} {asset.name}"
     invoice = _invoice_sale(asset, on, proceeds, sale, created_by) if sale is not None else None
     # An invoiced sale already credited the proceeds to the asset account.
     asset_credit = asset.cost - proceeds if invoice is not None else asset.cost
-    lines = []
-    if proceeds and invoice is None:
-        lines.append(JournalLineInput(cash_account, debit=proceeds, description=label))
-    if accumulated:
-        lines.append(JournalLineInput(asset.accumulated_depreciation_account, debit=accumulated, description=label))
-    if difference > 0:
-        lines.append(JournalLineInput(gain_loss_account, debit=difference, description=label))
-    if asset_credit > 0:
-        lines.append(JournalLineInput(asset.asset_account, credit=asset_credit, description=label))
-    elif asset_credit < 0:
-        lines.append(JournalLineInput(asset.asset_account, debit=-asset_credit, description=label))
-    if difference < 0:
-        lines.append(JournalLineInput(gain_loss_account, credit=-difference, description=label))
+    lines = [
+        JournalLineInput(cash_account, debit=proceeds if invoice is None else ZERO, description=label),
+        JournalLineInput(asset.accumulated_depreciation_account, debit=accumulated, description=label),
+        _signed_line(gain_loss_account, difference, label),  # a loss is debited
+        _signed_line(asset.asset_account, -asset_credit, label),  # the cost left is credited
+    ]
     entry = create_journal_entry(
         organization=organization, date=on, description=f"Pelepasan aset tetap {label}",
-        source=JournalEntry.Source.FIXED_ASSET, created_by=created_by, lines=lines,
+        source=JournalEntry.Source.FIXED_ASSET, created_by=created_by, lines=[line for line in lines if line.debit or line.credit],
     )
     asset.status = FixedAsset.Status.DISPOSED
     asset.disposed_on = on

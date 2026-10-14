@@ -8,7 +8,7 @@ from django.utils import timezone
 from apps.core.money import ZERO
 
 from .domain import AgingBucket, aging_bucket
-from .models import Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
+from .models import CoretaxConnection, Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
 
 
 def invoices_for(
@@ -119,7 +119,7 @@ def vat_summary(organization, year: int) -> list[dict]:
     their PPN not collected."""
     rows = (
         Invoice.objects.for_organization(organization)
-        .filter(date__year=year, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+        .filter(date__year=year, status__in=Invoice.ISSUED_STATUSES)
         .values("date__month", "kind")
         .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"), luxury=Sum("luxury_tax_amount"))
     )
@@ -132,7 +132,7 @@ def vat_summary(organization, year: int) -> list[dict]:
     # PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer, not payable by us.
     collected = (
         Invoice.objects.for_organization(organization)
-        .filter(date__year=year, kind=InvoiceKind.SALES, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+        .filter(date__year=year, kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES)
         .exclude(buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
     )
     collected_returns = (
@@ -172,7 +172,7 @@ def vat_summary(organization, year: int) -> list[dict]:
         anonymous = (
             Invoice.objects.for_organization(organization)
             .filter(date__year=year, kind=InvoiceKind.SALES, contact_npwp="", contact_id_number="",
-                    status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
+                    status__in=Invoice.ISSUED_STATUSES)
             .values("date__month").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
         )
         for row in anonymous:
@@ -185,3 +185,29 @@ def vat_summary(organization, year: int) -> list[dict]:
 
 def returns_for(organization) -> QuerySet[ReturnNote]:
     return ReturnNote.objects.for_organization(organization).select_related("invoice", "cash_account", "journal_entry")
+
+
+def coretax_connected(organization) -> bool:
+    """Whether the organization sends to Coretax through an active connection."""
+    return CoretaxConnection.objects.filter(organization=organization, is_active=True).exists()
+
+
+def purchase_return_months(organization, year: int) -> set[int]:
+    """Months with posted purchase returns (their Retur Faktur PM file)."""
+    return set(
+        ReturnNote.objects.for_organization(organization)
+        .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year)
+        .values_list("date__month", flat=True)
+    )
+
+
+def faktur_months(organization, year: int) -> set[int]:
+    """Months with issued sales invoices that carry PPN, charged or under a facility (their Faktur file)."""
+    if not organization.is_pkp:
+        return set()
+    return set(
+        Invoice.objects.for_organization(organization)
+        .filter(Q(tax_amount__gt=0) | Q(vat_not_collected__gt=0), kind=InvoiceKind.SALES, date__year=year,
+                status__in=Invoice.ISSUED_STATUSES)
+        .values_list("date__month", flat=True)
+    )

@@ -142,6 +142,11 @@ def test_an_import_declaration(books, account, auth_client):
             organization=books, number="000555", on=date(2026, 3, 12), supplier_name="Acme", customs_value=D("1"), import_duty=D("0"),
             vat=D("1"), luxury_tax=D("0"), pph22=D("0"), cost_account=account("5-1000"), cash_account=account("1-1100"),
         )
+    with pytest.raises(ValidationFailed, match="prepaid tax account"):  # PPh 22 impor needs somewhere to go
+        services.record_import_declaration(
+            organization=books, number="000556", on=date(2026, 3, 12), supplier_name="Acme", customs_value=D("1000"), import_duty=D("0"),
+            vat=D("0"), luxury_tax=D("0"), pph22=D("25"), cost_account=account("5-1000"), cash_account=account("1-1100"),
+        )
     assert auth_client.get(reverse("taxes:imports"), {"year": 2026}).status_code == 200
     services.cancel_import_declaration(declaration=declaration, on=date(2026, 3, 31))
     assert vat_summary(books, 2026)[2]["input"] == 0 and account_balance(books, account("1-1100")) == 0
@@ -167,7 +172,6 @@ def test_pph26_on_a_payment_abroad(books, abroad, account):
     fields = dict(row.fields)
     assert (fields["CounterpartTin"], fields["TaxCertificate"], fields["CounterpartReceiptNumber"], fields["Deemed"], fields["Rate"]) == (
         "SG-200012345K", "COD", "DGT-SGP-2026", D("100"), D("10"))
-
 
 
 def test_pph26_at_a_zero_treaty_rate_is_still_reported(books, abroad, account, auth_client):
@@ -200,6 +204,7 @@ def test_pph26_at_a_zero_treaty_rate_is_still_reported(books, abroad, account, a
     assert (fields["TaxCertificate"], fields["CounterpartReceiptNumber"], fields["Rate"]) == ("COD", "DGT-SGP-2026", D("0"))
     invoicing.record_withholding_slip(payment=payment, number="BPNR-0001")
     assert DocumentType.BPNR not in ebupot.month_batches(books, 2026, 3)
+
 
 def test_self_deposited_final_pph_on_rent(books, customer, account):
     deposit = services.record_self_deposit(

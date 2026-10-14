@@ -49,10 +49,6 @@ class MovementKind(models.TextChoices):
     WRITE_DOWN = "write_down", _("Write-down to net realisable value")
 
     @property
-    def is_issue(self) -> bool:
-        return self in (MovementKind.SALE, MovementKind.DECREASE, MovementKind.PURCHASE_RETURN)
-
-    @property
     def removes_a_layer(self) -> bool:
         """Takes a whole receipt back out (a voided purchase or sales return)."""
         return self in (MovementKind.PURCHASE_REVERSAL, MovementKind.SALE_RETURN_VOIDED)

@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, TemplateView
 
 from apps.core.exceptions import DomainError
-from apps.core.params import choice_param, int_param
+from apps.core.params import choice_param, int_param, text_param
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import ManageMixin
 from apps.tenants.models import Plan
@@ -77,7 +77,7 @@ class InvoiceDetailView(ManageMixin, DetailView):
 
     def get_object(self, queryset=None):
         invoice = super().get_object(queryset)
-        if self.request.GET.get("returned"):  # back from the payment page
+        if text_param(self.request.GET, "returned"):  # back from the payment page
             invoice = _sync_with_feedback(self.request, invoice)
         return invoice
 

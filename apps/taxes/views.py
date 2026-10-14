@@ -17,6 +17,7 @@ from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
 from apps.core.sanitizers import csv_safe
 from apps.core.params import int_param, text_param, year_choices, year_param
+from apps.core.periods import month_end
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 from apps.tenants.roles import Permission
@@ -99,7 +100,7 @@ class PphFinalView(OrganizationMixin, TemplateView):
             years=year_choices(),
             rows=[
                 PphFinalRow(
-                    m, accruals.get(m.month), payments.get(m.month), services.month_end(year, m.month) <= today,
+                    m, accruals.get(m.month), payments.get(m.month), month_end(year, m.month) <= today,
                     withheld.get(m.month, ZERO),
                 )
                 for m in schedule

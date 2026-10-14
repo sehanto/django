@@ -56,6 +56,14 @@ Each app uses the same layers. Dependencies point inward, toward `domain`.
 | `selectors.py` | **Read** queries | Always tenant-scoped (`Model.objects.for_organization(org)`). |
 | `forms.py` / `views.py` | Delivery: parse input, call one service, render | Thin. `DomainError` becomes a form error or flash message. |
 
+Views look single records up directly (`get_object_or_404(Model.objects.for_organization(org), pk=pk)`);
+any query with its own conditions or aggregation is a selector, any write a service (even one
+field, such as `accounts.services.set_language`). A service function reads as its steps: checks
+(`_check_*`), amounts, then journal lines (`_*_lines`), each its own function. Helpers shared by
+apps live in `core` (`core.periods` for tax months, `core.money`, `core.params`); a set of
+statuses used in more than one place is a constant on the model (`Invoice.OPEN_STATUSES`,
+`Invoice.ISSUED_STATUSES`).
+
 Key design decisions:
 
 - **One posting gateway.** Every module records its accounting impact through

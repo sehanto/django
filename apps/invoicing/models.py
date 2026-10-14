@@ -16,7 +16,7 @@ from apps.core.validators import code_validator, tax_invoice_number_validator
 
 from .coretax_api import ConnectorName, DocumentType, SubmissionStatus
 from .domain import InvoiceStatus, LineSpec, TaxSpec
-from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility, describe, stamp_text
+from .facilities import ADDITIONAL_INFO, VatFacility, describe, stamp_text
 
 
 class InvoiceKind(models.TextChoices):
@@ -115,6 +115,8 @@ class Invoice(TenantOwnedModel):
     SpecialDocument = SpecialDocument
 
     OPEN_STATUSES = (Status.ISSUED, Status.PARTIAL)
+    # Issued and not void. A write-off settles the receivable, not the delivery: its PPN and Faktur stay.
+    ISSUED_STATUSES = (Status.ISSUED, Status.PARTIAL, Status.PAID, Status.WRITTEN_OFF)
 
     kind = models.CharField(_("type"), max_length=10, choices=InvoiceKind.choices)
     number = models.CharField(_("number"), max_length=30, blank=True)
@@ -300,10 +302,6 @@ class Invoice(TenantOwnedModel):
         return describe(ADDITIONAL_INFO, self.vat_facility, self.facility_info)
 
     @property
-    def facility_stamp_label(self) -> str:
-        return describe(STAMPS, self.vat_facility, self.facility_stamp)
-
-    @property
     def facility_stamp_text(self) -> str:
         return stamp_text(self.vat_facility, self.facility_stamp)
 
@@ -343,7 +341,7 @@ class Invoice(TenantOwnedModel):
     def buyer_withholds_vat(self) -> bool:
         return bool(self.buyer_vat_collector) and bool(self.tax_amount or self.luxury_tax_amount)
 
-    def _posted_payments(self):
+    def posted_payments(self):
         return [p for p in self.payments.all() if p.status == Payment.Status.POSTED]
 
     def _posted_returns(self):
@@ -353,7 +351,7 @@ class Invoice(TenantOwnedModel):
     def vat_withheld(self):
         """PPN (and PPnBM) the buyer withheld on its payments, less what returns gave back to it."""
         return (
-            sum((p.vat_withheld for p in self._posted_payments()), ZERO)
+            sum((p.vat_withheld for p in self.posted_payments()), ZERO)
             - sum((r.vat_withheld for r in self._posted_returns()), ZERO)
         )
 
@@ -367,7 +365,7 @@ class Invoice(TenantOwnedModel):
     def income_tax_withheld(self):
         """Income tax the buyer withheld on its payments, less what refunds gave back to it."""
         return (
-            sum((p.income_tax_withheld for p in self._posted_payments()), ZERO)
+            sum((p.income_tax_withheld for p in self.posted_payments()), ZERO)
             - sum((r.income_tax_withheld for r in self._posted_returns()), ZERO)
         )
 
@@ -378,6 +376,7 @@ class Invoice(TenantOwnedModel):
 
     @property
     def can_return(self) -> bool:
+        # Not after a write-off: nothing is left to credit.
         return self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID) and not self.is_asset_sale
 
     @property

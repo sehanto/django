@@ -240,6 +240,7 @@ TWO_FACTOR_MAX_ATTEMPTS = 5  # wrong codes before the password must be entered a
 TWO_FACTOR_BACKUP_CODES = 10
 TWO_FACTOR_REMEMBER_DAYS = 30  # "don't ask again on this device"
 
+
 # Encryption keys for secrets stored in the database (2FA secrets, backup-code hashes);
 # Fernet keys, newest first. Separate from SECRET_KEY. Production must set them
 # (generate one with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())").

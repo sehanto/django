@@ -21,13 +21,6 @@ def normalize_npwp(value: str) -> str:
 npwp_format_validator = RegexValidator(r"^\d{15}(\d)?$", _("NPWP must have 15 or 16 digits."))
 
 
-def validate_npwp(value: str) -> str:
-    digits = normalize_npwp(value)
-    if len(digits) not in (15, 16):
-        raise ValidationError(_("NPWP must have 15 or 16 digits."))
-    return digits
-
-
 def npwp16(value: str) -> str:
     """The 16-digit NPWP Coretax expects: a 15-digit NPWP is prefixed with 0."""
     digits = normalize_npwp(value)

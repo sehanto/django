@@ -130,4 +130,3 @@ def stamp_text(facility: str, code: str) -> str:
     "no stamp" entries."""
     text = re.sub(r"^\d+\s*-\s*", "", describe(STAMPS, facility, code))
     return "" if re.match(r"\((tidak ada|tanpa) cap\)", text, re.IGNORECASE) else text
-

@@ -127,7 +127,6 @@ def reconcile(organization, rows: list[RegisterRow], as_of: date) -> list[Reconc
     ]
 
 
-
 def revisions_in(organization, date_from: date, date_to: date) -> QuerySet[AssetRevision]:
     """Changes in estimate that take effect in the period (disclosed in the notes)."""
     return (

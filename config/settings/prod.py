@@ -260,6 +260,7 @@ if CACHES["default"]["BACKEND"] not in _SHARED_CACHE_BACKENDS:
         "or pymemcache://; local-memory, dummy and file caches break the sign-in and reset limits."
     )
 
+
 # Login CAPTCHA: real Turnstile keys are required (Cloudflare dashboard -> Turnstile).
 # Cloudflare's public test keys would let every visitor through, so they are refused.
 def _turnstile_key(name: str) -> str:
@@ -272,6 +273,7 @@ def _turnstile_key(name: str) -> str:
 CAPTCHA_BACKEND = "turnstile"
 TURNSTILE_SITE_KEY = _turnstile_key("TURNSTILE_SITE_KEY")
 TURNSTILE_SECRET_KEY = _turnstile_key("TURNSTILE_SECRET_KEY")
+
 
 # Database field encryption keys (2FA secrets, backup-code hashes): required, each a real
 # Fernet key, never the development key derived from SECRET_KEY. Errors name the

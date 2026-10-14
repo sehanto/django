@@ -6,7 +6,6 @@ from unittest import mock
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.billing import services
 from apps.billing.domain import BillingPeriod, Credit, PaidPeriod, compute_charge, switch_quote, unused_credit

@@ -1,6 +1,7 @@
-"""Tax object codes (kode objek pajak) for bukti potong, from DJP"s Coretax converters (sheet \"REF\"):
-\"BPPU Excel to XML v.3\" for PPh 23 and PPh 4(2) with their rates, and \"BP21 Excel to XML v.4\" for PPh 21
-on fees to non-employees (50% of gross at the Art. 17 rates). Official names; generated, don"t edit by hand."""
+"""Tax object codes (kode objek pajak) for bukti potong, from DJP's Coretax converters (sheet "REF"):
+"BPPU Excel to XML v.3" for PPh 23 and PPh 4(2) with their rates, and "BP21 Excel to XML v.4" for PPh 21
+on fees to non-employees (50% of gross at the Art. 17 rates). Official names; generated, don't edit by hand.
+Where DJP's sheet repeats a code, the first row is kept, as the converter's VLOOKUP does."""
 
 from decimal import Decimal
 
@@ -161,23 +162,15 @@ NON_EMPLOYEE_PPH_21 = {
 # "BPSP Excel to XML v.3": final income tax deposited on one's own income (rent, construction).
 SELF_DEPOSIT = {
     "28-403-02": ("Persewaan Tanah dan/atau Bangunan", Decimal("10")),
-    "28-409-10": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Kecil) sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2")),
     "28-409-10": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Kecil) yang Disetor Sendiri", Decimal("2")),
     "28-409-11": ("Jasa Konstruksi Berupa Jasa Pelaksanaan Konstruksi (Kualifikasi Usaha Menengah dan Besar) sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("3")),
     "28-409-22": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("1.75")),
-    "28-409-22": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("1.75")),
     "28-409-23": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha Atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("4")),
-    "28-409-23": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha Atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("4")),
     "28-409-24": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Selain Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("2.65")),
-    "28-409-24": ("Pekerjaan Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Selain Sertifikat Badan Usaha Kualifikasi Kecil atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2.65")),
     "28-409-25": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha (Disetor Sendiri)", Decimal("2.65")),
-    "28-409-25": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("2.65")),
     "28-409-26": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha (Disetor Sendiri)", Decimal("4")),
-    "28-409-26": ("Pekerjaan Konstruksi Terintegrasi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("4")),
     "28-409-27": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("3.5")),
-    "28-409-27": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("3.5")),
     "28-409-28": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan (Disetor Sendiri)", Decimal("6")),
-    "28-409-28": ("Jasa Konsultansi Konstruksi yang Dilakukan oleh Penyedia Jasa yang Tidak Memiliki Sertifikat Badan Usaha atau Sertifikat Kompetensi Kerja untuk Usaha Orang Perseorangan sehubungan Pelaksanaan Proyek Pemerintah yang Dibiayai dengan Hibah atau Dana Pinjaman Luar Negeri", Decimal("6")),
 }
 # "BPNR Excel to XML v.2": PPh 26 on payments to non-residents other than employees: (name, deemed %, rate %).
 PPH_26 = {

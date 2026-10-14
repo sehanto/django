@@ -111,6 +111,31 @@ def test_an_uncollectible_receivable_is_written_off(organization, customer, acco
     assert verify_chain(organization) == []
 
 
+def test_a_written_off_sale_still_owes_its_ppn(pkp_organization, customer, account):
+    """A write-off settles the receivable, not the delivery: the PPN stays due and the Faktur stays reported."""
+    from apps.invoicing import coretax
+    from apps.invoicing.selectors import vat_summary
+    from apps.taxes.models import TaxRate
+
+    pkp_organization.npwp = "0123456789012345"
+    pkp_organization.save(update_fields=["npwp"])
+    customer.npwp = "1091031210920664"
+    customer.save(update_fields=["npwp"])
+    ppn = TaxRate.objects.filter(organization=pkp_organization, dpp_numerator=11).first()
+    invoice = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+        organization=pkp_organization, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, 1),
+        lines=[InvoiceLineInput("Jasa", account("4-1100"), D("1"), D("1000000"), tax_rate=ppn)],
+    ))
+    output = vat_summary(pkp_organization, 2026)[2]["output"]
+    invoicing.write_off_receivable(invoice=invoice, date=date(2026, 6, 30), reason="Pelanggan pailit")
+    invoice.refresh_from_db()
+    assert invoice.status == Invoice.Status.WRITTEN_OFF and output > 0
+    assert vat_summary(pkp_organization, 2026)[2]["output"] == output
+    assert list(coretax.month_invoices(pkp_organization, 2026, 3)) == [invoice]
+    assert coretax.invoice_problem(invoice) is None
+    invoicing.record_tax_invoice_number(invoice=invoice, number="04002600000000001")
+
+
 def test_only_open_sales_invoices_are_written_off(organization, supplier, customer, account):
     bill = invoicing.issue_invoice(invoice=invoicing.create_invoice(
         organization=organization, kind=InvoiceKind.PURCHASE, contact=supplier, date=date(2026, 3, 1),

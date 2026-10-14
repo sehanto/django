@@ -20,7 +20,6 @@ depreciated over the remaining useful life with the revision's method (for decli
 balance, at twice the rate of the remaining life).
 """
 
-import calendar
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -30,6 +29,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.money import ZERO, quantize
+from apps.core.periods import month_end
 
 MONTHS_PER_YEAR = 12
 MAX_USEFUL_LIFE_MONTHS = 50 * MONTHS_PER_YEAR
@@ -45,10 +45,6 @@ class DepreciationMethod(models.TextChoices):
 class AssetStatus(models.TextChoices):
     ACTIVE = "active", _("In use")
     DISPOSED = "disposed", _("Disposed")
-
-
-def month_end(year: int, month: int) -> date:
-    return date(year, month, calendar.monthrange(year, month)[1])
 
 
 def add_months(year: int, month: int, count: int) -> tuple[int, int]:

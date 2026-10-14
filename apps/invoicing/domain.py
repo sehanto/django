@@ -92,7 +92,7 @@ def compute_invoice_totals(lines: Sequence[LineSpec], *, charge_vat: bool = True
         raise ValidationFailed(_("An invoice needs at least one line."))
     amounts = [line.net_amount for line in lines]
     groups: OrderedDict[Hashable, TaxGroup] = OrderedDict()
-    for index, (line, amount) in enumerate(zip(lines, amounts)):
+    for index, (line, amount) in enumerate(zip(lines, amounts, strict=True)):
         if line.tax is None:
             continue
         group = groups.setdefault(line.tax.key, TaxGroup(spec=line.tax))
@@ -142,4 +142,3 @@ def aging_bucket(days_overdue: int) -> AgingBucket:
     if days_overdue <= 90:
         return AgingBucket.DAYS_61_90
     return AgingBucket.OVER_90
-

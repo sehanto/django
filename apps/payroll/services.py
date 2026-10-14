@@ -2,7 +2,6 @@
 the BPJS are separate entries; the PPh 21 is deposited with the other withheld taxes
 (``taxes.WithholdingDeposit``, kind PPh 21)."""
 
-import calendar
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -12,6 +11,7 @@ from django.utils.translation import gettext as _
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.money import ZERO
+from apps.core.periods import month_end
 from apps.core.validators import ensure_business_date
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
@@ -53,10 +53,6 @@ def save_settings(*, organization, **fields) -> PayrollSettings:
         raise ValidationFailed(_("Zakat payable must be one of your current liability accounts."))
     settings, _created = PayrollSettings.objects.update_or_create(organization=organization, defaults=fields)
     return settings
-
-
-def month_end(year: int, month: int) -> date:
-    return date(year, month, calendar.monthrange(year, month)[1])
 
 
 def is_final_period(employee: Employee, year: int, month: int) -> bool:
@@ -192,24 +188,15 @@ def _ensure_pph21_open(organization, year: int, month: int, *, pph26: bool = Fal
         )
 
 
-@transaction.atomic
-def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], created_by=None) -> PayrollRun:
-    """Post a month's payroll on its last day: salaries and the employer's BPJS as expenses,
-    the PPh 21 and BPJS withheld or owed as liabilities, the net pay as salaries payable."""
-    if not 1 <= month <= 12:
-        raise ValidationFailed(_("Choose a month."))
+def _payable(organization, year: int, month: int, pays: list[PayInput]) -> list[PayInput]:
+    """The pays of a run: one per employee of the organization working that month, a former
+    employee receiving only severance; pays without any amount are left out."""
     on = month_end(year, month)
-    ensure_business_date(on)
-    if PayrollRun.objects.for_organization(organization).filter(year=year, month=month, status=PayrollRun.Status.POSTED).exists():
-        raise ValidationFailed(_("The payroll for %(period)s has already been recorded.") % {"period": f"{month:02d}/{year}"})
-    _ensure_pph21_open(organization, year, month)
     pays = [p for p in pays if p.base_salary or p.allowances or p.bonus or p.benefits_in_kind or p.severance]
     if not pays:
         raise ValidationFailed(_("Enter the pay of at least one employee."))
     if len({p.employee.pk for p in pays}) != len(pays):
         raise ValidationFailed(_("Each employee is paid once per run."))
-    settings = settings_for(organization)
-    slips = []
     for pay in pays:
         employee = pay.employee
         if employee.organization_id != organization.pk:
@@ -221,37 +208,77 @@ def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], cr
                 _("%(name)s left on %(date)s: only severance can still be paid to them.")
                 % {"name": employee.name, "date": f"{employee.end_date:%d/%m/%Y}"}
             )
-        slips.append(compute_payslip(settings, employee, year, month, pay))
+    return pays
 
-    pay_total = sum((s.pay for s in slips), ZERO)
-    employer = sum((s.employer_contributions for s in slips), ZERO)
-    employee_part = sum((s.employee_contributions for s in slips), ZERO)
-    pph21 = sum((s.tax_withheld for s in slips if not s.is_pph26), ZERO)
-    pph26_total = sum((s.pph21 for s in slips if s.is_pph26), ZERO)
-    if pph26_total:
-        _ensure_pph21_open(organization, year, month, pph26=True)
-    zakat = sum((s.zakat for s in slips), ZERO)
-    if zakat and settings.zakat_payable_account is None:
-        raise ValidationFailed(_("Choose the zakat payable account first (Payroll → Settings)."))
-    net = sum((s.net_pay for s in slips), ZERO)
+
+@dataclass(frozen=True)
+class RunTotals:
+    pay: Decimal
+    employer: Decimal
+    employee: Decimal
+    pph21: Decimal  # negative: a year-end refund larger than the month's withholding
+    pph26: Decimal
+    zakat: Decimal
+    net: Decimal
+
+    @classmethod
+    def of(cls, slips: list[Payslip]) -> "RunTotals":
+        def total(values):
+            return sum(values, ZERO)
+
+        return cls(
+            pay=total(s.pay for s in slips),
+            employer=total(s.employer_contributions for s in slips),
+            employee=total(s.employee_contributions for s in slips),
+            pph21=total(s.tax_withheld for s in slips if not s.is_pph26),
+            pph26=total(s.pph21 for s in slips if s.is_pph26),
+            zakat=total(s.zakat for s in slips),
+            net=total(s.net_pay for s in slips),
+        )
+
+
+def _run_lines(organization, settings: PayrollSettings, totals: RunTotals) -> list[JournalLineInput]:
     pph21_account = get_system_account(organization, SystemRole.PPH_21_PAYABLE)
     lines = [
-        JournalLineInput(settings.salary_expense_account, debit=pay_total),
-        JournalLineInput(settings.benefits_expense_account, debit=employer),
-        JournalLineInput(pph21_account, credit=pph21) if pph21 >= 0 else JournalLineInput(pph21_account, debit=-pph21),
-        JournalLineInput(get_system_account(organization, SystemRole.PPH_26_PAYABLE), credit=pph26_total),
-        JournalLineInput(get_system_account(organization, SystemRole.BPJS_PAYABLE), credit=employer + employee_part),
-        JournalLineInput(settings.salaries_payable_account, credit=net),
+        JournalLineInput(settings.salary_expense_account, debit=totals.pay),
+        JournalLineInput(settings.benefits_expense_account, debit=totals.employer),
+        JournalLineInput(pph21_account, credit=totals.pph21) if totals.pph21 >= 0 else JournalLineInput(pph21_account, debit=-totals.pph21),
+        JournalLineInput(get_system_account(organization, SystemRole.PPH_26_PAYABLE), credit=totals.pph26),
+        JournalLineInput(get_system_account(organization, SystemRole.BPJS_PAYABLE), credit=totals.employer + totals.employee),
+        JournalLineInput(settings.salaries_payable_account, credit=totals.net),
     ]
-    if zakat:
-        lines.append(JournalLineInput(settings.zakat_payable_account, credit=zakat))
+    if totals.zakat:
+        lines.append(JournalLineInput(settings.zakat_payable_account, credit=totals.zakat))
+    return [line for line in lines if line.debit or line.credit]
+
+
+@transaction.atomic
+def run_payroll(*, organization, year: int, month: int, pays: list[PayInput], created_by=None) -> PayrollRun:
+    """Post a month's payroll on its last day: salaries and the employer's BPJS as expenses,
+    the PPh 21 and BPJS withheld or owed as liabilities, the net pay as salaries payable."""
+    if not 1 <= month <= 12:
+        raise ValidationFailed(_("Choose a month."))
+    on = month_end(year, month)
+    ensure_business_date(on)
+    if PayrollRun.objects.for_organization(organization).filter(year=year, month=month, status=PayrollRun.Status.POSTED).exists():
+        raise ValidationFailed(_("The payroll for %(period)s has already been recorded.") % {"period": f"{month:02d}/{year}"})
+    _ensure_pph21_open(organization, year, month)
+    pays = _payable(organization, year, month, pays)
+    settings = settings_for(organization)
+    slips = [compute_payslip(settings, pay.employee, year, month, pay) for pay in pays]
+    totals = RunTotals.of(slips)
+    if totals.pph26:
+        _ensure_pph21_open(organization, year, month, pph26=True)
+    if totals.zakat and settings.zakat_payable_account is None:
+        raise ValidationFailed(_("Choose the zakat payable account first (Payroll → Settings)."))
     entry = create_journal_entry(
         organization=organization, date=on, description=f"Gaji karyawan masa {month:02d}/{year}",  # stored records stay Indonesian
-        source=JournalEntry.Source.PAYROLL, created_by=created_by, lines=[line for line in lines if line.debit or line.credit],
+        source=JournalEntry.Source.PAYROLL, created_by=created_by, lines=_run_lines(organization, settings, totals),
     )
     run = PayrollRun.objects.create(
-        organization=organization, year=year, month=month, gross=pay_total, employer_contributions=employer,
-        employee_contributions=employee_part, pph21=pph21, pph26=pph26_total, zakat=zakat, net_pay=net, journal_entry=entry, created_by=created_by,
+        organization=organization, year=year, month=month, gross=totals.pay, employer_contributions=totals.employer,
+        employee_contributions=totals.employee, pph21=totals.pph21, pph26=totals.pph26, zakat=totals.zakat, net_pay=totals.net,
+        journal_entry=entry, created_by=created_by,
     )
     for slip in slips:
         slip.run = run

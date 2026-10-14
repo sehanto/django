@@ -96,7 +96,6 @@ class DisposalForm(OrganizationFormMixin, BaseForm):
         return data
 
 
-
 class RevisionForm(BaseForm):
     effective_from = BusinessDateField(label=_("Applies from"), help_text=_("The change applies from the start of this month."))
     useful_life_months = forms.IntegerField(

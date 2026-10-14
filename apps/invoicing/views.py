@@ -26,7 +26,7 @@ from .forms import (
     WriteOffForm, line_inputs,
 )
 from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
-from .selectors import invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
+from .selectors import coretax_connected, invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
 
 # Complete phrases rather than fragments, so each language can word them naturally.
 KIND_LABELS = {
@@ -180,13 +180,11 @@ class InvoiceDetailView(InvoiceKindMixin, OrganizationMixin, DetailView):
         invoice = self.object
         today = timezone.localdate()
         returns = list(invoice.returns.all())
-        show_coretax = invoice.is_sales and invoice.organization.is_pkp and invoice.status in (
-            Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID,
-        )
+        show_coretax = invoice.is_sales and invoice.organization.is_pkp and invoice.status in Invoice.ISSUED_STATUSES
         return super().get_context_data(
             coretax_problem=coretax.invoice_problem(invoice) if show_coretax else None,
             show_coretax=show_coretax,
-            coretax_connected=show_coretax and CoretaxConnection.objects.filter(organization=self.organization, is_active=True).exists(),
+            coretax_connected=show_coretax and coretax_connected(self.organization),
             coretax_submission=invoice.coretax_submissions.first() if show_coretax else None,
             payment_form=PaymentForm(
                 organization=self.organization, invoice=invoice,
@@ -363,8 +361,6 @@ class ItemCreateView(ItemFormMixin, CreateView):
 
 class ItemUpdateView(ItemFormMixin, UpdateView):
     pass
-
-
 
 
 class ReturnCreateView(InvoiceKindMixin, WriteMixin, FormView):

@@ -194,7 +194,7 @@ def gross_up(tax_on) -> Decimal:
     ``tax_on`` is non-decreasing and below the pay, so iterating from 0 settles on the least
     such allowance."""
     allowance = ZERO
-    for _ in range(200):
+    for _attempt in range(200):  # not "_", the gettext alias here
         tax = max(tax_on(allowance), ZERO)
         if tax == allowance:
             return allowance

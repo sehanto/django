@@ -130,69 +130,87 @@ def month_batches(organization, year: int, month: int) -> dict[str, Batch]:
 
 
 def _payroll(batches: dict[str, Batch], run, office: str) -> None:
-    from apps.payroll.domain import EmployeeKind, TaxScheme, article_17_bracket, daily_rows, severance_bracket
-    from apps.payroll.selectors import annual_statement
+    from apps.payroll.domain import TaxScheme
 
-    year, month, on = run.year, run.month, run.journal_entry.date
     for slip in run.payslips.select_related("employee").order_by("employee__name", "id"):
-        e = slip.employee
         if slip.withholding_slip:
             continue
         if slip.tax_scheme == TaxScheme.PPH_26:
-            batch = batches[DocumentType.BP26]
-            tin = e.foreign_tin or e.passport_number
-            if not tin:
-                batch.problems.append(_("%(name)s: enter their foreign tax ID or passport number.") % {"name": e.name})
-                continue
-            batch.records.append(Record(PAYSLIP, slip.pk, [
-                *_period(year, month), ("CounterpartTin", tin), ("CounterpartReceiptNumber", e.treaty_document or "-"),
-                ("CounterpartName", e.name), ("CounterpartCountry", e.nationality), ("CounterpartAddress", e.full_address or NIL),
-                ("CounterpartDob", NIL), ("CounterpartBirthCity", NIL), ("CounterpartPassport", e.passport_number or NIL),
-                ("CounterpartKitas", NIL), ("TaxCertificate", "COD" if slip.pph26_rate is not None and e.treaty_document else "N/A"),
-                ("TaxObjectCode", PPH_26), ("Gross", slip.taxable_gross + slip.severance), ("Deemed", 100),
-                ("Rate", slip.pph26_rate if slip.pph26_rate is not None else Decimal("20")), *_payroll_document(run),
-                ("IDPlaceOfBusinessActivity", office), ("WithholdingDate", on),
-            ]))
+            _pph26_slip(batches[DocumentType.BP26], slip, run, office)
             continue
-        tin = e.tin  # citizens always have a NIK; a foreign resident may only have a passport
-        if slip.tax_scheme == TaxScheme.TER_MONTHLY and e.kind == EmployeeKind.PERMANENT:
-            batches[DocumentType.BPMP].records.append(Record(PAYSLIP, slip.pk, [
-                *_period(year, month), ("CounterpartOpt", "Resident" if e.is_citizen else "Foreign"),
-                ("CounterpartPassport", NIL if e.is_citizen or not e.passport_number else e.passport_number),
-                ("CounterpartTin", tin or NIL), ("StatusTaxExemption", slip.ptkp_status), ("Position", e.position or "Pegawai"),
-                ("TaxCertificate", "N/A"), ("TaxObjectCode", PERMANENT), ("Gross", slip.taxable_gross), ("Rate", slip.ter_rate),
-                ("IDPlaceOfBusinessActivity", office), ("WithholdingDate", on),
-            ]))
-        elif slip.tax_scheme == TaxScheme.ANNUAL:
-            batch = batches[DocumentType.BPA1]
-            if not tin:
-                batch.problems.append(_("%(name)s: enter their NPWP.") % {"name": e.name})
-            else:
-                batch.records.append(Record(PAYSLIP, slip.pk, _a1_fields(annual_statement(e, year), e, tin, office, on)))
-        elif slip.tax_scheme in (TaxScheme.TER_MONTHLY, TaxScheme.TER_DAILY, TaxScheme.DAILY_ARTICLE_17):
-            batch = batches[DocumentType.BP21]
-            if not tin:
-                batch.problems.append(_("%(name)s: enter their NIK or NPWP.") % {"name": e.name})
-                continue
-            if slip.tax_scheme == TaxScheme.TER_MONTHLY:
-                rows = [(NON_PERMANENT_MONTHLY, slip.taxable_gross, 100, slip.ter_rate)]
-            else:
-                rows = [
-                    (DAILY, row.gross, 100, row.rate) if row.rate is not None
-                    else (DAILY_HIGH, row.gross, 50, article_17_bracket(row.gross / 2))
-                    for row in daily_rows(slip.taxable_gross, slip.days_worked)
-                ]
-            for code, gross, deemed, rate in rows:
-                batch.records.append(Record(PAYSLIP, slip.pk, _bp21_fields(year, month, tin, slip.ptkp_status, code, gross, deemed, rate,
-                                                                            _payroll_document(run), office, on)))
-        if slip.severance and slip.tax_scheme != TaxScheme.PPH_26 and tin:
-            code, rate = (
-                (SEVERANCE, severance_bracket(slip.severance)) if slip.severance_final
-                else (LATE_SEVERANCE, article_17_bracket(slip.severance))
-            )
-            batches[DocumentType.BP21].records.append(Record(PAYSLIP, slip.pk, _bp21_fields(
-                year, month, tin, slip.ptkp_status, code, slip.severance, 100, rate, _payroll_document(run), office, on,
-            )))
+        tin = slip.employee.tin  # citizens always have a NIK; a foreign resident may only have a passport
+        _pph21_slip(batches, slip, run, office, tin)
+        if slip.severance and tin:
+            _severance_slip(batches[DocumentType.BP21], slip, run, office, tin)
+
+
+def _pph26_slip(batch: Batch, slip, run, office: str) -> None:
+    e = slip.employee
+    tin = e.foreign_tin or e.passport_number
+    if not tin:
+        batch.problems.append(_("%(name)s: enter their foreign tax ID or passport number.") % {"name": e.name})
+        return
+    batch.records.append(Record(PAYSLIP, slip.pk, [
+        *_period(run.year, run.month), ("CounterpartTin", tin), ("CounterpartReceiptNumber", e.treaty_document or "-"),
+        ("CounterpartName", e.name), ("CounterpartCountry", e.nationality), ("CounterpartAddress", e.full_address or NIL),
+        ("CounterpartDob", NIL), ("CounterpartBirthCity", NIL), ("CounterpartPassport", e.passport_number or NIL),
+        ("CounterpartKitas", NIL), ("TaxCertificate", "COD" if slip.pph26_rate is not None and e.treaty_document else "N/A"),
+        ("TaxObjectCode", PPH_26), ("Gross", slip.taxable_gross + slip.severance), ("Deemed", 100),
+        ("Rate", slip.pph26_rate if slip.pph26_rate is not None else Decimal("20")), *_payroll_document(run),
+        ("IDPlaceOfBusinessActivity", office), ("WithholdingDate", run.journal_entry.date),
+    ]))
+
+
+def _pph21_slip(batches: dict[str, Batch], slip, run, office: str, tin: str) -> None:
+    """A resident's monthly PPh 21: BPMP for permanent employees, the 1721-A1 at the year's
+    end (BPA1), BP21 for non-permanent and daily workers."""
+    from apps.payroll.domain import EmployeeKind, TaxScheme, article_17_bracket, daily_rows
+    from apps.payroll.selectors import annual_statement
+
+    e, year, month, on = slip.employee, run.year, run.month, run.journal_entry.date
+    if slip.tax_scheme == TaxScheme.TER_MONTHLY and e.kind == EmployeeKind.PERMANENT:
+        batches[DocumentType.BPMP].records.append(Record(PAYSLIP, slip.pk, [
+            *_period(year, month), ("CounterpartOpt", "Resident" if e.is_citizen else "Foreign"),
+            ("CounterpartPassport", NIL if e.is_citizen or not e.passport_number else e.passport_number),
+            ("CounterpartTin", tin or NIL), ("StatusTaxExemption", slip.ptkp_status), ("Position", e.position or "Pegawai"),
+            ("TaxCertificate", "N/A"), ("TaxObjectCode", PERMANENT), ("Gross", slip.taxable_gross), ("Rate", slip.ter_rate),
+            ("IDPlaceOfBusinessActivity", office), ("WithholdingDate", on),
+        ]))
+    elif slip.tax_scheme == TaxScheme.ANNUAL:
+        batch = batches[DocumentType.BPA1]
+        if not tin:
+            batch.problems.append(_("%(name)s: enter their NPWP.") % {"name": e.name})
+        else:
+            batch.records.append(Record(PAYSLIP, slip.pk, _a1_fields(annual_statement(e, year), e, tin, office, on)))
+    elif slip.tax_scheme in (TaxScheme.TER_MONTHLY, TaxScheme.TER_DAILY, TaxScheme.DAILY_ARTICLE_17):
+        batch = batches[DocumentType.BP21]
+        if not tin:
+            batch.problems.append(_("%(name)s: enter their NIK or NPWP.") % {"name": e.name})
+            return
+        if slip.tax_scheme == TaxScheme.TER_MONTHLY:
+            rows = [(NON_PERMANENT_MONTHLY, slip.taxable_gross, 100, slip.ter_rate)]
+        else:
+            rows = [
+                (DAILY, row.gross, 100, row.rate) if row.rate is not None
+                else (DAILY_HIGH, row.gross, 50, article_17_bracket(row.gross / 2))
+                for row in daily_rows(slip.taxable_gross, slip.days_worked)
+            ]
+        for code, gross, deemed, rate in rows:
+            batch.records.append(Record(PAYSLIP, slip.pk, _bp21_fields(year, month, tin, slip.ptkp_status, code, gross, deemed, rate,
+                                                                        _payroll_document(run), office, on)))
+
+
+def _severance_slip(batch: Batch, slip, run, office: str, tin: str) -> None:
+    """Severance (PP 68/2009): final within two calendar years of its first payment, Art. 17 after."""
+    from apps.payroll.domain import article_17_bracket, severance_bracket
+
+    code, rate = (
+        (SEVERANCE, severance_bracket(slip.severance)) if slip.severance_final
+        else (LATE_SEVERANCE, article_17_bracket(slip.severance))
+    )
+    batch.records.append(Record(PAYSLIP, slip.pk, _bp21_fields(
+        run.year, run.month, tin, slip.ptkp_status, code, slip.severance, 100, rate, _payroll_document(run), office, run.journal_entry.date,
+    )))
 
 
 def _bp21_fields(year, month, tin, ptkp, code, gross, deemed, rate, document, office, on) -> list[tuple[str, object]]:

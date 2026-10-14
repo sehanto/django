@@ -41,6 +41,7 @@ from apps.contacts.models import VatCollector
 from apps.contacts.validators import npwp16
 from apps.core.exceptions import ValidationFailed
 from apps.core.money import ZERO
+from apps.core.periods import month_end, month_start
 
 from .models import Invoice, InvoiceKind, Item, ReturnNote, SpecialDocument
 
@@ -199,11 +200,10 @@ def filename(organization, label: str, kind: str = "retur-pajak-masukan") -> str
 
 def month_returns(organization, year: int, month: int):
     """Posted purchase returns of a month, oldest first (a month's import file)."""
-    start = date(year, month, 1)
-    end = date(year + (month == 12), month % 12 + 1, 1)
+    start, end = month_start(year, month), month_end(year, month)
     return (
         ReturnNote.objects.for_organization(organization)
-        .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__gte=start, date__lt=end)
+        .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__gte=start, date__lte=end)
         .select_related("invoice", "organization").prefetch_related("lines").order_by("date", "id")
     )
 
@@ -280,7 +280,7 @@ def invoice_problem(invoice: Invoice) -> str | None:
     organization = invoice.organization
     if invoice.kind != InvoiceKind.SALES:
         return _("Only sales invoices become a Faktur Pajak Keluaran.")
-    if invoice.status not in (Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID):
+    if invoice.status not in Invoice.ISSUED_STATUSES:
         return _("Only issued invoices are reported.")
     if not organization.is_pkp:
         return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
@@ -381,12 +381,11 @@ def build_invoices_xml(organization, invoices: Iterable[Invoice]) -> bytes:
 
 def month_invoices(organization, year: int, month: int):
     """Issued sales invoices of a month, oldest first."""
-    start = date(year, month, 1)
-    end = date(year + (month == 12), month % 12 + 1, 1)
+    start, end = month_start(year, month), month_end(year, month)
     return (
         Invoice.objects.for_organization(organization)
-        .filter(kind=InvoiceKind.SALES, status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
-                date__gte=start, date__lt=end)
+        .filter(kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES,
+                date__gte=start, date__lte=end)
         .select_related("organization", "contact").order_by("date", "id")
     )
 
@@ -445,7 +444,7 @@ def month_retail(organization, year: int, month: int) -> list[RetailRow]:
     rows = []
     invoices = Invoice.objects.for_organization(organization).filter(
         kind=InvoiceKind.SALES, date__year=year, date__month=month,
-        status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID],
+        status__in=Invoice.ISSUED_STATUSES,
     ).order_by("date", "id")
     for invoice in invoices:
         if is_aggregated(invoice):
@@ -500,17 +499,7 @@ EXPORT_CODES = {  # special document: (TransactionDetail, TransactionDocument)
 
 
 def _issued(queryset):
-    return queryset.filter(status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
-
-
-def special_problem(invoice: Invoice) -> str | None:
-    if not invoice.organization.is_pkp:
-        return _("Only a VAT-registered business (PKP) reports Dokumen Lain.")
-    if len(tin(invoice.organization.npwp)) != 16:
-        return _("Enter the organization's NPWP in the settings.")
-    if not invoice.special_document_number:
-        return _("%(number)s: enter its document (PEB or the bill's own number) first.") % {"number": invoice.number}
-    return None
+    return queryset.filter(status__in=Invoice.ISSUED_STATUSES)
 
 
 def month_exports(organization, year: int, month: int) -> tuple[list[Invoice], list[str]]:

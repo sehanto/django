@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 from django.urls import reverse
-from django.utils import timezone, translation
+from django.utils import translation
 
 from apps.api.models import ApiKey
 from apps.api.services import create_key

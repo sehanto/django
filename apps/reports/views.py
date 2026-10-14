@@ -5,7 +5,6 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.db import models
-from django.db.models import Q
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -15,9 +14,8 @@ from django.views.generic import TemplateView
 from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
 from apps.invoicing import coretax
-from apps.invoicing.models import Invoice, InvoiceKind, ReturnNote
-from apps.invoicing.models import CoretaxConnection
-from apps.invoicing.selectors import aging_report, vat_summary
+from apps.invoicing.models import InvoiceKind
+from apps.invoicing.selectors import aging_report, coretax_connected, faktur_months, purchase_return_months, vat_summary
 from apps.ledger.selectors import account_balances, account_ledger, prior_period_corrections, restated_since
 from apps.accounts.throttle import ThrottleScope, allow
 from apps.assets.selectors import revisions_in
@@ -179,20 +177,11 @@ class VatReportView(OrganizationMixin, TemplateView):
             key: sum(r[key] for r in rows)
             for key in ("output_base", "output", "luxury", "not_collected", "collected", "input_base", "input", "net", "aggregated_base", "aggregated")
         }
-        return_months = set(
-            ReturnNote.objects.for_organization(self.organization)
-            .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year).values_list("date__month", flat=True)
-        )
-        sales_months = set(
-            Invoice.objects.for_organization(self.organization)
-            .filter(Q(tax_amount__gt=0) | Q(vat_not_collected__gt=0), kind=InvoiceKind.SALES, date__year=year,
-                    status__in=[Invoice.Status.ISSUED, Invoice.Status.PARTIAL, Invoice.Status.PAID])
-            .values_list("date__month", flat=True)
-        ) if self.organization.is_pkp else set()
         return super().get_context_data(
-            year=year, years=year_choices(), rows=rows, totals=totals, return_months=return_months, sales_months=sales_months,
+            year=year, years=year_choices(), rows=rows, totals=totals,
+            return_months=purchase_return_months(self.organization, year), sales_months=faktur_months(self.organization, year),
             special_months=coretax.special_months(self.organization, year), special_files=coretax.SpecialFile,
-            coretax_connected=CoretaxConnection.objects.filter(organization=self.organization, is_active=True).exists(), **kwargs
+            coretax_connected=coretax_connected(self.organization), **kwargs
         )
 
 

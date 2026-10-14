@@ -3,7 +3,6 @@ Coretax import layout as the tenants' sales invoices (``apps.invoicing.coretax``
 seller being the platform (``BILLING_SELLER_*``). Code 04: a service with DPP nilai lain 11/12.
 Buyers without an NPWP are left out (create those fakturs in Coretax directly)."""
 
-from datetime import date
 from xml.etree import ElementTree as ET
 
 from django.conf import settings
@@ -11,6 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.contacts.validators import HEAD_OFFICE, npwp16
+from apps.core.periods import month_end, month_start
 from apps.invoicing.coretax import OTHER_TAX_BASE, SERVICES, _number, _text
 
 from .domain import BillingPeriod
@@ -21,11 +21,10 @@ UNIT = {BillingPeriod.MONTHLY: "UM.0024", BillingPeriod.YEARLY: "UM.0023"}  # Bu
 
 def month_invoices(year: int, month: int):
     """Paid subscription invoices of a month (by payment date) that still need their faktur."""
-    start = date(year, month, 1)
-    end = date(year + (month == 12), month % 12 + 1, 1)
+    start, end = month_start(year, month), month_end(year, month)
     invoices = SubscriptionInvoice.objects.filter(
         status=SubscriptionInvoice.Status.PAID, total__gt=0, tax_invoice_number="",
-        paid_at__date__gte=start, paid_at__date__lt=end,
+        paid_at__date__gte=start, paid_at__date__lte=end,
     ).select_related("plan").order_by("paid_at", "id")
     return [i for i in invoices if len(npwp16(i.buyer_npwp)) == 16]
 

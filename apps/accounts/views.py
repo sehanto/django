@@ -6,8 +6,6 @@ from axes.utils import reset as axes_reset
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
-from django.contrib.auth.hashers import make_password
-from django.db import IntegrityError, transaction
 from django_otp import login as otp_login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -24,10 +22,9 @@ from apps.audit import services as audit
 from apps.audit.domain import AuditAction
 from apps.audit.selectors import account_events
 from apps.core.exceptions import DomainError
-from apps.core.params import int_param
+from apps.core.params import choice_param, int_param, text_param
 from apps.core.timing import minimum_duration
 from apps.tenants.selectors import organizations_requiring_two_factor
-from apps.tenants.services import register_owner_with_organization
 
 from . import captcha, services, throttle, trusted_devices, two_factor
 from .client_ip import client_ip
@@ -49,6 +46,7 @@ from .middleware import SUPPORTED_LANGUAGES
 from .models import BackupCodeDevice
 
 logger = logging.getLogger(__name__)
+NEXT_URL_MAX_LENGTH = 2000
 User = get_user_model()
 
 
@@ -87,10 +85,18 @@ class LoginView(auth_views.LoginView):
 def adopt_chosen_language(request) -> None:
     """A language picked on the sign-in page is an explicit choice: keep it after login."""
     chosen = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
-    user = request.user
-    if chosen in SUPPORTED_LANGUAGES and chosen != user.language:
-        user.language = chosen
-        user.save(update_fields=["language"])
+    if chosen in SUPPORTED_LANGUAGES:
+        services.set_language(request.user, chosen)
+
+
+def safe_next_url(request, *, default: str) -> str:
+    """The ``next`` page from the form or query string, if it stays on this site; ``default`` otherwise."""
+    next_url = text_param(request.POST, "next", max_length=NEXT_URL_MAX_LENGTH) or text_param(
+        request.GET, "next", max_length=NEXT_URL_MAX_LENGTH
+    )
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return next_url
+    return default
 
 
 class LogoutView(auth_views.LogoutView):
@@ -117,29 +123,12 @@ class SignUpView(FormView):
             return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """The same answer whether or not the address has an account (no "already registered"):
-        a new account gets its confirmation link, an existing one a notice. Nobody is signed in
-        here; the link confirms the address, then they sign in."""
+        """The same answer whether or not the address has an account (``services.sign_up``)."""
         data = form.cleaned_data
-        existing = User.objects.filter(email__iexact=data["email"]).first()
-        if existing is None:
-            try:
-                with transaction.atomic():
-                    user, _organization = register_owner_with_organization(
-                        email=data["email"],
-                        password=data["password"],
-                        full_name=data["full_name"],
-                        organization_name=data["organization_name"],
-                        legal_form=data["legal_form"],
-                        language=self.request.LANGUAGE_CODE,
-                    )
-            except IntegrityError:  # registered meanwhile
-                existing = User.objects.filter(email__iexact=data["email"]).first()
-            else:
-                services.send_verification_email(user)
-        if existing is not None:
-            make_password(data["password"])  # the same hashing work as a new account
-            services.send_account_exists_notice(existing)
+        services.sign_up(
+            email=data["email"], password=data["password"], full_name=data["full_name"],
+            organization_name=data["organization_name"], legal_form=data["legal_form"], language=self.request.LANGUAGE_CODE,
+        )
         self.request.session[SIGNUP_EMAIL_SESSION_KEY] = data["email"]
         return redirect("accounts:signup_done")
 
@@ -201,16 +190,12 @@ class SetLanguageView(View):
     """Switch the interface language: saved on the account and in a cookie."""
 
     def post(self, request):
-        language = request.POST.get("language")
-        next_url = request.POST.get("next") or "/"
-        if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
-            next_url = "/"
-        response = redirect(next_url)
-        if language not in SUPPORTED_LANGUAGES:
+        language = choice_param(request.POST, "language", SUPPORTED_LANGUAGES)
+        response = redirect(safe_next_url(request, default="/"))
+        if not language:
             return response
         if request.user.is_authenticated:
-            request.user.language = language
-            request.user.save(update_fields=["language"])
+            services.set_language(request.user, language)
         remember_language(response, request, language)
         return response
 
@@ -481,17 +466,14 @@ class TwoFactorVerifySessionView(LoginRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        next_url = self.request.POST.get("next") or self.request.GET.get("next") or ""
-        if url_has_allowed_host_and_scheme(next_url, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()):
-            return next_url
-        return reverse("dashboard:home")
+        return safe_next_url(self.request, default=reverse("dashboard:home"))
 
     def get_form_kwargs(self):
         return {**super().get_form_kwargs(), "request": self.request}
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            captcha=captcha.widget(captcha.CaptchaAction.VERIFY_SESSION), next=self.request.GET.get("next", ""), **kwargs
+            captcha=captcha.widget(captcha.CaptchaAction.VERIFY_SESSION), next=text_param(self.request.GET, "next", max_length=NEXT_URL_MAX_LENGTH), **kwargs
         )
 
     def form_valid(self, form):

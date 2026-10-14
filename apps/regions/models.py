@@ -68,11 +68,6 @@ class Village(Region):
         indexes = [models.Index(fields=["postal_code"])]
 
     @property
-    def is_kelurahan(self) -> bool:
-        """Kemendagri numbers kelurahan 1xxx and desa 2xxx."""
-        return self.code[9] == "1"
-
-    @property
     def region_line(self) -> str:
         """e.g. "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"."""
         district = self.district

@@ -9,7 +9,6 @@ from django.core.exceptions import ValidationError
 from django.utils import translation
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
-from apps.ledger.models import Account
 from apps.ledger.selectors import account_balance
 from apps.payroll import selectors, services
 from apps.payroll.domain import TaxScheme, gross_up, monthly_pph21, severance_tax
@@ -85,7 +84,6 @@ def test_severance_bears_final_pph21(organization, account):
     assert st.gross == D("10000000")  # severance is final income, not on the 1721-A1
 
 
-
 def test_severance_paid_in_instalments(organization, account, auth_client):
     from django.urls import reverse
 
@@ -120,6 +118,7 @@ def test_severance_paid_in_instalments(organization, account, auth_client):
     (row,) = ebupot.month_batches(organization, 2026, 3)["bp21"].records
     fields = dict(row.fields)
     assert (fields["TaxObjectCode"], fields["Gross"], fields["Rate"]) == ("21-100-25", D("70000000"), D("15"))
+
 
 def test_income_from_a_previous_employer(organization, client, user):
     employee = make(organization, start_date=date(2026, 9, 1))

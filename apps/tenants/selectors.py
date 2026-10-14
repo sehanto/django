@@ -1,6 +1,7 @@
 from django.db.models import Exists, OuterRef, QuerySet
+from django.utils import timezone
 
-from .models import Membership, Organization, Plan
+from .models import Invitation, Membership, Organization
 
 
 def resolve_membership(user, organization_id=None) -> Membership | None:
@@ -29,9 +30,12 @@ def members_of(organization) -> QuerySet[Membership]:
     )
 
 
+def pending_invitations(organization) -> QuerySet[Invitation]:
+    """Invitations not yet accepted, revoked or expired (``Invitation.is_pending``)."""
+    return Invitation.objects.filter(
+        organization=organization, accepted_at=None, revoked_at=None, expires_at__gt=timezone.now()
+    ).order_by("created_at")
+
+
 def organizations_requiring_two_factor(user) -> QuerySet[Organization]:
     return organizations_for_user(user).filter(require_two_factor=True)
-
-
-def available_plans() -> QuerySet[Plan]:
-    return Plan.objects.all()

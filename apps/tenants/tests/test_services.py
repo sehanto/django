@@ -1,4 +1,7 @@
+import re
+
 import pytest
+from django.core import mail
 
 from apps.accounts.models import User
 from apps.core.exceptions import PlanLimitExceeded, ValidationFailed
@@ -25,21 +28,21 @@ def test_role_permissions():
     assert not Role.VIEWER.allows(Permission.WRITE)
 
 
-def test_add_member_respects_plan_and_rules(organization, user, other_organization):
+def test_inviting_respects_plan_and_rules(organization, user, other_organization):
     organization.plan = Plan.objects.create(code="duo", name="Duo", max_users=2)
     organization.save()
+    with pytest.raises(ValidationFailed):  # already a member
+        services.invite_member(organization=organization, email=user.email, role=Role.VIEWER, invited_by=user)
     with pytest.raises(ValidationFailed):
-        services.add_member(organization=organization, email="ghost@example.com", role=Role.VIEWER)
-    with pytest.raises(ValidationFailed):
-        services.add_member(organization=organization, email=user.email, role=Role.VIEWER)
-    with pytest.raises(ValidationFailed):
-        services.add_member(organization=organization, email="other@example.com", role=Role.OWNER)
+        services.invite_member(organization=organization, email="other@example.com", role=Role.OWNER, invited_by=user)
 
-    services.add_member(organization=organization, email="other@example.com", role=Role.ACCOUNTANT)
+    services.invite_member(organization=organization, email="other@example.com", role=Role.ACCOUNTANT, invited_by=user)
+    token = re.search(r"/organization/invitations/([^/\s]+)/", mail.outbox[-1].body).group(1)
+    other = User.objects.get(email="other@example.com")
+    assert services.accept_invitation(token=token, user=other).role == Role.ACCOUNTANT
 
-    User.objects.create_user(email="third@example.com", password="x", full_name="Ketiga")
     with pytest.raises(PlanLimitExceeded):
-        services.add_member(organization=organization, email="third@example.com", role=Role.VIEWER)
+        services.invite_member(organization=organization, email="third@example.com", role=Role.VIEWER, invited_by=user)
     with pytest.raises(PlanLimitExceeded):
         services.ensure_usage_fits(organization=organization, plan=Plan.objects.create(code="solo", name="Solo", max_users=1))
 

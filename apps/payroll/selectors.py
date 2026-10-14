@@ -1,9 +1,10 @@
-"""Reads: the annual PPh 21 statement (bukti potong 1721-A1) of permanent employees."""
+"""Reads: who is paid in a month, the annual PPh 21 statement (bukti potong 1721-A1) of permanent employees."""
 
 from dataclasses import dataclass
 from decimal import Decimal
 
 from apps.core.money import ZERO
+from apps.core.periods import month_end, month_start
 
 from .domain import AnnualTax, EmployeeKind, TaxScheme, with_surcharge
 from .models import Employee, PayrollRun, Payslip
@@ -49,6 +50,17 @@ class AnnualStatement:
     @property
     def surcharged(self) -> bool:
         return self.final_slip is not None and self.final_slip.without_tin
+
+
+def employees_paid_in(organization, year: int, month: int) -> list[Employee]:
+    """Employees on the payroll of a month: employed during it (the active ones, or those who left
+    in it), and former employees still receiving severance in instalments."""
+    start, end = month_start(year, month), month_end(year, month)
+    return [
+        e for e in Employee.objects.for_organization(organization).filter(start_date__lte=end)
+        if (e.end_date is None or e.end_date >= start) and (e.is_active or e.end_date)
+        or e.is_active and e.left_before(year, month)
+    ]
 
 
 def _slips(employee: Employee, year: int):

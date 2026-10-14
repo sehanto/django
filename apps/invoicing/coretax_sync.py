@@ -13,7 +13,7 @@ from . import coretax
 from .coretax_api import (
     WITHHOLDING_TYPES, ConnectorName, CoretaxConnector, CoretaxError, DocumentType, Result, SubmissionStatus, build_connector,
 )
-from .models import CoretaxConnection, CoretaxSubmission, Invoice
+from .models import CoretaxConnection, CoretaxSubmission
 from .services import record_tax_invoice_number
 
 logger = logging.getLogger(__name__)
@@ -162,7 +162,3 @@ def platform_connector() -> CoretaxConnector | None:
     if not settings.CORETAX_CONNECTOR:
         return None
     return build_connector(settings.CORETAX_CONNECTOR, url=settings.CORETAX_API_URL, token=settings.CORETAX_API_TOKEN)
-
-
-def invoices_awaiting_numbers(organization, year: int, month: int) -> list[Invoice]:
-    return [i for i in coretax.month_invoices(organization, year, month) if not i.tax_invoice_number and not coretax.invoice_problem(i)]

@@ -16,7 +16,7 @@ from . import services
 from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm
 from .models import BusinessPlace, Invitation
 from .mixins import ManageMixin
-from .selectors import members_of, organizations_for_user
+from .selectors import members_of, organizations_for_user, pending_invitations
 from .session import set_current_organization
 
 
@@ -106,8 +106,9 @@ class MembersView(ManageMixin, DomainErrorFormMixin, FormView):
     success_url = reverse_lazy("tenants:members")
 
     def get_context_data(self, **kwargs):
-        invitations = [i for i in Invitation.objects.filter(organization=self.organization, accepted_at=None, revoked_at=None) if i.is_pending]
-        return super().get_context_data(members=members_of(self.organization), invitations=invitations, **kwargs)
+        return super().get_context_data(
+            members=members_of(self.organization), invitations=pending_invitations(self.organization), **kwargs
+        )
 
     def perform(self, form):
         invitation = services.invite_member(organization=self.organization, invited_by=self.request.user, **form.cleaned_data)
@@ -162,4 +163,3 @@ class RemoveMemberView(ManageMixin, View):
         except DomainError as exc:
             flash_domain_error(request, exc)
         return redirect("tenants:members")
-

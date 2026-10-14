@@ -1,13 +1,14 @@
-"""Account use cases: email verification and email changes."""
+"""Account use cases: email verification and email changes, the interface language."""
 
 import logging
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.core import signing
 from django.core.mail import send_mail
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone, translation
@@ -17,12 +18,41 @@ from django.utils.translation import gettext_lazy
 from apps.core.exceptions import ValidationFailed
 
 from apps.audit.domain import AuditAction
+from apps.tenants.services import register_owner_with_organization
 
 from . import throttle
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 SALT = "accounts.email-verification"
+
+
+def sign_up(*, email: str, password: str, full_name: str, organization_name: str, legal_form: str, language: str) -> None:
+    """Register an owner with their organization, or tell the existing account. Either way the
+    caller answers the same (no "already registered"): a new account gets its confirmation link,
+    an existing one a notice. Nobody is signed in; the link confirms the address, then they sign in."""
+    existing = User.objects.filter(email__iexact=email).first()
+    if existing is None:
+        try:
+            with transaction.atomic():
+                user, _organization = register_owner_with_organization(
+                    email=email, password=password, full_name=full_name,
+                    organization_name=organization_name, legal_form=legal_form, language=language,
+                )
+        except IntegrityError:  # registered meanwhile
+            existing = User.objects.filter(email__iexact=email).first()
+        else:
+            send_verification_email(user)
+    if existing is not None:
+        make_password(password)  # the same hashing work as a new account
+        send_account_exists_notice(existing)
+
+
+def set_language(user, language: str) -> None:
+    """Keep the interface language chosen by the user (one of ``settings.LANGUAGES``)."""
+    if user.language != language:
+        user.language = language
+        user.save(update_fields=["language"])
 
 
 def verification_address(user) -> str:

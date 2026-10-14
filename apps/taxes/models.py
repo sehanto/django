@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel, money_field
 from apps.core.validators import ntpn_validator
 
-from .domain import Month, PayerWithholding, VatResult, compute_vat
+from .domain import Month, PayerWithholding
 
 
 class TaxRate(TenantOwnedModel):
@@ -54,9 +54,6 @@ class TaxRate(TenantOwnedModel):
     @property
     def effective_rate(self) -> Decimal:
         return (self.rate * self.dpp_numerator / self.dpp_denominator).quantize(Decimal("0.01"))
-
-    def compute(self, base: Decimal) -> VatResult:
-        return compute_vat(base, self.rate, self.dpp_numerator, self.dpp_denominator)
 
 
 class PphFinalStatus(models.TextChoices):

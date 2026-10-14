@@ -54,5 +54,3 @@ def plan_offers(organization) -> list[PlanOffer]:
             credit=switch_credit(organization, plan).amount,
         ))
     return offers
-
-

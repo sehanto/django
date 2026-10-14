@@ -70,7 +70,6 @@ def pph_final_payments(organization, year: int) -> dict[int, PphFinalPayment]:
     }
 
 
-
 def pph_final_accruals(organization, year: int) -> dict[int, PphFinalAccrual]:
     return {
         a.month: a
