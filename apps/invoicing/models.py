@@ -12,7 +12,7 @@ from apps.contacts.models import BuyerIdType, VatCollector
 from apps.contacts.validators import HEAD_OFFICE, format_npwp, npwp16
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.money import ZERO
-from apps.core.validators import code_validator, tax_invoice_number_validator
+from apps.core.validators import code_validator, document_number_validator, tax_invoice_number_validator
 
 from .coretax_api import ConnectorName, DocumentType, SubmissionStatus
 from .domain import InvoiceStatus, LineSpec, TaxSpec
@@ -136,7 +136,7 @@ class Invoice(TenantOwnedModel):
     facility_info = models.CharField(_("facility (keterangan tambahan)"), max_length=10, blank=True)
     facility_stamp = models.CharField(_("facility stamp (cap fasilitas)"), max_length=10, blank=True)
     supporting_document = models.CharField(
-        _("supporting document"), max_length=100, blank=True,
+        _("supporting document"), max_length=100, blank=True, validators=[document_number_validator],
         help_text=_("For a facility, if any: e.g. the SPPB submission number, or PJKEK#number for a special economic zone."),
     )
     supporting_document_date = models.DateField(_("supporting document date"), null=True, blank=True)
@@ -147,7 +147,7 @@ class Invoice(TenantOwnedModel):
         _("other tax document"), max_length=20, choices=SpecialDocument.choices, default=SpecialDocument.NONE, blank=True,
     )
     special_document_number = models.CharField(
-        _("document no."), max_length=100, blank=True,
+        _("document no."), max_length=100, blank=True, validators=[document_number_validator],
         help_text=_("The PEB (export declaration) or the bill's own number; it can be added once after issue."),
     )
     special_document_date = models.DateField(_("document date"), null=True, blank=True)
@@ -512,7 +512,7 @@ class Payment(TenantOwnedModel):
         "ledger.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("prepaid tax account"),
     )
     withholding_slip = models.CharField(
-        _("withholding slip no."), max_length=50, blank=True, help_text=_("The bukti potong number from the buyer."),
+        _("withholding slip no."), max_length=50, blank=True, validators=[document_number_validator], help_text=_("The bukti potong number from the buyer."),
     )
     # When we withhold from a supplier: the gross amount the tax is on and its rate (the bukti potong).
     income_tax_base = money_field(_("income tax base"), validators=[MinValueValidator(0)])

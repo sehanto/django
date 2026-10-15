@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel, money_field
-from apps.core.validators import ntpn_validator
+from apps.core.validators import document_number_validator, ntpn_validator
 
 from .domain import Month, PayerWithholding
 
@@ -184,7 +184,7 @@ class ImportDeclaration(TenantOwnedModel):
 
     Status = PphFinalStatus
 
-    number = models.CharField(_("PIB no."), max_length=50, help_text=_("The registration number of the import declaration."))
+    number = models.CharField(_("PIB no."), max_length=50, validators=[document_number_validator], help_text=_("The registration number of the import declaration."))
     date = models.DateField(_("PIB date"))
     supplier_name = models.CharField(_("foreign supplier"), max_length=200)
     bill = models.ForeignKey(
@@ -246,14 +246,14 @@ class SelfDeposit(TenantOwnedModel):
     invoice = models.ForeignKey(
         "invoicing.Invoice", null=True, blank=True, on_delete=models.PROTECT, related_name="self_deposits", verbose_name=_("invoice"),
     )
-    document_number = models.CharField(_("document no."), max_length=100)
+    document_number = models.CharField(_("document no."), max_length=100, validators=[document_number_validator])
     document_date = models.DateField(_("document date"))
     paid_on = models.DateField(_("payment date"))
     ntpn = models.CharField(_("NTPN"), max_length=32, blank=True, validators=[ntpn_validator])
     cash_account = models.ForeignKey("ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("paid from"))
     expense_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
     payment_entry = models.OneToOneField("ledger.JournalEntry", on_delete=models.PROTECT, related_name="+")
-    slip_number = models.CharField(_("BPSP no."), max_length=50, blank=True)
+    slip_number = models.CharField(_("BPSP no."), max_length=50, blank=True, validators=[document_number_validator])
     status = models.CharField(_("status"), max_length=10, choices=PphFinalStatus.choices, default=PphFinalStatus.POSTED)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
 

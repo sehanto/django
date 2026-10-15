@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.money import ZERO
 from apps.core.periods import month_end
-from apps.core.validators import ensure_business_date
+from apps.core.validators import ensure_business_date, ensure_document_number
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
@@ -354,9 +354,7 @@ def record_slip_number(*, payslip: Payslip, number: str) -> Payslip:
     payslip = Payslip.objects.select_for_update().get(pk=payslip.pk)
     if payslip.withholding_slip:
         raise InvalidStateTransition(_("This payslip already has its bukti potong number."))
-    number = number.strip()
-    if not number or len(number) > 50:
-        raise ValidationFailed(_("Enter the bukti potong number."))
+    number = ensure_document_number(number, max_length=50, missing=_("Enter the bukti potong number."))
     payslip.withholding_slip = number
     payslip.save(update_fields=["withholding_slip", "updated_at"])
     return payslip

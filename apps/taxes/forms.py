@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
-from apps.core.validators import ntpn_validator
+from apps.core.validators import document_number_validator, ntpn_validator
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts, prepaid_tax_accounts
@@ -93,7 +93,7 @@ def _money(label, required=True, help_text=""):
 
 
 class ImportDeclarationForm(OrganizationFormMixin, BaseForm):
-    number = forms.CharField(label=_("PIB no."), max_length=50)
+    number = forms.CharField(label=_("PIB no."), max_length=50, validators=[document_number_validator])
     on = BusinessDateField(label=_("PIB date"))
     supplier_name = forms.CharField(label=_("Foreign supplier"), max_length=200)
     bill = forms.ModelChoiceField(label=_("Supplier's bill"), queryset=Account.objects.none(), required=False,
@@ -133,7 +133,8 @@ class ImportDeclarationForm(OrganizationFormMixin, BaseForm):
 class SelfDepositForm(OrganizationFormMixin, BaseForm):
     tax_object = forms.ChoiceField(label=_("Tax object code"))
     tax_base = _money(_("Income (tax base)"))
-    document_number = forms.CharField(label=_("Document no."), max_length=100, help_text=_("e.g. the invoice for the rent."))
+    document_number = forms.CharField(label=_("Document no."), max_length=100, validators=[document_number_validator],
+                                      help_text=_("e.g. the invoice for the rent."))
     document_date = BusinessDateField(label=_("Document date"), help_text=_("Its month is the tax period."))
     invoice = forms.ModelChoiceField(label=_("Sales invoice"), queryset=Account.objects.none(), required=False)
     paid_on = BusinessDateField(label=_("Payment date"))

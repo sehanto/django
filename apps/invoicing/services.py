@@ -20,7 +20,7 @@ from apps.core.exceptions import InvalidStateTransition, PlanLimitExceeded, Vali
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize, round_down_rupiah
 from apps.core.sequences import next_document_number
-from apps.core.validators import ensure_business_date
+from apps.core.validators import ensure_business_date, ensure_document_number
 from apps.inventory import services as inventory
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account, JournalEntry
@@ -691,6 +691,8 @@ def record_payment(
     _check_payment(invoice, date, amount, cash_account)
     vat_withheld = vat_withheld or ZERO
     _check_vat_withheld(invoice, amount, vat_withheld)
+    if income_tax.slip:
+        ensure_document_number(income_tax.slip, max_length=50, missing=_("Enter the bukti potong number."))
     income_tax_line = _withholding_line(invoice, date, income_tax, amount - vat_withheld)
     withheld_income_tax = (income_tax_line.debit or income_tax_line.credit) if income_tax_line else ZERO
     reported = income_tax_line is not None or _treaty_exempt(invoice, income_tax)
@@ -1007,8 +1009,8 @@ def record_special_document(*, invoice: Invoice, number: str, on: date) -> Invoi
         raise InvalidStateTransition(_("Only an issued export or bill equivalent to a faktur takes a document this way."))
     if invoice.special_document_number:
         raise InvalidStateTransition(_("This invoice already has its document."))
-    number = number.strip()
-    if not number or len(number) > 100 or on is None:
+    number = ensure_document_number(number, max_length=100, missing=_("Enter the document number and date."))
+    if on is None:
         raise ValidationFailed(_("Enter the document number and date."))
     ensure_business_date(on)
     invoice.special_document_number, invoice.special_document_date = number, on
@@ -1039,9 +1041,7 @@ def record_withholding_slip(*, payment: Payment, number: str) -> Payment:
         raise InvalidStateTransition(_("Only a payment to a supplier with income tax withheld takes a bukti potong number this way."))
     if payment.withholding_slip:
         raise InvalidStateTransition(_("This payment already has its bukti potong number."))
-    number = number.strip()
-    if not number or len(number) > 50:
-        raise ValidationFailed(_("Enter the bukti potong number."))
+    number = ensure_document_number(number, max_length=50, missing=_("Enter the bukti potong number."))
     payment.withholding_slip = number
     payment.save(update_fields=["withholding_slip", "updated_at"])
     return payment

@@ -5,6 +5,7 @@ Used on model fields so that forms and the Django admin enforce the same rules.
 
 from datetime import date, timedelta
 
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -21,6 +22,15 @@ code_validator = RegexValidator(
 )
 nib_validator = RegexValidator(r"^\d{13}$", _("NIB must be exactly 13 digits."))
 ntpn_validator = RegexValidator(r"^[A-Z0-9]{16}$", _("NTPN must be 16 letters or digits."))
+# Numbers of documents typed in from elsewhere (PIB/PEB, bukti potong, BPSP, SKB, certificates of
+# residence): letters, digits, spaces and the separators they use. Quotes, angle brackets, ';',
+# '=' and control characters never belong in one, and would travel into Coretax files.
+DOCUMENT_NUMBER_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9 .,/()_:#&-]*$"
+document_number_validator = RegexValidator(
+    DOCUMENT_NUMBER_PATTERN, _("Use letters, digits, spaces and . , / ( ) _ : # & - only, starting with a letter or digit."),
+)
+# Identity document numbers and foreign tax IDs: passports, KITAS, a TIN abroad.
+identifier_validator = RegexValidator(r"^[A-Za-z0-9./-]*$", _("Use letters, digits, dots, slashes and dashes only."))
 tax_invoice_number_validator = RegexValidator(
     r"^[0-9][0-9.\-]{0,29}$", _("A tax invoice number contains only digits, '.' and '-'.")
 )
@@ -50,3 +60,15 @@ def ensure_business_date(value: date) -> None:
                 "end": latest_business_date().strftime("%d-%m-%Y"),
             }
         )
+
+
+def ensure_document_number(number: str, *, max_length: int, missing: str) -> str:
+    """Service-level check of a document number recorded once (``missing``: the message when empty)."""
+    number = number.strip()
+    if not number or len(number) > max_length:
+        raise ValidationFailed(missing)
+    try:
+        document_number_validator(number)
+    except ValidationError as exc:
+        raise ValidationFailed(exc.messages[0]) from None
+    return number

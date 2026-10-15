@@ -180,6 +180,8 @@ CORETAX_API_URL = env("CORETAX_API_URL", default="")
 CORETAX_API_TOKEN = env("CORETAX_API_TOKEN", default="")
 # REST API (apps.api): requests per key per hour.
 API_REQUESTS_PER_HOUR = env.int("API_REQUESTS_PER_HOUR", default=1000)
+# Failed API authentications per IP address and hour; past it, every request from it gets 429 (even with a valid key).
+API_AUTH_FAILURES_PER_HOUR = env.int("API_AUTH_FAILURES_PER_HOUR", default=30)
 # Automatic renewals are charged this many days before the paid period ends.
 BILLING_AUTO_RENEW_DAYS_BEFORE = env.int("BILLING_AUTO_RENEW_DAYS_BEFORE", default=1)
 XENDIT_LIVE_KEY_PREFIX = "xnd_production_"  # live secret keys; production refuses others (prod.py)

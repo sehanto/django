@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, GridFormMixin, OrganizationFormMixin
-from apps.core.validators import SECRET_MAX_LENGTH
+from apps.core.validators import SECRET_MAX_LENGTH, document_number_validator
 from apps.inventory.selectors import cost_of_sales_accounts, inventory_accounts
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
@@ -54,13 +54,14 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
     )
     facility_stamp_choice = forms.ChoiceField(label=_("Facility stamp (cap fasilitas)"), required=False)
     supporting_document = forms.CharField(
-        label=_("Supporting document"), max_length=100, required=False,
+        label=_("Supporting document"), max_length=100, required=False, validators=[document_number_validator],
         help_text=Invoice._meta.get_field("supporting_document").help_text,
     )
     supporting_document_date = BusinessDateField(label=_("Supporting document date"), required=False)
     special_document = forms.ChoiceField(label=_("Other tax document"), required=False)
     special_document_number = forms.CharField(
-        label=_("Document no."), max_length=100, required=False, help_text=Invoice._meta.get_field("special_document_number").help_text,
+        label=_("Document no."), max_length=100, required=False, validators=[document_number_validator],
+        help_text=Invoice._meta.get_field("special_document_number").help_text,
     )
     special_document_date = BusinessDateField(label=_("Document date"), required=False)
     SPECIAL_FIELDS = ("special_document", "special_document_number", "special_document_date")
@@ -440,7 +441,8 @@ class TaxInvoiceNumberForm(BaseForm):
 
 
 class SpecialDocumentForm(BaseForm):
-    number = forms.CharField(label=_("Document no."), max_length=100, help_text=_("The PEB number, or the bill's own number."))
+    number = forms.CharField(label=_("Document no."), max_length=100, validators=[document_number_validator],
+                             help_text=_("The PEB number, or the bill's own number."))
     date = BusinessDateField(label=_("Document date"))
 
 

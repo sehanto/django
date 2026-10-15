@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
-from apps.core.validators import phone_validator
+from apps.core.validators import document_number_validator, identifier_validator, phone_validator
 from apps.regions.models import Address
 
 from .countries import COUNTRY_CODES, INDONESIA
@@ -58,16 +58,16 @@ class Contact(TenantOwnedModel, Address):
     )
     id_number = models.CharField(
         _("identity document number"), max_length=30, blank=True,
-        validators=[RegexValidator(r"^[A-Za-z0-9./-]*$", _("Use letters, digits, dots, slashes and dashes only."))],
+        validators=[identifier_validator],
     )
     country = models.CharField(
         _("country"), max_length=3, default=INDONESIA, validators=[validate_country_code],
         help_text=_("Three-letter code as used by Coretax, e.g. IDN, SGP or MYS."),
     )
     # A supplier abroad: what the PPh 26 bukti potong (BPNR) needs.
-    foreign_tin = models.CharField(_("foreign tax ID"), max_length=30, blank=True, help_text=_("A supplier abroad's tax ID in its country."))
+    foreign_tin = models.CharField(_("foreign tax ID"), max_length=30, blank=True, validators=[identifier_validator], help_text=_("A supplier abroad's tax ID in its country."))
     treaty_document = models.CharField(
-        _("certificate of residence no."), max_length=50, blank=True,
+        _("certificate of residence no."), max_length=50, blank=True, validators=[document_number_validator],
         help_text=_("A supplier abroad's DGT form (SKD), which allows a tax treaty's lower PPh 26 rate."),
     )
     email = models.EmailField(_("email"), blank=True)

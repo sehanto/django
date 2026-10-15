@@ -9,7 +9,7 @@ from decimal import Decimal
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, round_down_rupiah
-from apps.core.validators import ensure_business_date
+from apps.core.validators import ensure_business_date, ensure_document_number
 from apps.core.periods import month_end
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import JournalEntry
@@ -376,9 +376,7 @@ def record_self_deposit_slip(*, deposit: SelfDeposit, number: str) -> SelfDeposi
     deposit = SelfDeposit.objects.select_for_update().get(pk=deposit.pk)
     if deposit.slip_number or deposit.status != SelfDeposit.Status.POSTED:
         raise InvalidStateTransition(_("This self-deposit already has its BPSP number."))
-    number = number.strip()
-    if not number or len(number) > 50:
-        raise ValidationFailed(_("Enter the BPSP number."))
+    number = ensure_document_number(number, max_length=50, missing=_("Enter the BPSP number."))
     deposit.slip_number = number
     deposit.save(update_fields=["slip_number", "updated_at"])
     return deposit

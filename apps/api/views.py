@@ -14,7 +14,8 @@ from django.utils import translation
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 
-from apps.accounts.throttle import ThrottleScope, allow
+from apps.accounts.client_ip import client_ip
+from apps.accounts.throttle import ThrottleScope, allow, count, hit
 from apps.audit.context import set_actor
 from apps.contacts.forms import ContactForm
 from apps.contacts.models import Contact
@@ -58,9 +59,15 @@ def endpoint(*methods: str):
             with translation.override("en"):
                 if request.method not in methods:
                     return _error("Method not allowed.", 405)
+                # Guessing keys: an address with too many failures is refused before any key is
+                # checked, so a right guess answers the same as a wrong one.
+                address = client_ip(request) or "unknown"
+                if count(ThrottleScope.API_AUTH_FAILURE_IP, address) >= settings.API_AUTH_FAILURES_PER_HOUR:
+                    return _error("Too many failed attempts. Try again later.", 429)
                 header = request.headers.get("Authorization", "")
                 found = authenticate(header[7:].strip()) if header.startswith("Bearer ") else None
                 if found is None:
+                    hit(ThrottleScope.API_AUTH_FAILURE_IP, address, window_seconds=3600)
                     return _error("A valid API key is required (Authorization: Bearer <key>).", 401)
                 key, membership = found
                 needed = Permission.VIEW if request.method == "GET" else Permission.WRITE
@@ -107,9 +114,11 @@ def _text(data: dict, name: str, *, required: bool = False, max_length: int = 25
     value = data.get(name, "")
     if not isinstance(value, str):
         raise ApiError(f"'{name}' must be a string.")
-    value = sanitize_text(value).strip()[:max_length]
+    value = sanitize_text(value).strip()
     if required and not value:
         raise ApiError(f"'{name}' is required.")
+    if len(value) > max_length:  # refused like a form would, never silently cut
+        raise ApiError(f"'{name}' can be at most {max_length} characters.")
     return value
 
 

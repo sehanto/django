@@ -10,6 +10,7 @@ from apps.contacts.countries import INDONESIA
 from apps.contacts.models import validate_country_code
 from apps.contacts.validators import npwp_format_validator
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
+from apps.core.validators import document_number_validator, identifier_validator
 from apps.regions.models import Address
 
 from .domain import BpjsRates, EmployeeKind, PayBasis, PtkpStatus, TaxScheme, TerCategory
@@ -66,7 +67,7 @@ class Employee(TenantOwnedModel, Address):
                                    help_text=_("Country code, e.g. IDN, AUS, JPN."))
     nik = models.CharField(_("NIK"), max_length=16, blank=True, validators=[nik_validator],
                            help_text=_("16 digits; also the NPWP of an Indonesian citizen."))
-    passport_number = models.CharField(_("passport no."), max_length=30, blank=True, help_text=_("For foreign employees."))
+    passport_number = models.CharField(_("passport no."), max_length=30, blank=True, validators=[identifier_validator], help_text=_("For foreign employees."))
     npwp = models.CharField(_("tax ID (NPWP)"), max_length=16, blank=True, validators=[npwp_format_validator])
     is_resident = models.BooleanField(
         _("Indonesian tax resident"), default=True,
@@ -93,9 +94,9 @@ class Employee(TenantOwnedModel, Address):
         validators=[MinValueValidator(0), MaxValueValidator(20)],
         help_text=_("Only with the employee's certificate of residence (DGT form); empty for the standard 20%."),
     )
-    treaty_document = models.CharField(_("certificate of residence no."), max_length=50, blank=True)
+    treaty_document = models.CharField(_("certificate of residence no."), max_length=50, blank=True, validators=[document_number_validator])
     foreign_tin = models.CharField(
-        _("foreign tax ID"), max_length=30, blank=True, help_text=_("A non-resident's tax ID in their country, for the PPh 26 bukti potong."),
+        _("foreign tax ID"), max_length=30, blank=True, validators=[identifier_validator], help_text=_("A non-resident's tax ID in their country, for the PPh 26 bukti potong."),
     )
     gender = models.CharField(_("gender"), max_length=1, choices=Gender.choices, blank=True, default=Gender.UNSPECIFIED)
     email = models.EmailField(_("email"), blank=True)
@@ -245,7 +246,7 @@ class Payslip(TimeStampedModel):
     without_tin = models.BooleanField(_("without NPWP (20% higher)"), default=False)
     pph21 = money_field(_("PPh 21"), help_text=_("PPh 26 when the scheme says so."))
     net_pay = money_field(_("net pay"))
-    withholding_slip = models.CharField(_("bukti potong no."), max_length=50, blank=True)
+    withholding_slip = models.CharField(_("bukti potong no."), max_length=50, blank=True, validators=[document_number_validator])
 
     class Meta:
         ordering = ["employee__name"]
@@ -290,7 +291,7 @@ class PriorIncome(TenantOwnedModel):
     year = models.PositiveSmallIntegerField(_("year"))
     employer_name = models.CharField(_("previous employer"), max_length=200)
     employer_npwp = models.CharField(_("previous employer's NPWP"), max_length=16, blank=True, validators=[npwp_format_validator])
-    slip_number = models.CharField(_("their 1721-A1 no."), max_length=50, blank=True)
+    slip_number = models.CharField(_("their 1721-A1 no."), max_length=50, blank=True, validators=[document_number_validator])
     first_month = models.PositiveSmallIntegerField(_("from month"), validators=[MinValueValidator(1), MaxValueValidator(12)])
     last_month = models.PositiveSmallIntegerField(_("to month"), validators=[MinValueValidator(1), MaxValueValidator(12)])
     net_income = money_field(_("net income"), validators=[MinValueValidator(0)], help_text=_("Line 13 of their 1721-A1."))
