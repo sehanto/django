@@ -1,7 +1,9 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.assets.domain import DepreciationMethod
@@ -12,11 +14,14 @@ from apps.core.validators import nib_validator, phone_validator
 from apps.regions.models import Address
 from apps.taxes.domain import EARLIEST_PPH_FINAL_YEAR, pph_final_last_year
 
+from .domain import PlanFeature, SubscriptionState, subscription_state
 from .roles import Role
 
 
 class Plan(TimeStampedModel):
-    """Subscription tier. ``None`` limits mean unlimited."""
+    """Subscription tier (Starter → Growth → Pro): limits (``None`` means unlimited) and features."""
+
+    Feature = PlanFeature
 
     code = models.SlugField(_("code"), unique=True)
     name = models.CharField(_("name"), max_length=50)
@@ -24,7 +29,11 @@ class Plan(TimeStampedModel):
     yearly_price = money_field(_("yearly price"), help_text=_("Excluding PPN."), validators=[MinValueValidator(0)])
     max_users = models.PositiveIntegerField(_("max. users"), null=True, blank=True)
     max_invoices_per_month = models.PositiveIntegerField(_("max. invoices per month"), null=True, blank=True)
-    is_default = models.BooleanField(_("default plan"), default=False)
+    features = ArrayField(
+        models.CharField(max_length=20, choices=PlanFeature.choices), default=list, blank=True, verbose_name=_("features"),
+        help_text=_("What the plan includes beyond the bookkeeping every plan has."),
+    )
+    is_default = models.BooleanField(_("default plan"), default=False, help_text=_("New organizations start on a trial of it."))
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -110,9 +119,11 @@ class Organization(TimeStampedModel, Address):
 
     plan = models.ForeignKey(Plan, on_delete=models.PROTECT, related_name="organizations", verbose_name=_("plan"))
     plan_paid_until = models.DateField(
-        _("plan paid until"), null=True, blank=True, help_text=_("Last day covered by payment; empty for the free plan.")
+        _("plan paid until"), null=True, blank=True, help_text=_("Last day covered by payment or by the trial; afterwards (and its grace days) the organization is read-only.")
     )
     renewal_reminder_sent_for = models.DateField(null=True, blank=True, editable=False)
+    # The last day of the trial a new organization starts with (plan_paid_until until it pays).
+    trial_ends_on = models.DateField(_("trial ends on"), null=True, blank=True, editable=False)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through="Membership", related_name="organizations")
 
     class Meta:
@@ -132,6 +143,20 @@ class Organization(TimeStampedModel, Address):
     def is_limited_company(self) -> bool:
         """A PT: its equity shows share capital and additional paid-in capital (SAK EMKM 13.8)."""
         return self.legal_form in (self.LegalForm.PT, self.LegalForm.PT_PERORANGAN)
+
+    def subscription_state(self, today=None) -> SubscriptionState:
+        return subscription_state(
+            is_free_plan=self.plan.monthly_price <= 0, paid_until=self.plan_paid_until, trial_ends_on=self.trial_ends_on,
+            today=today or timezone.localdate(), reminder_days=settings.BILLING_REMINDER_DAYS, grace_days=settings.BILLING_GRACE_DAYS,
+        )
+
+    @property
+    def is_read_only(self) -> bool:
+        """The trial, or the paid period and its grace days, has ended: nothing new is recorded until it pays."""
+        return self.subscription_state().is_read_only
+
+    def has_feature(self, feature: PlanFeature) -> bool:
+        return feature in self.plan.features
 
     @property
     def pph_final_last_year(self) -> int | None:

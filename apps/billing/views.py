@@ -20,7 +20,9 @@ from apps.tenants.mixins import ManageMixin
 from apps.tenants.models import Plan
 
 from . import services
-from .domain import BillingPeriod, SubscriptionState
+from apps.tenants.domain import PlanFeature, SubscriptionState
+
+from .domain import BillingPeriod
 from .gateways import get_gateway
 from .gateways.base import GatewayError, GatewayName, PaymentStatus
 from .models import AutoRenewal, SubscriptionInvoice
@@ -37,11 +39,11 @@ class OverviewView(ManageMixin, TemplateView):
             offers=plan_offers(self.organization),
             state=state_of(self.organization),
             invoices=invoices_for(self.organization)[:24],
-            grace_days=settings.BILLING_GRACE_DAYS,
             states=SubscriptionState,
             periods=BillingPeriod,
             renewal=auto_renewal_of(self.organization),
             renewal_statuses=AutoRenewal.Status,
+            features=PlanFeature,
             **kwargs,
         )
 

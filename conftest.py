@@ -11,6 +11,7 @@ from apps.accounts.models import User
 from apps.contacts.models import Contact
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
+from apps.tenants.domain import PlanFeature
 from apps.tenants.models import Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import create_organization
@@ -34,9 +35,10 @@ def user(db):
 @pytest.fixture
 def organization(user):
     org = create_organization(owner=user, name="Toko Maju Jaya", legal_form="perorangan")
-    # Unlimited plan so tests are not constrained by quotas. Created here rather than
-    # relying on the seed migration, because transactional tests flush the database.
-    org.plan, _ = Plan.objects.get_or_create(code="pro", defaults={"name": "Pro"})
+    # A plan with every feature, no limits and no price (so never read-only), for tests that aren't
+    # about plans. Created here rather than relying on the seed migration, because transactional
+    # tests flush the database. Billing tests use the real tiers (apps/billing/tests/conftest.py).
+    org.plan, _ = Plan.objects.update_or_create(code="test-all", defaults={"name": "Semua fitur", "features": PlanFeature.values})
     org.save()
     return org
 

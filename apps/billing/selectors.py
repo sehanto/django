@@ -10,7 +10,9 @@ from apps.regions.models import Village, format_address
 from apps.regions.selectors import village_by_code
 from apps.tenants.models import Plan
 
-from .domain import BillingPeriod, Credit, PaidPeriod, SubscriptionState, SwitchQuote, subscription_state, switch_quote, unused_credit
+from apps.tenants.domain import SubscriptionState
+
+from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, switch_quote, unused_credit
 from .models import AutoRenewal, SubscriptionInvoice
 
 
@@ -48,13 +50,7 @@ def invoices_for(organization) -> QuerySet[SubscriptionInvoice]:
 
 
 def state_of(organization, *, today: date | None = None) -> SubscriptionState:
-    return subscription_state(
-        is_free_plan=organization.plan.monthly_price <= 0,
-        paid_until=organization.plan_paid_until,
-        today=today or timezone.localdate(),
-        reminder_days=settings.BILLING_REMINDER_DAYS,
-        grace_days=settings.BILLING_GRACE_DAYS,
-    )
+    return organization.subscription_state(today)
 
 
 @dataclass

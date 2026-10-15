@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{{ feature.label }}{% endblock %}
+{% block content %}
+<div class="card max-w-xl"><div class="card-body">
+  <h1 class="text-xl font-medium leading-tight mb-2">{% icon "lock" "me-1 text-muted" %}{{ feature.label }}</h1>
+  <p>{% if plan %}{% blocktranslate trimmed with feature=feature.label plan=plan.name current=current_organization.plan.name %}
+    {{ feature }} is included from the {{ plan }} plan. Your organization is on {{ current }}.
+  {% endblocktranslate %}{% else %}{% blocktranslate trimmed with feature=feature.label %}{{ feature }} isn't included in any plan at the moment.{% endblocktranslate %}{% endif %}</p>
+  <p class="text-sm text-muted">{% translate "What was recorded with it stays in your books, reports and exports." %}</p>
+  {% if plan and can_manage %}<a class="btn btn-primary" href="{% url 'billing:overview' %}">{% translate "See the plans" %}</a>{% endif %}
+</div></div>
+{% endblock %}

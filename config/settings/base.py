@@ -68,6 +68,8 @@ MIDDLEWARE = [
     "apps.tenants.middleware.CurrentOrganizationMiddleware",
     "apps.accounts.middleware.EmailVerificationMiddleware",
     "apps.tenants.middleware.TwoFactorRequirementMiddleware",
+    "apps.tenants.middleware.ReadOnlyOrganizationMiddleware",  # unpaid: nothing new is recorded
+    "apps.tenants.middleware.PlanFeatureMiddleware",  # what the plan includes
     "apps.core.submissions.DuplicateSubmissionMiddleware",  # a form sent twice is processed once
     # Must be last: turns a locked-out login into the lockout response.
     "axes.middleware.AxesMiddleware",
@@ -189,6 +191,7 @@ XENDIT_LIVE_KEY_PREFIX = "xnd_production_"  # live secret keys; production refus
 BILLING_CHECKOUT_HOURS = env.int("BILLING_CHECKOUT_HOURS", default=24)  # payment link lifetime
 BILLING_REMINDER_DAYS = env.int("BILLING_REMINDER_DAYS", default=7)  # remind this many days before expiry
 BILLING_GRACE_DAYS = env.int("BILLING_GRACE_DAYS", default=7)  # keep the plan this long after expiry
+BILLING_TRIAL_DAYS = env.int("BILLING_TRIAL_DAYS", default=7)  # a new organization tries the default plan this long
 # Seller details printed on subscription receipts.
 BILLING_SELLER_NAME = env("BILLING_SELLER_NAME", default="EA-System")
 BILLING_SELLER_NPWP = env("BILLING_SELLER_NPWP", default="")

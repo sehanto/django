@@ -69,14 +69,14 @@ def subscribe(organization, plan, period="monthly"):
 
 def test_upgrade_mid_period_pays_only_the_difference(free_org, plans):
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 10, 1)):
-        usaha = subscribe(free_org, plans["usaha"])  # 1–31 Oct
+        usaha = subscribe(free_org, plans["starter"])  # 1–31 Oct
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        invoice = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+        invoice = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
         assert (invoice.credit_amount, invoice.credited_days, invoice.total) == (D("60677"), 19, D("209038"))
-        assert invoice.credited_plan == plans["usaha"]
+        assert invoice.credited_plan == plans["starter"]
         paid = pay(invoice)
     free_org.refresh_from_db()
-    assert free_org.plan == plans["pro"]
+    assert free_org.plan == plans["growth"]
     assert (paid.coverage_start, paid.coverage_end) == (TODAY, date(2026, 11, 11))  # a full month of Pro
     usaha.refresh_from_db()
     assert usaha.superseded_on == TODAY  # its remaining days were used up by the credit
@@ -84,23 +84,23 @@ def test_upgrade_mid_period_pays_only_the_difference(free_org, plans):
 
 def test_downgrade_covered_by_credit_switches_immediately(free_org, plans):
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 1, 1)):
-        subscribe(free_org, plans["pro"], "yearly")  # 2026 paid in full
+        subscribe(free_org, plans["growth"], "yearly")  # 2026 paid in full
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
+        invoice = services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")
     assert invoice.status == Status.PAID and invoice.total == 0 and invoice.gateway == GatewayName.CREDIT
     assert invoice.extension_days == 139
     free_org.refresh_from_db()
-    assert free_org.plan == plans["usaha"] and free_org.plan_paid_until == date(2027, 3, 30)
+    assert free_org.plan == plans["starter"] and free_org.plan_paid_until == date(2027, 3, 30)
 
 
 def test_credit_is_never_used_twice(free_org, plans):
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 1, 1)):
-        subscribe(free_org, plans["pro"], "yearly")  # 2026 paid: Rp2.490.000
+        subscribe(free_org, plans["growth"], "yearly")  # 2026 paid: Rp2.490.000
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        pro_credit = services.switch_credit(free_org, plans["usaha"])
-        services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")  # free switch
+        pro_credit = services.switch_credit(free_org, plans["starter"])
+        services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")  # free switch
         free_org.refresh_from_db()
-        back_credit = services.switch_credit(free_org, plans["pro"])
+        back_credit = services.switch_credit(free_org, plans["growth"])
     # The superseded Pro year is not counted again: the credit comes only from the Usaha
     # coverage, which holds the same money (counted twice it would be ~Rp1.088.000).
     assert back_credit.amount <= pro_credit.amount
@@ -109,10 +109,10 @@ def test_credit_is_never_used_twice(free_org, plans):
 
 def test_stale_credit_at_payment_buys_proportional_time(free_org, plans):
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 10, 1)):
-        subscribe(free_org, plans["usaha"])
+        subscribe(free_org, plans["starter"])
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        to_pro = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
-        to_pro_yearly = services.start_checkout(organization=free_org, plan=plans["pro"], period="yearly")  # second tab
+        to_pro = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
+        to_pro_yearly = services.start_checkout(organization=free_org, plan=plans["growth"], period="yearly")  # second tab
         pay(to_pro_yearly)  # this one uses the Usaha credit
         stale = pay(to_pro)  # the credit it was quoted is gone
     share = stale.net_subtotal / stale.subtotal  # 188.323 / 249.000
@@ -122,18 +122,18 @@ def test_stale_credit_at_payment_buys_proportional_time(free_org, plans):
 
 def test_no_credit_when_renewing_or_without_paid_time(free_org, plans, organization):
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 10, 1)):
-        subscribe(free_org, plans["usaha"])
+        subscribe(free_org, plans["starter"])
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        assert services.start_checkout(organization=free_org, plan=plans["usaha"], period="yearly").credit_amount == 0
+        assert services.start_checkout(organization=free_org, plan=plans["starter"], period="yearly").credit_amount == 0
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 11, 3)):  # grace period
-        assert services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly").credit_amount == 0
+        assert services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly").credit_amount == 0
 
 
 def test_grandfathered_plan_without_invoices_gets_no_credit(free_org, plans):
-    free_org.plan, free_org.plan_paid_until = plans["pro"], TODAY + timedelta(days=20)
+    free_org.plan, free_org.plan_paid_until = plans["growth"], TODAY + timedelta(days=20)
     free_org.save()
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
-        assert services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly").credit_amount == 0
+        assert services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly").credit_amount == 0
 
 
 # --- UI ----------------------------------------------------------------------------------
@@ -143,10 +143,10 @@ def test_plan_cards_and_receipt_show_the_credit(auth_client, organization, plans
     organization.plan, organization.plan_paid_until = plans["free"], None
     organization.save()
     with mock.patch("django.utils.timezone.localdate", return_value=date(2026, 10, 1)):
-        subscribe(organization, plans["usaha"])
+        subscribe(organization, plans["starter"])
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
         html = auth_client.get(reverse("billing:overview")).content.decode()
         assert "Rp 60.677" in html and "Rp 209.038" in html  # credit and the net amount due
-        invoice = services.start_checkout(organization=organization, plan=plans["pro"], period="monthly")
+        invoice = services.start_checkout(organization=organization, plan=plans["growth"], period="monthly")
         receipt = auth_client.get(reverse("billing:invoice", args=[invoice.pk])).content.decode()
     assert "-Rp 60.677" in receipt and "19 hari" in receipt and "Rp 188.323" in receipt

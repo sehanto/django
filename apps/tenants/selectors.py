@@ -1,7 +1,7 @@
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils import timezone
 
-from .models import BusinessPlace, Invitation, Membership, Organization
+from .models import BusinessPlace, Invitation, Membership, Organization, Plan
 
 
 def resolve_membership(user, organization_id=None) -> Membership | None:
@@ -43,3 +43,8 @@ def organizations_requiring_two_factor(user) -> QuerySet[Organization]:
 
 def business_places(organization) -> QuerySet[BusinessPlace]:
     return BusinessPlace.objects.for_organization(organization).select_related("village__district__regency")
+
+
+def first_plan_with(feature) -> Plan | None:
+    """The cheapest plan that includes ``feature`` (where to upgrade to)."""
+    return Plan.objects.filter(features__contains=[feature], monthly_price__gt=0).order_by("monthly_price", "sort_order").first()

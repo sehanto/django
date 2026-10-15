@@ -26,7 +26,7 @@ def pay(invoice, status=PaymentStatus.PAID, amount=None):
 
 
 def test_checkout_creates_pending_invoice_with_payment_link(free_org, plans, user):
-    invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly", created_by=user)
+    invoice = services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly", created_by=user)
     assert invoice.status == Status.PENDING
     assert invoice.number.startswith("SUB-") and invoice.number.endswith(f"{invoice.pk:06d}")
     assert (invoice.subtotal, invoice.tax_amount, invoice.total) == (D("99000"), D("10890"), D("109890"))
@@ -37,30 +37,30 @@ def test_checkout_creates_pending_invoice_with_payment_link(free_org, plans, use
 
 
 def test_pending_checkout_is_reused(free_org, plans):
-    first = services.start_checkout(organization=free_org, plan=plans["pro"], period="yearly")
-    again = services.start_checkout(organization=free_org, plan=plans["pro"], period="yearly")
-    other = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+    first = services.start_checkout(organization=free_org, plan=plans["growth"], period="yearly")
+    again = services.start_checkout(organization=free_org, plan=plans["growth"], period="yearly")
+    other = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
     assert first.pk == again.pk != other.pk
 
 
 def test_free_plan_and_too_small_plan_are_rejected(free_org, plans, make_member):
     with pytest.raises(ValidationFailed):
         services.start_checkout(organization=free_org, plan=plans["free"], period="monthly")
-    plans["usaha"].max_users = 1
-    plans["usaha"].save()
+    plans["starter"].max_users = 1
+    plans["starter"].save()
     make_member(Role.VIEWER)
     with pytest.raises(PlanLimitExceeded):
-        services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
+        services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")
 
 
 def test_payment_activates_plan_once(free_org, plans):
-    invoice = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+    invoice = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
     paid = pay(invoice)
     today = timezone.localdate()
     assert paid.status == Status.PAID and paid.paid_at
     assert paid.coverage_start == today
     free_org.refresh_from_db()
-    assert free_org.plan == plans["pro"]
+    assert free_org.plan == plans["growth"]
     assert free_org.plan_paid_until == paid.coverage_end > today
 
     # Xendit retries webhooks: a duplicate must not extend the plan again.
@@ -70,15 +70,15 @@ def test_payment_activates_plan_once(free_org, plans):
 
 
 def test_renewing_same_plan_extends_without_losing_days(free_org, plans):
-    first = pay(services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly"))
-    second = pay(services.start_checkout(organization=free_org, plan=plans["usaha"], period="yearly"))
+    first = pay(services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly"))
+    second = pay(services.start_checkout(organization=free_org, plan=plans["starter"], period="yearly"))
     assert second.coverage_start == first.coverage_end + timedelta(days=1)
     free_org.refresh_from_db()
     assert free_org.plan_paid_until == second.coverage_end
 
 
 def test_amount_mismatch_does_not_activate(free_org, plans):
-    invoice = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+    invoice = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
     with pytest.raises(services.PaymentAmountMismatch):
         pay(invoice, amount=D("1000"))
     invoice.refresh_from_db()
@@ -87,7 +87,7 @@ def test_amount_mismatch_does_not_activate(free_org, plans):
 
 
 def test_expired_payment_link_closes_invoice(free_org, plans):
-    invoice = pay(services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly"), PaymentStatus.EXPIRED)
+    invoice = pay(services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly"), PaymentStatus.EXPIRED)
     assert invoice.status == Status.EXPIRED
     free_org.refresh_from_db()
     assert free_org.plan == plans["free"]
@@ -96,13 +96,13 @@ def test_expired_payment_link_closes_invoice(free_org, plans):
 def test_gateway_failure_marks_invoice_failed(free_org, plans):
     with mock.patch.object(FakeGateway, "create_checkout", side_effect=GatewayError("down")):
         with pytest.raises(GatewayError):
-            services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+            services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
     assert SubscriptionInvoice.objects.get().status == Status.FAILED
 
 
 def test_stale_checkouts_expire_but_late_payments_still_count(free_org, plans):
-    stale = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
-    late = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
+    stale = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
+    late = services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")
     FakeGateway().simulate(late.gateway_reference, PaymentStatus.PAID)
     later = timezone.now() + timedelta(days=2)
     services.expire_stale_checkouts(now=later)
@@ -112,19 +112,9 @@ def test_stale_checkouts_expire_but_late_payments_still_count(free_org, plans):
     assert late.status == Status.PAID
 
 
-def test_unpaid_subscription_lapses_to_free_after_grace(organization, plans, settings):
-    settings.BILLING_GRACE_DAYS = 7
-    organization.plan, organization.plan_paid_until = plans["pro"], date(2026, 3, 31)
-    organization.save()
-    assert services.lapse_unpaid_subscriptions(today=date(2026, 4, 7)) == 0  # still in grace
-    assert services.lapse_unpaid_subscriptions(today=date(2026, 4, 8)) == 1
-    organization.refresh_from_db()
-    assert organization.plan == plans["free"] and organization.plan_paid_until is None
-
-
 def test_renewal_reminder_sent_once_to_billing_contacts_in_their_language(organization, plans, user, make_member, settings):
     settings.BILLING_REMINDER_DAYS = 7
-    organization.plan, organization.plan_paid_until = plans["pro"], date(2026, 3, 31)
+    organization.plan, organization.plan_paid_until = plans["growth"], date(2026, 3, 31)
     organization.save()
     user.language = "en"
     user.save()
@@ -141,7 +131,7 @@ def test_renewal_reminder_sent_once_to_billing_contacts_in_their_language(organi
 
 
 def test_manual_bank_transfer_confirmation(free_org, plans, user):
-    invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
+    invoice = services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")
     paid = services.mark_paid_manually(invoice=invoice, confirmed_by=user)
     assert paid.status == Status.PAID and paid.gateway_payment_id == f"manual:{user.email}"
     with pytest.raises(ValidationFailed):
@@ -149,7 +139,7 @@ def test_manual_bank_transfer_confirmation(free_org, plans, user):
 
 
 def test_sales_records_survive_tenant_deletion(free_org, plans):
-    invoice = pay(services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly"))
+    invoice = pay(services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly"))
     delete_organization(organization=Organization.objects.get(pk=free_org.pk))
     invoice.refresh_from_db()
     assert invoice.organization is None and invoice.buyer_name and invoice.status == Status.PAID
@@ -163,7 +153,7 @@ def test_the_invoice_keeps_the_seller_with_its_kelurahan(free_org, plans, user, 
     seller = {"BILLING_SELLER_NAME": "PT EA-System Indonesia", "BILLING_SELLER_NPWP": "01.234.567.8-901.000",
               "BILLING_SELLER_ADDRESS": "Jl. Raya  Pagedangan No. 1", "BILLING_SELLER_VILLAGE": jatake.code}
     with override_settings(**seller):
-        invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly", created_by=user)
+        invoice = services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly", created_by=user)
     assert (invoice.seller_name, invoice.seller_npwp, invoice.seller_village) == ("PT EA-System Indonesia", "012345678901000", jatake)
     assert invoice.seller_address == "Jl. Raya Pagedangan No. 1, Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
 

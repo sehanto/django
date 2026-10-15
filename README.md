@@ -8,7 +8,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 
 | Area | What it does |
 |---|---|
-| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Owners and admins add registered users directly and invite anyone else by email: a one-time link (valid 7 days, stored only as a keyed hash) adds them after they sign up with that address; pending invitations can be revoked. Subscription plans (Gratis / Usaha / Pro) limit users and invoices per month, paid monthly or yearly through Xendit (see [Subscription billing](#subscription-billing)). |
+| **Multi-tenant SaaS** | Sign-up creates a user plus an organization. Users can belong to several organizations and switch between them. Roles are Pemilik, Administrator, Akuntan and Hanya Lihat. Owners and admins add registered users directly and invite anyone else by email: a one-time link (valid 7 days, stored only as a keyed hash) adds them after they sign up with that address; pending invitations can be revoked. Subscription plans (Starter / Growth / Pro, after a 7-day Starter trial) set the users, invoices per month and features, paid monthly or yearly through Xendit (see [Subscription billing](#subscription-billing)). |
 | **Bagan akun (SAK EMKM)** | Every new organization gets a default chart of accounts that follows the SAK EMKM statement structure, including contra accounts and *system roles* used by automated postings. |
 | **Double-entry ledger** | Manual journals (draft → posted), immutable posted entries, reversal instead of deletion, and a period lock date (*tanggal kunci*). |
 | **Penjualan & Pembelian** | Sales invoices and purchase bills: draft → issued → partially paid / paid, or void. Issuing posts the journal and voiding reverses it. Numbering is gap-free in the Indonesian style (`INV/2026/10/0001`). Items catalog and printable invoices are included. |
@@ -967,7 +967,29 @@ keys, which always pass and show "for testing only". `manage.py check --deploy` 
 
 ## Subscription billing
 
-Plans are **prepaid**: each payment buys one month or one year. Customers pay on Xendit's
+Three tiers, prepaid monthly or yearly (prices exclude PPN; a year costs 10 months):
+
+| Tier | Per month | Per year | Users | Invoices a month | Includes |
+|---|---|---|---|---|---|
+| Starter | Rp99.000 | Rp990.000 | 3 | 300 | Bookkeeping: sales and purchases, payments, the ledger, inventory, prepayments, PPN and PPh (Final, withholding), SAK EMKM statements and notes, the books export, and the Coretax/eBupot files to import |
+| Growth | Rp249.000 | Rp2.490.000 | 10 | Unlimited | Starter, plus payroll (PPh 21/26, BPJS, 1721-A1) and the REST API |
+| Pro | Rp499.000 | Rp4.990.000 | Unlimited | Unlimited | Growth, plus sending to Coretax through a PJAP and the fixed asset register |
+
+The tiers are `tenants.Plan` rows (seeded by tenants 0015; Usaha became Starter and the earlier Pro
+became Growth, at their prices); what each includes is `Plan.features` (`tenants.domain.PlanFeature`).
+A feature's pages answer with a page naming the cheapest tier that has it (`PlanFeatureMiddleware`,
+the API with a 403); what was recorded with it stays in the books, reports and export, and the
+nightly jobs keep posting it (depreciation of registered assets, for one). Tax files stay
+downloadable on every tier: only sending them is a feature.
+
+**Trial and read-only.** A new organization tries Starter for `BILLING_TRIAL_DAYS` (7). When the
+trial ends, or a paid period and its grace days, the organization is **read-only** until it pays:
+everything stays readable and exportable and the plan stays, but nothing new is recorded. Every
+write is refused (`ReadOnlyOrganizationMiddleware`; the API answers 402), except paying, the
+settings and team, the account and the books export; write pages send members to the plans, and a
+banner tells everyone. Nothing is ever downgraded or deleted.
+
+Each payment buys one month or one year. Customers pay on Xendit's
 hosted checkout page with QRIS, bank virtual accounts, e-wallets or cards, so no stored card is needed.
 
 | Rule | Behaviour |
@@ -975,7 +997,7 @@ hosted checkout page with QRIS, bank virtual accounts, e-wallets or cards, so no
 | Prices | Plan prices exclude PPN. PPN is 12% on a tax base (DPP) of 11/12 (effectively 11%) and is added at checkout. Annual = 10 × monthly (2 months free). |
 | Renewing | Paying for the current plan extends it from its end date, so no paid days are lost. |
 | Switching | A different plan starts on the payment date, and unused paid time on the current plan is **credited** against it (see below). A plan whose user limit the organization already exceeds can't be bought. |
-| Expiry | Owners and admins get an email and an in-app banner 7 days before the end. After the end there are 7 days of grace, then the organization moves to the free plan. Its data is never deleted. |
+| Expiry | Owners and admins get an email and an in-app banner 7 days before the end. After the end there are 7 days of grace, then the organization is read-only until it pays. Its data is never deleted. |
 | Records | Each payment is a `SubscriptionInvoice` with a buyer snapshot and a printable receipt. These are the seller's sales records: they can't be deleted and survive tenant deletion. The official Faktur Pajak is issued separately through Coretax. |
 
 **Proration when switching plans.** The credit is the unused value of the current plan:
@@ -983,18 +1005,18 @@ amount paid (excluding PPN) × unused days ÷ days covered, summed over every pa
 ahead (stacked renewals included). Today counts as used.
 
 - **Upgrade** (credit smaller than the new price): the credit is deducted and PPN is charged on the
-  net amount, so the customer pays only the difference plus its tax. Example: switching from Usaha to
-  Pro with 19 of 31 days left credits Rp60.677, so Pro costs Rp209.038 instead of Rp276.390.
+  net amount, so the customer pays only the difference plus its tax. Example: switching from Starter to
+  Growth with 19 of 31 days left credits Rp60.677, so Growth costs Rp209.038 instead of Rp276.390.
 - **Downgrade, or credit covering the whole price:** the switch happens immediately with nothing to
   pay, and the leftover credit becomes extra days on the new plan. The card shows the resulting end
   date. A Rp0 receipt (gateway "credit") records it. No balances are kept and nothing is refunded.
-- **Not credited:** renewals of the same plan, plans in their grace period, the free plan, and
+- **Not credited:** renewals of the same plan, plans in their grace period, the trial, and
   time granted without payment (the grandfathered month).
 - **Credit is used once:** a switch marks the old plan's paid periods as ended early
   (`superseded_on`). The credit is fixed when checkout starts. If the plan changed before that checkout
   was paid (two checkouts in two tabs, for example), the payment can't reuse the credit; it buys a
   proportional share of the period instead.
-- **Receipts** itemize the credit ("Credit for unused Usaha plan (19 days)") before PPN.
+- **Receipts** itemize the credit ("Credit for unused Starter plan (19 days)") before PPN.
 
 How a payment is confirmed: checkout creates a Xendit **Payment Session** (`POST /sessions`,
 `session_type=PAY`, `mode=PAYMENT_LINK`). When Xendit calls the webhook, the app checks the
@@ -1032,8 +1054,8 @@ fields against your Xendit account in test mode before going live.
    BILLING_SELLER_ADDRESS=...
    ```
 
-4. Schedule the daily job (expires stale payment links, sends reminders, downgrades lapsed
-   plans): `manage.py process_billing`, installed by `deploy/cron/install.sh` (see
+4. Schedule the daily job (expires stale payment links, sends reminders and
+   charges automatic renewals): `manage.py process_billing`, installed by `deploy/cron/install.sh` (see
    [Scheduled jobs](#scheduled-jobs)).
 
 Use Xendit's test-mode keys first. Webhooks can't reach `localhost`, so for local testing
@@ -1052,7 +1074,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 
 | Job | When | What |
 |---|---|---|
-| `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
+| `process_billing` | Daily 01:15 | Charge automatic renewals, close expired payment links, send trial and renewal reminders |
 | `post_depreciation` | Daily 02:00 | Post the fixed asset depreciation of months that have ended (each month once, missed months caught up; organizations with a locked month are skipped and reported) |
 | `post_deferrals` | Daily 02:05 | Recognise the months of prepaid expenses and revenue received in advance that have ended (same rules as depreciation) |
 | `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain and compare it with the last signed checkpoint, then append a new one (`CHAIN_CHECKPOINT_FILE`); failures are mailed (`MAILTO`) |

@@ -21,7 +21,7 @@ def english():
 
 @pytest.fixture
 def paid_org(organization, plans):
-    organization.plan, organization.plan_paid_until = plans["usaha"], timezone.localdate() + timedelta(days=1)
+    organization.plan, organization.plan_paid_until = plans["starter"], timezone.localdate() + timedelta(days=1)
     organization.save()
     return organization
 
@@ -78,7 +78,7 @@ def test_declined_charges_notify_and_stop_after_three(paid_org, user):
 
 
 def test_renewals_not_yet_due_or_on_the_free_plan_are_left_alone(organization, plans):
-    organization.plan, organization.plan_paid_until = plans["usaha"], timezone.localdate() + timedelta(days=20)
+    organization.plan, organization.plan_paid_until = plans["starter"], timezone.localdate() + timedelta(days=20)
     organization.save()
     active(organization)
     assert services.charge_auto_renewals() == (0, 0)

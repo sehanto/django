@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
@@ -33,7 +34,17 @@ class OrganizationMixin(LoginRequiredMixin):
 
 
 class WriteMixin(OrganizationMixin):
+    """Pages that record something: not for an organization that is read-only until it pays
+    (its writes are refused anyway, ReadOnlyOrganizationMiddleware; this also spares the form)."""
+
     permission = Permission.WRITE
+
+    def dispatch(self, request, *args, **kwargs):
+        organization = getattr(request, "organization", None)
+        if request.user.is_authenticated and organization is not None and organization.is_read_only:
+            messages.error(request, _("This organization is read-only until its plan is paid."))
+            return redirect("billing:overview")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ManageMixin(OrganizationMixin):

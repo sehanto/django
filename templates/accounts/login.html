@@ -11,6 +11,6 @@
   <div class="text-end text-sm mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
   <button class="btn btn-primary w-full mt-4">{% translate "Sign in" %}</button>
 </form>
-<p class="text-center text-sm mt-4 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Sign up free" %}</a></p>
+<p class="text-center text-sm mt-4 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Start a free trial" %}</a></p>
 {% endblock %}
 {% block scripts %}{% if captcha %}<script src="{{ captcha.script_url }}" async defer></script>{% endif %}{% endblock %}

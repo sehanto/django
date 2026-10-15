@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n ui %}
 {% with url=request.resolver_match %}
 {# Below lg: a top bar whose button opens the menu as a drawer; from lg up the menu is a fixed sidebar (static/js/app.js). #}
 <header class="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 lg:hidden print:hidden">
@@ -44,13 +44,13 @@
     <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.SALES %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.SALES %}">{% icon "receipt" "me-2" %}{% translate "Sales" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.PURCHASE %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}">{% icon "shopping-bag" "me-2" %}{% translate "Purchases" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'payments' %}active{% endif %}" href="{% url 'invoicing:payments' %}">{% icon "banknote" "me-2" %}{% translate "Payments" %}</a></li>
-    <li><a class="nav-link {% if url.namespace == 'payroll' %}active{% endif %}" href="{% url 'payroll:index' %}">{% icon "id-card" "me-2" %}{% translate "Payroll" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'payroll' %}active{% endif %}" href="{% url 'payroll:index' %}">{% icon "id-card" "me-2" %}{% translate "Payroll" %}{% if not current_organization|includes:plan_features.PAYROLL %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'journals' or url.url_name == 'journal_detail' or url.url_name == 'journal_create' %}active{% endif %}" href="{% url 'ledger:journals' %}">{% icon "notebook-text" "me-2" %}{% translate "General journal" %}</a></li>
     <li class="nav-heading">{% translate "Master data" %}</li>
     <li><a class="nav-link {% if url.namespace == 'contacts' %}active{% endif %}" href="{% url 'contacts:list' %}">{% icon "users" "me-2" %}{% translate "Contacts" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'items' %}active{% endif %}" href="{% url 'invoicing:items' %}">{% icon "package" "me-2" %}{% translate "Items" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'inventory' %}active{% endif %}" href="{% url 'inventory:list' %}">{% icon "boxes" "me-2" %}{% translate "Inventory" %}</a></li>
-    <li><a class="nav-link {% if url.namespace == 'assets' %}active{% endif %}" href="{% url 'assets:list' %}">{% icon "monitor" "me-2" %}{% translate "Fixed assets" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'assets' %}active{% endif %}" href="{% url 'assets:list' %}">{% icon "monitor" "me-2" %}{% translate "Fixed assets" %}{% if not current_organization|includes:plan_features.FIXED_ASSETS %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'deferrals' %}active{% endif %}" href="{% url 'deferrals:list' %}">{% icon "calendar-range" "me-2" %}{% translate "Prepayments" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}">{% icon "network" "me-2" %}{% translate "Chart of accounts" %}</a></li>
     <li class="nav-heading">{% translate "Taxes & reports" %}</li>
@@ -64,7 +64,7 @@
     <li class="nav-heading">{% translate "Settings" %}</li>
     <li><a class="nav-link {% if url.url_name == 'settings' %}active{% endif %}" href="{% url 'tenants:settings' %}">{% icon "settings" "me-2" %}{% translate "Organization" %}</a></li>
     <li><a class="nav-link {% if url.url_name == 'members' %}active{% endif %}" href="{% url 'tenants:members' %}">{% icon "user-cog" "me-2" %}{% translate "Team members" %}</a></li>
-    <li><a class="nav-link {% if url.namespace == 'api_keys' %}active{% endif %}" href="{% url 'api_keys:list' %}">{% icon "key-round" "me-2" %}{% translate "API keys" %}</a></li>
+    <li><a class="nav-link {% if url.namespace == 'api_keys' %}active{% endif %}" href="{% url 'api_keys:list' %}">{% icon "key-round" "me-2" %}{% translate "API keys" %}{% if not current_organization|includes:plan_features.API %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'audit' %}active{% endif %}" href="{% url 'audit:organization' %}">{% icon "history" "me-2" %}{% translate "Activity log" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'billing' %}active{% endif %}" href="{% url 'billing:overview' %}">{% icon "sparkles" "me-2" %}{% translate "Subscription plan" %}</a></li>
     {% endif %}

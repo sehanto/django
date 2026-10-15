@@ -33,4 +33,4 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 @admin.register(Plan)
 class PlanAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "monthly_price", "max_users", "max_invoices_per_month", "is_default")
+    list_display = ("name", "code", "monthly_price", "yearly_price", "max_users", "max_invoices_per_month", "features", "is_default")

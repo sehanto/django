@@ -1,4 +1,5 @@
 from django.core.management import call_command
+from django.utils import timezone
 
 from apps.assets.models import FixedAsset
 from apps.inventory.selectors import reconcile, stock_summary
@@ -13,7 +14,8 @@ def test_demo_books_balance_and_include_depreciation(organization, regions, caps
     demo = Organization.objects.get(name="Kopi Nusantara Rina")
     asset = FixedAsset.objects.get(organization=demo)
     assert asset.postings.exists()  # months since the purchase are depreciated
-    assert build_trial_balance(account_balances(demo), demo.created_at.date()).is_balanced
-    [stock] = reconcile(demo, stock_summary(demo), demo.created_at.date())  # coffee is a tracked item
+    created_on = timezone.localdate(demo.created_at)  # the demo dates by local time, not UTC (00:00-07:00 WIB differ)
+    assert build_trial_balance(account_balances(demo), created_on).is_balanced
+    [stock] = reconcile(demo, stock_summary(demo), created_on)  # coffee is a tracked item
     assert stock.difference == 0 and stock.stock > 0
     assert "Demo ready" in capsys.readouterr().out

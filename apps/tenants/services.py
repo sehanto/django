@@ -27,11 +27,13 @@ User = get_user_model()
 
 
 def get_default_plan() -> Plan:
+    """The plan a new organization tries (Starter)."""
     plan = Plan.objects.filter(is_default=True).first()
     if plan is None:
         plan, _ = Plan.objects.get_or_create(
-            code="gratis",
-            defaults={"name": "Gratis", "max_users": 1, "max_invoices_per_month": 30, "is_default": True},
+            code="starter",
+            defaults={"name": "Starter", "monthly_price": 99000, "yearly_price": 990000, "max_users": 3, "max_invoices_per_month": 300,
+                      "is_default": True, "sort_order": 1},
         )
     return plan
 
@@ -39,10 +41,13 @@ def get_default_plan() -> Plan:
 @transaction.atomic
 def create_organization(*, owner, name: str, legal_form: str, **profile) -> Organization:
     """Create a tenant, make ``owner`` its owner and seed accounting master data."""
+    trial_end = timezone.localdate() + timedelta(days=settings.BILLING_TRIAL_DAYS)  # then it pays, or is read-only
     organization = Organization.objects.create(
         name=name,
         legal_form=legal_form,
         plan=get_default_plan(),
+        plan_paid_until=trial_end,
+        trial_ends_on=trial_end,
         **profile,
     )
     Membership.objects.create(user=owner, organization=organization, role=Role.OWNER)
@@ -169,7 +174,8 @@ def set_subscription(*, organization: Organization, plan: Plan, paid_until: date
         )
     organization.plan = plan
     organization.plan_paid_until = paid_until
-    organization.save(update_fields=["plan", "plan_paid_until", "updated_at"])
+    organization.trial_ends_on = None  # a paid plan ends the trial
+    organization.save(update_fields=["plan", "plan_paid_until", "trial_ends_on", "updated_at"])
     return organization
 
 

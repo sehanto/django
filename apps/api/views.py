@@ -33,6 +33,7 @@ from apps.ledger.selectors import account_balances, accounts_for
 from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.regions.selectors import province_codes
 from apps.taxes.selectors import tax_rates_for
+from apps.tenants.domain import PlanFeature
 from apps.tenants.roles import Permission
 
 from . import idempotency, selectors
@@ -78,6 +79,10 @@ def endpoint(*methods: str):
                     return _error("The key's role does not allow this.", 403)
                 if not allow(ThrottleScope.API, str(key.pk), limit=settings.API_REQUESTS_PER_HOUR, window_seconds=3600):
                     return _error("Too many requests. Try again later.", 429)
+                if not key.organization.has_feature(PlanFeature.API):
+                    return _error("The organization's plan doesn't include the API.", 403)
+                if request.method != "GET" and key.organization.is_read_only:
+                    return _error("The organization is read-only until its plan is paid.", 402)
                 request.organization, request.api_user = key.organization, key.user
                 set_actor(key.user, f"{key.user.email} (API key {key.prefix}…)")  # reset by AuditActorMiddleware
                 if request.method == "GET":

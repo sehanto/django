@@ -3,8 +3,8 @@ from decimal import Decimal
 import pytest
 from django.core.cache import cache
 
+from apps.tenants.domain import PlanFeature
 from apps.tenants.models import Plan
-from apps.tenants.services import get_default_plan
 
 
 @pytest.fixture(autouse=True)
@@ -14,14 +14,19 @@ def _fresh_fake_gateway():
 
 @pytest.fixture
 def plans(db):
-    free = get_default_plan()
-    usaha, _ = Plan.objects.update_or_create(
-        code="usaha", defaults={"name": "Usaha", "monthly_price": Decimal("99000"), "yearly_price": Decimal("990000"), "max_users": 3, "sort_order": 2},
-    )
-    pro, _ = Plan.objects.update_or_create(
-        code="pro", defaults={"name": "Pro", "monthly_price": Decimal("249000"), "yearly_price": Decimal("2490000"), "max_users": 10, "sort_order": 3},
-    )
-    return {"free": free, "usaha": usaha, "pro": pro}
+    """The tiers as the seed migration sets them (transactional tests flush it), and a plan without a price."""
+    free, _ = Plan.objects.update_or_create(code="test-free", defaults={"name": "Gratis", "max_users": 1, "max_invoices_per_month": 30})
+    tiers = {}
+    for code, name, monthly, users, invoices, features, order in (
+        ("starter", "Starter", 99000, 3, 300, [], 1),
+        ("growth", "Growth", 249000, 10, None, [PlanFeature.PAYROLL, PlanFeature.API], 2),
+        ("pro", "Pro", 499000, None, None, PlanFeature.values, 3),
+    ):
+        tiers[code], _ = Plan.objects.update_or_create(code=code, defaults={
+            "name": name, "monthly_price": Decimal(monthly), "yearly_price": Decimal(monthly * 10), "max_users": users,
+            "max_invoices_per_month": invoices, "features": features, "sort_order": order, "is_default": code == "starter",
+        })
+    return {"free": free, **tiers}
 
 
 @pytest.fixture

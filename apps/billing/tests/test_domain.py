@@ -5,12 +5,11 @@ import pytest
 
 from apps.billing.domain import (
     BillingPeriod,
-    SubscriptionState,
     add_months,
     compute_charge,
     coverage_for_payment,
-    subscription_state,
 )
+from apps.tenants.domain import SubscriptionState, subscription_state
 
 D = Decimal
 
@@ -59,9 +58,23 @@ def test_renewal_after_expiry_starts_on_payment_date():
 )
 def test_subscription_state_timeline(today, expected):
     assert subscription_state(
-        is_free_plan=False, paid_until=date(2026, 3, 31), today=today, reminder_days=7, grace_days=7
+        is_free_plan=False, paid_until=date(2026, 3, 31), trial_ends_on=None, today=today, reminder_days=7, grace_days=7
     ) == expected
 
 
 def test_free_plan_state():
-    assert subscription_state(is_free_plan=True, paid_until=None, today=date(2026, 1, 1), reminder_days=7, grace_days=7) == SubscriptionState.FREE
+    assert subscription_state(
+        is_free_plan=True, paid_until=None, trial_ends_on=None, today=date(2026, 1, 1), reminder_days=7, grace_days=7,
+    ) == SubscriptionState.FREE
+
+
+@pytest.mark.parametrize(("today", "paid_until", "expected"), [
+    (date(2026, 3, 7), date(2026, 3, 7), SubscriptionState.TRIAL),  # its last day
+    (date(2026, 3, 8), date(2026, 3, 7), SubscriptionState.LAPSED),  # read-only the day after: no grace
+    (date(2026, 3, 8), date(2026, 4, 7), SubscriptionState.ACTIVE),  # paid since: past the trial
+    (date(2026, 3, 8), None, SubscriptionState.LAPSED),
+])
+def test_a_trial_ends_without_grace(today, paid_until, expected):
+    assert subscription_state(
+        is_free_plan=False, paid_until=paid_until, trial_ends_on=date(2026, 3, 7), today=today, reminder_days=7, grace_days=7,
+    ) == expected

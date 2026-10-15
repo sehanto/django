@@ -7,17 +7,21 @@
   <div>
     <div class="text-sm text-muted">{% translate "Current plan" %}</div>
     <div class="text-2xl font-semibold">{{ current_organization.plan.name }}
-      <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE %}badge-danger{% else %}badge-neutral{% endif %}">{{ state.label }}</span>
+      <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.TRIAL %}badge-primary{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE or state == states.LAPSED %}badge-danger{% else %}badge-neutral{% endif %}">{{ state.label }}</span>
     </div>
   </div>
   <div class="text-muted">
-    {% if current_organization.plan_paid_until %}
+    {% if state == states.TRIAL %}
+      {% blocktranslate trimmed with date=current_organization.plan_paid_until|date:"d F Y" %}Trial until {{ date }}{% endblocktranslate %}
+    {% elif state == states.LAPSED %}
+      {% translate "Read-only until a plan is paid" %}
+    {% elif current_organization.plan_paid_until %}
       {% blocktranslate trimmed with date=current_organization.plan_paid_until|date:"d F Y" %}Paid until {{ date }}{% endblocktranslate %}
     {% else %}{% translate "No payment needed" %}{% endif %}
   </div>
 </div></div>
 
-{% if current_organization.plan_paid_until %}
+{% if current_organization.plan_paid_until and state != states.TRIAL and state != states.LAPSED %}
 <div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-4">
   <div>
     <h2 class="text-base font-medium leading-tight mb-1">{% translate "Automatic renewal" %}</h2>
@@ -63,11 +67,12 @@
           <li>{% icon "check" "text-success me-1" %}{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
           <li>{% icon "check" "text-success me-1" %}{% translate "SAK EMKM financial reports" %}</li>
           <li>{% icon "check" "text-success me-1" %}{% translate "PPN & MSME PPh Final" %}</li>
+          {% for feature in features %}<li class="{% if feature.value not in plan.features %}text-muted{% endif %}">{% if feature.value in plan.features %}{% icon "check" "text-success me-1" %}{% else %}{% icon "x" "me-1" %}{% endif %}{{ feature.label }}</li>{% endfor %}
         </ul>
       </div>
       <div class="card-footer bg-transparent">
         {% if offer.is_free %}
-          <p class="text-sm text-muted mb-0">{% if plan.pk == current_organization.plan_id %}{% translate "Upgrade any time; no card needed." %}{% else %}{% blocktranslate trimmed with days=grace_days %}If your paid plan is not renewed, you move to this plan {{ days }} days after it ends.{% endblocktranslate %}{% endif %}</p>
+          <p class="text-sm text-muted mb-0">{% translate "No payment needed." %}</p>
         {% else %}
           <form method="post" action="{% url 'billing:checkout' %}" class="grid gap-2">{% csrf_token %}
             <input type="hidden" name="plan" value="{{ plan.pk }}">

@@ -604,6 +604,116 @@ msgstr ""
 msgid "This form was already sent and is still being processed. Check the result before sending it again."
 msgstr "Formulir ini sudah dikirim dan masih diproses. Periksa hasilnya sebelum mengirim lagi."
 
+#, python-format
+msgid ""
+"Hello,\n"
+"\n"
+"The %(plan)s trial for %(organization)s ends on %(date)s. Choose a plan to keep recording:\n"
+"%(url)s\n"
+"\n"
+"After the trial the organization is read-only: everything stays readable and exportable, but nothing new can be recorded until a plan is paid."
+msgstr ""
+"Halo,\n"
+"\n"
+"Masa uji coba %(plan)s untuk %(organization)s berakhir pada %(date)s. Pilih paket agar tetap bisa mencatat:\n"
+"%(url)s\n"
+"\n"
+"Setelah masa uji coba, organisasi hanya dapat dibaca: semua data tetap dapat dilihat dan diekspor, tetapi tidak ada catatan baru sampai paket dibayar."
+
+#, python-format
+msgid ""
+"Hello,\n"
+"\n"
+"The %(plan)s plan for %(organization)s is paid until %(date)s. Renew before then to keep your plan without interruption:\n"
+"%(url)s\n"
+"\n"
+"If it is not renewed, the organization becomes read-only %(days)s days later: everything stays readable and exportable, but nothing new can be recorded until the plan is renewed."
+msgstr ""
+"Halo,\n"
+"\n"
+"Paket %(plan)s untuk %(organization)s sudah dibayar sampai %(date)s. Perpanjang sebelum tanggal tersebut agar paket Anda tetap berjalan tanpa gangguan:\n"
+"%(url)s\n"
+"\n"
+"Jika tidak diperpanjang, organisasi hanya dapat dibaca %(days)s hari kemudian: semua data tetap dapat dilihat dan diekspor, tetapi tidak ada catatan baru sampai paket diperpanjang."
+
+#, python-format
+msgid "Your %(plan)s trial for %(organization)s ends on %(date)s"
+msgstr "Masa uji coba %(plan)s untuk %(organization)s berakhir pada %(date)s"
+
+msgid "Payroll and PPh 21"
+msgstr "Penggajian dan PPh 21"
+
+msgid "REST API"
+msgstr "REST API"
+
+msgid "Sending to Coretax"
+msgstr "Pengiriman ke Coretax"
+
+msgid "Trial"
+msgstr "Uji coba"
+
+msgid "Read-only"
+msgstr "Hanya baca"
+
+msgid "This organization is read-only until its plan is paid. Nothing was recorded."
+msgstr "Organisasi ini hanya dapat dibaca sampai paketnya dibayar. Tidak ada yang dicatat."
+
+msgid "This organization is read-only until its plan is paid."
+msgstr "Organisasi ini hanya dapat dibaca sampai paketnya dibayar."
+
+msgid "features"
+msgstr "fitur"
+
+msgid "What the plan includes beyond the bookkeeping every plan has."
+msgstr "Yang termasuk dalam paket selain pembukuan yang ada di setiap paket."
+
+msgid "New organizations start on a trial of it."
+msgstr "Organisasi baru memulai uji coba paket ini."
+
+msgid "Last day covered by payment or by the trial; afterwards (and its grace days) the organization is read-only."
+msgstr "Hari terakhir yang tercakup pembayaran atau masa uji coba; sesudahnya (dan masa tenggangnya) organisasi hanya dapat dibaca."
+
+msgid "trial ends on"
+msgstr "uji coba berakhir pada"
+
+msgid "Start a free trial"
+msgstr "Mulai uji coba gratis"
+
+#, python-format
+msgid "Trial until %(date)s"
+msgstr "Uji coba sampai %(date)s"
+
+msgid "Read-only until a plan is paid"
+msgstr "Hanya baca sampai paket dibayar"
+
+msgid "No payment needed."
+msgstr "Tidak perlu pembayaran."
+
+msgid "This organization is read-only: everything can be read and exported, but nothing new can be recorded until a plan is paid."
+msgstr "Organisasi ini hanya dapat dibaca: semua data dapat dilihat dan diekspor, tetapi tidak ada catatan baru sampai paket dibayar."
+
+#, python-format
+msgid "You are trying the %(plan)s plan until %(date)s. Choose a plan to keep recording after that."
+msgstr "Anda sedang mencoba paket %(plan)s sampai %(date)s. Pilih paket agar tetap bisa mencatat setelahnya."
+
+#, python-format
+msgid "Your %(plan)s plan expired on %(date)s. Renew now, or the organization becomes read-only on %(lapse)s."
+msgstr "Paket %(plan)s Anda berakhir pada %(date)s. Perpanjang sekarang, atau organisasi hanya dapat dibaca mulai %(lapse)s."
+
+#, python-format
+msgid "%(feature)s is included from the %(plan)s plan. Your organization is on %(current)s."
+msgstr "%(feature)s tersedia mulai paket %(plan)s. Organisasi Anda memakai paket %(current)s."
+
+#, python-format
+msgid "%(feature)s isn't included in any plan at the moment."
+msgstr "%(feature)s saat ini tidak termasuk dalam paket mana pun."
+
+msgid "What was recorded with it stays in your books, reports and exports."
+msgstr "Yang sudah dicatat dengannya tetap ada di pembukuan, laporan, dan ekspor Anda."
+
+msgid "See the plans"
+msgstr "Lihat paket"
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."
@@ -1453,23 +1563,6 @@ msgstr "Tagihan ini sudah lunas."
 #, python-format
 msgid "Your %(plan)s plan for %(organization)s ends on %(date)s"
 msgstr "Paket %(plan)s untuk %(organization)s berakhir pada %(date)s"
-
-#: apps/billing/services.py:371
-#, python-format
-msgid ""
-"Hello,\n"
-"\n"
-"The %(plan)s plan for %(organization)s is paid until %(date)s. Renew before then to keep your plan without interruption:\n"
-"%(url)s\n"
-"\n"
-"If it is not renewed, the organization moves to the free plan after a short grace period."
-msgstr ""
-"Halo,\n"
-"\n"
-"Paket %(plan)s untuk %(organization)s sudah dibayar sampai %(date)s. Perpanjang sebelum tanggal tersebut agar paket Anda tetap berjalan tanpa gangguan:\n"
-"%(url)s\n"
-"\n"
-"Jika tidak diperpanjang, organisasi akan pindah ke paket gratis setelah masa tenggang singkat."
 
 #: apps/billing/services.py:391
 msgid "The free plan needs no renewal. Choose a paid plan first."
@@ -6779,10 +6872,6 @@ msgstr "Lupa kata sandi?"
 msgid "Don't have an account?"
 msgstr "Belum punya akun?"
 
-#: templates/accounts/login.html:14
-msgid "Sign up free"
-msgstr "Daftar gratis"
-
 #: templates/accounts/login_otp.html:2 templates/accounts/login_otp.html:4
 #: templates/accounts/security.html:13 templates/accounts/two_factor_verify_session.html:2
 #: templates/tenants/members.html:12
@@ -7859,17 +7948,6 @@ msgstr "Laporan keuangan SAK EMKM"
 msgid "PPN & MSME PPh Final"
 msgstr "PPN & PPh Final UMKM"
 
-#: templates/billing/overview.html:70
-msgid "Upgrade any time; no card needed."
-msgstr "Tingkatkan paket kapan saja; tidak perlu kartu kredit."
-
-#: templates/billing/overview.html:70
-#, python-format
-msgid "If your paid plan is not renewed, you move to this plan %(days)s days after it ends."
-msgstr ""
-"Jika paket berbayar tidak diperpanjang, Anda pindah ke paket ini %(days)s hari setelah paket "
-"berakhir."
-
 #: templates/billing/overview.html:76
 msgid "Amounts include PPN."
 msgstr "Jumlah sudah termasuk PPN."
@@ -8878,15 +8956,6 @@ msgstr "Pengaturan"
 #: templates/tenants/members.html:4
 msgid "Team members"
 msgstr "Anggota Tim"
-
-#: templates/partials/subscription_notice.html:5
-#, python-format
-msgid ""
-"Your %(plan)s plan expired on %(date)s. Renew now, or the organization moves to the Free plan on "
-"%(lapse)s."
-msgstr ""
-"Paket %(plan)s Anda berakhir pada %(date)s. Perpanjang sekarang, atau organisasi akan pindah ke "
-"paket Gratis pada %(lapse)s."
 
 #: templates/partials/subscription_notice.html:9
 #, python-format

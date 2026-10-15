@@ -41,6 +41,12 @@ STATUS_BADGES = {
 
 
 @register.filter
+def includes(organization, feature) -> bool:
+    """``current_organization|includes:plan_features.PAYROLL``: the plan includes the feature."""
+    return organization.has_feature(feature)
+
+
+@register.filter
 def status_badge(status):
     return STATUS_BADGES.get(status, "neutral")
 

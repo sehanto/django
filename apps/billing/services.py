@@ -28,7 +28,7 @@ from apps.core.crypto import decrypt, encrypt
 from apps.core.exceptions import DomainError, ValidationFailed
 from apps.tenants.models import Membership, Organization, Plan
 from apps.tenants.roles import Role
-from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subscription
+from apps.tenants.services import ensure_usage_fits, set_subscription
 
 from .domain import BillingPeriod, Credit, SwitchQuote, coverage_for_payment, switch_quote
 from .gateways import get_gateway
@@ -292,25 +292,36 @@ def expire_stale_checkouts(*, now: datetime | None = None) -> int:
     return closed
 
 
-def lapse_unpaid_subscriptions(*, today: date | None = None) -> int:
-    """Move organizations whose paid period plus grace has ended back to the free plan."""
-    today = today or timezone.localdate()
-    cutoff = today - timedelta(days=settings.BILLING_GRACE_DAYS)
-    default_plan = get_default_plan()
-    lapsed = Organization.objects.filter(plan_paid_until__lt=cutoff).exclude(plan=default_plan)
-    count = 0
-    for organization in lapsed:
-        set_subscription(organization=organization, plan=default_plan, paid_until=None)
-        logger.info("Organization %s lapsed to the %s plan", organization.pk, default_plan.code)
-        count += 1
-    return count
-
-
 def _billing_contacts(organization):
     return [
         m.user for m in Membership.objects.filter(organization=organization, role__in=[Role.OWNER, Role.ADMIN]).select_related("user")
         if m.user.is_active
     ]
+
+
+def _on_trial(organization) -> bool:
+    return organization.trial_ends_on is not None and organization.plan_paid_until == organization.trial_ends_on
+
+
+def _reminder_subject(organization) -> str:
+    if _on_trial(organization):
+        return _("Your %(plan)s trial for %(organization)s ends on %(date)s")
+    return _("Your %(plan)s plan for %(organization)s ends on %(date)s")
+
+
+def _reminder_message(organization) -> str:
+    if _on_trial(organization):
+        return _(
+            "Hello,\n\nThe %(plan)s trial for %(organization)s ends on %(date)s. Choose a plan to keep recording:\n%(url)s\n\n"
+            "After the trial the organization is read-only: everything stays readable and exportable, but nothing new can be "
+            "recorded until a plan is paid."
+        )
+    return _(
+        "Hello,\n\nThe %(plan)s plan for %(organization)s is paid until %(date)s. "
+        "Renew before then to keep your plan without interruption:\n%(url)s\n\n"
+        "If it is not renewed, the organization becomes read-only %(days)s days later: everything stays readable and "
+        "exportable, but nothing new can be recorded until the plan is renewed."
+    )
 
 
 def send_renewal_reminders(*, today: date | None = None) -> int:
@@ -332,17 +343,10 @@ def send_renewal_reminders(*, today: date | None = None) -> int:
                 context = {
                     "plan": organization.plan.name, "organization": organization.name,
                     "date": formats.date_format(organization.plan_paid_until, "d F Y"), "url": billing_url,
+                    "days": settings.BILLING_GRACE_DAYS,
                 }
-                send_mail(
-                    subject=_("Your %(plan)s plan for %(organization)s ends on %(date)s") % context,
-                    message=_(
-                        "Hello,\n\nThe %(plan)s plan for %(organization)s is paid until %(date)s. "
-                        "Renew before then to keep your plan without interruption:\n%(url)s\n\n"
-                        "If it is not renewed, the organization moves to the free plan after a short grace period."
-                    ) % context,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                )
+                send_mail(subject=_reminder_subject(organization) % context, message=_reminder_message(organization) % context,
+                          from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email])
                 sent += 1
         organization.renewal_reminder_sent_for = organization.plan_paid_until
         organization.save(update_fields=["renewal_reminder_sent_for"])

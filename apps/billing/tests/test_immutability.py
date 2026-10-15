@@ -27,7 +27,7 @@ def refused():
 
 @pytest.fixture
 def pending(free_org, plans):
-    return services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly")
+    return services.start_checkout(organization=free_org, plan=plans["starter"], period="monthly")
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def update(invoice, **changes):
 
 
 def test_terms_are_fixed_from_the_start(pending, plans):
-    for change in ({"total": Decimal("1")}, {"plan": plans["pro"]}, {"buyer_name": "Orang Lain"},
+    for change in ({"total": Decimal("1")}, {"plan": plans["growth"]}, {"buyer_name": "Orang Lain"},
                    {"billing_period": "yearly"}, {"credit_amount": Decimal("5")}, {"gateway": "credit"}):
         with refused():
             update(pending, **change)
@@ -63,7 +63,7 @@ def test_paid_needs_a_payment_time_and_ended_early_is_set_once(paid, free_org, p
     update(paid, superseded_on=timezone.localdate())  # a plan switch ends it early: allowed once
     with refused():
         update(paid, superseded_on=None)
-    unpaid = services.start_checkout(organization=free_org, plan=plans["pro"], period="monthly")
+    unpaid = services.start_checkout(organization=free_org, plan=plans["growth"], period="monthly")
     with refused():
         update(unpaid, status=Status.PAID)  # no paid_at
     with refused():
@@ -82,7 +82,7 @@ def test_closed_checkouts_can_still_be_confirmed_by_support(pending, user):
 
 def test_new_invoices_start_unpaid(free_org, plans):
     terms = dict(
-        number="SUB-X", organization=free_org, plan=plans["usaha"], billing_period="monthly", buyer_name="x",
+        number="SUB-X", organization=free_org, plan=plans["starter"], billing_period="monthly", buyer_name="x",
         subtotal=Decimal("99000"), tax_base=Decimal("90750"), tax_amount=Decimal("10890"), total=Decimal("109890"),
     )
     with refused():

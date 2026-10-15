@@ -30,14 +30,6 @@ class BillingPeriod(models.TextChoices):
         return 12 if self == BillingPeriod.YEARLY else 1
 
 
-class SubscriptionState(models.TextChoices):
-    FREE = "free", _("Free plan")
-    ACTIVE = "active", _("Active")
-    EXPIRING = "expiring", _("Expiring soon")
-    GRACE = "grace", _("Expired (grace period)")
-    LAPSED = "lapsed", _("Lapsed")
-
-
 @dataclass(frozen=True)
 class Charge:
     subtotal: Decimal  # plan price, excluding PPN
@@ -157,17 +149,3 @@ def coverage_for_payment(
     if share < 1:
         days = max(1, int(days * share))
     return start, start + timedelta(days=days + extension_days - 1)
-
-
-def subscription_state(
-    *, is_free_plan: bool, paid_until: date | None, today: date, reminder_days: int, grace_days: int
-) -> SubscriptionState:
-    if is_free_plan or paid_until is None:
-        return SubscriptionState.FREE
-    if today <= paid_until - timedelta(days=reminder_days):
-        return SubscriptionState.ACTIVE
-    if today <= paid_until:
-        return SubscriptionState.EXPIRING
-    if today <= paid_until + timedelta(days=grace_days):
-        return SubscriptionState.GRACE
-    return SubscriptionState.LAPSED
