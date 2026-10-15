@@ -16,14 +16,7 @@ from apps.invoicing.models import IncomeTaxWithheld, InvoiceKind
 from apps.invoicing.services import IncomeTaxInput, InvoiceLineInput
 from apps.ledger.selectors import account_balance
 from apps.payroll import selectors, services
-from apps.payroll.domain import (
-    TaxScheme,
-    annual_pph21,
-    daily_pph21,
-    non_employee_pph21,
-    pph26,
-    with_surcharge,
-)
+from apps.payroll.domain import TaxScheme, annual_pph21, daily_pph21, non_employee_pph21, pph26, with_surcharge
 from apps.payroll.models import Employee
 from apps.payroll.services import PayInput
 from apps.taxes.selectors import withholding_due

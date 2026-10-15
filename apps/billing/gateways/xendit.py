@@ -14,16 +14,7 @@ import requests
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
 
-from .base import (
-    ChargeRequest,
-    Checkout,
-    CheckoutRequest,
-    GatewayError,
-    GatewayName,
-    GatewayPayment,
-    PaymentStatus,
-    SaveRequest,
-)
+from .base import ChargeRequest, Checkout, CheckoutRequest, GatewayError, GatewayName, GatewayPayment, PaymentStatus, SaveRequest
 
 logger = logging.getLogger(__name__)
 

@@ -8,14 +8,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import (
-    CreateView,
-    DetailView,
-    FormView,
-    ListView,
-    TemplateView,
-    UpdateView,
-)
+from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.params import text_param, year_choices, year_param
@@ -26,13 +19,7 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
 from . import selectors, services
 from .domain import TaxScheme
-from .forms import (
-    EmployeeForm,
-    PayForm,
-    PayrollRunForm,
-    PayrollSettingsForm,
-    PriorIncomeForm,
-)
+from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm, PriorIncomeForm
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 
 

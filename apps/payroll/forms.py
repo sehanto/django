@@ -2,18 +2,12 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.validators import npwp_format_validator
-from apps.core.forms import (
-    BaseForm,
-    BaseModelForm,
-    BusinessDateField,
-    DigitsField,
-    OrganizationFormMixin,
-)
+from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, DigitsField, OrganizationFormMixin
+from apps.regions.forms import RegionFieldsMixin
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
 from apps.ledger.domain import AccountCategory
 from apps.ledger.models import Account
 from apps.ledger.selectors import accounts_for, cash_accounts
-from apps.regions.forms import RegionFieldsMixin
 
 from .models import Employee, PayrollSettings, PriorIncome, nik_validator
 from .services import PayInput

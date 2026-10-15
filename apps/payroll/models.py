@@ -13,14 +13,7 @@ from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import document_number_validator, identifier_validator
 from apps.regions.models import Address
 
-from .domain import (
-    BpjsRates,
-    EmployeeKind,
-    PayBasis,
-    PtkpStatus,
-    TaxScheme,
-    TerCategory,
-)
+from .domain import BpjsRates, EmployeeKind, PayBasis, PtkpStatus, TaxScheme, TerCategory
 
 nik_validator = RegexValidator(r"^\d{16}$", _("A NIK has 16 digits."))
 

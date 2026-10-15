@@ -10,16 +10,7 @@ from apps.regions.models import Village, format_address
 from apps.regions.selectors import village_by_code
 from apps.tenants.models import Plan
 
-from .domain import (
-    BillingPeriod,
-    Credit,
-    PaidPeriod,
-    SubscriptionState,
-    SwitchQuote,
-    subscription_state,
-    switch_quote,
-    unused_credit,
-)
+from .domain import BillingPeriod, Credit, PaidPeriod, SubscriptionState, SwitchQuote, subscription_state, switch_quote, unused_credit
 from .models import AutoRenewal, SubscriptionInvoice
 
 

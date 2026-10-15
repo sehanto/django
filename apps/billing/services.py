@@ -30,29 +30,11 @@ from apps.tenants.models import Membership, Organization, Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subscription
 
-from .domain import (
-    BillingPeriod,
-    Credit,
-    SwitchQuote,
-    coverage_for_payment,
-    switch_quote,
-)
+from .domain import BillingPeriod, Credit, SwitchQuote, coverage_for_payment, switch_quote
 from .gateways import get_gateway
-from .gateways.base import (
-    ChargeRequest,
-    CheckoutRequest,
-    GatewayError,
-    GatewayName,
-    PaymentStatus,
-    SaveRequest,
-)
+from .gateways.base import ChargeRequest, CheckoutRequest, GatewayError, GatewayName, PaymentStatus, SaveRequest
 from .models import AutoRenewal, SubscriptionInvoice
-from .selectors import (  # the read side of proration
-    platform_seller,
-    price_for,
-    quote_for,
-    switch_credit,
-)
+from .selectors import platform_seller, price_for, quote_for, switch_credit  # the read side of proration
 
 logger = logging.getLogger(__name__)
 Status = SubscriptionInvoice.Status

@@ -15,27 +15,11 @@ from apps.core.periods import month_end
 from apps.core.validators import ensure_business_date, ensure_document_number
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
-from apps.ledger.services import (
-    JournalLineInput,
-    create_journal_entry,
-    get_system_account,
-    reverse_journal_entry,
-)
+from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
 
 from .domain import (
-    PPH_26_RATE,
-    TER_CATEGORY,
-    EmployeeKind,
-    PtkpStatus,
-    TaxScheme,
-    contributions,
-    daily_pph21,
-    gross_up,
-    late_severance_tax,
-    monthly_pph21,
-    pph26,
-    severance_tax,
-    with_surcharge,
+    PPH_26_RATE, TER_CATEGORY, EmployeeKind, PtkpStatus, TaxScheme, contributions, daily_pph21, gross_up, late_severance_tax,
+    monthly_pph21, pph26, severance_tax, with_surcharge,
 )
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 from .selectors import prior_income, year_end_tax
