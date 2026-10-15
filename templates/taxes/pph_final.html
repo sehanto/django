@@ -14,6 +14,16 @@
     Gross turnover this year exceeds {{ limit }}. The MSME PPh Final scheme no longer applies from the next tax year, and the business must register as a PKP.
   {% endblocktranslate %}</div>
 {% endif %}
+{% if current_organization.uses_pph_final and last_year %}{% with form=current_organization.get_legal_form_display since=current_organization.pph_final_since %}
+  {% if year > last_year %}<div class="alert alert-danger">{% blocktranslate trimmed %}
+    PP 55/2022 (Art. 59) allows a {{ form }} the MSME final income tax for its first tax years only: {{ since }} to {{ last_year }}. For {{ year }} the regular income tax applies unless a later regulation extends the term: turn PPh Final off in the settings and record the income tax as Beban Pajak Penghasilan.
+  {% endblocktranslate %}</div>
+  {% elif year == last_year %}<div class="alert alert-warning">{% blocktranslate trimmed %}
+    {{ year }} is the last tax year PP 55/2022 (Art. 59) allows a {{ form }} the MSME final income tax (from {{ since }}). From {{ next_year }} the regular income tax applies unless a later regulation extends the term.
+  {% endblocktranslate %}</div>{% endif %}
+{% endwith %}{% elif current_organization.uses_pph_final %}{% url 'tenants:settings' as settings_url %}
+  <div class="alert alert-info">{% blocktranslate trimmed with url=settings_url %}PP 55/2022 allows the scheme for a limited number of tax years. Enter the year you started using it in the <a href="{{ url }}">settings</a> to be warned when the term ends.{% endblocktranslate %}</div>
+{% endif %}
 <div class="grid grid-cols-12 gap-4 mb-4">
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
@@ -53,12 +63,13 @@
         {% elif m.tax and row.has_ended and can_write and current_organization.uses_pph_final %}
           <button class="btn btn-sm btn-outline-primary" type="button" data-dialog-open="payModal" data-fill-month="{{ m.month }}">{% translate "Record tax payment" %}</button>
         {% elif m.tax and row.has_ended %}<span class="badge badge-warning">{% translate "Not paid yet" %}</span>{% endif %}
+        {% if m.tax and row.has_ended and not payment and not row.covered_by_withholding %}<div class="text-sm {% if row.overdue %}text-danger{% else %}text-muted{% endif %}">{% if row.overdue %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Overdue: due {{ date }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Due {{ date }}{% endblocktranslate %}{% endif %}</div>{% endif %}
       </td>
     </tr>
   {% endwith %}{% endfor %}
   </tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month. Gross turnover is calculated from posted operating revenue accounts." %}
+<p class="text-sm text-muted mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month (PMK 81/2024), or the next working day when that is a weekend or public holiday. Gross turnover is calculated from posted operating revenue accounts." %}
   {% translate "Under SAK EMKM's accrual basis, each month's PPh Final is an expense of that month: record it after the month ends (it is posted on the last day of the month as a liability), and the payment settles the liability. Recording a payment also records a missing expense." %}
   {% translate "PPh Final that buyers withheld from your receipts (with your Surat Keterangan PP 55) is deposited by them: it counts towards the month of the receipt, and you deposit only the rest." %}</p>
 

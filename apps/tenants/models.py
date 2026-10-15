@@ -10,6 +10,7 @@ from apps.contacts.validators import nitku_validator, npwp_format_validator, val
 from apps.core.models import TenantOwnedModel, TimeStampedModel, money_field
 from apps.core.validators import nib_validator, phone_validator
 from apps.regions.models import Address
+from apps.taxes.domain import EARLIEST_PPH_FINAL_YEAR, pph_final_last_year
 
 from .roles import Role
 
@@ -75,6 +76,12 @@ class Organization(TimeStampedModel, Address):
         # xgettext:no-python-format
         help_text=_("PP 55/2022: 0.5% final income tax on gross turnover."),
     )
+    pph_final_since = models.PositiveSmallIntegerField(
+        _("first year under PPh Final"), null=True, blank=True, validators=[MinValueValidator(EARLIEST_PPH_FINAL_YEAR)],
+        help_text=_("The tax year the business registered for the MSME final income tax, or 2018 if earlier. PP 55/2022 allows "
+                    "it for 7 tax years for an individual (sole proprietorship), 4 for a CV, Firma, cooperative or PT Perorangan "
+                    "and 3 for a PT."),
+    )
     require_two_factor = models.BooleanField(
         _("require two-factor authentication"),
         default=False,
@@ -125,6 +132,11 @@ class Organization(TimeStampedModel, Address):
     def is_limited_company(self) -> bool:
         """A PT: its equity shows share capital and additional paid-in capital (SAK EMKM 13.8)."""
         return self.legal_form in (self.LegalForm.PT, self.LegalForm.PT_PERORANGAN)
+
+    @property
+    def pph_final_last_year(self) -> int | None:
+        """The last tax year PP 55/2022 (Art. 59) allows the MSME final income tax, if the first is known."""
+        return pph_final_last_year(self.legal_form, self.pph_final_since) if self.pph_final_since else None
 
     @property
     def is_partnership(self) -> bool:

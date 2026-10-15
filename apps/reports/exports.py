@@ -365,7 +365,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
 )
 ORGANIZATION_FIELDS = (
     C("name"), C("legal_form"), C("npwp"), C("nib"), *ADDRESS, C("phone"), C("email"), C("is_pkp"), C("is_retailer"),
-    C("uses_pph_final"), C("inventory_cost_formula"), C("depreciation_method"), C("additional_notes"), C("lock_date"),
+    C("uses_pph_final"), C("pph_final_since"), C("inventory_cost_formula"), C("depreciation_method"), C("additional_notes"), C("lock_date"),
 )
 ORGANIZATION_FILE = "organization.csv"
 TRIAL_BALANCE_FILE = "trial_balance.csv"

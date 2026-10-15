@@ -22,7 +22,7 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
         model = Organization
         fields = [
             "name", "legal_form", "npwp", "nib", "address", "village", "phone", "email",
-            "is_pkp", "is_retailer", "uses_pph_final", "inventory_cost_formula", "depreciation_method", "additional_notes",
+            "is_pkp", "is_retailer", "uses_pph_final", "pph_final_since", "inventory_cost_formula", "depreciation_method", "additional_notes",
             "lock_date", "require_two_factor",
         ]
         widgets = {
@@ -46,6 +46,12 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
             # Otherwise the person setting the rule would be the first one locked out.
             raise forms.ValidationError(_("Turn on two-factor authentication for your own account first (Profile → Security)."))
         return required
+
+    def clean_pph_final_since(self):
+        year = self.cleaned_data["pph_final_since"]
+        if year and year > timezone.localdate().year:
+            raise forms.ValidationError(_("The year cannot be in the future."))
+        return year
 
     def clean_lock_date(self):
         lock_date = self.cleaned_data["lock_date"]

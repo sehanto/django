@@ -491,6 +491,67 @@ msgstr "Ekuitas per %(date)s"
 msgid "Profit for %(start)s to %(end)s"
 msgstr "Laba bersih %(start)s s.d. %(end)s"
 
+#: apps/tenants/models.py
+msgid "first year under PPh Final"
+msgstr "tahun pertama PPh Final"
+
+#: apps/tenants/models.py
+msgid ""
+"The tax year the business registered for the MSME final income tax, or 2018 if earlier. PP "
+"55/2022 allows it for 7 tax years for an individual (sole proprietorship), 4 for a CV, Firma, "
+"cooperative or PT Perorangan and 3 for a PT."
+msgstr ""
+"Tahun pajak usaha mulai terdaftar memakai PPh Final UMKM, atau 2018 bila lebih awal. PP 55/2022 "
+"membolehkannya selama 7 tahun pajak untuk orang pribadi (usaha perorangan), 4 untuk CV, firma, "
+"koperasi atau PT Perorangan, dan 3 untuk PT."
+
+#: apps/tenants/forms.py
+msgid "The year cannot be in the future."
+msgstr "Tahun tidak boleh di masa depan."
+
+#: templates/taxes/pph_final.html
+#, python-format
+msgid ""
+"PP 55/2022 (Art. 59) allows a %(form)s the MSME final income tax for its first tax years only: "
+"%(since)s to %(last_year)s. For %(year)s the regular income tax applies unless a later regulation "
+"extends the term: turn PPh Final off in the settings and record the income tax as Beban Pajak "
+"Penghasilan."
+msgstr ""
+"PP 55/2022 (Pasal 59) membolehkan %(form)s memakai PPh Final UMKM hanya pada tahun-tahun pajak "
+"pertamanya: %(since)s s.d. %(last_year)s. Untuk %(year)s berlaku tarif PPh umum, kecuali "
+"jangka waktunya diperpanjang oleh peraturan yang lebih baru: matikan PPh Final di pengaturan dan "
+"catat pajak penghasilannya sebagai Beban Pajak Penghasilan."
+
+#: templates/taxes/pph_final.html
+#, python-format
+msgid ""
+"%(year)s is the last tax year PP 55/2022 (Art. 59) allows a %(form)s the MSME final income tax "
+"(from %(since)s). From %(next_year)s the regular income tax applies unless a later regulation "
+"extends the term."
+msgstr ""
+"%(year)s adalah tahun pajak terakhir %(form)s boleh memakai PPh Final UMKM menurut PP 55/2022 "
+"(Pasal 59) (sejak %(since)s). Mulai %(next_year)s berlaku tarif PPh umum, kecuali jangka waktunya "
+"diperpanjang oleh peraturan yang lebih baru."
+
+#: templates/taxes/pph_final.html
+#, python-format
+msgid ""
+"PP 55/2022 allows the scheme for a limited number of tax years. Enter the year you started using "
+"it in the <a href=\"%(url)s\">settings</a> to be warned when the term ends."
+msgstr ""
+"PP 55/2022 membolehkan skema ini hanya selama beberapa tahun pajak. Isi tahun mulai memakainya di "
+"<a href=\"%(url)s\">pengaturan</a> agar Anda diingatkan saat jangka waktunya berakhir."
+
+#: templates/taxes/pph_final.html templates/taxes/withholding.html
+#, python-format
+msgid "Overdue: due %(date)s"
+msgstr "Terlambat: jatuh tempo %(date)s"
+
+#: templates/taxes/pph_final.html templates/taxes/withholding.html
+#, python-format
+msgid "Due %(date)s"
+msgstr "Jatuh tempo %(date)s"
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."
@@ -10063,11 +10124,13 @@ msgstr "Catat setoran"
 
 #: templates/taxes/pph_final.html:61
 msgid ""
-"Legal basis: PP 55/2022. Payment is due by the 15th of the following month. Gross turnover is "
-"calculated from posted operating revenue accounts."
+"Legal basis: PP 55/2022. Payment is due by the 15th of the following month (PMK 81/2024), or the "
+"next working day when that is a weekend or public holiday. Gross turnover is calculated from "
+"posted operating revenue accounts."
 msgstr ""
-"Dasar hukum: PP 55/2022. Setoran paling lambat tanggal 15 bulan berikutnya. Peredaran bruto "
-"dihitung dari akun Pendapatan Usaha yang telah diposting."
+"Dasar hukum: PP 55/2022. Setoran paling lambat tanggal 15 bulan berikutnya (PMK 81/2024), atau "
+"hari kerja berikutnya bila jatuh pada hari libur atau akhir pekan. Peredaran bruto dihitung dari "
+"akun Pendapatan Usaha yang telah diposting."
 
 #: templates/taxes/pph_final.html:62
 msgid ""
@@ -10205,14 +10268,15 @@ msgstr ""
 msgid ""
 "When you pay a supplier for services (PPh 23), rent of land or buildings (PPh 4(2)) or an "
 "individual's fee (PPh 21), and when you pay salaries (PPh 21, or PPh 26 for non-residents), you "
-"withhold the tax, deposit it by the 15th of the next month and give a bukti potong from Coretax "
-"eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first."
+"withhold the tax, deposit it by the 15th of the next month (the next working day when that is a "
+"weekend or public holiday) and give a bukti potong from Coretax eBupot. Withholding in a month "
+"that is already deposited is refused: cancel the deposit first."
 msgstr ""
 "Saat membayar pemasok untuk jasa (PPh 23), sewa tanah atau bangunan (PPh 4(2)) atau imbalan orang "
-"pribadi (PPh 21), dan saat membayar gaji (PPh 21, atau PPh 26 untuk WPLN), Anda memotong pajaknya,"
-" menyetorkannya paling lambat tanggal 15 bulan berikutnya, dan memberikan bukti potong dari "
-"Coretax eBupot. Pemotongan pada bulan yang sudah disetor ditolak: batalkan setorannya terlebih "
-"dahulu."
+"pribadi (PPh 21), dan saat membayar gaji (PPh 21, atau PPh 26 untuk WPLN), Anda memotong pajaknya, "
+"menyetorkannya paling lambat tanggal 15 bulan berikutnya (hari kerja berikutnya bila jatuh pada "
+"hari libur atau akhir pekan), dan memberikan bukti potong dari Coretax eBupot. Pemotongan pada "
+"bulan yang sudah disetor ditolak: batalkan setorannya terlebih dahulu."
 
 #: templates/taxes/withholding_month.html:6
 #, python-format

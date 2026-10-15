@@ -97,7 +97,8 @@ def test_the_bukti_potong_number_is_recorded_once(auth_client, organization, bil
     assert list(page.context["payments"]) == [payment]
     csv = auth_client.get(reverse("taxes:withholding_month_csv", args=[2026, 3])).content.decode("utf-8-sig")
     assert "BPPU-00012" in csv and "100000" in csv
-    assert auth_client.get(reverse("taxes:withholding"), {"year": 2026}).context["rows"][0].due == D("100000")
+    row = auth_client.get(reverse("taxes:withholding"), {"year": 2026}).context["rows"][0]
+    assert row.due == D("100000") and row.due_on == date(2026, 4, 15) and row.overdue  # not deposited, after the 15th
 
 
 def test_the_payment_form_withholds_from_suppliers(auth_client, organization, bill, account):

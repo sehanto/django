@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.db import models
@@ -18,6 +19,24 @@ PPH_FINAL_RATE = Decimal("0.005")
 PPH_FINAL_INDIVIDUAL_THRESHOLD = Decimal("500000000")
 # Turnover limit for using the PPh Final scheme and for mandatory PKP status.
 MSME_TURNOVER_LIMIT = Decimal("4800000000")
+# PP 55/2022 Art. 59(1): the scheme may be used for a limited number of tax years, counted from
+# the year the taxpayer registered, or from 2018 for those registered earlier (Art. 59(3)).
+# Keyed by Organization.LegalForm: a sole proprietorship (UD) is its owner, an individual.
+PPH_FINAL_TERM_YEARS = {"perorangan": 7, "cv": 4, "firma": 4, "koperasi": 4, "pt_perorangan": 4, "pt": 3}
+EARLIEST_PPH_FINAL_YEAR = 2018
+
+
+def pph_final_last_year(legal_form: str, first_year: int) -> int:
+    """The last tax year PP 55/2022 allows the scheme for a taxpayer that first used it in ``first_year``."""
+    return max(first_year, EARLIEST_PPH_FINAL_YEAR) + PPH_FINAL_TERM_YEARS[legal_form] - 1
+
+
+def deposit_due(year: int, month: int) -> date:
+    """When a month's PPh Final and withheld income tax must be deposited: the 15th of the next
+    month (PMK 81/2024), or the next working day when that is a Saturday or Sunday. A national
+    holiday moves it too; the calendar of those is not kept here."""
+    due = date(year + month // 12, month % 12 + 1, 15)
+    return due + timedelta(days=max(0, 7 - due.weekday())) if due.weekday() >= 5 else due
 
 
 class Month(models.IntegerChoices):

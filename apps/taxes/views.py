@@ -1,5 +1,6 @@
 import csv
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from enum import StrEnum
 
@@ -23,7 +24,7 @@ from apps.tenants.mixins import OrganizationMixin, WriteMixin
 from apps.tenants.roles import Permission
 
 from . import ebupot, services
-from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PayerWithholding, PphFinalMonth
+from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PayerWithholding, PphFinalMonth, deposit_due
 from .forms import ImportDeclarationForm, PphFinalPaymentForm, SelfDepositForm, TaxObjectForm, TaxRateForm, WithholdingDepositForm
 from .models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, WithholdingDeposit
 from .selectors import (
@@ -72,6 +73,14 @@ class PphFinalRow:
     payment: PphFinalPayment | None
     has_ended: bool
     withheld: Decimal = ZERO  # by buyers, from the month's receipts
+    due_on: date | None = None  # its deposit (domain.deposit_due)
+    today: date | None = None
+
+    @property
+    def overdue(self) -> bool:
+        """Tax to deposit, neither paid nor covered by buyers' withholding, after its due date."""
+        return (bool(self.period.tax) and self.payment is None and not self.covered_by_withholding
+                and self.today is not None and self.due_on is not None and self.today > self.due_on)
 
     @property
     def covered_by_withholding(self) -> bool:
@@ -101,7 +110,7 @@ class PphFinalView(OrganizationMixin, TemplateView):
             rows=[
                 PphFinalRow(
                     m, accruals.get(m.month), payments.get(m.month), month_end(year, m.month) <= today,
-                    withheld.get(m.month, ZERO),
+                    withheld.get(m.month, ZERO), deposit_due(year, m.month), today,
                 )
                 for m in schedule
             ],
@@ -109,6 +118,8 @@ class PphFinalView(OrganizationMixin, TemplateView):
             total_turnover=annual_turnover,
             total_tax=sum(m.tax for m in schedule),
             over_limit=annual_turnover > MSME_TURNOVER_LIMIT,
+            last_year=self.organization.pph_final_last_year,
+            next_year=year + 1,
             limit=MSME_TURNOVER_LIMIT,
             rate_percent=PPH_FINAL_RATE * 100,
             payment_form=PphFinalPaymentForm(organization=self.organization, initial={"paid_on": timezone.localdate()}),
@@ -185,6 +196,12 @@ class WithholdingRow:
     due: Decimal
     deposit: WithholdingDeposit | None
     detail_url: str = ""  # the month's bukti potong: supplier payments, or the payroll run
+    due_on: date | None = None  # its deposit (domain.deposit_due)
+    today: date | None = None
+
+    @property
+    def overdue(self) -> bool:
+        return self.due > 0 and self.deposit is None and self.today is not None and self.due_on is not None and self.today > self.due_on
 
 
 class WithholdingView(OrganizationMixin, TemplateView):
@@ -193,15 +210,16 @@ class WithholdingView(OrganizationMixin, TemplateView):
     def get_context_data(self, **kwargs):
         year = _selected_year(self.request)
         due = withholding_due(self.organization, year)
+        today = timezone.localdate()
         deposits = withholding_deposits(self.organization, year)
         rows = [  # each links to the month's bukti potong and eBupot files
             WithholdingRow(month, kind, due.get((kind, month), ZERO), deposits.get((kind, month)),
-                           reverse("taxes:withholding_month", args=[year, month]))
+                           reverse("taxes:withholding_month", args=[year, month]), deposit_due(year, month), today)
             for month in Month for kind in PayerWithholding
             if (kind, month) in due or (kind, month) in deposits  # a 0% treaty rate still takes a BPNR
         ]
         return super().get_context_data(
-            year=year, years=year_choices(), rows=rows, today=timezone.localdate(),
+            year=year, years=year_choices(), rows=rows, today=today,
             deposit_form=WithholdingDepositForm(organization=self.organization, initial={"paid_on": timezone.localdate()}),
             **kwargs,
         )
