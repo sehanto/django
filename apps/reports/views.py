@@ -15,12 +15,17 @@ from apps.core.params import choice_param, year_choices, year_param
 from apps.core.sanitizers import csv_safe
 from apps.invoicing import coretax
 from apps.invoicing.models import InvoiceKind
-from apps.invoicing.selectors import aging_report, coretax_connected, faktur_months, purchase_return_months, vat_summary
+from apps.invoicing.selectors import (
+    aging_report, coretax_connected, faktur_months, fakturs_without_number, purchase_return_months, vat_summary,
+)
 from apps.ledger.selectors import account_balances, account_ledger, prior_period_corrections, restated_since
 from apps.accounts.throttle import ThrottleScope, allow
 from apps.assets.selectors import revisions_in
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
+from apps.core.periods import add_months, month_end
+from apps.taxes.domain import MSME_TURNOVER_LIMIT, faktur_upload_due, pkp_threshold_month, vat_return_due
+from apps.taxes.selectors import monthly_gross_turnover
 from apps.tenants.mixins import ManageMixin, OrganizationMixin
 
 from .exports import archive_filename, write_books_archive
@@ -172,7 +177,13 @@ class VatReportView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         year = year_param(self.request.GET)
-        rows = vat_summary(self.organization, year)
+        today = timezone.localdate()
+        unnumbered = fakturs_without_number(self.organization, year)
+        rows = [  # with the month's deadlines (PMK 81/2024) and its fakturs still without a number
+            {**r, "return_due": vat_return_due(year, r["month"]), "unnumbered": unnumbered.get(r["month"], 0),
+             "faktur_due": faktur_upload_due(year, r["month"]), "faktur_late": today > faktur_upload_due(year, r["month"])}
+            for r in vat_summary(self.organization, year)
+        ]
         totals = {
             key: sum(r[key] for r in rows)
             for key in ("output_base", "output", "luxury", "not_collected", "collected", "input_base", "input", "net", "aggregated_base", "aggregated")
@@ -181,8 +192,16 @@ class VatReportView(OrganizationMixin, TemplateView):
             year=year, years=year_choices(), rows=rows, totals=totals,
             return_months=purchase_return_months(self.organization, year), sales_months=faktur_months(self.organization, year),
             special_months=coretax.special_months(self.organization, year), special_files=coretax.SpecialFile,
-            coretax_connected=coretax_connected(self.organization), **kwargs
+            coretax_connected=coretax_connected(self.organization), **self._pkp_threshold(year), **kwargs
         )
+
+    def _pkp_threshold(self, year):
+        """A business that isn't a PKP passing Rp4,8 miliar in a year registers as one by the end of
+        the next month (PMK 197/2013)."""
+        if self.organization.is_pkp:
+            return {}
+        month = pkp_threshold_month(monthly_gross_turnover(self.organization, year))
+        return {"pkp_by": month_end(*add_months(year, month, 1)), "pkp_limit": MSME_TURNOVER_LIMIT} if month else {}
 
 
 class ExportBooksView(ManageMixin, TemplateView):

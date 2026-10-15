@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.core.money import ZERO
 
+from . import coretax
 from .domain import AgingBucket, aging_bucket
 from .models import CoretaxConnection, Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
 
@@ -199,6 +200,25 @@ def purchase_return_months(organization, year: int) -> set[int]:
         .filter(kind=InvoiceKind.PURCHASE, status=ReturnNote.Status.POSTED, date__year=year)
         .values_list("date__month", flat=True)
     )
+
+
+def fakturs_without_number(organization, year: int) -> dict[int, int]:
+    """{month: issued sales invoices that need their own Faktur Pajak and have no number yet}: the
+    ones a PKP reports as fakturs (with PPN, charged or under a facility; not exports, which have a
+    PEB, nor retail sales in the month's total)."""
+    if not organization.is_pkp:
+        return {}
+    pending = (
+        Invoice.objects.for_organization(organization)
+        .filter(Q(tax_amount__gt=0) | Q(vat_not_collected__gt=0), kind=InvoiceKind.SALES, date__year=year,
+                status__in=Invoice.ISSUED_STATUSES, tax_invoice_number="")
+        .select_related("organization", "contact")
+    )
+    months: dict[int, int] = {}
+    for invoice in pending:
+        if not invoice.is_export and not coretax.is_aggregated(invoice):
+            months[invoice.date.month] = months.get(invoice.date.month, 0) + 1
+    return months
 
 
 def faktur_months(organization, year: int) -> set[int]:

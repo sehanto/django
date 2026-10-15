@@ -564,6 +564,42 @@ msgstr "Hanya pemilik yang dapat memundurkan atau menghapus tanggal kunci."
 msgid "Use letters, digits, spaces and . , / ( ) _ : # & - only, starting with a letter or digit."
 msgstr "Gunakan huruf, angka, spasi, dan . , / ( ) _ : # & - saja, diawali huruf atau angka."
 
+#: templates/reports/vat.html
+#, python-format
+msgid ""
+"Turnover in %(year)s has passed %(limit)s. A business that isn't a PKP must register as one "
+"(pengukuhan PKP) by %(date)s, the end of the month after it passed the limit, and charge PPN from "
+"then on (PMK 197/2013)."
+msgstr ""
+"Peredaran bruto %(year)s telah melewati %(limit)s. Usaha yang belum PKP wajib melaporkan usahanya "
+"untuk dikukuhkan sebagai PKP paling lambat %(date)s, akhir bulan berikutnya setelah batas itu "
+"terlampaui, dan memungut PPN sejak saat itu (PMK 197/2013)."
+
+#: templates/reports/vat.html
+#, python-format
+msgid "%(counter)s faktur without its number, due %(date)s"
+msgid_plural "%(counter)s fakturs without their number, due %(date)s"
+msgstr[0] "%(counter)s faktur belum bernomor, batas %(date)s"
+
+#: templates/reports/vat.html
+#, python-format
+msgid "%(counter)s faktur to upload by %(date)s"
+msgid_plural "%(counter)s fakturs to upload by %(date)s"
+msgstr[0] "%(counter)s faktur diunggah paling lambat %(date)s"
+
+#: templates/reports/vat.html
+#, python-format
+msgid ""
+"The SPT Masa PPN is filed, and the PPN payable deposited, by the end of the next month (PMK "
+"81/2024; the next working day after a weekend or public holiday). Each faktur is uploaded by the "
+"15th of the month after its date: a late faktur is fined 1%% of its tax base (UU KUP Art. 14(4)). "
+"Record the number Coretax gives on the invoice."
+msgstr ""
+"SPT Masa PPN dilaporkan, dan PPN kurang bayar disetor, paling lambat akhir bulan berikutnya (PMK "
+"81/2024; hari kerja berikutnya bila jatuh pada akhir pekan atau hari libur). Setiap faktur diunggah "
+"paling lambat tanggal 15 bulan setelah tanggalnya: faktur yang terlambat dikenai denda 1%% dari "
+"DPP-nya (UU KUP Pasal 14 ayat (4)). Catat nomor dari Coretax pada fakturnya."
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."

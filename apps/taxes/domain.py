@@ -35,8 +35,36 @@ def deposit_due(year: int, month: int) -> date:
     """When a month's PPh Final and withheld income tax must be deposited: the 15th of the next
     month (PMK 81/2024), or the next working day when that is a Saturday or Sunday. A national
     holiday moves it too; the calendar of those is not kept here."""
-    due = date(year + month // 12, month % 12 + 1, 15)
-    return due + timedelta(days=max(0, 7 - due.weekday())) if due.weekday() >= 5 else due
+    return _next_working_day(date(year + month // 12, month % 12 + 1, 15))
+
+
+def _next_working_day(day: date) -> date:
+    return day + timedelta(days=7 - day.weekday()) if day.weekday() >= 5 else day
+
+
+def vat_return_due(year: int, month: int) -> date:
+    """When a month's SPT Masa PPN must be filed and the PPN payable deposited: the end of the next
+    month (PMK 81/2024), or the next working day after a weekend (national holidays aren't known)."""
+    next_year, next_month = year + month // 12, month % 12 + 1
+    return _next_working_day(date(next_year + next_month // 12, next_month % 12 + 1, 1) - timedelta(days=1))
+
+
+def faktur_upload_due(year: int, month: int) -> date:
+    """A Faktur Pajak dated in a month is uploaded (approved in Coretax) by the 15th of the next
+    month; one uploaded later is a late faktur, fined 1% of its DPP (UU KUP Art. 14(4)). Not moved
+    for a weekend, to be safe."""
+    return date(year + month // 12, month % 12 + 1, 15)
+
+
+def pkp_threshold_month(monthly_turnover: Sequence[Decimal]) -> int | None:
+    """The month (1-12) the year's turnover first exceeds Rp4,8 miliar: a business that isn't a PKP
+    must then register as one by the end of the next month (PMK 197/2013)."""
+    total = ZERO
+    for month, turnover in enumerate(monthly_turnover, start=1):
+        total += turnover
+        if total > MSME_TURNOVER_LIMIT:
+            return month
+    return None
 
 
 class Month(models.IntegerChoices):
