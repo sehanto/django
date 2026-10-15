@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
@@ -11,6 +12,7 @@ from apps.audit import services as audit
 from apps.audit.domain import AuditAction
 from apps.core.exceptions import DomainError
 from apps.core.views import DomainErrorFormMixin, flash_domain_error
+from apps.ledger import services as ledger
 
 from . import services
 from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm
@@ -35,7 +37,10 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
         return super().get_context_data(places=BusinessPlace.objects.for_organization(self.organization).select_related("village__district__regency"), **kwargs)
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        with transaction.atomic():
+            response = super().form_valid(form)
+            if "legal_form" in form.changed_data:
+                self._adopt_equity(form.initial["legal_form"])
         if form.changed_data:
             audit.record(
                 AuditAction.ORGANIZATION_SETTINGS_CHANGED, request=self.request, organization=self.object,
@@ -51,6 +56,18 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
             ) % {"count": notified})
         messages.success(self.request, _("Organization settings saved."))
         return response
+
+    def _adopt_equity(self, previous_legal_form):
+        """The chart's equity accounts follow the new legal form (SAK EMKM Bab 13)."""
+        change = ledger.adopt_legal_form_equity(organization=self.object, previous_legal_form=previous_legal_form)
+        if change.adopted:
+            messages.info(self.request, _(
+                "The chart of accounts now has the equity accounts of the new legal form: %(accounts)s. Accounts with "
+                "transactions keep their name."
+            ) % {"accounts": ", ".join(change.adopted)})
+        if change.deactivated:
+            messages.info(self.request, _("Deactivated, as the new legal form doesn't use them: %(accounts)s.") % {
+                "accounts": ", ".join(change.deactivated)})
 
 
 class BusinessPlaceFormMixin(ManageMixin):

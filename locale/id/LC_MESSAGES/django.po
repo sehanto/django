@@ -463,6 +463,20 @@ msgstr "Alasan"
 msgid "E.g. the machine will be used two years longer than expected."
 msgstr "Misalnya mesin akan dipakai dua tahun lebih lama dari perkiraan."
 
+#: apps/tenants/views.py
+#, python-format
+msgid ""
+"The chart of accounts now has the equity accounts of the new legal form: %(accounts)s. Accounts "
+"with transactions keep their name."
+msgstr ""
+"Bagan akun kini memiliki akun ekuitas sesuai bentuk badan usaha yang baru: %(accounts)s. Akun yang "
+"sudah memiliki transaksi tetap memakai namanya."
+
+#: apps/tenants/views.py
+#, python-format
+msgid "Deactivated, as the new legal form doesn't use them: %(accounts)s."
+msgstr "Dinonaktifkan karena tidak dipakai oleh bentuk badan usaha yang baru: %(accounts)s."
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."

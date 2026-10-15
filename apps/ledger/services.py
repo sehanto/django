@@ -27,7 +27,8 @@ from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.validators import EARLIEST_BUSINESS_DATE, ensure_business_date
 
-from .chart_template import chart_for
+from .chart_template import EQUITY_BY_LEGAL_FORM, chart_for
+from .domain import AccountCategory
 from .domain import LineAmount, SystemRole, ensure_period_open, validate_lines
 from .models import Account, JournalEntry, JournalLine
 
@@ -73,6 +74,59 @@ def seed_chart_of_accounts(organization) -> None:
             for code, name, category, role, is_contra in chart_for(organization.legal_form)
         ]
     )
+
+
+@dataclass(frozen=True)
+class EquityChange:
+    adopted: list[str]  # accounts of the new legal form, renamed, added or reactivated
+    deactivated: list[str]  # unused accounts of the old one
+
+    def __bool__(self):
+        return bool(self.adopted or self.deactivated)
+
+
+@transaction.atomic
+def adopt_legal_form_equity(*, organization, previous_legal_form: str) -> EquityChange:
+    """Give the chart the equity accounts of the organization's (new) legal form (SAK EMKM Bab 13).
+
+    An account of the previous form's default equity that nothing was posted to is renamed to
+    the new form's account with the same code, or deactivated when the new form has none; one
+    with transactions keeps its name, as its history was recorded under it, and the new form's
+    account is added next to it (ledger 0020 did the same for organizations created before).
+    """
+    previous = {code: name for code, name, *rest in EQUITY_BY_LEGAL_FORM[previous_legal_form]}
+    accounts = Account.objects.for_organization(organization).select_for_update()
+    equity = list(accounts.filter(category=AccountCategory.EQUITY, system_role=None))
+    unused = {a.code: a for a in equity if previous.get(a.code) == a.name and not _has_postings(a)}
+    by_name = {a.name.lower(): a for a in equity}
+    taken = set(accounts.values_list("code", flat=True))
+    adopted, deactivated = [], []
+    for code, name, category, role, is_contra in EQUITY_BY_LEGAL_FORM[organization.legal_form]:
+        account = by_name.get(name.lower())
+        if account is not None:
+            unused.pop(account.code, None)
+            if not account.is_active:
+                account.is_active = True
+                account.save(update_fields=["is_active", "updated_at"])
+                adopted.append(name)
+            continue
+        account = unused.pop(code, None)
+        if account is not None and account.is_contra == is_contra:
+            account.name, account.is_active = name, True
+            account.save(update_fields=["name", "is_active", "updated_at"])
+        else:
+            if account is not None:
+                unused[code] = account  # not the same kind of account: keep it as a leftover
+            code = next(f"3-{n}" for n in range(int(code[2:]), 10000) if f"3-{n}" not in taken)
+            Account.objects.create(organization=organization, code=code, name=name, category=category, system_role=role, is_contra=is_contra)
+        taken.add(code)
+        adopted.append(name)
+    for account in unused.values():
+        if account.is_active:
+            account.is_active = False
+            account.save(update_fields=["is_active", "updated_at"])
+            deactivated.append(account.name)
+    return EquityChange(adopted, deactivated)
 
 
 def get_system_account(organization, role: SystemRole) -> Account:

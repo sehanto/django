@@ -23,7 +23,7 @@ from apps.invoicing.services import InvoiceLineInput
 from apps.ledger.domain import AccountCategory
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.selectors import account_balances, verify_chain
-from apps.ledger.services import JournalLineInput, create_journal_entry, reverse_journal_entry
+from apps.ledger.services import JournalLineInput, adopt_legal_form_equity, create_journal_entry, reverse_journal_entry
 from apps.reports.statements import build_trial_balance
 from apps.reports.views import balance_sheet, income_statement
 from apps.tenants.forms import OrganizationSettingsForm
@@ -224,6 +224,43 @@ def test_equity_follows_the_legal_form(user, db):
     assert chart(Organization.LegalForm.KOPERASI) == {
         "3-1000": ("Simpanan Pokok", False, True), "3-1100": ("Simpanan Wajib", False, True), "3-1200": ("Cadangan", False, True),
         **retained}
+
+
+def change_legal_form(organization, legal_form):
+    previous, organization.legal_form = organization.legal_form, legal_form
+    organization.save()
+    return adopt_legal_form_equity(organization=organization, previous_legal_form=previous)
+
+
+def test_a_new_legal_form_brings_its_equity_accounts(organization, account):
+    """Used accounts keep their name, as their history was recorded under it."""
+    journal(organization, date(2026, 1, 2), "Setoran modal",
+            JournalLineInput(account("1-1100"), debit=D("1000")), JournalLineInput(account("3-1000"), credit=D("1000")))
+    change = change_legal_form(organization, Organization.LegalForm.PT)
+    assert change.adopted == ["Modal Saham", "Tambahan Modal Disetor", "Dividen"] and change.deactivated == []
+    assert equity_accounts(organization) == {
+        "3-1000": ("Modal Pemilik", False, True), "3-1001": ("Modal Saham", False, True),
+        "3-1100": ("Tambahan Modal Disetor", False, True), "3-2000": ("Dividen", True, True), "3-3000": ("Saldo Laba", False, True)}
+    assert not change_legal_form(organization, Organization.LegalForm.PT_PERORANGAN)  # the same equity
+
+
+def test_changing_the_legal_form_back_restores_the_chart(organization):
+    before = equity_accounts(organization)
+    change = change_legal_form(organization, Organization.LegalForm.KOPERASI)
+    assert change.adopted == ["Simpanan Pokok", "Simpanan Wajib", "Cadangan"] and change.deactivated == ["Prive"]
+    change = change_legal_form(organization, Organization.LegalForm.PERORANGAN)
+    assert change.adopted == ["Modal Pemilik", "Prive"] and change.deactivated == ["Simpanan Wajib", "Cadangan"]
+    assert equity_accounts(organization) == {
+        **before, "3-1100": ("Simpanan Wajib", False, False), "3-1200": ("Cadangan", False, False)}
+
+
+def test_the_settings_page_adopts_the_equity_of_a_new_legal_form(auth_client, organization):
+    data = {"name": organization.name, "legal_form": Organization.LegalForm.CV, "address": "", "phone": "", "email": "",
+            "uses_pph_final": "on", "lock_date": "", "inventory_cost_formula": organization.inventory_cost_formula,
+            "depreciation_method": organization.depreciation_method}
+    response = auth_client.post(reverse("tenants:settings"), data, follow=True)
+    assert equity_accounts(organization)["3-1000"] == ("Modal Sekutu", False, True)
+    assert "Modal Sekutu, Prive Sekutu" in " ".join(str(m) for m in response.context["messages"])
 
 
 @pytest.mark.parametrize("legal_form, policy", [
