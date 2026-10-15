@@ -16,6 +16,7 @@ from apps.tenants.mixins import ManageMixin
 
 from . import services
 from .models import ApiKey
+from .selectors import api_keys
 
 
 class ApiKeyForm(BaseForm):
@@ -26,7 +27,7 @@ class ApiKeysView(ManageMixin, View):
     template_name = "api/keys.html"
 
     def render(self, request, form, secret=""):
-        keys = ApiKey.objects.filter(organization=self.organization).select_related("user")
+        keys = api_keys(self.organization)
         return render(request, self.template_name, {"form": form, "keys": keys, "secret": secret})
 
     def get(self, request):

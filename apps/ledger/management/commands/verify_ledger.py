@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from apps.audit.checkpoints import Chain, configured_log
 from apps.ledger.selectors import ChainHead, chain_head, head_mismatch, verify_chain
-from apps.tenants.models import Organization
+from apps.core.management.organizations import selected_organizations
 
 
 def parse_head(value: str) -> ChainHead:
@@ -33,31 +33,19 @@ class Command(BaseCommand):
     def handle(self, *args, organization, expect_head, **options):
         if expect_head and not organization:
             raise CommandError("--expect-head needs --organization.")
-        organizations = Organization.objects.order_by("pk")
-        if organization:
-            organizations = organizations.filter(pk=organization)
-            if not organizations.exists():
-                raise CommandError(f"Organization {organization} does not exist.")
-
+        organizations = selected_organizations(organization)
         log = configured_log()
         checkpoints, log_problems = log.latest(Chain.LEDGER) if log else ({}, [])
-        problems, checked, entries, heads = [str(p) for p in log_problems], 0, 0, {}
+        problems, entries, heads = [str(p) for p in log_problems], 0, {}
         for org in organizations:
-            checked += 1
-            for problem in verify_chain(org):
-                problems.append(f"{org.pk} {org.name}: #{problem.sequence} {problem.number}: {problem.problem}")
-            if expect_head and (mismatch := head_mismatch(org, expect_head)):
-                problems.append(f"{org.pk} {org.name}: {mismatch}")
-            if (checkpoint := checkpoints.get(org.pk)) and (
-                mismatch := head_mismatch(org, ChainHead(checkpoint.sequence, checkpoint.hash))
-            ):
-                problems.append(f"{org.pk} {org.name}: checkpoint of {checkpoint.recorded_at}: {mismatch}")
+            problems += [f"{org.pk} {org.name}: {p}" for p in self._problems(org, expect_head, checkpoints.get(org.pk))]
             head = chain_head(org)
-            entries += head.sequence if head else 0
             if head:
+                entries += head.sequence
                 heads[org.pk] = (head.sequence, head.entry_hash)
             if organization:
                 self.stdout.write(f"Chain head of {org.name}: {head or 'no posted entries'}")
+        checked = len(organizations)
 
         if problems:
             for line in problems:
@@ -66,3 +54,13 @@ class Command(BaseCommand):
         if log:
             log.append(Chain.LEDGER, heads)
         self.stdout.write(f"Ledger intact: {checked} organization(s), {entries} posted entr(y/ies).")
+
+    @staticmethod
+    def _problems(org, expect_head: ChainHead | None, checkpoint):
+        """What is wrong with one organization's chain: in itself, or against a head recorded earlier."""
+        for problem in verify_chain(org):
+            yield f"#{problem.sequence} {problem.number}: {problem.problem}"
+        if expect_head and (mismatch := head_mismatch(org, expect_head)):
+            yield mismatch
+        if checkpoint and (mismatch := head_mismatch(org, ChainHead(checkpoint.sequence, checkpoint.hash))):
+            yield f"checkpoint of {checkpoint.recorded_at}: {mismatch}"

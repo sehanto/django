@@ -1,7 +1,6 @@
 """Perpetual inventory: writes. Invoices call ``plan_*`` before posting their journal entry
 (the cost lines go into it) and ``record`` after; adjustments post their own entry."""
 
-from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -17,31 +16,9 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import QUANTITY_PLACES, InsufficientStock, MovementKind, Stock
+from .domain import QUANTITY_PLACES, InsufficientStock, MovementKind
 from .models import StockMovement
-
-RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN, MovementKind.INCREASE, MovementKind.PURCHASE_RETURN_VOIDED)
-# Receipts that can be voided later, so their layer is remembered while it is whole.
-VOIDABLE_RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN)
-
-
-def replay(movements: Iterable[StockMovement]) -> Stock:
-    """An item's stock after its movements, in posting order."""
-    stock = Stock()
-    for m in movements:
-        if m.kind in RECEIPTS:
-            stock.receive(m.quantity, m.value, source=m.pk if m.kind in VOIDABLE_RECEIPTS else None)
-        elif MovementKind(m.kind).removes_a_layer:
-            stock.remove(m.reverses_id, -m.quantity, -m.value)
-        elif m.kind == MovementKind.WRITE_DOWN:
-            stock.write_down(-m.value)
-        else:
-            stock.issue(-m.quantity, m.cost_formula)
-    return stock
-
-
-def stock_of(item) -> Stock:
-    return replay(StockMovement.objects.filter(item=item).order_by("id"))
+from .selectors import stock_of
 
 
 def _lock(items) -> None:

@@ -18,7 +18,7 @@ from . import services
 from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm, reopens_period
 from .models import BusinessPlace, Invitation
 from .mixins import ManageMixin
-from .selectors import members_of, organizations_for_user, pending_invitations
+from .selectors import business_places, members_of, organizations_for_user, pending_invitations
 from .session import set_current_organization
 
 
@@ -34,7 +34,7 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
         return {**super().get_form_kwargs(), "acting_user": self.request.user}
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(places=BusinessPlace.objects.for_organization(self.organization).select_related("village__district__regency"), **kwargs)
+        return super().get_context_data(places=business_places(self.organization), **kwargs)
 
     def form_valid(self, form):
         with transaction.atomic():

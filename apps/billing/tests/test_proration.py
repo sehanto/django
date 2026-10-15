@@ -8,7 +8,14 @@ import pytest
 from django.urls import reverse
 
 from apps.billing import services
-from apps.billing.domain import BillingPeriod, Credit, PaidPeriod, compute_charge, switch_quote, unused_credit
+from apps.billing.domain import (
+    BillingPeriod,
+    Credit,
+    PaidPeriod,
+    compute_charge,
+    switch_quote,
+    unused_credit,
+)
 from apps.billing.gateways.base import GatewayName, PaymentStatus
 from apps.billing.gateways.fake import FakeGateway
 from apps.billing.models import SubscriptionInvoice

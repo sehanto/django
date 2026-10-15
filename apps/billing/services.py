@@ -30,11 +30,29 @@ from apps.tenants.models import Membership, Organization, Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subscription
 
-from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, coverage_for_payment, switch_quote, unused_credit
+from .domain import (
+    BillingPeriod,
+    Credit,
+    SwitchQuote,
+    coverage_for_payment,
+    switch_quote,
+)
 from .gateways import get_gateway
-from .gateways.base import ChargeRequest, CheckoutRequest, GatewayError, GatewayName, PaymentStatus, SaveRequest
+from .gateways.base import (
+    ChargeRequest,
+    CheckoutRequest,
+    GatewayError,
+    GatewayName,
+    PaymentStatus,
+    SaveRequest,
+)
 from .models import AutoRenewal, SubscriptionInvoice
-from .selectors import platform_seller
+from .selectors import (  # the read side of proration
+    platform_seller,
+    price_for,
+    quote_for,
+    switch_credit,
+)
 
 logger = logging.getLogger(__name__)
 Status = SubscriptionInvoice.Status
@@ -46,38 +64,6 @@ class WebhookRejected(DomainError):
 
 class PaymentAmountMismatch(DomainError):
     """The gateway reports a paid amount different from the invoice total."""
-
-
-def price_for(plan: Plan, period: BillingPeriod) -> Decimal:
-    return plan.yearly_price if period == BillingPeriod.YEARLY else plan.monthly_price
-
-
-# --- Proration ------------------------------------------------------------------------------
-
-
-def _paid_periods(organization, plan) -> list[PaidPeriod]:
-    """Paid, not yet superseded coverage of ``plan`` (renewals can stack several)."""
-    invoices = SubscriptionInvoice.objects.filter(
-        organization=organization, plan=plan, status=Status.PAID, superseded_on__isnull=True,
-        coverage_start__isnull=False, coverage_end__isnull=False,
-    )
-    return [PaidPeriod(inv.coverage_start, inv.coverage_end, inv.coverage_value) for inv in invoices]
-
-
-def switch_credit(organization, plan: Plan, *, today: date | None = None) -> Credit:
-    """Credit for unused paid time when moving to a *different* plan (none when renewing)."""
-    today = today or timezone.localdate()
-    current = organization.plan
-    if plan.pk == current.pk or not organization.plan_paid_until or organization.plan_paid_until <= today:
-        return Credit.none()
-    return unused_credit(_paid_periods(organization, current), today)
-
-
-def quote_for(organization, plan: Plan, period: BillingPeriod, *, today: date | None = None) -> SwitchQuote:
-    today = today or timezone.localdate()
-    return switch_quote(
-        price=price_for(plan, period), credit=switch_credit(organization, plan, today=today), period=period, starts_on=today
-    )
 
 
 def _supersede_other_plans(organization, new_plan, today: date) -> None:

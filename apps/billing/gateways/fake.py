@@ -6,7 +6,15 @@ from decimal import Decimal
 from django.core.cache import cache
 from django.urls import reverse
 
-from .base import ChargeRequest, Checkout, CheckoutRequest, GatewayName, GatewayPayment, PaymentStatus, SaveRequest
+from .base import (
+    ChargeRequest,
+    Checkout,
+    CheckoutRequest,
+    GatewayName,
+    GatewayPayment,
+    PaymentStatus,
+    SaveRequest,
+)
 
 DECLINED_TOKEN = "fake-token-declined"  # charging it fails, for tests
 

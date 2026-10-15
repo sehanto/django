@@ -117,9 +117,11 @@ def adopt_legal_form_equity(*, organization, previous_legal_form: str) -> Equity
         else:
             if account is not None:
                 unused[code] = account  # not the same kind of account: keep it as a leftover
-            code = next(f"3-{n}" for n in range(int(code[2:]), 10000) if f"3-{n}" not in taken)
-            Account.objects.create(organization=organization, code=code, name=name, category=category, system_role=role, is_contra=is_contra)
-        taken.add(code)
+            free_code = next(f"3-{n}" for n in range(int(code.removeprefix("3-")), 10000) if f"3-{n}" not in taken)
+            taken.add(free_code)
+            Account.objects.create(
+                organization=organization, code=free_code, name=name, category=category, system_role=role, is_contra=is_contra,
+            )
         adopted.append(name)
     for account in unused.values():
         if account.is_active:

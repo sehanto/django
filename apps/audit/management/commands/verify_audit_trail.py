@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from apps.audit.checkpoints import Chain, configured_log
 from apps.audit.selectors import trail_head, trail_mismatch, verify_trail
-from apps.tenants.models import Organization
+from apps.core.management.organizations import selected_organizations
 
 
 def parse_head(value: str) -> tuple[int, str]:
@@ -33,28 +33,19 @@ class Command(BaseCommand):
     def handle(self, *args, organization, expect_head, **options):
         if expect_head and not organization:
             raise CommandError("--expect-head needs --organization.")
-        organizations = Organization.objects.order_by("pk")
-        if organization:
-            organizations = organizations.filter(pk=organization)
-            if not organizations.exists():
-                raise CommandError(f"Organization {organization} does not exist.")
-
+        organizations = selected_organizations(organization)
         log = configured_log()
         checkpoints, log_problems = log.latest(Chain.AUDIT_TRAIL) if log else ({}, [])
-        problems, checked, changes, heads = [str(p) for p in log_problems], 0, 0, {}
+        problems, changes, heads = [str(p) for p in log_problems], 0, {}
         for org in organizations:
-            checked += 1
-            problems += [f"{org.pk} {org.name}: change #{p.sequence}: {p.problem}" for p in verify_trail(org)]
-            if expect_head and (mismatch := trail_mismatch(org, *expect_head)):
-                problems.append(f"{org.pk} {org.name}: {mismatch}")
-            if (checkpoint := checkpoints.get(org.pk)) and (mismatch := trail_mismatch(org, checkpoint.sequence, checkpoint.hash)):
-                problems.append(f"{org.pk} {org.name}: checkpoint of {checkpoint.recorded_at}: {mismatch}")
+            problems += [f"{org.pk} {org.name}: {p}" for p in self._problems(org, expect_head, checkpoints.get(org.pk))]
             head = trail_head(org)
-            changes += head[0] if head else 0
             if head:
+                changes += head[0]
                 heads[org.pk] = head
             if organization:
                 self.stdout.write(f"Trail head of {org.name}: {f'{head[0]}:{head[1]}' if head else 'no changes recorded'}")
+        checked = len(organizations)
 
         if problems:
             for line in problems:
@@ -63,3 +54,13 @@ class Command(BaseCommand):
         if log:
             log.append(Chain.AUDIT_TRAIL, heads)
         self.stdout.write(f"Audit trail intact: {checked} organization(s), {changes} recorded change(s).")
+
+    @staticmethod
+    def _problems(org, expect_head: tuple[int, str] | None, checkpoint):
+        """What is wrong with one organization's trail: in itself, or against a head noted earlier."""
+        for problem in verify_trail(org):
+            yield f"change #{problem.sequence}: {problem.problem}"
+        if expect_head and (mismatch := trail_mismatch(org, *expect_head)):
+            yield mismatch
+        if checkpoint and (mismatch := trail_mismatch(org, checkpoint.sequence, checkpoint.hash)):
+            yield f"checkpoint of {checkpoint.recorded_at}: {mismatch}"

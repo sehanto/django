@@ -3,8 +3,8 @@ from decimal import Decimal
 
 from django.urls import reverse
 
-from apps.invoicing.models import InvoiceKind, Item
 from apps.inventory.models import StockMovement
+from apps.invoicing.models import InvoiceKind, Item
 from apps.tenants.roles import Role
 
 D = Decimal

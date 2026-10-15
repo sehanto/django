@@ -10,8 +10,17 @@ from apps.regions.models import Village, format_address
 from apps.regions.selectors import village_by_code
 from apps.tenants.models import Plan
 
-from .domain import BillingPeriod, SubscriptionState, SwitchQuote, subscription_state
-from .models import SubscriptionInvoice
+from .domain import (
+    BillingPeriod,
+    Credit,
+    PaidPeriod,
+    SubscriptionState,
+    SwitchQuote,
+    subscription_state,
+    switch_quote,
+    unused_credit,
+)
+from .models import AutoRenewal, SubscriptionInvoice
 
 
 @dataclass(frozen=True)
@@ -71,8 +80,6 @@ class PlanOffer:
 
 def plan_offers(organization) -> list[PlanOffer]:
     """Every plan with what *this* organization would pay now (after any proration credit)."""
-    from .services import quote_for, switch_credit  # services import selectors
-
     offers = []
     for plan in Plan.objects.all():
         if plan.monthly_price <= 0:
@@ -85,3 +92,39 @@ def plan_offers(organization) -> list[PlanOffer]:
             credit=switch_credit(organization, plan).amount,
         ))
     return offers
+
+
+def auto_renewal_of(organization) -> AutoRenewal | None:
+    return AutoRenewal.objects.filter(organization=organization).first()
+
+
+def price_for(plan: Plan, period: BillingPeriod) -> Decimal:
+    return plan.yearly_price if period == BillingPeriod.YEARLY else plan.monthly_price
+
+
+# --- Proration ------------------------------------------------------------------------------
+
+
+def paid_periods(organization, plan) -> list[PaidPeriod]:
+    """Paid, not yet superseded coverage of ``plan`` (renewals can stack several)."""
+    invoices = SubscriptionInvoice.objects.filter(
+        organization=organization, plan=plan, status=SubscriptionInvoice.Status.PAID, superseded_on__isnull=True,
+        coverage_start__isnull=False, coverage_end__isnull=False,
+    )
+    return [PaidPeriod(inv.coverage_start, inv.coverage_end, inv.coverage_value) for inv in invoices]
+
+
+def switch_credit(organization, plan: Plan, *, today: date | None = None) -> Credit:
+    """Credit for unused paid time when moving to a *different* plan (none when renewing)."""
+    today = today or timezone.localdate()
+    current = organization.plan
+    if plan.pk == current.pk or not organization.plan_paid_until or organization.plan_paid_until <= today:
+        return Credit.none()
+    return unused_credit(paid_periods(organization, current), today)
+
+
+def quote_for(organization, plan: Plan, period: BillingPeriod, *, today: date | None = None) -> SwitchQuote:
+    today = today or timezone.localdate()
+    return switch_quote(
+        price=price_for(plan, period), credit=switch_credit(organization, plan, today=today), period=period, starts_on=today
+    )

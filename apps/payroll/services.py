@@ -15,13 +15,30 @@ from apps.core.periods import month_end
 from apps.core.validators import ensure_business_date, ensure_document_number
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
-from apps.ledger.services import JournalLineInput, create_journal_entry, get_system_account, reverse_journal_entry
+from apps.ledger.services import (
+    JournalLineInput,
+    create_journal_entry,
+    get_system_account,
+    reverse_journal_entry,
+)
 
 from .domain import (
-    PPH_26_RATE, TER_CATEGORY, AnnualTax, EmployeeKind, PtkpStatus, TaxScheme, annual_pph21, contributions, daily_pph21, gross_up,
-    late_severance_tax, monthly_pph21, pph26, severance_tax, with_surcharge,
+    PPH_26_RATE,
+    TER_CATEGORY,
+    EmployeeKind,
+    PtkpStatus,
+    TaxScheme,
+    contributions,
+    daily_pph21,
+    gross_up,
+    late_severance_tax,
+    monthly_pph21,
+    pph26,
+    severance_tax,
+    with_surcharge,
 )
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
+from .selectors import prior_income, year_end_tax
 
 DEFAULT_ACCOUNTS = {"salary_expense_account": "6-1000", "benefits_expense_account": "6-1000", "salaries_payable_account": "2-1300"}
 
@@ -82,24 +99,6 @@ class PayInput:
     days: int | None = None  # days worked, for workers paid by the day
     benefits_in_kind: Decimal = ZERO  # taxable value of natura (already booked where it was bought)
     severance: Decimal = ZERO  # uang pesangon: final PPh 21 (PP 68/2009)
-
-
-def prior_income(employee: Employee, year: int) -> tuple[Decimal, Decimal]:
-    """(net income, PPh 21) from earlier employers' 1721-A1 of the year."""
-    rows = PriorIncome.objects.filter(employee=employee, year=year)
-    return sum((r.net_income for r in rows), ZERO), sum((r.pph21 for r in rows), ZERO)
-
-
-def year_end_tax(employee: Employee, year: int, slips: list[Payslip], *, annualize: bool) -> AnnualTax:
-    """The year's PPh 21 of a permanent employee from their payslips of the year (the last one
-    included) and what earlier employers reported: Art. 17 on the year's net income less PTKP
-    (status of the last payslip)."""
-    slips = [s for s in slips if s.tax_scheme in (TaxScheme.TER_MONTHLY, TaxScheme.ANNUAL)]
-    gross = sum((s.taxable_gross for s in slips), ZERO)
-    pension = sum((s.jht_employee + s.jp_employee for s in slips), ZERO)
-    zakat = sum((s.zakat for s in slips), ZERO)
-    prior_net, _prior_tax = prior_income(employee, year)
-    return annual_pph21(slips[-1].ptkp_status, gross, pension, len(slips), annualize=annualize, zakat=zakat, prior_net=prior_net)
 
 
 def _earlier_slips(employee: Employee, year: int, month: int):

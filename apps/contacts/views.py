@@ -12,7 +12,7 @@ from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
 from .forms import ContactForm
-from apps.regions.models import Province
+from apps.regions.selectors import active_provinces
 
 from .models import Contact
 from .selectors import contacts_for
@@ -24,7 +24,7 @@ class ContactListView(OrganizationMixin, ListView):
 
     def get_queryset(self):
         params = self.request.GET
-        self.provinces = list(Province.objects.filter(is_active=True))
+        self.provinces = list(active_provinces())
         province = choice_param(params, "province", [p.code for p in self.provinces])
         contacts = contacts_for(
             self.organization, query=text_param(params, "q"), kind=choice_param(params, "kind", Contact.Kind.values)

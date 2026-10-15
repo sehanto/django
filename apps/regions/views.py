@@ -8,12 +8,9 @@ from django.views import View
 
 from apps.core.params import choice_param, text_param
 
-from .models import District, Regency, Village
-from .selectors import villages_with_postcode
+from .models import Village
+from .selectors import CHILDREN, region_children, villages_with_postcode
 from .services import CODE
-
-CHILDREN = {"regency": (Regency, "province_id"), "district": (District, "regency_id"), "village": (Village, "district_id")}
-
 
 POSTCODE = re.compile(r"^\d{5}$")
 
@@ -27,9 +24,8 @@ class RegionChoicesView(LoginRequiredMixin, View):
         parent = text_param(request.GET, "parent", max_length=8)
         if not level or not CODE.match(parent):
             raise Http404
-        model, parent_field = CHILDREN[level]
-        rows = model.objects.filter(is_active=True, **{parent_field: parent}).order_by("name", "code")
-        if model is Village:
+        rows = region_children(level, parent)
+        if rows.model is Village:
             choices = [{"code": r.code, "name": r.name, "postal_code": r.postal_code} for r in rows]
         else:
             choices = [{"code": r.code, "name": r.name} for r in rows]

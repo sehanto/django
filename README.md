@@ -58,6 +58,11 @@ Each app uses the same layers. Dependencies point inward, toward `domain`.
 | `selectors.py` | **Read** queries | Always tenant-scoped (`Model.objects.for_organization(org)`). |
 | `forms.py` / `views.py` | Delivery: parse input, call one service, render | Thin. `DomainError` becomes a form error or flash message. |
 
+`apps/core/tests/test_architecture.py` keeps the dependencies pointing inward: a domain module imports
+no models, selectors or services and never queries; models import no selectors or services; selectors
+import no services (calculations both sides need live in `domain` or `selectors`, and services import
+them from there); nothing below the views imports views or forms; views write nothing themselves.
+
 Views look single records up directly (`get_object_or_404(Model.objects.for_organization(org), pk=pk)`);
 any query with its own conditions or aggregation is a selector, any write a service (even one
 field, such as `accounts.services.set_language`). A service function reads as its steps: checks

@@ -1,7 +1,7 @@
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils import timezone
 
-from .models import Invitation, Membership, Organization
+from .models import BusinessPlace, Invitation, Membership, Organization
 
 
 def resolve_membership(user, organization_id=None) -> Membership | None:
@@ -39,3 +39,7 @@ def pending_invitations(organization) -> QuerySet[Invitation]:
 
 def organizations_requiring_two_factor(user) -> QuerySet[Organization]:
     return organizations_for_user(user).filter(require_two_factor=True)
+
+
+def business_places(organization) -> QuerySet[BusinessPlace]:
+    return BusinessPlace.objects.for_organization(organization).select_related("village__district__regency")

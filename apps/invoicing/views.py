@@ -25,8 +25,10 @@ from .forms import (
     CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, SpecialDocumentForm, TaxInvoiceNumberForm, VoidForm,
     WriteOffForm, line_inputs,
 )
-from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
-from .selectors import coretax_connected, invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for
+from .models import CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
+from .selectors import (
+    coretax_connected, coretax_connection, coretax_submissions, invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for,
+)
 
 # Complete phrases rather than fragments, so each language can word them naturally.
 KIND_LABELS = {
@@ -555,15 +557,14 @@ class CoretaxConnectionView(ManageMixin, FormView):
         return {key: value for key, value in super().get_form_kwargs().items() if key != "organization"}
 
     def get_initial(self):
-        connection = CoretaxConnection.objects.filter(organization=self.organization).first()
+        connection = coretax_connection(self.organization)
         if connection is None:
             return {"connector": ConnectorName.HTTP, "is_active": True}
         return {"connector": connection.connector, "api_url": connection.api_url, "is_active": connection.is_active}
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            connection=CoretaxConnection.objects.filter(organization=self.organization).first(),
-            submissions=CoretaxSubmission.objects.filter(organization=self.organization)[:30], **kwargs,
+            connection=coretax_connection(self.organization), submissions=coretax_submissions(self.organization), **kwargs,
         )
 
     def form_valid(self, form):

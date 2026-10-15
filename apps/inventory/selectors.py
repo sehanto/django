@@ -10,8 +10,8 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.models import Account
 from apps.ledger.selectors import account_balance, accounts_for
 
+from .domain import Stock, replay
 from .models import StockMovement
-from .services import replay
 
 
 def tracked_items(organization) -> QuerySet:
@@ -106,3 +106,7 @@ def reconcile(organization, rows: list[StockRow], as_of: date) -> list[Reconcili
         Reconciliation(account, totals[pk], account_balance(organization, account, as_of=as_of))
         for pk, account in sorted(accounts.items(), key=lambda item: item[1].code)
     ]
+
+
+def stock_of(item) -> Stock:
+    return replay(StockMovement.objects.filter(item=item).order_by("id"))

@@ -18,8 +18,10 @@ Costs are kept to the cent and every issue reduces the stock value by exactly it
 so the stock value always equals the inventory postings.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from decimal import Decimal
+from typing import Protocol
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -138,3 +140,34 @@ class Stock:
                 del self.layers[index]
                 return
         raise ValueError("the receipt's stock is no longer whole")
+
+
+RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN, MovementKind.INCREASE, MovementKind.PURCHASE_RETURN_VOIDED)
+# Receipts that can be voided later, so their layer is remembered while it is whole.
+VOIDABLE_RECEIPTS = (MovementKind.PURCHASE, MovementKind.SALE_RETURN)
+
+
+class Movement(Protocol):
+    """What replaying reads of a stock movement (``StockMovement``)."""
+
+    pk: int
+    kind: str
+    quantity: Decimal
+    value: Decimal
+    cost_formula: str
+    reverses_id: int | None
+
+
+def replay(movements: Iterable[Movement]) -> Stock:
+    """An item's stock after its movements, in posting order."""
+    stock = Stock()
+    for m in movements:
+        if m.kind in RECEIPTS:
+            stock.receive(m.quantity, m.value, source=m.pk if m.kind in VOIDABLE_RECEIPTS else None)
+        elif MovementKind(m.kind).removes_a_layer:
+            stock.remove(m.reverses_id, -m.quantity, -m.value)
+        elif m.kind == MovementKind.WRITE_DOWN:
+            stock.write_down(-m.value)
+        else:
+            stock.issue(-m.quantity, m.cost_formula)
+    return stock

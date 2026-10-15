@@ -24,7 +24,7 @@ from .domain import BillingPeriod, SubscriptionState
 from .gateways import get_gateway
 from .gateways.base import GatewayError, GatewayName, PaymentStatus
 from .models import AutoRenewal, SubscriptionInvoice
-from .selectors import invoices_for, plan_offers, seller_of, state_of
+from .selectors import auto_renewal_of, invoices_for, plan_offers, seller_of, state_of
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class OverviewView(ManageMixin, TemplateView):
             grace_days=settings.BILLING_GRACE_DAYS,
             states=SubscriptionState,
             periods=BillingPeriod,
-            renewal=AutoRenewal.objects.filter(organization=self.organization).first(),
+            renewal=auto_renewal_of(self.organization),
             renewal_statuses=AutoRenewal.Status,
             **kwargs,
         )
@@ -184,7 +184,7 @@ class AutoRenewalReturnView(ManageMixin, View):
     """Back from the gateway's page (or "check again"): confirm the saved payment method."""
 
     def get(self, request):
-        renewal = AutoRenewal.objects.filter(organization=self.organization).first()
+        renewal = auto_renewal_of(self.organization)
         if renewal is not None:
             try:
                 renewal = services.sync_auto_renewal(renewal)

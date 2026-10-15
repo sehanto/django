@@ -28,8 +28,8 @@ from .domain import MSME_TURNOVER_LIMIT, PPH_FINAL_RATE, Month, PayerWithholding
 from .forms import ImportDeclarationForm, PphFinalPaymentForm, SelfDepositForm, TaxObjectForm, TaxRateForm, WithholdingDepositForm
 from .models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, WithholdingDeposit
 from .selectors import (
-    pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, tax_rates_for, withholding_deposits,
-    withholding_due, withholdings,
+    import_declarations_in, pph_final_accruals, pph_final_payments, pph_final_schedule, pph_final_withheld, self_deposits_in,
+    tax_rates_for, withholding_deposits, withholding_due, withholdings,
 )
 
 
@@ -236,9 +236,9 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
             raise Http404
         for name in ("year", "month", "csv"):  # the URL's, replaced below
             kwargs.pop(name, None)
-        from apps.payroll.models import PayrollRun  # payroll depends on taxes
+        from apps.payroll.selectors import posted_run  # payroll depends on taxes
 
-        run = PayrollRun.objects.for_organization(self.organization).filter(year=year, month=month, status=PayrollRun.Status.POSTED).first()
+        run = posted_run(self.organization, year, month)
         from apps.invoicing.coretax_sync import connector_for
 
         return super().get_context_data(
@@ -367,7 +367,7 @@ class ImportDeclarationsView(OrganizationMixin, FormView):
 
     def get_context_data(self, **kwargs):
         year = _selected_year(self.request)
-        declarations = ImportDeclaration.objects.for_organization(self.organization).filter(date__year=year).select_related("journal_entry", "bill")
+        declarations = import_declarations_in(self.organization, year)
         return super().get_context_data(year=year, years=year_choices(), declarations=declarations, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -408,7 +408,7 @@ class SelfDepositsView(OrganizationMixin, FormView):
 
     def get_context_data(self, **kwargs):
         year = _selected_year(self.request)
-        deposits = SelfDeposit.objects.for_organization(self.organization).filter(year=year).select_related("payment_entry", "invoice")
+        deposits = self_deposits_in(self.organization, year)
         return super().get_context_data(year=year, years=year_choices(), deposits=deposits, **kwargs)
 
     def post(self, request, *args, **kwargs):

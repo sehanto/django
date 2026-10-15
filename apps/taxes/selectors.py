@@ -9,7 +9,7 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.selectors import posted_lines
 
 from .domain import PayerWithholding, PphFinalMonth, compute_pph_final
-from .models import PphFinalAccrual, PphFinalPayment, TaxRate, WithholdingDeposit
+from .models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, TaxRate, WithholdingDeposit
 
 
 def tax_rate_is_used(rate: TaxRate) -> bool:
@@ -123,3 +123,11 @@ def withholding_deposits(organization, year: int) -> dict[tuple[str, int], Withh
         for d in WithholdingDeposit.objects.for_organization(organization)
         .filter(year=year, status=WithholdingDeposit.Status.POSTED).select_related("journal_entry")
     }
+
+
+def import_declarations_in(organization, year: int) -> QuerySet[ImportDeclaration]:
+    return ImportDeclaration.objects.for_organization(organization).filter(date__year=year).select_related("journal_entry", "bill")
+
+
+def self_deposits_in(organization, year: int) -> QuerySet[SelfDeposit]:
+    return SelfDeposit.objects.for_organization(organization).filter(year=year).select_related("payment_entry", "invoice")

@@ -9,7 +9,7 @@ from apps.core.money import ZERO
 
 from . import coretax
 from .domain import AgingBucket, aging_bucket
-from .models import CoretaxConnection, Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
+from .models import CoretaxConnection, CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, Item, Payment, ReturnNote
 
 
 def invoices_for(
@@ -231,3 +231,12 @@ def faktur_months(organization, year: int) -> set[int]:
                 status__in=Invoice.ISSUED_STATUSES)
         .values_list("date__month", flat=True)
     )
+
+
+def coretax_connection(organization) -> CoretaxConnection | None:
+    return CoretaxConnection.objects.filter(organization=organization).first()
+
+
+def coretax_submissions(organization, *, limit: int = 30) -> QuerySet[CoretaxSubmission]:
+    """The latest submissions, newest first."""
+    return CoretaxSubmission.objects.filter(organization=organization)[:limit]

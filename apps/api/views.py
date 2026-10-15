@@ -19,7 +19,7 @@ from apps.accounts.throttle import ThrottleScope, allow, count, hit
 from apps.audit.context import set_actor
 from apps.contacts.forms import ContactForm
 from apps.contacts.models import Contact
-from apps.regions.models import Province
+from apps.contacts.selectors import contacts_for
 from apps.contacts.services import create_contact
 from apps.core.exceptions import DomainError
 from apps.core.money import MONEY_DECIMAL_PLACES, MONEY_MAX_DIGITS
@@ -27,13 +27,15 @@ from apps.core.sanitizers import sanitize_text
 from apps.invoicing import services as invoicing
 from apps.invoicing.domain import InvoiceStatus
 from apps.invoicing.models import Invoice, InvoiceKind, Item, Payment, ReturnNote
+from apps.invoicing.selectors import items_for
 from apps.ledger.models import Account, JournalEntry
-from apps.ledger.selectors import account_balances
+from apps.ledger.selectors import account_balances, accounts_for
 from apps.ledger.services import JournalLineInput, create_journal_entry
-from apps.taxes.models import TaxRate
+from apps.regions.selectors import province_codes
+from apps.taxes.selectors import tax_rates_for
 from apps.tenants.roles import Permission
 
-from . import idempotency
+from . import idempotency, selectors
 from .services import authenticate
 
 MAX_PAGE = 100
@@ -268,7 +270,7 @@ def entry_json(e: JournalEntry) -> dict:
 
 @endpoint("GET")
 def accounts(request):
-    return JsonResponse({"results": [account_json(a) for a in Account.objects.for_organization(request.organization).order_by("code")]})
+    return JsonResponse({"results": [account_json(a) for a in accounts_for(request.organization).order_by("code")]})
 
 
 @endpoint("GET", "POST")
@@ -280,24 +282,22 @@ def contacts(request):
         if not form.is_valid():
             return JsonResponse({"error": "Invalid contact.", "fields": form.errors.get_json_data()}, status=400)
         return JsonResponse(contact_json(create_contact(organization=organization, **form.cleaned_data)), status=201)
-    queryset = Contact.objects.for_organization(organization).select_related("village__district__regency").order_by("name", "id")
-    if kind := _filter(request, "kind", Contact.Kind.values):
-        queryset = queryset.filter(kind__in=[kind, Contact.Kind.BOTH])
-    if province := _filter(request, "province", list(Province.objects.values_list("code", flat=True))):
-        queryset = queryset.filter(village__district__regency__province_id=province)
+    queryset = selectors.contacts(
+        organization, kind=_filter(request, "kind", Contact.Kind.values), province=_filter(request, "province", province_codes()),
+    )
     page, meta = _page(request, queryset)
     return JsonResponse({"results": [contact_json(c) for c in page], **meta})
 
 
 @endpoint("GET")
 def items(request):
-    page, meta = _page(request, Item.objects.for_organization(request.organization).order_by("name", "id"))
+    page, meta = _page(request, selectors.items(request.organization))
     return JsonResponse({"results": [item_json(i) for i in page], **meta})
 
 
 @endpoint("GET")
 def tax_rates(request):
-    rates = TaxRate.objects.for_organization(request.organization).order_by("name")
+    rates = selectors.tax_rates(request.organization)
     return JsonResponse({"results": [
         {"id": r.pk, "name": r.name, "rate": f"{r.rate.normalize():f}", "dpp": f"{r.dpp_numerator}/{r.dpp_denominator}",
          "is_active": r.is_active} for r in rates
@@ -307,8 +307,8 @@ def tax_rates(request):
 def _line(organization, kind: str, data) -> invoicing.InvoiceLineInput:
     if not isinstance(data, dict):
         raise ApiError("Each line must be an object.")
-    accounts = Account.objects.for_organization(organization)
-    item = _one(Item.objects.for_organization(organization), data.get("item"), "item")
+    accounts = accounts_for(organization)
+    item = _one(items_for(organization), data.get("item"), "item")
     account = _one(accounts, data.get("account"), "account", "code")
     if account is None and item is not None:
         account = item.income_account if kind == InvoiceKind.SALES else (item.inventory_account if item.track_inventory else item.expense_account)
@@ -319,7 +319,7 @@ def _line(organization, kind: str, data) -> invoicing.InvoiceLineInput:
         quantity=_decimal(data, "quantity", required=False, default=Decimal("1"), digits=QUANTITY),
         unit_price=_decimal(data, "unit_price", required=item is None, default=item.sale_price if item and kind == InvoiceKind.SALES else (item.purchase_price if item else None)),
         discount_percent=_decimal(data, "discount_percent", required=False, default=Decimal("0"), digits=PERCENT),
-        tax_rate=_one(TaxRate.objects.for_organization(organization), data.get("tax_rate"), "tax_rate"),
+        tax_rate=_one(tax_rates_for(organization), data.get("tax_rate"), "tax_rate"),
         item=item,
     )
 
@@ -335,7 +335,7 @@ def invoices(request):
         lines = data.get("lines")
         if not isinstance(lines, list) or not lines or len(lines) > 100:
             raise ApiError("'lines' must be a list of 1 to 100 lines.")
-        contact = _one(Contact.objects.for_organization(organization), data.get("contact"), "contact")
+        contact = _one(contacts_for(organization), data.get("contact"), "contact")
         if contact is None:
             raise ApiError("'contact' is required.")
         invoice = invoicing.create_invoice(
@@ -347,12 +347,10 @@ def invoices(request):
         if data.get("issue") is True:
             invoice = invoicing.issue_invoice(invoice=invoice, issued_by=request.api_user)
         return JsonResponse(invoice_json(Invoice.objects.get(pk=invoice.pk), lines=True), status=201)
-    queryset = Invoice.objects.for_organization(organization).order_by("-date", "-id")
-    if kind := _filter(request, "kind", InvoiceKind.values):
-        queryset = queryset.filter(kind=kind)
-    if status := _filter(request, "status", InvoiceStatus.values):
-        queryset = queryset.filter(status=status)
-    page, meta = _page(request, queryset.select_related("contact"))
+    queryset = selectors.invoices(
+        organization, kind=_filter(request, "kind", InvoiceKind.values), status=_filter(request, "status", InvoiceStatus.values),
+    )
+    page, meta = _page(request, queryset)
     return JsonResponse({"results": [invoice_json(i) for i in page], **meta})
 
 
@@ -372,7 +370,7 @@ def invoice_payments(request, pk: int):
     organization = request.organization
     invoice = _one(Invoice.objects.for_organization(organization), pk, "invoice")
     data = _body(request)
-    cash = _one(Account.objects.for_organization(organization), data.get("cash_account"), "cash_account", "code")
+    cash = _one(accounts_for(organization), data.get("cash_account"), "cash_account", "code")
     if cash is None:
         raise ApiError("'cash_account' (an account code) is required.")
     method = data.get("method", Payment.Method.TRANSFER)
@@ -385,7 +383,7 @@ def invoice_payments(request, pk: int):
         income_tax = invoicing.IncomeTaxInput(
             kind=_text(withheld, "kind", required=True, max_length=10),
             amount=_decimal(withheld, "amount", required=False, default=Decimal("0")),
-            account=_one(Account.objects.for_organization(organization), withheld.get("account"), "income_tax.account", "code"),
+            account=_one(accounts_for(organization), withheld.get("account"), "income_tax.account", "code"),
             slip=_text(withheld, "slip", max_length=50),
             base=_decimal(withheld, "base", required=False, default=Decimal("0")),
             rate=_decimal(withheld, "rate", required=False, digits=PERCENT),
@@ -426,7 +424,7 @@ def invoice_returns(request, pk: int):
         inputs.append(invoicing.ReturnLineInput(_one(invoice_lines, line.get("line"), "line"), _decimal(line, "quantity", digits=QUANTITY)))
     note = invoicing.create_return(
         invoice=invoice, date=_date(data, "date"), reason=_text(data, "reason", required=True), lines=inputs,
-        cash_account=_one(Account.objects.for_organization(organization), data.get("cash_account"), "cash_account", "code"),
+        cash_account=_one(accounts_for(organization), data.get("cash_account"), "cash_account", "code"),
         created_by=request.api_user,
     )
     return JsonResponse(return_json(note), status=201)
@@ -440,7 +438,7 @@ def journal_entries(request):
         lines = data.get("lines")
         if not isinstance(lines, list) or not 2 <= len(lines) <= 200:
             raise ApiError("'lines' must be a list of 2 to 200 lines.")
-        accounts = Account.objects.for_organization(organization)
+        accounts = accounts_for(organization)
         inputs = []
         for line in lines:
             if not isinstance(line, dict):
@@ -457,7 +455,7 @@ def journal_entries(request):
             reference=_text(data, "reference", max_length=100), lines=inputs, created_by=request.api_user,
         )
         return JsonResponse(entry_json(entry), status=201)
-    queryset = JournalEntry.objects.for_organization(request.organization).order_by("-date", "-id").prefetch_related("lines__account")
+    queryset = selectors.journal_entries(request.organization)
     if start := _date(request.GET, "from", required=False):
         queryset = queryset.filter(date__gte=start)
     if end := _date(request.GET, "to", required=False):

@@ -6,9 +6,8 @@ from decimal import Decimal
 from apps.core.money import ZERO
 from apps.core.periods import month_end, month_start
 
-from .domain import AnnualTax, EmployeeKind, TaxScheme, with_surcharge
-from .models import Employee, PayrollRun, Payslip
-from .services import prior_income, year_end_tax
+from .domain import AnnualTax, EmployeeKind, TaxScheme, annual_pph21, with_surcharge
+from .models import Employee, PayrollRun, Payslip, PriorIncome
 
 
 @dataclass(frozen=True)
@@ -50,6 +49,24 @@ class AnnualStatement:
     @property
     def surcharged(self) -> bool:
         return self.final_slip is not None and self.final_slip.without_tin
+
+
+def prior_income(employee: Employee, year: int) -> tuple[Decimal, Decimal]:
+    """(net income, PPh 21) from earlier employers' 1721-A1 of the year."""
+    rows = PriorIncome.objects.filter(employee=employee, year=year)
+    return sum((r.net_income for r in rows), ZERO), sum((r.pph21 for r in rows), ZERO)
+
+
+def year_end_tax(employee: Employee, year: int, slips: list[Payslip], *, annualize: bool) -> AnnualTax:
+    """The year's PPh 21 of a permanent employee from their payslips of the year (the last one
+    included) and what earlier employers reported: Art. 17 on the year's net income less PTKP
+    (status of the last payslip)."""
+    slips = [s for s in slips if s.tax_scheme in (TaxScheme.TER_MONTHLY, TaxScheme.ANNUAL)]
+    gross = sum((s.taxable_gross for s in slips), ZERO)
+    pension = sum((s.jht_employee + s.jp_employee for s in slips), ZERO)
+    zakat = sum((s.zakat for s in slips), ZERO)
+    prior_net, _prior_tax = prior_income(employee, year)
+    return annual_pph21(slips[-1].ptkp_status, gross, pension, len(slips), annualize=annualize, zakat=zakat, prior_net=prior_net)
 
 
 def employees_paid_in(organization, year: int, month: int) -> list[Employee]:
@@ -96,3 +113,17 @@ def annual_statements(organization, year: int) -> list[AnnualStatement]:
         kind=EmployeeKind.PERMANENT, payslips__run__year=year, payslips__run__status=PayrollRun.Status.POSTED,
     ).distinct()
     return [s for s in (annual_statement(e, year) for e in employees) if s is not None]
+
+
+def posted_runs(organization, year: int) -> dict[int, PayrollRun]:
+    """{month: the posted payroll run} of a year."""
+    runs = PayrollRun.objects.for_organization(organization).filter(year=year, status=PayrollRun.Status.POSTED)
+    return {run.month: run for run in runs}
+
+
+def posted_run(organization, year: int, month: int) -> PayrollRun | None:
+    return posted_runs(organization, year).get(month)
+
+
+def has_active_employees(organization) -> bool:
+    return Employee.objects.for_organization(organization).filter(is_active=True).exists()

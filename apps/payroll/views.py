@@ -8,7 +8,14 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
-from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DetailView,
+    FormView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from apps.core.exceptions import DomainError
 from apps.core.params import text_param, year_choices, year_param
@@ -19,7 +26,13 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
 from . import selectors, services
 from .domain import TaxScheme
-from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm, PriorIncomeForm
+from .forms import (
+    EmployeeForm,
+    PayForm,
+    PayrollRunForm,
+    PayrollSettingsForm,
+    PriorIncomeForm,
+)
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 
 
@@ -91,10 +104,10 @@ class PayrollView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         year = year_param(self.request.GET)
-        runs = {r.month: r for r in PayrollRun.objects.for_organization(self.organization).filter(year=year, status=PayrollRun.Status.POSTED)}
+        runs = selectors.posted_runs(self.organization, year)
         return super().get_context_data(
             year=year, years=year_choices(), months=[(m, runs.get(m)) for m in Month],
-            has_employees=Employee.objects.for_organization(self.organization).filter(is_active=True).exists(), **kwargs,
+            has_employees=selectors.has_active_employees(self.organization), **kwargs,
         )
 
 
