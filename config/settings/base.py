@@ -74,7 +74,7 @@ MIDDLEWARE = [
 
 # Content-Security-Policy (apps.core.middleware): scripts, styles and fonts only from this site;
 # Cloudflare Turnstile (the CAPTCHA) loads its script and challenge frame from its own origin.
-# Bootstrap's icons for selects, switches and close buttons are data: SVGs in its CSS. No form-action:
+# The select arrow is a data: SVG in frontend/app.css; icons are inline SVG. No form-action:
 # the subscription checkout's POST is redirected to the payment gateway's page.
 TURNSTILE_ORIGIN = "https://challenges.cloudflare.com"
 CONTENT_SECURITY_POLICY = {
@@ -107,6 +107,7 @@ TEMPLATES = [
                 "apps.billing.context_processors.subscription_notice",
                 "apps.invoicing.context_processors.invoice_kinds",
             ],
+            "builtins": ["apps.core.templatetags.icons"],  # {% icon "name" %} in every template
         },
     },
 ]

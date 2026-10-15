@@ -9,10 +9,10 @@
       <tbody>
       {% for m in members %}
         <tr><td>{{ m.user.full_name }}</td><td>{{ m.user.email }}</td><td>{{ m.get_role_display }}</td>
-          <td>{% if m.has_two_factor %}<span class="badge badge-success" title="{% translate 'Two-factor authentication' %}"><i class="bi bi-shield-check" aria-hidden="true"></i> {% translate "On" %}</span>{% else %}<span class="badge {% if current_organization.require_two_factor %}badge-warning{% else %}badge-light border{% endif %}">{% translate "Off" %}</span>{% endif %}</td>
+          <td>{% if m.has_two_factor %}<span class="badge badge-success" title="{% translate 'Two-factor authentication' %}">{% icon "shield-check" %} {% translate "On" %}</span>{% else %}<span class="badge {% if current_organization.require_two_factor %}badge-warning{% else %}badge-light border{% endif %}">{% translate "Off" %}</span>{% endif %}</td>
           <td class="text-end">{% if m.role != m.Role.OWNER and m.user != request.user %}
             <form method="post" action="{% url 'tenants:remove_member' m.pk %}" data-confirm="{% translate 'Remove this member?' %}">{% csrf_token %}
-              <button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></form>{% endif %}</td></tr>
+              <button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}">{% icon "x" %}</button></form>{% endif %}</td></tr>
       {% endfor %}
       </tbody>
     </table></div></div>

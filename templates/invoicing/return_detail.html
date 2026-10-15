@@ -5,8 +5,8 @@
 <div class="flex flex-wrap justify-between items-start gap-2 mb-4 print:hidden">
   <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="text-sm no-underline">&larr; {{ invoice.number }}</a>
   <div class="flex gap-2">
-    <button type="button" data-print class="btn btn-outline-secondary"><i class="bi bi-printer" aria-hidden="true"></i> {% translate "Print" %}</button>
-    {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary"><i class="bi bi-filetype-xml" aria-hidden="true"></i> {% translate "Coretax XML" %}</a>{% endif %}
+    <button type="button" data-print class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print" %}</button>
+    {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary">{% icon "file-code" %} {% translate "Coretax XML" %}</a>{% endif %}
     {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" type="button" data-dialog-open="voidModal">{% translate "Void return" %}</button>{% endif %}
   </div>
 </div>
@@ -42,12 +42,12 @@
       {% if note.vat_not_collected %}<tr><td colspan="4" class="text-end">{% translate "PPN not collected (facility)" %}</td><td class="num">{{ note.vat_not_collected|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>
-  {% if note.status == note.Status.POSTED %}<p class="text-sm text-muted mt-4 mb-0 print:hidden"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
+  {% if note.status == note.Status.POSTED %}<p class="text-sm text-muted mt-4 mb-0 print:hidden">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
   <p class="text-sm text-muted mt-4 mb-0 print:hidden">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
 </div></div>
 {% if can_write and note.status == note.Status.POSTED %}
 <dialog class="modal" id="voidModal" aria-labelledby="voidModalTitle"><form method="post" action="{% url 'invoicing:return_void' note.pk %}">{% csrf_token %}
-  <div class="modal-header"><h2 class="modal-title" id="voidModalTitle">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-header"><h2 class="modal-title" id="voidModalTitle">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body"><p>{% translate "The return's journal entry is reversed on the void date, including any refund; the invoice owes the credited amount again, and the stock goes back the way it came. This cannot be undone." %}</p>
     <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-control' }}</div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Void return" %}</button></div>

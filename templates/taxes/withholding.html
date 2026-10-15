@@ -24,7 +24,7 @@
 
 <dialog class="modal" id="depositModal" aria-labelledby="depositModalTitle"><form method="post" action="{% url 'taxes:withholding_deposit' %}">{% csrf_token %}
   <input type="hidden" name="year" value="{{ year }}">
-  <div class="modal-header"><h2 class="modal-title" id="depositModalTitle">{% translate "Record deposit" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-header"><h2 class="modal-title" id="depositModalTitle">{% translate "Record deposit" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">{% include "partials/form_fields.html" with form=deposit_form col="col-span-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
 </form></dialog>

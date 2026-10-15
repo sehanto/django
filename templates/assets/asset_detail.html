@@ -7,10 +7,10 @@
   <div class="flex gap-2">
     <a href="{% url 'assets:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
     {% if can_write %}
-      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil" aria-hidden="true"></i> {% translate "Edit" %}</a>
+      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary">{% icon "pencil" %} {% translate "Edit" %}</a>
       {% if revision_form %}<button class="btn btn-outline-secondary" type="button" data-dialog-open="reviseModal">{% translate "Revise estimate" %}</button>{% endif %}
       {% if asset.status == asset.Status.ACTIVE %}<button class="btn btn-outline-danger" type="button" data-dialog-open="disposeModal">{% translate "Sell or write off" %}</button>{% endif %}
-      {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash" aria-hidden="true"></i></button></form>{% endif %}
+      {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}">{% icon "trash-2" %}</button></form>{% endif %}
     {% endif %}
   </div>
 </div>
@@ -63,7 +63,7 @@
 {% endif %}
 {% if can_write and revision_form %}
 <dialog class="modal" id="reviseModal" aria-labelledby="reviseModalTitle"><form method="post" action="{% url 'assets:revise' asset.pk %}">{% csrf_token %}
-  <div class="modal-header"><h2 class="modal-title" id="reviseModalTitle">{% translate "Revise estimate" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-header"><h2 class="modal-title" id="reviseModalTitle">{% translate "Revise estimate" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     {% include "partials/form_fields.html" with form=revision_form col="col-span-12" %}
     <p class="text-sm text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value less the new residual value is depreciated over the remaining months with the chosen method." %}</p>
@@ -73,7 +73,7 @@
 {% endif %}
 {% if can_write and asset.status == asset.Status.ACTIVE %}
 <dialog class="modal" id="disposeModal" aria-labelledby="disposeModalTitle"><form method="post" action="{% url 'assets:dispose' asset.pk %}">{% csrf_token %}
-  <div class="modal-header"><h2 class="modal-title" id="disposeModalTitle">{% translate "Sell or write off" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-header"><h2 class="modal-title" id="disposeModalTitle">{% translate "Sell or write off" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     {% include "partials/form_fields.html" with form=disposal_form col="col-span-12" %}
     <p class="text-sm text-muted mt-4 mb-0">{% translate "Depreciation runs to the end of the month before the disposal and is posted first if it is still due. The entry removes the cost and accumulated depreciation, records the proceeds and books the difference as a gain or loss." %}</p>

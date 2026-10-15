@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "PPN rates" %}</h1>
-  {% if can_write %}<a href="{% url 'taxes:rate_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New rate" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'taxes:rate_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New rate" %}</a>{% endif %}
 </div>
 {% if not current_organization.is_pkp %}
 <div class="alert alert-warning">{% translate "This organization is not yet a PKP, so PPN cannot be charged on sales invoices. PPN on purchases will be expensed." %}</div>
@@ -14,7 +14,7 @@
     <tr><td>{{ r.name }}</td><td class="num">{{ r.rate }}%</td><td class="num">{{ r.dpp_numerator }}/{{ r.dpp_denominator }}</td><td class="num">{{ r.effective_rate }}%{% if r.is_specific_amount %}<div class="text-sm text-muted">{% translate "besaran tertentu (code 05)" %}</div>{% endif %}</td>
       <td class="num">{% if r.luxury_rate %}{{ r.luxury_rate|floatformat:"-2" }}%{% endif %}</td>
       <td>{% if r.is_active %}<span class="badge badge-success">{% translate "Active" %}</span>{% else %}<span class="badge badge-secondary">{% translate "Inactive" %}</span>{% endif %}</td>
-      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'taxes:rate_update' r.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>{% endif %}</td></tr>
+      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'taxes:rate_update' r.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
 <p class="text-sm text-muted mt-2">{% translate "Since 1 January 2025 (PMK 131/2024) the PPN rate is 12%; for non-luxury goods and services the tax base (DPP) is 11/12 of the price, so the effective rate is 11%." %}

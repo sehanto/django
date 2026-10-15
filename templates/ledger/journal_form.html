@@ -18,12 +18,12 @@
           <td>{{ f.description|add_class:'form-control form-control-sm' }}</td>
           <td>{{ f.debit|add_class:'form-control form-control-sm text-end' }}</td>
           <td>{{ f.credit|add_class:'form-control form-control-sm text-end' }}</td>
-          <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>
+          <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
         </tr>
         {% endfor %}
       </tbody>
       <tfoot>
-        <tr><td><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus" aria-hidden="true"></i> {% translate "Add line" %}</button></td>
+        <tr><td><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add>{% icon "plus" %} {% translate "Add line" %}</button></td>
           <td class="text-end"><span data-balance-status class="badge"></span></td>
           <td class="num font-semibold" data-total-debit></td><td class="num font-semibold" data-total-credit></td><td></td></tr>
       </tfoot>
@@ -34,7 +34,7 @@
         <td>{{ formset.empty_form.description|add_class:'form-control form-control-sm' }}</td>
         <td>{{ formset.empty_form.debit|add_class:'form-control form-control-sm text-end' }}</td>
         <td>{{ formset.empty_form.credit|add_class:'form-control form-control-sm text-end' }}</td>
-        <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>
+        <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
       </tr>
     </template>
   </div>

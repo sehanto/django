@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Chart of accounts" %}</h1>
-  {% if can_write %}<a href="{% url 'ledger:account_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New account" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'ledger:account_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New account" %}</a>{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th class="w-28">{% translate "Code" %}</th><th>{% translate "Account name" %}</th><th>{% translate "System role" %}</th><th class="num">{% translate "Balance" %}</th><th></th></tr></thead>
@@ -17,8 +17,8 @@
         <td class="text-sm text-muted">{{ account.get_system_role_display|default:"" }}</td>
         <td class="num"><a href="{% url 'reports:general_ledger' %}?account={{ account.pk }}" class="no-underline">{{ balance|default_if_none:0|rupiah }}</a></td>
         <td class="text-end whitespace-nowrap">{% if can_write %}
-          <a href="{% url 'ledger:account_update' account.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
-          {% if not account.system_role %}<form method="post" action="{% url 'ledger:account_delete' account.pk %}" class="inline" data-confirm="{% translate 'Delete this account?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash" aria-hidden="true"></i></button></form>{% endif %}
+          <a href="{% url 'ledger:account_update' account.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>
+          {% if not account.system_role %}<form method="post" action="{% url 'ledger:account_delete' account.pk %}" class="inline" data-confirm="{% translate 'Delete this account?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}">{% icon "trash-2" %}</button></form>{% endif %}
         {% endif %}</td>
       </tr>
       {% endfor %}

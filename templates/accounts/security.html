@@ -3,7 +3,7 @@
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Security" %}</h1>
 {% if required_by and not two_factor_enabled %}
-  <div class="alert alert-warning max-w-3xl"><i class="bi bi-shield-exclamation me-1" aria-hidden="true"></i>
+  <div class="alert alert-warning max-w-3xl">{% icon "shield-alert" "me-1" %}
     {% blocktranslate trimmed with organizations=required_by|join:", " %}{{ organizations }} requires two-factor authentication. Turn it on to continue.{% endblocktranslate %}
   </div>
 {% endif %}
@@ -33,7 +33,7 @@
     <ul class="mb-4 list-none divide-y divide-line rounded-lg border border-line ps-0">
     {% for device in trusted_devices %}
       <li class="flex items-center justify-between gap-2 px-4 py-3">
-        <span><i class="bi bi-laptop me-1" aria-hidden="true"></i>{{ device.label }}{% if device.pk == this_device_id %} <span class="badge badge-primary">{% translate "This device" %}</span>{% endif %}
+        <span>{% icon "laptop" "me-1" %}{{ device.label }}{% if device.pk == this_device_id %} <span class="badge badge-primary">{% translate "This device" %}</span>{% endif %}
           <span class="block text-sm text-muted">{% blocktranslate trimmed with created=device.created_at|date:"d M Y" expires=device.expires_at|date:"d M Y" %}Remembered {{ created }} · until {{ expires }}{% endblocktranslate %}{% if device.last_used_at %} · {% blocktranslate trimmed with used=device.last_used_at|date:"d M Y H:i" %}last used {{ used }}{% endblocktranslate %}{% endif %}</span></span>
         <form method="post" action="{% url 'accounts:forget_trusted_device' %}">{% csrf_token %}<input type="hidden" name="device" value="{{ device.pk }}"><button class="btn btn-sm btn-outline-secondary">{% translate "Forget" %}</button></form>
       </li>

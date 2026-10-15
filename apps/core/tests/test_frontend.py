@@ -28,54 +28,65 @@ def test_templates_have_no_inline_scripts_handlers_or_styles():
 
 
 def test_assets_are_served_from_this_site():
-    for asset in ("build/app.min.css", "build/fonts/bootstrap-icons.woff2", "js/app.js"):
+    for asset in ("build/app.min.css", "js/app.js"):
         assert finders.find(asset), asset
-    assert not finders.find("build/bootstrap.bundle.min.js")  # no framework script: dialogs are native
     base = (TEMPLATES / "base.html").read_text()
     assert "cdn." not in base and "{% static 'build/app.min.css' %}" in base
 
 
-# Bootstrap markup that has no meaning any more (its CSS and script are gone).
-BOOTSTRAP_LEFTOVERS = re.compile(
-    r"data-bs-|\b(?:d-(?:flex|none|block|grid)|col-(?:sm|md|lg|xl)-\d+|justify-content-\w+|align-items-\w+|text-secondary"
-    r"|fw-(?:bold|semibold)|text-decoration-none|w-100|row g-\d|modal-dialog|btn-close|offcanvas"
-    r"|dropdown-menu|list-group|page-item|text-bg-)\b"
-)
+# Spelled apart so this file doesn't match itself.
+FRAMEWORK, ITS_DATA, ITS_ICONS = "boot" + "strap", "data-" + "bs-", re.compile('class="b' + 'i\\b')
+PROJECT_FILES = ("templates", "static/js", "static/build", "frontend", "apps", "config", "deploy", "requirements")
 
 
-def test_no_bootstrap_markup_is_left():
-    offenders = [
-        f"{path.relative_to(TEMPLATES)}: {match[0]}"
-        for path in _templates() for match in BOOTSTRAP_LEFTOVERS.finditer(path.read_text())
-    ]
+def test_no_trace_of_the_old_css_framework():
+    """Tailwind CSS and Lucide icons replaced it entirely: no markup, classes, files or mentions."""
+    root = Path(settings.BASE_DIR)
+    offenders = [str(path.relative_to(root)) for path in root.glob("*.md") if FRAMEWORK in path.read_text().lower()]
+    for folder in PROJECT_FILES:
+        for path in (root / folder).rglob("*"):
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix not in (".pyc", ".mo"):
+                text = path.read_text(encoding="utf-8", errors="ignore").lower()
+                if FRAMEWORK in text or ITS_DATA in text or ITS_ICONS.search(text):
+                    offenders.append(str(path.relative_to(root)))
     assert not offenders, offenders
 
 
-def test_the_built_css_is_up_to_date():
-    """Fails after using a Tailwind class or icon the build doesn't have yet: run manage.py build_css."""
+def test_the_built_assets_are_up_to_date():
+    """Fails after using a Tailwind class or an icon the build doesn't have yet: run manage.py build_css."""
     import pytest
-    from fontTools.ttLib import TTFont
 
     from apps.core import assets
 
     try:
         result = assets.build()
-    except assets.TailwindMissing as exc:
+    except assets.ToolMissing as exc:
         pytest.skip(str(exc))
     assert assets.OUT_CSS.read_text(encoding="utf-8") == result.css, "run manage.py build_css"
-    assert sorted(TTFont(str(assets.OUT_FONT)).getBestCmap()) == result.codepoints, "run manage.py build_css"
+    built = {path.name: path.read_text(encoding="utf-8") for path in assets.OUT_ICONS.iterdir()}
+    assert built == result.icons, "run manage.py build_css"
 
 
 def test_the_build_has_what_pages_use_and_nothing_else():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-switch", ".nav-link.active",
-                 ".grid-cols-12", ".xl\\:col-span-8", ".print\\:hidden", ".data-open\\:flex", ".bi-journal-bookmark-fill::before"):
+    for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-switch", ".nav-link.active", ".icon",
+                 ".grid-cols-12", ".xl\\:col-span-8", ".print\\:hidden", ".data-open\\:flex"):
         assert kept in css, kept
-    for dropped in (".carousel", ".offcanvas", ".grid-cols-7", ".bi-alarm::before"):
+    for dropped in (".carousel", ".offcanvas", ".grid-cols-7", "@font-face"):
         assert dropped not in css, dropped
     assert "prefers-color-scheme:dark" in css  # light and dark follow the device
+
+
+def test_icons_are_inline_svg_from_the_build():
+    import pytest
+    from django.template import Context, Template, TemplateSyntaxError
+
+    html = Template('{% icon "receipt" "me-2 text-primary" %}').render(Context())
+    assert html.startswith('<svg class="icon me-2 text-primary"') and 'aria-hidden="true"' in html
+    with pytest.raises(TemplateSyntaxError):
+        Template('{% icon "../base.html" %}').render(Context())
 
 
 def test_pages_carry_the_content_security_policy(auth_client):

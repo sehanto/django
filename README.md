@@ -549,19 +549,20 @@ The test database is created by `msme_user`, which needs `CREATEDB`.
 
 ## Front end (Tailwind CSS)
 
-The interface is styled with [Tailwind CSS](https://tailwindcss.com) v4 and uses Bootstrap
-Icons 1.11.3 for icons. Everything is served from this site, not from a CDN: pages work without
-third-party requests, and the Content-Security-Policy stays strict. There is no CSS framework
-script: dialogs are native `<dialog>` elements and the few behaviours live in `static/js/app.js`.
+The interface is styled with [Tailwind CSS](https://tailwindcss.com) v4, with
+[Lucide](https://lucide.dev) icons (ISC) as inline SVG. Everything is served from this site, not
+from a CDN: pages work without third-party requests, and the Content-Security-Policy stays strict.
+There is no CSS framework script and no icon font: dialogs are native `<dialog>` elements and the
+few behaviours live in `static/js/app.js`.
 
 | File | Built | Sent (Brotli) |
 |---|---|---|
-| `static/build/app.min.css`: Tailwind (only the utilities in use) + components + icon rules, one request | 43 KB | 8 KB |
-| `static/build/fonts/bootstrap-icons.woff2` | 6 KB, the 62 icons in use (of ~2,000) | 6 KB |
+| `static/build/app.min.css`: Tailwind (only the utilities in use) + components, one request | 40 KB | 7 KB |
+| `templates/icons/<name>.svg`: the 58 Lucide icons in use (of ~2,100), rendered into the page | 29 KB | inline |
 
 - **Source.** `frontend/app.css` is the whole stylesheet: `@import "tailwindcss"`, where class names
   come from (`@source`: templates, scripts and Python code, not tests or migrations), the theme
-  (Bootstrap's breakpoints, which the layouts were designed for), base typography for content
+  (breakpoints at 576, 768, 992, 1200 and 1400 px, which the layouts were designed for), base typography for content
   that Tailwind's reset leaves unstyled, and a small `@layer components`.
 - **Utilities first.** Templates use Tailwind utilities for layout, spacing, grid (`grid
   grid-cols-12`, `md:col-span-6`), typography and colour. Only primitives that every page repeats
@@ -576,15 +577,22 @@ script: dialogs are native `<dialog>` elements and the few behaviours live in `s
   `border-line`, `text-primary`/`bg-primary`, `text-danger`, `text-success`, `text-warning`
   (and `-subtle` backgrounds), `bg-series-1`/`-2` for the chart. They switch with the device's light
   or dark setting (`prefers-color-scheme`), so templates rarely need `dark:` variants.
-- **Build.** `npm ci` installs the pinned Tailwind CLI (`package.json`, `package-lock.json`;
+- **Icons.** `{% icon "receipt" "me-2 text-primary" %}` (a built-in tag, `apps/core/templatetags/icons.py`)
+  renders the icon as inline SVG: 1em square, in the text colour, so text utilities size and colour
+  it; decorative (`aria-hidden`), so icon-only buttons need an `aria-label`. `{% icon name %}` also
+  takes a variable (the build includes the values templates assign to it, e.g. `icon="landmark"`).
+  Names are Lucide's (https://lucide.dev/icons).
+- **Build.** `npm ci` installs the pinned Tailwind CLI and `lucide-static` (`package.json`, `package-lock.json`;
   development only, `node_modules/` isn't committed and production needs no Node.js). **After
-  using a class or icon that isn't in the build yet, run `manage.py build_css`** (also needs
-  `requirements/dev.txt`) and commit `static/build/`; `test_the_built_css_is_up_to_date` fails until
-  then (it is skipped where the CLI isn't installed). The build is reproducible.
+  using a class or icon that isn't in the build yet, run `manage.py build_css`** and commit
+  `static/build/` and `templates/icons/`; `test_the_built_css_is_up_to_date` fails until
+  then (it is skipped where the tools aren't installed). The build also copies the icons in use
+  into `templates/icons/` (with Lucide's licence) and removes those no longer used. The build is
+  reproducible.
   `npm audit` reports `braces` (through the CLI's file watcher, which only `--watch` uses); no
   fixed release exists yet, and the build only passes the project's own glob patterns.
-- To upgrade Tailwind, change the exact version of both packages in `package.json`, run
-  `npm install`, then build and compare the screenshots of the pages.
+- To upgrade Tailwind or Lucide, change the exact versions in `package.json`, run `npm install`,
+  then build and compare the screenshots of the pages.
 - WhiteNoise serves the files with content hashes in their names (cached for good) and
   precompressed (`brotli` is in the requirements).
 
@@ -609,8 +617,7 @@ script: dialogs are native `<dialog>` elements and the few behaviours live in `s
   with `aria-label` (`core.forms.GridFormMixin`).
 - **Accessibility.** Icons are decorative (`aria-hidden="true"`); icon-only buttons have an
   `aria-label`. Wide tables sit in `overflow-x-auto`, charts have a data table, dialogs are labelled
-  by their title. `test_no_bootstrap_markup_is_left` keeps Bootstrap-only classes and `data-bs-`
-  attributes out of the templates.
+  by their title.
 
 ## Languages
 

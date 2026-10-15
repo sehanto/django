@@ -13,7 +13,7 @@
 @source not "../apps/**/tests";
 @source not "../apps/**/migrations";
 
-/* Bootstrap's breakpoints, which the layouts were designed for. */
+/* Breakpoints the layouts were designed for (sm 576px, md 768, lg 992, xl 1200, 2xl 1400). */
 @theme {
   --breakpoint-sm: 36rem;
   --breakpoint-md: 48rem;
@@ -126,6 +126,9 @@
 }
 
 @layer components {
+  /* Icons ({% icon %}): 1em square, the text's colour; text-xl etc. size them. */
+  .icon { @apply inline-block size-[1em] shrink-0 align-[-0.125em]; }
+
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-center text-base

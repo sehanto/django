@@ -1,5 +1,5 @@
-"""Content-Security-Policy: pages run only scripts and styles served from this site (Bootstrap is
-self-hosted, templates carry no inline scripts, handlers or styles), so injected markup can't run."""
+"""Content-Security-Policy: pages run only scripts and styles served from this site (the stylesheet
+is built here, templates carry no inline scripts, handlers or styles), so injected markup can't run."""
 
 from django.conf import settings
 

@@ -4,9 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% translate "MSME accounting" %}{% endblock %} · EA-System</title>
-  {# One stylesheet: Tailwind CSS (frontend/app.css) and the icons in use (manage.py build_css). #}
+  {# One stylesheet: Tailwind CSS compiled from frontend/app.css (manage.py build_css); icons are inline SVG. #}
   <link href="{% static 'build/app.min.css' %}" rel="stylesheet">
-  <link href="{% static 'build/fonts/bootstrap-icons.woff2' %}" rel="preload" as="font" type="font/woff2" crossorigin>
 </head>
 <body class="font-sans">
 <a class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 btn btn-primary btn-sm" href="#content">{% translate "Skip to content" %}</a>
@@ -24,7 +23,7 @@
 {% endblock %}
 <dialog class="modal" id="confirmModal" aria-labelledby="confirmModalTitle">
   <div class="modal-header"><h2 class="modal-title" id="confirmModalTitle">{% translate "Please confirm" %}</h2>
-    <button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+    <button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body"><p class="mb-0" data-confirm-text></p></div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-secondary" data-dialog-close>{% translate "Cancel" %}</button>

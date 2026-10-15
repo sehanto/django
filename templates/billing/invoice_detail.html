@@ -6,7 +6,7 @@
     <a href="{% url 'billing:overview' %}" class="text-sm no-underline">&larr; {% translate "Subscription plan" %}</a>
     <h1 class="text-xl font-medium leading-tight mb-0">{{ invoice.number }} <span class="badge align-middle badge-{{ invoice.status|status_badge }}">{{ invoice.get_status_display }}</span></h1>
   </div>
-  {% if invoice.status == invoice.Status.PAID %}<button type="button" data-print class="btn btn-outline-secondary"><i class="bi bi-printer" aria-hidden="true"></i> {% translate "Print receipt" %}</button>{% endif %}
+  {% if invoice.status == invoice.Status.PAID %}<button type="button" data-print class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print receipt" %}</button>{% endif %}
 </div>
 
 {% if invoice.status == invoice.Status.PENDING %}

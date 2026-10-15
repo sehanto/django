@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 13:09+0700\n"
+"POT-Creation-Date: 2026-10-15 17:22+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -325,7 +325,7 @@ msgid "API key"
 msgstr "Kunci API"
 
 #: apps/api/models.py:26 templates/api/keys.html:2 templates/api/keys.html:4
-#: templates/partials/sidebar.html:66
+#: templates/partials/sidebar.html:67
 msgid "API keys"
 msgstr "Kunci API"
 
@@ -346,7 +346,7 @@ msgid "Give the key a name."
 msgstr "Beri nama kunci ini."
 
 #: apps/assets/apps.py:7 apps/ledger/domain.py:46 apps/reports/statements.py:270
-#: templates/assets/asset_list.html:2 templates/partials/sidebar.html:52
+#: templates/assets/asset_list.html:2 templates/partials/sidebar.html:53
 #: templates/reports/notes.html:34
 msgid "Fixed assets"
 msgstr "Aset Tetap"
@@ -785,7 +785,7 @@ msgstr "Log audit"
 msgid "Account security"
 msgstr "Keamanan akun"
 
-#: apps/audit/domain.py:14 templates/partials/sidebar.html:64
+#: apps/audit/domain.py:14 templates/partials/sidebar.html:65
 msgid "Organization"
 msgstr "Organisasi"
 
@@ -1389,7 +1389,7 @@ msgid "Automatic renewal turned off. Renew manually before your plan ends."
 msgstr "Perpanjangan otomatis dinonaktifkan. Perpanjang secara manual sebelum paket berakhir."
 
 #: apps/contacts/apps.py:7 templates/contacts/contact_list.html:2
-#: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:49
+#: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:50
 msgid "Contacts"
 msgstr "Kontak"
 
@@ -1626,12 +1626,12 @@ msgid "The date %(date)s is outside the allowed range (%(start)s to %(end)s)."
 msgstr "Tanggal %(date)s di luar rentang yang diizinkan (%(start)s s.d. %(end)s)."
 
 #: apps/dashboard/apps.py:7 templates/dashboard/home.html:2 templates/dashboard/home.html:5
-#: templates/partials/sidebar.html:41
+#: templates/partials/sidebar.html:42
 msgid "Dashboard"
 msgstr "Dasbor"
 
 #: apps/deferrals/apps.py:7 templates/deferrals/deferral_list.html:2
-#: templates/partials/sidebar.html:53
+#: templates/partials/sidebar.html:54
 msgid "Prepayments"
 msgstr "Dibayar/diterima di muka"
 
@@ -1790,7 +1790,7 @@ msgstr "Pos dibatalkan."
 
 #: apps/inventory/apps.py:7 apps/ledger/domain.py:44 apps/ledger/domain.py:123
 #: templates/inventory/stock_list.html:2 templates/inventory/stock_list.html:5
-#: templates/partials/sidebar.html:51 templates/reports/notes.html:32
+#: templates/partials/sidebar.html:52 templates/reports/notes.html:32
 msgid "Inventory"
 msgstr "Persediaan"
 
@@ -2590,7 +2590,7 @@ msgstr "Token akses"
 msgid "Leave empty to keep the stored token. It is stored encrypted."
 msgstr "Kosongkan untuk tetap memakai token yang tersimpan. Token disimpan terenkripsi."
 
-#: apps/invoicing/models.py:23 templates/partials/sidebar.html:43
+#: apps/invoicing/models.py:23 templates/partials/sidebar.html:44
 msgid "Sales"
 msgstr "Penjualan"
 
@@ -3737,7 +3737,7 @@ msgstr "Beban"
 msgid "Cash and cash equivalents"
 msgstr "Kas dan Setara Kas"
 
-#: apps/ledger/domain.py:43 templates/reports/index.html:16 templates/reports/notes.html:30
+#: apps/ledger/domain.py:43 templates/reports/index.html:17 templates/reports/notes.html:30
 msgid "Receivables"
 msgstr "Piutang"
 
@@ -3857,7 +3857,7 @@ msgstr "Beban piutang tak tertagih"
 msgid "Posted"
 msgstr "Diposting"
 
-#: apps/ledger/domain.py:117 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:47
+#: apps/ledger/domain.py:117 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:48
 msgid "General journal"
 msgstr "Jurnal Umum"
 
@@ -3870,7 +3870,7 @@ msgstr "Pembayaran"
 msgid "Fixed asset"
 msgstr "Aset tetap"
 
-#: apps/ledger/domain.py:124 apps/payroll/apps.py:7 templates/partials/sidebar.html:46
+#: apps/ledger/domain.py:124 apps/payroll/apps.py:7 templates/partials/sidebar.html:47
 #: templates/payroll/annual.html:5 templates/payroll/employee_list.html:5
 #: templates/payroll/index.html:2 templates/payroll/run_detail.html:2
 #: templates/payroll/run_detail.html:5 templates/payroll/run_form.html:4
@@ -6941,7 +6941,7 @@ msgstr ""
 " berlaku lagi."
 
 #: templates/accounts/two_factor_disable.html:15 templates/accounts/two_factor_setup.html:17
-#: templates/assets/asset_form.html:12 templates/base.html:33
+#: templates/assets/asset_form.html:12 templates/base.html:29
 #: templates/contacts/contact_form.html:10 templates/deferrals/deferral_form.html:10
 #: templates/inventory/adjustment_form.html:10 templates/inventory/write_down_form.html:10
 #: templates/invoicing/invoice_form.html:33 templates/invoicing/item_form.html:10
@@ -6993,7 +6993,7 @@ msgstr ""
 " atau kode cadangan, untuk melanjutkan."
 
 #: templates/accounts/two_factor_verify_session.html:12
-#: templates/accounts/verify_email_pending.html:23 templates/partials/sidebar.html:74
+#: templates/accounts/verify_email_pending.html:23 templates/partials/sidebar.html:75
 msgid "Sign out"
 msgstr "Keluar"
 
@@ -7193,9 +7193,9 @@ msgid "Scheduled"
 msgstr "Terjadwal"
 
 #: templates/assets/asset_detail.html:66 templates/assets/asset_detail.html:76
-#: templates/base.html:30 templates/invoicing/invoice_detail.html:108
+#: templates/base.html:26 templates/invoicing/invoice_detail.html:108
 #: templates/invoicing/invoice_detail.html:115 templates/invoicing/return_detail.html:50
-#: templates/partials/messages.html:5 templates/partials/sidebar.html:14
+#: templates/partials/messages.html:5 templates/partials/sidebar.html:15
 #: templates/taxes/pph_final.html:67 templates/taxes/withholding.html:27
 msgid "Close"
 msgstr "Tutup"
@@ -7331,8 +7331,12 @@ msgstr ""
 msgid "Change history"
 msgstr "Riwayat perubahan"
 
+#: templates/audit/_tabs.html:1
+msgid "Activity"
+msgstr "Aktivitas"
+
 #: templates/audit/_tabs.html:2 templates/audit/organization_activity.html:2
-#: templates/audit/organization_activity.html:4 templates/partials/sidebar.html:67
+#: templates/audit/organization_activity.html:4 templates/partials/sidebar.html:68
 msgid "Activity log"
 msgstr "Log aktivitas"
 
@@ -7424,15 +7428,15 @@ msgstr ""
 msgid "MSME accounting"
 msgstr "Akuntansi UMKM"
 
-#: templates/base.html:14
+#: templates/base.html:11
 msgid "Skip to content"
 msgstr "Lewati ke konten"
 
-#: templates/base.html:29
+#: templates/base.html:25
 msgid "Please confirm"
 msgstr "Mohon konfirmasi"
 
-#: templates/base.html:34
+#: templates/base.html:30
 msgid "Continue"
 msgstr "Lanjutkan"
 
@@ -7500,7 +7504,7 @@ msgid "Simulate saving a payment method"
 msgstr "Simulasikan penyimpanan metode pembayaran"
 
 #: templates/billing/invoice_detail.html:6 templates/billing/overview.html:2
-#: templates/billing/overview.html:4 templates/partials/sidebar.html:68
+#: templates/billing/overview.html:4 templates/partials/sidebar.html:69
 msgid "Subscription plan"
 msgstr "Paket Langganan"
 
@@ -8345,7 +8349,7 @@ msgid "PAID"
 msgstr "LUNAS"
 
 #: templates/invoicing/item_form.html:2 templates/invoicing/item_list.html:2
-#: templates/invoicing/item_list.html:5 templates/partials/sidebar.html:50
+#: templates/invoicing/item_list.html:5 templates/partials/sidebar.html:51
 msgid "Items"
 msgstr "Barang & Jasa"
 
@@ -8378,7 +8382,7 @@ msgid "No items yet."
 msgstr "Belum ada barang/jasa."
 
 #: templates/invoicing/payment_list.html:2 templates/invoicing/payment_list.html:4
-#: templates/partials/sidebar.html:45
+#: templates/partials/sidebar.html:46
 msgid "Payments"
 msgstr "Pembayaran"
 
@@ -8508,7 +8512,7 @@ msgid "New account"
 msgstr "Akun Baru"
 
 #: templates/ledger/account_list.html:2 templates/ledger/account_list.html:5
-#: templates/partials/sidebar.html:54
+#: templates/partials/sidebar.html:55
 msgid "Chart of accounts"
 msgstr "Bagan Akun"
 
@@ -8644,6 +8648,10 @@ msgstr "Belum ada jurnal."
 msgid "Interface language"
 msgstr "Bahasa antarmuka"
 
+#: templates/partials/pagination.html:3
+msgid "Pages"
+msgstr "Halaman"
+
 #: templates/partials/pagination.html:4
 msgid "Previous"
 msgstr "Sebelumnya"
@@ -8661,67 +8669,67 @@ msgstr "Berikutnya"
 msgid "Open the menu"
 msgstr "Buka menu"
 
-#: templates/partials/sidebar.html:33 templates/tenants/create.html:2
+#: templates/partials/sidebar.html:34 templates/tenants/create.html:2
 msgid "New organization"
 msgstr "Organisasi baru"
 
-#: templates/partials/sidebar.html:36
+#: templates/partials/sidebar.html:37
 #, python-format
 msgid "%(role)s · %(plan)s plan"
 msgstr "%(role)s · Paket %(plan)s"
 
-#: templates/partials/sidebar.html:40
+#: templates/partials/sidebar.html:41
 msgid "Main menu"
 msgstr "Menu utama"
 
-#: templates/partials/sidebar.html:42
+#: templates/partials/sidebar.html:43
 msgid "Transactions"
 msgstr "Transaksi"
 
-#: templates/partials/sidebar.html:44
+#: templates/partials/sidebar.html:45
 msgid "Purchases"
 msgstr "Pembelian"
 
-#: templates/partials/sidebar.html:48
+#: templates/partials/sidebar.html:49
 msgid "Master data"
 msgstr "Data Master"
 
-#: templates/partials/sidebar.html:55
+#: templates/partials/sidebar.html:56
 msgid "Taxes & reports"
 msgstr "Pajak & Laporan"
 
-#: templates/partials/sidebar.html:56 templates/reports/index.html:12
+#: templates/partials/sidebar.html:57 templates/reports/index.html:13
 #: templates/taxes/pph_final.html:2
 msgid "MSME PPh Final"
 msgstr "PPh Final UMKM"
 
-#: templates/partials/sidebar.html:57 templates/taxes/withholding.html:2
+#: templates/partials/sidebar.html:58 templates/taxes/withholding.html:2
 #: templates/taxes/withholding_month.html:4
 msgid "Withheld income tax"
 msgstr "PPh yang dipotong"
 
-#: templates/partials/sidebar.html:58 templates/taxes/imports.html:2
+#: templates/partials/sidebar.html:59 templates/taxes/imports.html:2
 msgid "Imports (PIB)"
 msgstr "Impor (PIB)"
 
-#: templates/partials/sidebar.html:59 templates/taxes/self_deposits.html:2
+#: templates/partials/sidebar.html:60 templates/taxes/self_deposits.html:2
 msgid "Self-deposited PPh"
 msgstr "PPh disetor sendiri"
 
-#: templates/partials/sidebar.html:60 templates/taxes/taxrate_form.html:2
+#: templates/partials/sidebar.html:61 templates/taxes/taxrate_form.html:2
 #: templates/taxes/taxrate_list.html:2 templates/taxes/taxrate_list.html:5
 msgid "PPN rates"
 msgstr "Tarif PPN"
 
-#: templates/partials/sidebar.html:61
+#: templates/partials/sidebar.html:62
 msgid "Financial reports"
 msgstr "Laporan Keuangan"
 
-#: templates/partials/sidebar.html:63
+#: templates/partials/sidebar.html:64
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: templates/partials/sidebar.html:65 templates/tenants/members.html:2
+#: templates/partials/sidebar.html:66 templates/tenants/members.html:2
 #: templates/tenants/members.html:4
 msgid "Team members"
 msgstr "Anggota Tim"
@@ -9228,7 +9236,7 @@ msgstr ""
 "bagian yang tidak terpisahkan dari laporan ini."
 
 #: templates/reports/export_books.html:2 templates/reports/export_books.html:4
-#: templates/reports/index.html:19 templates/tenants/settings.html:39
+#: templates/reports/index.html:20 templates/tenants/settings.html:39
 #: templates/tenants/settings.html:41
 msgid "Export books"
 msgstr "Ekspor pembukuan"
@@ -9349,22 +9357,23 @@ msgid "Output and input PPN per tax period."
 msgstr "PPN Keluaran dan PPN Masukan per masa pajak."
 
 #: templates/reports/index.html:12
-msgid "0.5% PPh Final calculated from monthly gross turnover."
-msgstr "Perhitungan PPh Final 0,5% dari peredaran bruto bulanan."
+#, python-format
+msgid "0.5%% PPh Final calculated from monthly gross turnover."
+msgstr "Perhitungan PPh Final 0,5%% dari peredaran bruto bulanan."
 
-#: templates/reports/index.html:14
+#: templates/reports/index.html:15
 msgid "Receivables & payables aging"
 msgstr "Umur Piutang & Utang"
 
-#: templates/reports/index.html:15
+#: templates/reports/index.html:16
 msgid "Open balances by days past due."
 msgstr "Saldo terbuka berdasarkan lama jatuh tempo."
 
-#: templates/reports/index.html:17
+#: templates/reports/index.html:18
 msgid "Payables"
 msgstr "Utang"
 
-#: templates/reports/index.html:19
+#: templates/reports/index.html:20
 msgid "All journals, invoices, payments and contacts as a ZIP of CSV files."
 msgstr "Semua jurnal, faktur, pembayaran, dan kontak dalam ZIP berisi berkas CSV."
 

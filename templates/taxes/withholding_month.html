@@ -4,7 +4,7 @@
 <a href="{% url 'taxes:withholding' %}?year={{ year }}" class="text-sm no-underline">&larr; {% translate "Withheld income tax" %}</a>
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with period=month.label %}Bukti potong {{ period }} {{ year }}{% endblocktranslate %}</h1>
-  {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV</a>{% endif %}
+  {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}CSV</a>{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th><th>{% translate "Income tax" %}</th><th>{% translate "Tax object code" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
@@ -32,8 +32,8 @@
     <td>{{ batch.label }}{% for problem in batch.problems %}<div class="text-sm text-danger">{{ problem }}</div>{% endfor %}</td>
     <td class="num">{{ batch.records|length }}</td>
     <td class="text-end whitespace-nowrap">{% if batch.records %}
-      <a href="{% url 'taxes:ebupot_xml' year month.value batch.document_type %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>XML</a>
-      {% if can_write and can_send and not batch.problems %}<form method="post" action="{% url 'taxes:ebupot_send' year month.value batch.document_type %}" class="inline" data-confirm="{% translate 'Send this file to Coretax?' %}">{% csrf_token %}<button class="btn btn-sm btn-primary"><i class="bi bi-send me-1" aria-hidden="true"></i>{% translate "Send to Coretax" %}</button></form>{% endif %}
+      <a href="{% url 'taxes:ebupot_xml' year month.value batch.document_type %}" class="btn btn-sm btn-outline-primary">{% icon "download" "me-1" %}XML</a>
+      {% if can_write and can_send and not batch.problems %}<form method="post" action="{% url 'taxes:ebupot_send' year month.value batch.document_type %}" class="inline" data-confirm="{% translate 'Send this file to Coretax?' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">{% icon "send" "me-1" %}{% translate "Send to Coretax" %}</button></form>{% endif %}
     {% endif %}</td></tr>
   {% empty %}<tr><td colspan="3" class="text-center text-muted py-6">{% translate "No bukti potong are waiting for a number this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>

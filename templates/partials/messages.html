@@ -2,6 +2,6 @@
 {% for message in messages %}
   <div class="alert alert-{{ message.tags|default:'info' }} flex items-start gap-2" role="alert" data-dismissible>
     <div class="grow">{{ message }}</div>
-    <button type="button" class="btn-icon -my-1 -me-2 size-7" data-dismiss aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    <button type="button" class="btn-icon -my-1 -me-2 size-7" data-dismiss aria-label="{% translate 'Close' %}">{% icon "x" %}</button>
   </div>
 {% endfor %}

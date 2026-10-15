@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Fixed asset register" %}</h1>
-  {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New fixed asset" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New fixed asset" %}</a>{% endif %}
 </div>
 {% if due_months %}
 <div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} flex flex-wrap justify-between items-center gap-2">

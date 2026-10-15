@@ -21,7 +21,7 @@
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
       <tfoot><tr>
-        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus" aria-hidden="true"></i> {% translate "Add line" %}</button></td>
+        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add>{% icon "plus" %} {% translate "Add line" %}</button></td>
         <td class="text-end font-semibold">{% translate "Subtotal" %}</td><td class="num font-semibold" data-subtotal></td><td></td>
       </tr></tfoot>
     </table>

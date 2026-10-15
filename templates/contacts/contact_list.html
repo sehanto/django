@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Contacts" %}</h1>
-  {% if can_write %}<a href="{% url 'contacts:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New contact" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'contacts:create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New contact" %}</a>{% endif %}
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
   <div class="col-span-12 md:col-span-4"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search name, email, NPWP' %}"></div>
@@ -19,10 +19,10 @@
       <td>{{ c.name }}{% if not c.is_active %} <span class="badge badge-secondary">{% translate "inactive" %}</span>{% endif %}</td>
       <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.regency_name }}</td>
       <td class="text-end whitespace-nowrap">
-        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}"><i class="bi bi-receipt" aria-hidden="true"></i></a>{% endif %}
-        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}"><i class="bi bi-bag" aria-hidden="true"></i></a>{% endif %}
-        {% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'contacts:update' c.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
-        <form method="post" action="{% url 'contacts:delete' c.pk %}" class="inline" data-confirm="{% translate 'Delete this contact?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash" aria-hidden="true"></i></button></form>{% endif %}
+        {% if c.is_customer %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}">{% icon "receipt" %}</a>{% endif %}
+        {% if c.is_supplier %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}">{% icon "shopping-bag" %}</a>{% endif %}
+        {% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'contacts:update' c.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>
+        <form method="post" action="{% url 'contacts:delete' c.pk %}" class="inline" data-confirm="{% translate 'Delete this contact?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}">{% icon "trash-2" %}</button></form>{% endif %}
       </td>
     </tr>
   {% empty %}<tr><td colspan="6" class="text-center text-muted py-6">{% translate "No contacts yet." %}</td></tr>

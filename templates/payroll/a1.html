@@ -6,7 +6,7 @@
   <div class="flex justify-between">
     <div><div class="text-sm text-muted">{% translate "Bukti pemotongan PPh Pasal 21 bagi pegawai tetap" %}</div><div class="text-lg font-medium leading-tight mb-0">1721-A1 · {{ st.year }}</div>
       {% if st.final_slip.withholding_slip %}<div class="text-sm">{% translate "Number" %}: {{ st.final_slip.withholding_slip }}</div>{% endif %}</div>
-    <button type="button" class="btn btn-outline-secondary print:hidden" data-print aria-label="{% translate 'Print' %}"><i class="bi bi-printer" aria-hidden="true"></i></button>
+    <button type="button" class="btn btn-outline-secondary print:hidden" data-print aria-label="{% translate 'Print' %}">{% icon "printer" %}</button>
   </div>
   <div class="grid grid-cols-12 gap-x-6 mt-4 text-sm">
     <div class="col-span-12 sm:col-span-6"><div class="font-semibold">{% translate "Employer" %}</div>{{ current_organization.name }}<br>NPWP {{ current_organization.npwp|default:"—" }}</div>

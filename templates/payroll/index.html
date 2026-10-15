@@ -4,9 +4,9 @@
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}Payroll {{ year }}{% endblocktranslate %}</h1>
   <div class="flex gap-2">
-    <a href="{% url 'payroll:employees' %}" class="btn btn-outline-secondary"><i class="bi bi-people me-1" aria-hidden="true"></i>{% translate "Employees" %}</a>
-    <a href="{% url 'payroll:annual' year %}" class="btn btn-outline-secondary"><i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>{% translate "1721-A1" %}</a>
-    {% if can_manage %}<a href="{% url 'payroll:settings' %}" class="btn btn-outline-secondary" aria-label="{% translate 'Payroll settings' %}" title="{% translate 'Payroll settings' %}"><i class="bi bi-gear" aria-hidden="true"></i></a>{% endif %}
+    <a href="{% url 'payroll:employees' %}" class="btn btn-outline-secondary">{% icon "users" "me-1" %}{% translate "Employees" %}</a>
+    <a href="{% url 'payroll:annual' year %}" class="btn btn-outline-secondary">{% icon "file-text" "me-1" %}{% translate "1721-A1" %}</a>
+    {% if can_manage %}<a href="{% url 'payroll:settings' %}" class="btn btn-outline-secondary" aria-label="{% translate 'Payroll settings' %}" title="{% translate 'Payroll settings' %}">{% icon "settings" %}</a>{% endif %}
     <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
   </div>
 </div>

@@ -5,7 +5,7 @@
 <form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <div class="alert alert-light border text-sm mt-6 mb-0">
-    <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+    {% icon "info" "me-1" %}
     {% blocktranslate trimmed %}
       MSMEs with annual turnover of up to Rp4.8 billion may choose not to register as a PKP and use the 0.5% PPh Final
       scheme (PP 55/2022). Individual taxpayers pay no PPh Final on turnover up to Rp500 million per year.
@@ -18,7 +18,7 @@
   <div class="flex flex-wrap justify-between items-center gap-2">
     <div><h2 class="text-base font-medium leading-tight mb-1">{% translate "Places of business" %}</h2>
       <p class="text-sm text-muted mb-0">{% translate "Branches registered in Coretax with their own NITKU. A sales invoice made from one carries its NITKU and address; others come from the head office (the NPWP followed by 000000)." %}</p></div>
-    <a href="{% url 'tenants:place_create' %}" class="btn btn-outline-primary"><i class="bi bi-plus me-1" aria-hidden="true"></i>{% translate "Add place" %}</a>
+    <a href="{% url 'tenants:place_create' %}" class="btn btn-outline-primary">{% icon "plus" "me-1" %}{% translate "Add place" %}</a>
   </div>
   {% if places %}<div class="overflow-x-auto mt-4"><table class="table table-sm mb-0">
     <thead><tr><th>{% translate "Name" %}</th><th>{% translate "NITKU" %}</th><th>{% translate "Regency/city" %}</th><th></th></tr></thead>
@@ -38,6 +38,6 @@
 <div class="card mt-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div><h2 class="text-base font-medium leading-tight mb-1">{% translate "Export books" %}</h2>
     <p class="text-sm text-muted mb-0">{% translate "Download all journals, invoices, payments and contacts as a ZIP of CSV files." %}</p></div>
-  <a href="{% url 'reports:export_books' %}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>{% translate "Export books" %}</a>
+  <a href="{% url 'reports:export_books' %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}{% translate "Export books" %}</a>
 </div></div>
 {% endblock %}

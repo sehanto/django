@@ -55,14 +55,14 @@
           <div class="text-[1.75rem] font-bold">{{ offer.monthly.charge.subtotal|rupiah }}<span class="text-base font-normal text-muted">{% translate "/month" %}</span></div>
           <div class="text-sm text-muted">{% blocktranslate trimmed with price=offer.yearly.charge.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
           {% if offer.credit %}
-            <div class="text-sm text-success mt-2"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
+            <div class="text-sm text-success mt-2">{% icon "refresh-cw" "me-1" %}{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
           {% endif %}
         {% endif %}
         <ul class="list-none ps-0 mt-4 text-sm">
-          <li><i class="bi bi-check2 text-success me-1" aria-hidden="true"></i>{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
-          <li><i class="bi bi-check2 text-success me-1" aria-hidden="true"></i>{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
-          <li><i class="bi bi-check2 text-success me-1" aria-hidden="true"></i>{% translate "SAK EMKM financial reports" %}</li>
-          <li><i class="bi bi-check2 text-success me-1" aria-hidden="true"></i>{% translate "PPN & MSME PPh Final" %}</li>
+          <li>{% icon "check" "text-success me-1" %}{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
+          <li>{% icon "check" "text-success me-1" %}{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
+          <li>{% icon "check" "text-success me-1" %}{% translate "SAK EMKM financial reports" %}</li>
+          <li>{% icon "check" "text-success me-1" %}{% translate "PPN & MSME PPh Final" %}</li>
         </ul>
       </div>
       <div class="card-footer bg-transparent">

@@ -15,7 +15,7 @@
   </ul>
   <p class="text-sm text-muted">{% translate "Indonesian taxpayers must keep their books and records for 10 years (UU KUP Art. 28(11)). Keep a copy somewhere safe." %}</p>
   <form method="post">{% csrf_token %}
-    <button class="btn btn-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>{% translate "Download ZIP" %}</button>
+    <button class="btn btn-primary">{% icon "download" "me-1" %}{% translate "Download ZIP" %}</button>
   </form>
 </div></div>
 {% endblock %}
