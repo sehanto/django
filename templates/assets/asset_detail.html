@@ -7,10 +7,10 @@
   <div class="d-flex gap-2">
     <a href="{% url 'assets:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
     {% if can_write %}
-      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil"></i> {% translate "Edit" %}</a>
+      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary"><i class="bi bi-pencil" aria-hidden="true"></i> {% translate "Edit" %}</a>
       {% if revision_form %}<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reviseModal">{% translate "Revise estimate" %}</button>{% endif %}
       {% if asset.status == asset.Status.ACTIVE %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#disposeModal">{% translate "Sell or write off" %}</button>{% endif %}
-      {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash"></i></button></form>{% endif %}
+      {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}"><i class="bi bi-trash" aria-hidden="true"></i></button></form>{% endif %}
     {% endif %}
   </div>
 </div>
@@ -22,7 +22,7 @@
     {% if asset.is_depreciable %}{% blocktranslate trimmed count months=asset.current_useful_life_months with method=asset.get_current_method_display %}{{ method }}, {{ months }} month{% plural %}{{ method }}, {{ months }} months{% endblocktranslate %}{% else %}{% translate "Not depreciated (land)" %}{% endif %}
   </div></div></div></div>
 </div>
-<dl class="row small mb-4" style="max-width: 900px;">
+<dl class="row small mb-4 mw-lg">
   <dt class="col-sm-4">{% translate "Acquisition date" %}</dt><dd class="col-sm-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
   <dt class="col-sm-4">{% translate "Fixed asset account" %}</dt><dd class="col-sm-8">{{ asset.asset_account }}</dd>
   {% if asset.is_depreciable %}
@@ -37,7 +37,7 @@
 </dl>
 {% if revisions %}
 <h2 class="h6">{% translate "Changes in estimate" %}</h2>
-<div class="card mb-4" style="max-width: 900px;"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+<div class="card mb-4 mw-lg"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in revisions %}
     <tr><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
@@ -48,7 +48,7 @@
 {% endif %}
 {% if schedule %}
 <h2 class="h6">{% translate "Depreciation schedule" %}</h2>
-<div class="card" style="max-width: 900px;"><div class="table-responsive" style="max-height: 520px;"><table class="table table-sm mb-0 align-middle">
+<div class="card mw-lg"><div class="table-responsive scroll-y"><table class="table table-sm mb-0 align-middle">
   <thead class="sticky-top"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Depreciation" %}</th><th class="num">{% translate "Accumulated" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
   <tbody>{% for month, posting, elsewhere in schedule %}
     <tr class="{% if asset.disposed_on and month.period_end >= asset.disposed_on %}text-secondary text-decoration-line-through{% endif %}">

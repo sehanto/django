@@ -6,7 +6,7 @@
 <form method="post">{% csrf_token %}
 {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
-  <thead><tr><th style="min-width: 12rem">{% translate "Employee" %}</th><th>{% translate "Base salary" %}</th><th>{% translate "Allowances" %}</th><th>{% translate "Bonus / THR" %}</th><th>{% translate "Natura" context "benefits in kind" %}</th><th>{% translate "Severance" context "column" %}</th><th>{% translate "Days" context "worked" %}</th></tr></thead>
+  <thead><tr><th class="min-w-12">{% translate "Employee" %}</th><th>{% translate "Base salary" %}</th><th>{% translate "Allowances" %}</th><th>{% translate "Bonus / THR" %}</th><th>{% translate "Natura" context "benefits in kind" %}</th><th>{% translate "Severance" context "column" %}</th><th>{% translate "Days" context "worked" %}</th></tr></thead>
   <tbody>{% for employee, base, allowance, bonus, natura, severance, days in form.rows %}<tr>
     <td>{{ employee.name }}<div class="small text-secondary">{{ employee.ptkp_status }} · {{ employee.get_kind_display }}{% if employee.is_daily %} · {% blocktranslate trimmed with wage=employee.base_salary|rupiah %}{{ wage }} a day{% endblocktranslate %}{% endif %}{% if not employee.is_resident %} · {% translate "non-resident (PPh 26)" %}{% endif %}{% if employee.tax_borne_by_employer %} · {% translate "tax paid by employer" %}{% endif %}</div></td>
     {% if base %}<td>{{ base }}{% for e in base.errors %}<div class="small text-danger">{{ e }}</div>{% endfor %}</td><td>{{ allowance }}</td><td>{{ bonus }}</td><td>{{ natura }}</td>

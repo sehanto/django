@@ -2,7 +2,7 @@
 {% block title %}{% translate "Export books" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-3">{% translate "Export books" %}</h1>
-<div class="card" style="max-width: 720px"><div class="card-body">
+<div class="card mw-md"><div class="card-body">
   <p>{% blocktranslate trimmed with organization=current_organization.name %}
     Download the complete books of {{ organization }} as a ZIP file of spreadsheets (CSV) you can open in Excel or
     import into another accounting system.
@@ -15,7 +15,7 @@
   </ul>
   <p class="small text-secondary">{% translate "Indonesian taxpayers must keep their books and records for 10 years (UU KUP Art. 28(11)). Keep a copy somewhere safe." %}</p>
   <form method="post">{% csrf_token %}
-    <button class="btn btn-primary"><i class="bi bi-download me-1"></i>{% translate "Download ZIP" %}</button>
+    <button class="btn btn-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>{% translate "Download ZIP" %}</button>
   </form>
 </div></div>
 {% endblock %}

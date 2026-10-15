@@ -4,7 +4,7 @@
 <a href="{% url 'taxes:withholding' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "Withheld income tax" %}</a>
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed with period=month.label %}Bukti potong {{ period }} {{ year }}{% endblocktranslate %}</h1>
-  {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>CSV</a>{% endif %}
+  {% if payments %}<a href="{% url 'taxes:withholding_month_csv' year month.value %}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV</a>{% endif %}
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th><th>{% translate "Income tax" %}</th><th>{% translate "Tax object code" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
@@ -13,7 +13,7 @@
       <td>{{ p.invoice.party_name }}{% if p.invoice.party_npwp %}<div class="small text-secondary">{{ p.invoice.party_npwp }}</div>{% endif %}</td>
       <td>{{ p.get_income_tax_kind_display }}</td>
       <td>{% if p.income_tax_object %}{{ p.income_tax_object }}{% elif can_write %}
-        <form method="post" action="{% url 'taxes:payment_tax_object' p.pk %}" class="d-flex gap-1" style="min-width: 14rem">{% csrf_token %}{{ object_form.code }}<button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>
+        <form method="post" action="{% url 'taxes:payment_tax_object' p.pk %}" class="d-flex gap-1 min-w-14">{% csrf_token %}{{ object_form.code }}<button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>
         {% else %}<span class="text-secondary">—</span>{% endif %}</td>
       <td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span class="small">{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
       <td class="num fw-semibold">{{ p.income_tax_withheld|rupiah }}</td>
@@ -32,8 +32,8 @@
     <td>{{ batch.label }}{% for problem in batch.problems %}<div class="small text-danger">{{ problem }}</div>{% endfor %}</td>
     <td class="num">{{ batch.records|length }}</td>
     <td class="text-end text-nowrap">{% if batch.records %}
-      <a href="{% url 'taxes:ebupot_xml' year month.value batch.document_type %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1"></i>XML</a>
-      {% if can_write and can_send and not batch.problems %}<form method="post" action="{% url 'taxes:ebupot_send' year month.value batch.document_type %}" class="d-inline" data-confirm="{% translate 'Send this file to Coretax?' %}">{% csrf_token %}<button class="btn btn-sm btn-primary"><i class="bi bi-send me-1"></i>{% translate "Send to Coretax" %}</button></form>{% endif %}
+      <a href="{% url 'taxes:ebupot_xml' year month.value batch.document_type %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>XML</a>
+      {% if can_write and can_send and not batch.problems %}<form method="post" action="{% url 'taxes:ebupot_send' year month.value batch.document_type %}" class="d-inline" data-confirm="{% translate 'Send this file to Coretax?' %}">{% csrf_token %}<button class="btn btn-sm btn-primary"><i class="bi bi-send me-1" aria-hidden="true"></i>{% translate "Send to Coretax" %}</button></form>{% endif %}
     {% endif %}</td></tr>
   {% empty %}<tr><td colspan="3" class="text-center text-secondary py-4">{% translate "No bukti potong are waiting for a number this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>

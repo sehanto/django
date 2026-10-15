@@ -1,6 +1,6 @@
 {% load ui %}{# Pass "fields" to render only some fields (the form's errors and hidden fields come with the full form). #}
 {% if not fields %}
-{% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+{% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 {% endif %}
 <div class="row g-3">
@@ -15,8 +15,7 @@
       <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}
     {% endif %}
-    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-    {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    {% include "partials/field_feedback.html" %}
   </div>
 {% endfor %}
 </div>

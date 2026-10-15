@@ -2,11 +2,11 @@
 {% block title %}{% translate "Payslip" %}{% endblock %}
 {% block content %}
 <a href="{% url 'payroll:run' slip.run_id %}" class="small text-decoration-none no-print">&larr; {% blocktranslate trimmed with period=slip.run.period %}Payroll {{ period }}{% endblocktranslate %}</a>
-<div class="card mt-2" style="max-width: 720px;"><div class="card-body">
+<div class="card mt-2 mw-md"><div class="card-body">
   <div class="d-flex justify-content-between"><div><div class="fw-semibold">{{ current_organization.name }}</div><div class="h5 mb-0">{% translate "Payslip" %} {{ slip.run.period }}</div></div>
-    <button class="btn btn-outline-secondary no-print" onclick="window.print()"><i class="bi bi-printer"></i></button></div>
+    <button type="button" class="btn btn-outline-secondary no-print" data-print aria-label="{% translate 'Print' %}"><i class="bi bi-printer" aria-hidden="true"></i></button></div>
   <p class="mt-3 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="small text-secondary">{% if slip.employee.nik %}NIK {{ slip.employee.nik }}{% else %}{% translate "Passport" %} {{ slip.employee.passport_number }} ({{ slip.employee.nationality }}){% endif %} · {{ slip.ptkp_status }}</span></p>
-  <table class="table table-sm mb-0">
+  <div class="table-responsive"><table class="table table-sm mb-0">
     <tr><td>{% translate "Base salary" %}</td><td class="num">{{ slip.base_salary|rupiah }}</td></tr>
     <tr><td>{% translate "Allowances" %}</td><td class="num">{{ slip.allowances|rupiah }}</td></tr>
     {% if slip.bonus %}<tr><td>{% translate "Bonus / THR" %}</td><td class="num">{{ slip.bonus|rupiah }}</td></tr>{% endif %}
@@ -20,7 +20,7 @@
     {% if slip.severance_tax %}<tr><td>{% if slip.severance_final %}{% translate "Final PPh 21 on severance" %}{% else %}{% translate "PPh 21 on severance (Art. 17)" %}{% endif %}</td><td class="num">−{{ slip.severance_tax|rupiah }}</td></tr>{% endif %}
     {% if slip.zakat %}<tr><td>{% translate "Zakat" %}</td><td class="num">−{{ slip.zakat|rupiah }}</td></tr>{% endif %}
     <tr class="fw-bold"><td>{% translate "Net pay" %}</td><td class="num">{{ slip.net_pay|rupiah }}</td></tr>
-  </table>
+  </table></div>
   {% if slip.benefits_in_kind %}<p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
   <p class="small text-secondary mt-3 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
 </div></div>

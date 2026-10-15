@@ -31,13 +31,13 @@
 {% if entry.is_reversed %}{% url 'ledger:journal_detail' entry.reversed_by.pk as reversal_url %}
   <div class="alert alert-warning">{% blocktranslate trimmed with url=reversal_url number=entry.reversed_by.number %}This entry was reversed by <a href="{{ url }}">{{ number }}</a>.{% endblocktranslate %}</div>
 {% endif %}
-<div class="card"><table class="table mb-0">
+<div class="card"><div class="table-responsive"><table class="table mb-0">
   <thead><tr><th>{% translate "Account" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Debit" %}</th><th class="num">{% translate "Credit" %}</th></tr></thead>
   <tbody>{% for line in entry.lines.all %}
     <tr><td>{{ line.account_label }}</td><td>{{ line.description }}</td>
       <td class="num">{% if line.debit %}{{ line.debit|rupiah }}{% endif %}</td><td class="num">{% if line.credit %}{{ line.credit|rupiah }}{% endif %}</td></tr>
   {% endfor %}</tbody>
   <tfoot><tr class="fw-semibold"><td colspan="2">{% translate "Total" %}</td><td class="num">{{ entry.total|rupiah }}</td><td class="num">{{ entry.total|rupiah }}</td></tr></tfoot>
-</table></div>
+</table></div></div>
 <p class="small text-secondary mt-2">{% translate "system" as system_user %}{% blocktranslate trimmed with user=entry.created_by|default:system_user when=entry.created_at|date:"d M Y H:i" %}Created by {{ user }} · {{ when }}{% endblocktranslate %}</p>
 {% endblock %}

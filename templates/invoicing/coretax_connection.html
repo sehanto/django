@@ -8,7 +8,7 @@
     <form method="post" class="card"><div class="card-body">{% csrf_token %}
       <p class="small text-secondary">{% blocktranslate trimmed %}DJP has no public Coretax API: fakturs are sent through a licensed tax application provider (PJAP). Enter the address and access token your provider gave you; invoices can then be sent to Coretax from the app, and the Faktur Pajak numbers Coretax issues are recorded on them. Without a connection, download the XML files and import them in Coretax.{% endblocktranslate %}</p>
       {% include "partials/form_fields.html" with col="col-12" %}
-      {% if connection.token %}<p class="small text-success mt-2 mb-0"><i class="bi bi-lock me-1"></i>{% translate "A token is stored." %}</p>{% endif %}
+      {% if connection.token %}<p class="small text-success mt-2 mb-0"><i class="bi bi-lock me-1" aria-hidden="true"></i>{% translate "A token is stored." %}</p>{% endif %}
     </div>
     <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
   </div>

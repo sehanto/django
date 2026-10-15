@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}Withheld income tax {{ year }}{% endblocktranslate %}</h1>
-  <form method="get"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
+  <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th>{% translate "Income tax" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Deposit" %}</th><th></th></tr></thead>
@@ -15,7 +15,7 @@
           {% if row.deposit.ntpn %}<div class="small text-secondary">NTPN {{ row.deposit.ntpn }}</div>{% endif %}
           {% if can_write %}<form method="post" action="{% url 'taxes:withholding_deposit_cancel' row.deposit.pk %}" class="d-inline" data-confirm="{% translate 'Cancel this deposit?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
         {% elif row.due > 0 and can_write %}
-          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#depositModal" data-month="{{ row.month.value }}" data-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#depositModal" data-fill-month="{{ row.month.value }}" data-fill-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
         {% endif %}</td>
       <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="small">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "No income tax was withheld this year. Record it when paying a bill or running payroll." %}</td></tr>{% endfor %}</tbody>
@@ -28,12 +28,4 @@
   <div class="modal-body">{% include "partials/form_fields.html" with form=deposit_form col="col-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
 </form></div></div>
-{% endblock %}
-{% block scripts %}
-<script>
-document.getElementById("depositModal").addEventListener("show.bs.modal", (e) => {
-  document.querySelector('#depositModal [name="month"]').value = e.relatedTarget.dataset.month;
-  document.querySelector('#depositModal [name="kind"]').value = e.relatedTarget.dataset.kind;
-});
-</script>
 {% endblock %}

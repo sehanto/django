@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "New organization" %}{% endblock %}
 {% block content %}
-<div class="mx-auto" style="max-width: 520px;">
+<div class="mx-auto mw-sm">
 <h1 class="h4 mb-3">{% translate "Create a new organization" %}</h1>
 <p class="text-secondary">{% translate "A standard SAK EMKM chart of accounts and PPN rates will be created automatically." %}</p>
 <form method="post" class="card"><div class="card-body">{% csrf_token %}

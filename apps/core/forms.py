@@ -47,6 +47,17 @@ class SanitizedFormMixin:
         return data
 
 
+class GridFormMixin:
+    """A form shown as a table row (formset lines): its inputs have no <label> of their own, so each
+    is named by its field's label for screen readers (``aria-label``)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if field.label:
+                field.widget.attrs.setdefault("aria-label", str(field.label))
+
+
 class DigitsField(forms.CharField):
     """Numeric identifier typed with separators (``01.234.567.8-901.000``), stored as digits.
 

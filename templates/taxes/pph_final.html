@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}MSME PPh Final {{ year }}{% endblocktranslate %}</h1>
-  <form method="get" class="d-flex gap-2"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">
+  <form method="get" class="d-flex gap-2"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">
     {% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 {% if not current_organization.uses_pph_final %}{% url 'tenants:settings' as settings_url %}
@@ -51,7 +51,7 @@
           {% if can_write %}<form method="post" action="{% url 'taxes:pph_final_cancel' payment.pk %}" class="d-inline" data-confirm="{% translate 'Cancel this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
         {% elif row.covered_by_withholding %}<span class="badge text-bg-success">{% translate "Covered by buyers' withholding" %}</span>
         {% elif m.tax and row.has_ended and can_write and current_organization.uses_pph_final %}
-          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal" data-month="{{ m.month }}">{% translate "Record tax payment" %}</button>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal" data-fill-month="{{ m.month }}">{% translate "Record tax payment" %}</button>
         {% elif m.tax and row.has_ended %}<span class="badge text-bg-warning">{% translate "Not paid yet" %}</span>{% endif %}
       </td>
     </tr>
@@ -68,11 +68,4 @@
   <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
 </form></div></div>
-{% endblock %}
-{% block scripts %}
-<script>
-document.getElementById("payModal").addEventListener("show.bs.modal", (e) => {
-  document.querySelector('#payModal [name="month"]').value = e.relatedTarget.dataset.month;
-});
-</script>
 {% endblock %}

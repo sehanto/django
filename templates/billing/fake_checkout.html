@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Test payment" %}{% endblock %}
 {% block content %}
-<div class="mx-auto" style="max-width: 480px;">
+<div class="mx-auto mw-xs">
   <div class="alert alert-info">{% translate "Test payment page: no real money is charged. In production, customers pay on Xendit's hosted page instead." %}</div>
   <div class="card"><div class="card-body text-center p-4">
     <div class="text-secondary">{{ invoice.number }}</div>

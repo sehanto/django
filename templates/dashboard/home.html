@@ -4,8 +4,8 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
   <div><h1 class="h4 mb-0">{% translate "Dashboard" %}</h1><div class="text-secondary small">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
   {% if can_write %}<div class="d-flex gap-2">
-    <a href="{% url 'invoicing:create' invoice_kinds.SALES %}" class="btn btn-primary"><i class="bi bi-receipt"></i> {% translate "Sales invoice" %}</a>
-    <a href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}" class="btn btn-outline-primary"><i class="bi bi-bag"></i> {% translate "Record purchase" %}</a>
+    <a href="{% url 'invoicing:create' invoice_kinds.SALES %}" class="btn btn-primary"><i class="bi bi-receipt" aria-hidden="true"></i> {% translate "Sales invoice" %}</a>
+    <a href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}" class="btn btn-outline-primary"><i class="bi bi-bag" aria-hidden="true"></i> {% translate "Record purchase" %}</a>
   </div>{% endif %}
 </div>
 
@@ -40,16 +40,16 @@
     <div class="bar-chart" role="img" aria-label="{% translate 'Monthly revenue and expenses chart; the table below has the full data.' %}">
       {% for m in months %}
         <div class="bar-group">
-          <div class="bar bar-revenue" style="height: {% bar_height m.revenue chart_peak %}%" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.revenue|rupiah %}{{ month }} · Revenue {{ amount }}{% endblocktranslate %}"></div>
-          <div class="bar bar-expense" style="height: {% bar_height m.expense chart_peak %}%" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.expense|rupiah %}{{ month }} · Expenses {{ amount }}{% endblocktranslate %}"></div>
+          <div class="bar bar-revenue" data-height="{% bar_height m.revenue chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.revenue|rupiah %}{{ month }} · Revenue {{ amount }}{% endblocktranslate %}"></div>
+          <div class="bar bar-expense" data-height="{% bar_height m.expense chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.expense|rupiah %}{{ month }} · Expenses {{ amount }}{% endblocktranslate %}"></div>
         </div>
       {% endfor %}
     </div>
     <div class="bar-labels mt-1">{% for m in months %}<span>{{ m.month|date:"M y" }}</span>{% endfor %}</div>
-    <table class="table table-sm small mt-3 mb-0">
+    <div class="table-responsive"><table class="table table-sm small mt-3 mb-0">
       <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
       <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
-    </table>
+    </table></div>
   </div></div></div>
   <div class="col-xl-5">
     {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind=invoice_kinds.SALES empty=_("No sales invoices yet.") %}

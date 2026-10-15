@@ -5,7 +5,7 @@
 <p class="text-secondary small mb-3">{% translate "Every record created, changed or deleted in this organization, as recorded by the database: by whom, when and what changed. The history cannot be edited or deleted, and each change is chained to the one before it, so a removed or altered change is detected." %}</p>
 {% include "audit/_tabs.html" with url_name="changes" %}
 <form class="row g-2 mb-3" method="get">
-  <div class="col-md-5"><select name="table" class="form-select" onchange="this.form.record.value=''; this.form.submit()" aria-label="{% translate 'Records' %}">
+  <div class="col-md-5"><select name="table" class="form-select" data-autosubmit data-autosubmit-clear="record" aria-label="{% translate 'Records' %}">
     <option value="">{% translate "All records" %}</option>
     {% for value, label in tables.items %}<option value="{{ value }}" {% if value == table %}selected{% endif %}>{{ label }}</option>{% endfor %}
   </select></div>

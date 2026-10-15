@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
-from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
+from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, GridFormMixin, OrganizationFormMixin
 from apps.core.validators import SECRET_MAX_LENGTH
 from apps.inventory.selectors import cost_of_sales_accounts, inventory_accounts
 from apps.ledger.domain import SystemRole
@@ -170,7 +170,7 @@ class InvoiceForm(OrganizationFormMixin, BaseModelForm):
         return cleaned
 
 
-class InvoiceLineForm(OrganizationFormMixin, BaseForm):
+class InvoiceLineForm(GridFormMixin, OrganizationFormMixin, BaseForm):
     item = forms.ModelChoiceField(label=_("Item"), queryset=Item.objects.none(), required=False)
     description = forms.CharField(label=_("Item description"), max_length=255)
     account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())

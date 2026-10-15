@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% translate "Fixed asset register" %}</h1>
-  {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New fixed asset" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New fixed asset" %}</a>{% endif %}
 </div>
 {% if due_months %}
 <div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-2">
@@ -41,7 +41,7 @@
 </table></div></div>
 {% if reconciliation %}
 <h2 class="h6">{% translate "Register and ledger" %}</h2>
-<div class="card" style="max-width: 900px;"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+<div class="card mw-lg"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "In the register" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.register|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>

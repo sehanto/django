@@ -3,7 +3,7 @@
 {% block content %}
 <a href="{% url 'payroll:index' %}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a>
 <h1 class="h4 mb-3">{% translate "Payroll settings" %}</h1>
-<form method="post" class="card" style="max-width: 960px;"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}
+<form method="post" class="card mw-xl"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}
   <p class="small text-secondary mt-3 mb-0">{% translate "Contribution rates: JKM 0.3% and JHT 3.7% (employer) + 2% (employee) on the wage; JP 2% + 1% and BPJS Kesehatan 4% + 1% on the wage up to their caps." %}</p></div>
 <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
 {% endblock %}

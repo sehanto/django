@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% blocktranslate trimmed %}Imports (PIB) {{ year }}{% endblocktranslate %}</h1>
-  <form method="get"><select name="year" class="form-select" onchange="this.form.submit()" aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
+  <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 <div class="card mb-3"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "PIB" %}</th><th>{% translate "Foreign supplier" %}</th><th class="num">{% translate "Import value" %}</th><th class="num">{% translate "PPN impor" %}</th><th class="num">{% translate "PPh 22 impor" %}</th><th class="num">{% translate "Import duty" %}</th><th></th></tr></thead>
@@ -15,7 +15,7 @@
   {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No imports recorded this year." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if can_write %}
-<form method="post" class="card" style="max-width: 960px;"><div class="card-body">{% csrf_token %}
+<form method="post" class="card mw-xl"><div class="card-body">{% csrf_token %}
   <h2 class="h6">{% translate "Record a PIB" %}</h2>
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   {% include "partials/form_fields.html" with col="col-md-4" %}

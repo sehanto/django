@@ -7,23 +7,23 @@
     {% include "partials/form_fields.html" with col="col-md-4" %}
   </div></div>
   {{ formset.management_form }}
-  {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+  {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{% for e in formset.non_form_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   <div class="card"><div class="table-responsive">
     <table class="table formset-table mb-0">
-      <thead><tr><th style="width:32%">{% translate "Account" %}</th><th>{% translate "Description" %}</th><th style="width:16%" class="num">{% translate "Debit" %}</th><th style="width:16%" class="num">{% translate "Credit" %}</th><th></th></tr></thead>
+      <thead><tr><th class="col-account">{% translate "Account" %}</th><th>{% translate "Description" %}</th><th class="num col-amount">{% translate "Debit" %}</th><th class="num col-amount">{% translate "Credit" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}
         <tr data-formset-row>
-          <td>{{ f.account|add_class:'form-select form-select-sm' }}{% for e in f.account.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+          <td>{{ f.account|add_class:'form-select form-select-sm' }}{% include "partials/field_feedback.html" with field=f.account hide_help=True %}</td>
           <td>{{ f.description|add_class:'form-control form-control-sm' }}</td>
           <td>{{ f.debit|add_class:'form-control form-control-sm text-end' }}</td>
           <td>{{ f.credit|add_class:'form-control form-control-sm text-end' }}</td>
-          <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg"></i></button></td>
+          <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>
         </tr>
         {% endfor %}
       </tbody>
       <tfoot>
-        <tr><td><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus"></i> {% translate "Add line" %}</button></td>
+        <tr><td><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus" aria-hidden="true"></i> {% translate "Add line" %}</button></td>
           <td class="text-end"><span data-balance-status class="badge"></span></td>
           <td class="num fw-semibold" data-total-debit></td><td class="num fw-semibold" data-total-credit></td><td></td></tr>
       </tfoot>
@@ -34,7 +34,7 @@
         <td>{{ formset.empty_form.description|add_class:'form-control form-control-sm' }}</td>
         <td>{{ formset.empty_form.debit|add_class:'form-control form-control-sm text-end' }}</td>
         <td>{{ formset.empty_form.credit|add_class:'form-control form-control-sm text-end' }}</td>
-        <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg"></i></button></td>
+        <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>
       </tr>
     </template>
   </div>

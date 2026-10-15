@@ -4,11 +4,11 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h4 mb-0">{% translate "Paid and received in advance" %}</h1>
   {% if can_write %}<div class="d-flex flex-wrap gap-2">
-    <a href="{% url 'deferrals:create' kinds.PREPAID_EXPENSE %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "Paid in advance" %}</a>
-    <a href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}" class="btn btn-outline-primary"><i class="bi bi-plus-lg"></i> {% translate "Received in advance" %}</a>
+    <a href="{% url 'deferrals:create' kinds.PREPAID_EXPENSE %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "Paid in advance" %}</a>
+    <a href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}" class="btn btn-outline-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "Received in advance" %}</a>
   </div>{% endif %}
 </div>
-<p class="text-secondary small" style="max-width: 900px;">{% translate "Rent, insurance or subscriptions paid for several months ahead are expensed month by month over the period they cover, and rent or royalties received ahead are revenue month by month (SAK EMKM 14.13, 14.7). Until then they are an asset (paid in advance) or a liability (received in advance)." %}</p>
+<p class="text-secondary small mw-lg">{% translate "Rent, insurance or subscriptions paid for several months ahead are expensed month by month over the period they cover, and rent or royalties received ahead are revenue month by month (SAK EMKM 14.13, 14.7). Until then they are an asset (paid in advance) or a liability (received in advance)." %}</p>
 {% if due_months %}
 <div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-2">
   <div>

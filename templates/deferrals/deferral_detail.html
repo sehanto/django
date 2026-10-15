@@ -14,14 +14,14 @@
   <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Recognised" %}</div><div class="stat-value">{{ recognised|rupiah }}</div></div></div></div>
   <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Remaining" %}</div><div class="stat-value">{{ remaining|rupiah }}</div></div></div></div>
 </div>
-<dl class="row small mb-4" style="max-width: 900px;">
+<dl class="row small mb-4 mw-lg">
   <dt class="col-sm-4">{% translate "Recorded on" %}</dt><dd class="col-sm-8">{{ deferral.recorded_on|date:"d F Y" }}{% if deferral.opening_entry %} · <a href="{% url 'ledger:journal_detail' deferral.opening_entry_id %}">{{ deferral.opening_entry.number }}</a>{% endif %}</dd>
   <dt class="col-sm-4">{% translate "Period" %}</dt><dd class="col-sm-8">{% blocktranslate trimmed count months=deferral.months with start=deferral.starts_on|date:"F Y" %}{{ months }} month from {{ start }}{% plural %}{{ months }} months from {{ start }}{% endblocktranslate %}</dd>
   <dt class="col-sm-4">{% translate "Prepaid or received in advance account" %}</dt><dd class="col-sm-8">{{ deferral.balance_account }}</dd>
   <dt class="col-sm-4">{% translate "Expense or revenue account" %}</dt><dd class="col-sm-8">{{ deferral.recognition_account }}</dd>
 </dl>
 <h2 class="h6">{% translate "Schedule" %}</h2>
-<div class="card" style="max-width: 900px;"><div class="table-responsive" style="max-height: 520px;"><table class="table table-sm mb-0 align-middle">
+<div class="card mw-lg"><div class="table-responsive scroll-y"><table class="table table-sm mb-0 align-middle">
   <thead class="sticky-top"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Amount" %}</th><th class="num">{% translate "Recognised" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
   <tbody>{% for month, entry in schedule %}
     <tr class="{% if deferral.status == deferral.Status.VOID %}text-secondary text-decoration-line-through{% endif %}">

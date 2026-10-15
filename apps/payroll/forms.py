@@ -54,7 +54,7 @@ class PayrollSettingsForm(OrganizationFormMixin, BaseModelForm):
         self.fields["zakat_payable_account"].queryset = liabilities
 
 
-CELL = {"class": "form-control form-control-sm text-end", "style": "min-width: 7.5rem"}
+CELL = {"class": "form-control form-control-sm text-end cell-amount"}
 
 
 def _money(label, initial):
@@ -84,8 +84,11 @@ class PayrollRunForm(OrganizationFormMixin, BaseForm):
             if e.is_daily:
                 self.fields[f"days_{e.pk}"] = forms.IntegerField(
                     label=_("Days worked"), min_value=0, max_value=31, required=False,
-                    widget=forms.NumberInput(attrs={**CELL, "style": "min-width: 4.5rem"}),
+                    widget=forms.NumberInput(attrs={**CELL, "class": "form-control form-control-sm text-end cell-days"}),
                 )
+            for name, field in self.fields.items():  # a grid: each input says whose pay it is
+                if name.endswith(f"_{e.pk}"):
+                    field.widget.attrs["aria-label"] = f"{field.label}: {e.name}"
 
     @property
     def rows(self):

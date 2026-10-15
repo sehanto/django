@@ -2,7 +2,7 @@ from django import forms
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
+from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, GridFormMixin, OrganizationFormMixin
 from apps.core.money import ZERO
 from apps.core.validators import EARLIEST_BUSINESS_DATE
 
@@ -49,7 +49,7 @@ class JournalEntryForm(OrganizationFormMixin, BaseModelForm):
         )
 
 
-class JournalLineForm(OrganizationFormMixin, BaseForm):
+class JournalLineForm(GridFormMixin, OrganizationFormMixin, BaseForm):
     account = forms.ModelChoiceField(label=_("Account"), queryset=Account.objects.none())
     description = forms.CharField(label=_("Description"), max_length=255, required=False)
     debit = forms.DecimalField(label=_("Debit"), max_digits=18, decimal_places=2, min_value=0, required=False)

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h4 mb-0">{% translate "Journal entries" %}</h1>
-  {% if can_write %}<a href="{% url 'ledger:journal_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New journal entry" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'ledger:journal_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New journal entry" %}</a>{% endif %}
 </div>
 <form class="row g-2 mb-3" method="get">
   <div class="col-md-4"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, description, reference' %}"></div>

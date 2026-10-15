@@ -13,15 +13,15 @@
     {% else %}{% include "partials/form_fields.html" with col="col-md-4" %}{% endif %}
   </div></div>
   {{ formset.management_form }}
-  {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+  {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{% for e in formset.non_form_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   <div class="card"><div class="table-responsive">
     <table class="table formset-table mb-0">
-      <thead><tr><th>{% translate "Item" %}</th><th style="min-width:180px">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th style="width:90px">{% translate "Qty" %}</th><th style="width:140px">{% translate "Price" %}</th><th style="width:80px">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
+      <thead><tr><th>{% translate "Item" %}</th><th class="min-w-12">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="col-qty">{% translate "Qty" %}</th><th class="col-price">{% translate "Price" %}</th><th class="col-percent">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
       <tfoot><tr>
-        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus"></i> {% translate "Add line" %}</button></td>
+        <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus" aria-hidden="true"></i> {% translate "Add line" %}</button></td>
         <td class="text-end fw-semibold">{% translate "Subtotal" %}</td><td class="num fw-semibold" data-subtotal></td><td></td>
       </tr></tfoot>
     </table>

@@ -1,0 +1,3 @@
+{# Help text and errors of one field, with the ids Django's aria-describedby points at. #}
+{% if field.help_text and not hide_help %}<div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
+{% if field.errors %}<div class="invalid-feedback d-block" id="{{ field.auto_id }}_error">{% for e in field.errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}

@@ -1,7 +1,7 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n ui %}
 {% block title %}{% translate "Confirm your email address" %}{% endblock %}
 {% block auth_content %}
-<h2 class="h5 mb-3"><i class="bi bi-envelope-paper me-2 text-primary"></i>{% translate "Confirm your email address" %}</h2>
+<h2 class="h5 mb-3"><i class="bi bi-envelope-paper me-2 text-primary" aria-hidden="true"></i>{% translate "Confirm your email address" %}</h2>
 <p>{% blocktranslate trimmed with email=request.user.pending_email|default:request.user.email %}We sent a confirmation link to <strong>{{ email }}</strong>. Open it to start using your account.{% endblocktranslate %}</p>
 <p class="small text-secondary">{% blocktranslate trimmed with lifetime=lifetime|timeuntil_delta %}The link is valid for {{ lifetime }}. If it doesn't arrive within a few minutes, check your spam folder.{% endblocktranslate %}</p>
 

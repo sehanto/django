@@ -4,25 +4,25 @@
 <h1 class="h4 mb-3">{% translate "Team members" %}</h1>
 <div class="row g-4">
   <div class="col-lg-7">
-    <div class="card"><table class="table mb-0 align-middle">
+    <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
       <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Email" %}</th><th>{% translate "Role" %}</th><th>{% translate "2FA" %}</th><th></th></tr></thead>
       <tbody>
       {% for m in members %}
         <tr><td>{{ m.user.full_name }}</td><td>{{ m.user.email }}</td><td>{{ m.get_role_display }}</td>
-          <td>{% if m.has_two_factor %}<span class="badge text-bg-success" title="{% translate 'Two-factor authentication' %}"><i class="bi bi-shield-check"></i> {% translate "On" %}</span>{% else %}<span class="badge {% if current_organization.require_two_factor %}text-bg-warning{% else %}text-bg-light border{% endif %}">{% translate "Off" %}</span>{% endif %}</td>
+          <td>{% if m.has_two_factor %}<span class="badge text-bg-success" title="{% translate 'Two-factor authentication' %}"><i class="bi bi-shield-check" aria-hidden="true"></i> {% translate "On" %}</span>{% else %}<span class="badge {% if current_organization.require_two_factor %}text-bg-warning{% else %}text-bg-light border{% endif %}">{% translate "Off" %}</span>{% endif %}</td>
           <td class="text-end">{% if m.role != m.Role.OWNER and m.user != request.user %}
             <form method="post" action="{% url 'tenants:remove_member' m.pk %}" data-confirm="{% translate 'Remove this member?' %}">{% csrf_token %}
-              <button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}"><i class="bi bi-x-lg"></i></button></form>{% endif %}</td></tr>
+              <button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></form>{% endif %}</td></tr>
       {% endfor %}
       </tbody>
-    </table></div>
+    </table></div></div>
     {% if invitations %}
     <h2 class="h6 mt-4">{% translate "Pending invitations" %}</h2>
-    <div class="card"><table class="table mb-0 align-middle">
+    <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
       <tbody>{% for i in invitations %}<tr><td>{{ i.email }}</td><td>{{ i.get_role_display }}</td>
         <td class="small text-secondary">{% blocktranslate trimmed with date=i.expires_at|date:"d/m/Y" %}valid until {{ date }}{% endblocktranslate %}</td>
         <td class="text-end"><form method="post" action="{% url 'tenants:revoke_invitation' i.pk %}" data-confirm="{% translate 'Revoke this invitation?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Revoke" %}</button></form></td></tr>{% endfor %}</tbody>
-    </table></div>
+    </table></div></div>
     {% endif %}
     <p class="small text-secondary mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
       {% blocktranslate trimmed with name=plan.name count count=plan.max_users %}{{ name }} plan: up to {{ count }} user.{% plural %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}

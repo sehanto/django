@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
   <h1 class="h4 mb-0">{% translate "Inventory" %}</h1>
-  {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary"><i class="bi bi-plus-slash-minus"></i> {% translate "Stock adjustment" %}</a>{% endif %}
+  {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary"><i class="bi bi-plus-slash-minus" aria-hidden="true"></i> {% translate "Stock adjustment" %}</a>{% endif %}
 </div>
 <p class="text-secondary">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>
 <div class="card mb-3"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
@@ -25,7 +25,7 @@
 </table></div></div>
 {% if reconciliation %}
 <h2 class="h6">{% translate "Stock and ledger" %}</h2>
-<div class="card" style="max-width: 900px;"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+<div class="card mw-lg"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Stock value" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.stock|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>

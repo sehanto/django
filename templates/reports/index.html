@@ -11,7 +11,7 @@
   {% include "reports/_card.html" with href="reports:vat" icon="percent" title=_("PPN summary") desc=_("Output and input PPN per tax period.") %}
   {% include "reports/_card.html" with href="taxes:pph_final" icon="calculator" title=_("MSME PPh Final") desc=_("0.5% PPh Final calculated from monthly gross turnover.") %}
   <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary"></i>{% translate "Receivables & payables aging" %}</h2>
+    <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary" aria-hidden="true"></i>{% translate "Receivables & payables aging" %}</h2>
     <p class="small text-secondary">{% translate "Open balances by days past due." %}</p>
     <a href="{% url 'reports:aging' invoice_kinds.SALES %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
     <a href="{% url 'reports:aging' invoice_kinds.PURCHASE %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>

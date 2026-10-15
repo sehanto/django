@@ -8,7 +8,7 @@
 {% with compare=report.has_comparative %}
 {% blocktranslate trimmed with start=report.date_from|date:"d/m/Y" end=report.date_to|date:"d/m/Y" asvar current %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% blocktranslate trimmed with start=report.previous_from|date:"d/m/Y" end=report.previous_to|date:"d/m/Y" asvar previous %}{{ start }} to {{ end }}{% endblocktranslate %}
-<div class="card" style="max-width: 1000px;"><div class="table-responsive"><table class="table table-statement mb-0">
+<div class="card mw-xl"><div class="table-responsive"><table class="table table-statement mb-0">
   {% include "reports/_columns.html" %}
   {% include "reports/_section.html" with section=report.revenue %}
   {% include "reports/_section.html" with section=report.cost_of_sales %}

@@ -5,7 +5,7 @@
 <p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.income_statement.date_from|date:"d M Y" end=report.income_statement.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" %}
 {% if report %}{% with org=report.organization bs=report.balance_sheet pl=report.income_statement %}
-<div class="card" style="max-width: 1000px;"><div class="card-body">
+<div class="card mw-xl"><div class="card-body">
 
 <h2 class="h6 fw-bold">1. {% translate "General" %}</h2>
 <dl class="row small mb-4">
@@ -60,7 +60,7 @@
 <div class="table-responsive mb-4"><table class="table table-sm table-statement mb-0 small">
   {% if note.is_balance_sheet %}{% include "reports/_columns.html" with compare=True current=bs.as_of|date:"d/m/Y" previous=bs.previous_as_of|date:"d/m/Y" restated=bs.comparative_restated %}
   {% else %}{% include "reports/_columns.html" with compare=True current=period previous=previous_period restated=pl.comparative_restated %}{% endif %}
-  {% for row in section.rows %}<tr><td class="text-secondary" style="width:110px">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-secondary">{{ row.previous|rupiah }}</td></tr>{% endfor %}
+  {% for row in section.rows %}<tr><td class="text-secondary col-code">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-secondary">{{ row.previous|rupiah }}</td></tr>{% endfor %}
   <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-secondary">{{ section.previous_total|rupiah }}</td></tr>
 </table></div>
 {% endwith %}{% endfor %}

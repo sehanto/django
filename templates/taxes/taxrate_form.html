@@ -2,7 +2,7 @@
 {% block title %}{% translate "PPN rates" %}{% endblock %}
 {% block content %}
 <h1 class="h4 mb-3">{% if object %}{% translate "Edit rate" %}{% else %}{% translate "New rate" %}{% endif %}</h1>
-<form method="post" class="card" style="max-width: 760px;"><div class="card-body">{% csrf_token %}
+<form method="post" class="card mw-md"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
 <div class="card-footer d-flex gap-2 justify-content-end">

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 12:10+0700\n"
+"POT-Creation-Date: 2026-10-15 13:09+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -325,7 +325,7 @@ msgid "API key"
 msgstr "Kunci API"
 
 #: apps/api/models.py:26 templates/api/keys.html:2 templates/api/keys.html:4
-#: templates/partials/sidebar.html:53
+#: templates/partials/sidebar.html:66
 msgid "API keys"
 msgstr "Kunci API"
 
@@ -346,7 +346,7 @@ msgid "Give the key a name."
 msgstr "Beri nama kunci ini."
 
 #: apps/assets/apps.py:7 apps/ledger/domain.py:46 apps/reports/statements.py:270
-#: templates/assets/asset_list.html:2 templates/partials/sidebar.html:39
+#: templates/assets/asset_list.html:2 templates/partials/sidebar.html:52
 #: templates/reports/notes.html:34
 msgid "Fixed assets"
 msgstr "Aset Tetap"
@@ -785,7 +785,7 @@ msgstr "Log audit"
 msgid "Account security"
 msgstr "Keamanan akun"
 
-#: apps/audit/domain.py:14 templates/partials/sidebar.html:51
+#: apps/audit/domain.py:14 templates/partials/sidebar.html:64
 msgid "Organization"
 msgstr "Organisasi"
 
@@ -1389,7 +1389,7 @@ msgid "Automatic renewal turned off. Renew manually before your plan ends."
 msgstr "Perpanjangan otomatis dinonaktifkan. Perpanjang secara manual sebelum paket berakhir."
 
 #: apps/contacts/apps.py:7 templates/contacts/contact_list.html:2
-#: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:36
+#: templates/contacts/contact_list.html:5 templates/partials/sidebar.html:49
 msgid "Contacts"
 msgstr "Kontak"
 
@@ -1587,7 +1587,7 @@ msgstr "Kontak dihapus."
 msgid "Core"
 msgstr "Inti"
 
-#: apps/core/forms.py:94
+#: apps/core/forms.py:105
 #, python-format
 msgid "Enter a date between %(start)s and %(end)s."
 msgstr "Masukkan tanggal antara %(start)s dan %(end)s."
@@ -1626,12 +1626,12 @@ msgid "The date %(date)s is outside the allowed range (%(start)s to %(end)s)."
 msgstr "Tanggal %(date)s di luar rentang yang diizinkan (%(start)s s.d. %(end)s)."
 
 #: apps/dashboard/apps.py:7 templates/dashboard/home.html:2 templates/dashboard/home.html:5
-#: templates/partials/sidebar.html:28
+#: templates/partials/sidebar.html:41
 msgid "Dashboard"
 msgstr "Dasbor"
 
 #: apps/deferrals/apps.py:7 templates/deferrals/deferral_list.html:2
-#: templates/partials/sidebar.html:40
+#: templates/partials/sidebar.html:53
 msgid "Prepayments"
 msgstr "Dibayar/diterima di muka"
 
@@ -1790,7 +1790,7 @@ msgstr "Pos dibatalkan."
 
 #: apps/inventory/apps.py:7 apps/ledger/domain.py:44 apps/ledger/domain.py:123
 #: templates/inventory/stock_list.html:2 templates/inventory/stock_list.html:5
-#: templates/partials/sidebar.html:38 templates/reports/notes.html:32
+#: templates/partials/sidebar.html:51 templates/reports/notes.html:32
 msgid "Inventory"
 msgstr "Persediaan"
 
@@ -2590,7 +2590,7 @@ msgstr "Token akses"
 msgid "Leave empty to keep the stored token. It is stored encrypted."
 msgstr "Kosongkan untuk tetap memakai token yang tersimpan. Token disimpan terenkripsi."
 
-#: apps/invoicing/models.py:23 templates/partials/sidebar.html:30
+#: apps/invoicing/models.py:23 templates/partials/sidebar.html:43
 msgid "Sales"
 msgstr "Penjualan"
 
@@ -3857,7 +3857,7 @@ msgstr "Beban piutang tak tertagih"
 msgid "Posted"
 msgstr "Diposting"
 
-#: apps/ledger/domain.py:117 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:34
+#: apps/ledger/domain.py:117 templates/ledger/journal_form.html:2 templates/partials/sidebar.html:47
 msgid "General journal"
 msgstr "Jurnal Umum"
 
@@ -3870,7 +3870,7 @@ msgstr "Pembayaran"
 msgid "Fixed asset"
 msgstr "Aset tetap"
 
-#: apps/ledger/domain.py:124 apps/payroll/apps.py:7 templates/partials/sidebar.html:33
+#: apps/ledger/domain.py:124 apps/payroll/apps.py:7 templates/partials/sidebar.html:46
 #: templates/payroll/annual.html:5 templates/payroll/employee_list.html:5
 #: templates/payroll/index.html:2 templates/payroll/run_detail.html:2
 #: templates/payroll/run_detail.html:5 templates/payroll/run_form.html:4
@@ -4237,16 +4237,16 @@ msgstr "Penerimaan dalam bentuk natura dan kenikmatan"
 msgid "Days worked"
 msgstr "Hari kerja"
 
-#: apps/payroll/forms.py:115 apps/taxes/forms.py:39 apps/taxes/forms.py:57 apps/taxes/forms.py:139
+#: apps/payroll/forms.py:118 apps/taxes/forms.py:39 apps/taxes/forms.py:57 apps/taxes/forms.py:139
 msgid "Payment date"
 msgstr "Tanggal setor"
 
-#: apps/payroll/forms.py:116 apps/taxes/forms.py:40 apps/taxes/forms.py:58 apps/taxes/forms.py:110
+#: apps/payroll/forms.py:119 apps/taxes/forms.py:40 apps/taxes/forms.py:58 apps/taxes/forms.py:110
 #: apps/taxes/forms.py:140
 msgid "Paid from"
 msgstr "Dibayar dari"
 
-#: apps/payroll/forms.py:124 apps/payroll/models.py:292
+#: apps/payroll/forms.py:127 apps/payroll/models.py:292
 msgid "previous employer's NPWP"
 msgstr "NPWP pemberi kerja sebelumnya"
 
@@ -6893,7 +6893,7 @@ msgstr ""
 
 #: templates/accounts/two_factor_backup_codes.html:12 templates/invoicing/invoice_detail.html:12
 #: templates/invoicing/invoice_print.html:21 templates/invoicing/return_detail.html:8
-#: templates/payroll/a1.html:9 templates/reports/_filter.html:9
+#: templates/payroll/a1.html:9 templates/payroll/payslip.html:7 templates/reports/_filter.html:9
 msgid "Print"
 msgstr "Cetak"
 
@@ -6941,13 +6941,13 @@ msgstr ""
 " berlaku lagi."
 
 #: templates/accounts/two_factor_disable.html:15 templates/accounts/two_factor_setup.html:17
-#: templates/assets/asset_form.html:12 templates/contacts/contact_form.html:10
-#: templates/deferrals/deferral_form.html:10 templates/inventory/adjustment_form.html:10
-#: templates/inventory/write_down_form.html:10 templates/invoicing/invoice_form.html:33
-#: templates/invoicing/item_form.html:10 templates/invoicing/return_form.html:33
-#: templates/ledger/account_form.html:10 templates/ledger/journal_form.html:42
-#: templates/payroll/employee_form.html:8 templates/taxes/taxrate_form.html:9
-#: templates/tenants/place_form.html:10
+#: templates/assets/asset_form.html:12 templates/base.html:33
+#: templates/contacts/contact_form.html:10 templates/deferrals/deferral_form.html:10
+#: templates/inventory/adjustment_form.html:10 templates/inventory/write_down_form.html:10
+#: templates/invoicing/invoice_form.html:33 templates/invoicing/item_form.html:10
+#: templates/invoicing/return_form.html:32 templates/ledger/account_form.html:10
+#: templates/ledger/journal_form.html:42 templates/payroll/employee_form.html:8
+#: templates/taxes/taxrate_form.html:9 templates/tenants/place_form.html:10
 msgid "Cancel"
 msgstr "Batal"
 
@@ -6993,7 +6993,7 @@ msgstr ""
 " atau kode cadangan, untuk melanjutkan."
 
 #: templates/accounts/two_factor_verify_session.html:12
-#: templates/accounts/verify_email_pending.html:23 templates/partials/sidebar.html:61
+#: templates/accounts/verify_email_pending.html:23 templates/partials/sidebar.html:74
 msgid "Sign out"
 msgstr "Keluar"
 
@@ -7193,8 +7193,9 @@ msgid "Scheduled"
 msgstr "Terjadwal"
 
 #: templates/assets/asset_detail.html:66 templates/assets/asset_detail.html:76
-#: templates/invoicing/invoice_detail.html:108 templates/invoicing/invoice_detail.html:115
-#: templates/invoicing/return_detail.html:50 templates/partials/messages.html:5
+#: templates/base.html:30 templates/invoicing/invoice_detail.html:108
+#: templates/invoicing/invoice_detail.html:115 templates/invoicing/return_detail.html:50
+#: templates/partials/messages.html:5 templates/partials/sidebar.html:14
 #: templates/taxes/pph_final.html:67 templates/taxes/withholding.html:27
 msgid "Close"
 msgstr "Tutup"
@@ -7331,7 +7332,7 @@ msgid "Change history"
 msgstr "Riwayat perubahan"
 
 #: templates/audit/_tabs.html:2 templates/audit/organization_activity.html:2
-#: templates/audit/organization_activity.html:4 templates/partials/sidebar.html:54
+#: templates/audit/organization_activity.html:4 templates/partials/sidebar.html:67
 msgid "Activity log"
 msgstr "Log aktivitas"
 
@@ -7423,6 +7424,18 @@ msgstr ""
 msgid "MSME accounting"
 msgstr "Akuntansi UMKM"
 
+#: templates/base.html:14
+msgid "Skip to content"
+msgstr "Lewati ke konten"
+
+#: templates/base.html:29
+msgid "Please confirm"
+msgstr "Mohon konfirmasi"
+
+#: templates/base.html:34
+msgid "Continue"
+msgstr "Lanjutkan"
+
 #: templates/billing/_offer_button.html:4
 #, python-format
 msgid "Pay monthly · %(total)s"
@@ -7487,7 +7500,7 @@ msgid "Simulate saving a payment method"
 msgstr "Simulasikan penyimpanan metode pembayaran"
 
 #: templates/billing/invoice_detail.html:6 templates/billing/overview.html:2
-#: templates/billing/overview.html:4 templates/partials/sidebar.html:55
+#: templates/billing/overview.html:4 templates/partials/sidebar.html:68
 msgid "Subscription plan"
 msgstr "Paket Langganan"
 
@@ -8332,7 +8345,7 @@ msgid "PAID"
 msgstr "LUNAS"
 
 #: templates/invoicing/item_form.html:2 templates/invoicing/item_list.html:2
-#: templates/invoicing/item_list.html:5 templates/partials/sidebar.html:37
+#: templates/invoicing/item_list.html:5 templates/partials/sidebar.html:50
 msgid "Items"
 msgstr "Barang & Jasa"
 
@@ -8365,7 +8378,7 @@ msgid "No items yet."
 msgstr "Belum ada barang/jasa."
 
 #: templates/invoicing/payment_list.html:2 templates/invoicing/payment_list.html:4
-#: templates/partials/sidebar.html:32
+#: templates/partials/sidebar.html:45
 msgid "Payments"
 msgstr "Pembayaran"
 
@@ -8452,7 +8465,7 @@ msgstr "Kuantitas diretur"
 msgid "Everything on this invoice has already been returned."
 msgstr "Semua barang di faktur ini sudah diretur."
 
-#: templates/invoicing/return_form.html:24
+#: templates/invoicing/return_form.html:23
 #, python-format
 msgid ""
 "Lines are returned at their invoiced price, discount and PPN rate. The return first reduces what "
@@ -8462,7 +8475,7 @@ msgstr ""
 "Baris diretur dengan harga, diskon, dan tarif PPN seperti di faktur. Retur lebih dulu mengurangi "
 "sisa tagihan (%(balance)s); kelebihannya dikembalikan. PPN dikoreksi pada bulan retur."
 
-#: templates/invoicing/return_form.html:26
+#: templates/invoicing/return_form.html:25
 #, python-format
 msgid ""
 "The buyer withheld %(amount)s of PPN and deposited it: up to that amount, the return's PPN is "
@@ -8472,7 +8485,7 @@ msgstr ""
 "tidak dikreditkan maupun dikembalikan. Pembeli memintanya kembali dari kantor pajak dengan nota "
 "retur."
 
-#: templates/invoicing/return_form.html:28
+#: templates/invoicing/return_form.html:27
 #, python-format
 msgid ""
 "The buyer withheld %(amount)s of income tax on its payments: a refund gives back its share of that"
@@ -8481,7 +8494,7 @@ msgstr ""
 "Pembeli memotong PPh sebesar %(amount)s dari pembayarannya: pengembalian dana mengembalikan bagian"
 " pajak tersebut (pembeli membetulkan bukti potongnya), bukan dibayarkan tunai."
 
-#: templates/invoicing/return_form.html:33
+#: templates/invoicing/return_form.html:32
 msgid "Record return"
 msgstr "Catat retur"
 
@@ -8495,7 +8508,7 @@ msgid "New account"
 msgstr "Akun Baru"
 
 #: templates/ledger/account_list.html:2 templates/ledger/account_list.html:5
-#: templates/partials/sidebar.html:41
+#: templates/partials/sidebar.html:54
 msgid "Chart of accounts"
 msgstr "Bagan Akun"
 
@@ -8644,63 +8657,71 @@ msgstr "Hal. %(page)s / %(pages)s"
 msgid "Next"
 msgstr "Berikutnya"
 
-#: templates/partials/sidebar.html:20 templates/tenants/create.html:2
+#: templates/partials/sidebar.html:6
+msgid "Open the menu"
+msgstr "Buka menu"
+
+#: templates/partials/sidebar.html:33 templates/tenants/create.html:2
 msgid "New organization"
 msgstr "Organisasi baru"
 
-#: templates/partials/sidebar.html:23
+#: templates/partials/sidebar.html:36
 #, python-format
 msgid "%(role)s · %(plan)s plan"
 msgstr "%(role)s · Paket %(plan)s"
 
-#: templates/partials/sidebar.html:29
+#: templates/partials/sidebar.html:40
+msgid "Main menu"
+msgstr "Menu utama"
+
+#: templates/partials/sidebar.html:42
 msgid "Transactions"
 msgstr "Transaksi"
 
-#: templates/partials/sidebar.html:31
+#: templates/partials/sidebar.html:44
 msgid "Purchases"
 msgstr "Pembelian"
 
-#: templates/partials/sidebar.html:35
+#: templates/partials/sidebar.html:48
 msgid "Master data"
 msgstr "Data Master"
 
-#: templates/partials/sidebar.html:42
+#: templates/partials/sidebar.html:55
 msgid "Taxes & reports"
 msgstr "Pajak & Laporan"
 
-#: templates/partials/sidebar.html:43 templates/reports/index.html:12
+#: templates/partials/sidebar.html:56 templates/reports/index.html:12
 #: templates/taxes/pph_final.html:2
 msgid "MSME PPh Final"
 msgstr "PPh Final UMKM"
 
-#: templates/partials/sidebar.html:44 templates/taxes/withholding.html:2
+#: templates/partials/sidebar.html:57 templates/taxes/withholding.html:2
 #: templates/taxes/withholding_month.html:4
 msgid "Withheld income tax"
 msgstr "PPh yang dipotong"
 
-#: templates/partials/sidebar.html:45 templates/taxes/imports.html:2
+#: templates/partials/sidebar.html:58 templates/taxes/imports.html:2
 msgid "Imports (PIB)"
 msgstr "Impor (PIB)"
 
-#: templates/partials/sidebar.html:46 templates/taxes/self_deposits.html:2
+#: templates/partials/sidebar.html:59 templates/taxes/self_deposits.html:2
 msgid "Self-deposited PPh"
 msgstr "PPh disetor sendiri"
 
-#: templates/partials/sidebar.html:47 templates/taxes/taxrate_form.html:2
+#: templates/partials/sidebar.html:60 templates/taxes/taxrate_form.html:2
 #: templates/taxes/taxrate_list.html:2 templates/taxes/taxrate_list.html:5
 msgid "PPN rates"
 msgstr "Tarif PPN"
 
-#: templates/partials/sidebar.html:48
+#: templates/partials/sidebar.html:61
 msgid "Financial reports"
 msgstr "Laporan Keuangan"
 
-#: templates/partials/sidebar.html:50
+#: templates/partials/sidebar.html:63
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: templates/partials/sidebar.html:52 templates/tenants/members.html:2
+#: templates/partials/sidebar.html:65 templates/tenants/members.html:2
 #: templates/tenants/members.html:4
 msgid "Team members"
 msgstr "Anggota Tim"
@@ -8939,6 +8960,11 @@ msgstr "Belum ada karyawan."
 msgid "Payroll %(year)s"
 msgstr "Penggajian %(year)s"
 
+#: templates/payroll/index.html:9 templates/payroll/settings.html:2
+#: templates/payroll/settings.html:5
+msgid "Payroll settings"
+msgstr "Pengaturan penggajian"
+
 #: templates/payroll/index.html:13
 #, python-format
 msgid "Add your employees first: <a href=\"%(url)s\">new employee</a>."
@@ -9156,10 +9182,6 @@ msgstr ""
 #: templates/payroll/run_form.html:19
 msgid "Calculate & post"
 msgstr "Hitung & jurnal"
-
-#: templates/payroll/settings.html:2 templates/payroll/settings.html:5
-msgid "Payroll settings"
-msgstr "Pengaturan penggajian"
 
 #: templates/payroll/settings.html:7
 #, python-format

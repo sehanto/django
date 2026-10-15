@@ -545,6 +545,36 @@ The tests cover:
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
 
+## Front end (Bootstrap)
+
+The interface is Bootstrap 5.3.3 with Bootstrap Icons 1.11.3, served from this site
+(`static/vendor/`, with their licences), not from a CDN: pages work without third-party requests,
+and the Content-Security-Policy can stay strict. The files are the npm releases, checked against
+the registry's integrity hash; the CSS and JS also match the SRI hashes Bootstrap publishes. To
+upgrade, download the new tarballs, check them the same way, replace the version folder and the
+paths in `templates/base.html`.
+
+- **Layout.** From the `lg` breakpoint the menu is a fixed sidebar; below it a top bar opens the
+  same menu as an offcanvas (`offcanvas-lg`). Light or dark follows the device (Bootstrap colour
+  modes, `static/js/theme.js`). A "skip to content" link comes first for keyboard users.
+- **Content-Security-Policy** (`apps/core/middleware.py`, `CONTENT_SECURITY_POLICY`): scripts,
+  styles and fonts only from this site (plus Cloudflare Turnstile for the CAPTCHA), no
+  `'unsafe-inline'`, no framing. So templates carry no inline `<script>`, `on…=` handlers or
+  `style=` attributes (`test_templates_have_no_inline_scripts_handlers_or_styles`); behaviour is
+  declared with data attributes handled by `static/js/app.js`:
+  `data-confirm="…"` on a form asks first in a Bootstrap modal, `data-autosubmit` on a select
+  submits its form, `data-print` prints, `data-fill-<field>` on a modal's trigger fills that field,
+  `data-height` sizes a chart bar.
+- **Styling.** Bootstrap components and utilities first; `static/css/app.css` adds only the
+  sidebar, statement tables, the chart and a small width scale for content blocks (`mw-xs` 480px,
+  `mw-sm` 560, `mw-md` 760, `mw-lg` 900, `mw-xl` 1000) and table columns (`col-code`, …).
+- **Forms** render through `partials/form_fields.html` (`form-control`/`form-select`/`form-switch`,
+  `is-invalid` on errors). Help text and errors carry the ids Django's `aria-describedby` points
+  at (`partials/field_feedback.html`); table-row forms name their inputs with `aria-label`
+  (`core.forms.GridFormMixin`).
+- **Accessibility.** Icons are decorative (`aria-hidden="true"`); icon-only buttons have an
+  `aria-label`. Tables sit in `table-responsive`, charts have a data table.
+
 ## Languages
 
 The interface is bilingual (Bahasa Indonesia and English) and follows common practice for

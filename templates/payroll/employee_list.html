@@ -3,14 +3,14 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div><a href="{% url 'payroll:index' %}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a><h1 class="h4 mb-0">{% translate "Employees" %}</h1></div>
-  {% if can_write %}<a href="{% url 'payroll:employee_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New employee" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'payroll:employee_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New employee" %}</a>{% endif %}
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Position" %}</th><th>{% translate "PTKP status" %}</th><th class="num">{% translate "Base salary" %}</th><th class="num">{% translate "Fixed allowances" %}</th><th></th></tr></thead>
   <tbody>{% for e in object_list %}<tr class="{% if not e.is_active %}text-secondary{% endif %}">
     <td>{{ e.name }}<div class="small text-secondary">{% if e.nik %}NIK {{ e.nik }}{% else %}{% translate "Passport" %} {{ e.passport_number }}{% endif %} · {{ e.get_kind_display }}{% if e.is_daily %} ({% translate "daily" %}){% endif %}{% if not e.is_resident %} · PPh 26{% endif %}</div></td><td>{{ e.position }}</td><td>{{ e.ptkp_status }}</td>
     <td class="num">{{ e.base_salary|rupiah }}</td><td class="num">{{ e.fixed_allowance|rupiah }}</td>
-    <td class="text-end">{% if can_write %}<a href="{% url 'payroll:employee_update' e.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil"></i></a>{% endif %}</td></tr>
+    <td class="text-end">{% if can_write %}<a href="{% url 'payroll:employee_update' e.pk %}" class="btn btn-sm btn-outline-secondary" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">{% translate "No employees yet." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% endblock %}

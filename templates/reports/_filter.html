@@ -5,7 +5,7 @@
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}</div>
   {% endfor %}
   <div class="col-sm-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>
-  {% if csv and report %}<div class="col-sm-auto"><button name="download" value="{{ export_formats.CSV }}" class="btn btn-outline-secondary"><i class="bi bi-download"></i> CSV</button></div>{% endif %}
-  <div class="col-sm-auto"><button type="button" onclick="window.print()" class="btn btn-outline-secondary" aria-label="{% translate 'Print' %}"><i class="bi bi-printer"></i></button></div>
-  {% for e in form.non_field_errors %}<div class="col-12 text-danger small">{{ e }}</div>{% endfor %}
+  {% if csv and report %}<div class="col-sm-auto"><button name="download" value="{{ export_formats.CSV }}" class="btn btn-outline-secondary"><i class="bi bi-download" aria-hidden="true"></i> CSV</button></div>{% endif %}
+  <div class="col-sm-auto"><button type="button" data-print class="btn btn-outline-secondary" aria-label="{% translate 'Print' %}"><i class="bi bi-printer" aria-hidden="true"></i></button></div>
+  {% for e in form.non_field_errors %}<div class="col-12 text-danger small" role="alert">{{ e }}</div>{% endfor %}
 </form>

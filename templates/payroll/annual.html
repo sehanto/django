@@ -4,7 +4,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <div><a href="{% url 'payroll:index' %}?year={{ year }}" class="small text-decoration-none">&larr; {% translate "Payroll" %}</a>
     <h1 class="h4 mb-0">{% blocktranslate trimmed %}Annual PPh 21 statements (1721-A1) {{ year }}{% endblocktranslate %}</h1></div>
-  {% if statements %}<a href="{% url 'payroll:annual_csv' year %}" class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>CSV</a>{% endif %}
+  {% if statements %}<a href="{% url 'payroll:annual_csv' year %}" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>CSV</a>{% endif %}
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Employee" %}</th><th>{% translate "Months" %}</th><th class="num">{% translate "Gross income" %}</th><th class="num">{% translate "Taxable income" %}</th><th class="num">{% translate "PPh 21 for the year" %}</th><th class="num">{% translate "PPh 21 withheld" %}</th><th></th></tr></thead>

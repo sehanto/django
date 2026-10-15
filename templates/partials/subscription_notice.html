@@ -1,6 +1,6 @@
 {% load i18n %}{% with n=subscription_notice %}
 <div class="alert {% if n.state == n.states.GRACE %}alert-danger{% else %}alert-warning{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-2 no-print" role="status">
-  <span><i class="bi bi-exclamation-triangle me-1"></i>
+  <span><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
   {% if n.state == n.states.GRACE %}
     {% blocktranslate trimmed with plan=n.plan date=n.paid_until|date:"d F Y" lapse=n.lapse_on|date:"d F Y" %}
       Your {{ plan }} plan expired on {{ date }}. Renew now, or the organization moves to the Free plan on {{ lapse }}.

@@ -1,12 +1,12 @@
 {% load i18n ui %}
 <tr data-formset-row>
   <td>{{ f.item|add_class:'form-select form-select-sm' }}</td>
-  <td>{{ f.description|add_class:'form-control form-control-sm' }}{% for e in f.description.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+  <td>{{ f.description|add_class:'form-control form-control-sm' }}{% include "partials/field_feedback.html" with field=f.description hide_help=True %}</td>
   <td>{{ f.account|add_class:'form-select form-select-sm' }}</td>
   <td>{{ f.quantity|add_class:'form-control form-control-sm text-end' }}</td>
-  <td>{{ f.unit_price|add_class:'form-control form-control-sm text-end' }}{% for e in f.unit_price.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}</td>
+  <td>{{ f.unit_price|add_class:'form-control form-control-sm text-end' }}{% include "partials/field_feedback.html" with field=f.unit_price hide_help=True %}</td>
   <td>{{ f.discount_percent|add_class:'form-control form-control-sm text-end' }}</td>
   <td>{{ f.tax_rate|add_class:'form-select form-select-sm' }}</td>
   <td class="num small pt-2" data-line-amount></td>
-  <td><span class="d-none">{{ f.DELETE }}</span><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg"></i></button></td>
+  <td><span class="d-none">{{ f.DELETE }}</span><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></td>
 </tr>

@@ -54,6 +54,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.core.middleware.ContentSecurityPolicyMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -70,6 +71,24 @@ MIDDLEWARE = [
     # Must be last: turns a locked-out login into the lockout response.
     "axes.middleware.AxesMiddleware",
 ]
+
+# Content-Security-Policy (apps.core.middleware): scripts, styles and fonts only from this site;
+# Cloudflare Turnstile (the CAPTCHA) loads its script and challenge frame from its own origin.
+# Bootstrap's icons for selects, switches and close buttons are data: SVGs in its CSS. No form-action:
+# the subscription checkout's POST is redirected to the payment gateway's page.
+TURNSTILE_ORIGIN = "https://challenges.cloudflare.com"
+CONTENT_SECURITY_POLICY = {
+    "default-src": ["'self'"],
+    "script-src": ["'self'", TURNSTILE_ORIGIN],
+    "style-src": ["'self'"],
+    "img-src": ["'self'", "data:"],
+    "font-src": ["'self'"],
+    "connect-src": ["'self'"],
+    "frame-src": [TURNSTILE_ORIGIN],
+    "frame-ancestors": ["'none'"],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+}
 
 ROOT_URLCONF = "config.urls"
 

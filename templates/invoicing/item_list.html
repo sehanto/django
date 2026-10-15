@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h4 mb-0">{% translate "Items" %}</h1>
-  {% if can_write %}<a href="{% url 'invoicing:item_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> {% translate "New item" %}</a>{% endif %}
+  {% if can_write %}<a href="{% url 'invoicing:item_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New item" %}</a>{% endif %}
 </div>
 <form class="row g-2 mb-3" method="get"><div class="col-md-10"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search name or code' %}"></div><div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Search" %}</button></div></form>
 <div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
@@ -11,7 +11,7 @@
   <tbody>{% for item in object_list %}
     <tr class="{% if not item.is_active %}text-secondary{% endif %}"><td><code>{{ item.code }}</code></td><td>{{ item.name }}</td><td>{{ item.get_type_display }}</td><td>{{ item.unit }}</td>
       <td class="num">{{ item.sale_price|rupiah }}</td><td class="num">{{ item.purchase_price|rupiah }}</td><td class="small">{{ item.tax_rate|default:"" }}</td>
-      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:item_update' item.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil"></i></a>{% endif %}</td></tr>
+      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'invoicing:item_update' item.pk %}" aria-label="{% translate 'Edit' %}"><i class="bi bi-pencil" aria-hidden="true"></i></a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No items yet." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% include "partials/pagination.html" %}
