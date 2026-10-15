@@ -221,6 +221,14 @@ class BalanceSheet:
     def is_balanced(self) -> bool:
         return all(self._total_assets(p) == self._total_liabilities_and_equity(p) for p in (False, True))
 
+    @property
+    def equity_movement(self) -> "EquityMovement | None":
+        """From the previous year end to this date (the comparative is the previous year end)."""
+        if not self.has_comparative:
+            return None
+        changes = [StatementRow(r.code, r.name, r.amount - r.previous) for r in self.equity.rows if r.amount != r.previous]
+        return EquityMovement(self.previous_total_equity, changes, self.current_year_earnings, self.total_equity)
+
     def csv_rows(self):
         compare = self.has_comparative
         restated = f" ({_('restated')})" if self.comparative_restated else ""
@@ -242,6 +250,18 @@ class BalanceSheet:
         yield row(_("Prior years' retained earnings (not yet closed)"), self.prior_years_earnings, self.previous_prior_years_earnings)
         yield row(_("Current year profit"), self.current_year_earnings, self.previous_current_year_earnings)
         yield row(_("TOTAL LIABILITIES AND EQUITY"), self.total_liabilities_and_equity, self.previous_total_liabilities_and_equity)
+
+
+@dataclass(frozen=True)
+class EquityMovement:
+    """How equity moved in the year, a detail of the equity line in the notes (SAK EMKM 6.1c):
+    what the owners put in or took out per capital account (capital paid in, prive, dividends)
+    and the year's profit. Opening plus the movements is the closing equity."""
+
+    opening: Decimal
+    changes: list[StatementRow]  # amount: the account's movement in the year
+    profit: Decimal
+    closing: Decimal
 
 
 CURRENT_ASSET_CATEGORIES = {C.CASH_BANK, C.RECEIVABLE, C.INVENTORY, C.OTHER_CURRENT_ASSET}

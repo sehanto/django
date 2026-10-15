@@ -305,3 +305,23 @@ def test_statement_items_refer_to_their_notes(auth_client, organization, account
     assert numbers == [3] and f'#note-{numbers[0]}"'.encode() in page.content
     notes = auth_client.get(reverse("reports:notes"), {"as_of": "2026-12-31"})
     assert b'id="note-3"' in notes.content and b"(8.10)" in notes.content  # the receivables policy, in the user's language
+
+
+def test_the_equity_note_shows_how_equity_moved_in_the_year(auth_client, organization, account):
+    """A detail of the equity line (6.1c): opening equity, capital paid in and prive, the year's profit."""
+    journal(organization, date(2025, 1, 2), "Setoran modal awal",
+            JournalLineInput(account("1-1100"), debit=D("10000000")), JournalLineInput(account("3-1000"), credit=D("10000000")))
+    journal(organization, date(2025, 6, 1), "Penjualan tunai",
+            JournalLineInput(account("1-1000"), debit=D("3000000")), JournalLineInput(account("4-1000"), credit=D("3000000")))
+    journal(organization, date(2026, 3, 1), "Tambahan modal",
+            JournalLineInput(account("1-1100"), debit=D("2000000")), JournalLineInput(account("3-1000"), credit=D("2000000")))
+    journal(organization, date(2026, 4, 1), "Pengambilan pribadi",
+            JournalLineInput(account("3-2000"), debit=D("500000")), JournalLineInput(account("1-1000"), credit=D("500000")))
+    journal(organization, date(2026, 5, 1), "Penjualan tunai",
+            JournalLineInput(account("1-1000"), debit=D("1000000")), JournalLineInput(account("4-1000"), credit=D("1000000")))
+    page = auth_client.get(reverse("reports:notes"), {"as_of": "2026-12-31"})
+    movement = page.context["report"].balance_sheet.equity_movement
+    assert (movement.opening, movement.profit, movement.closing) == (D("13000000"), D("1000000"), D("15500000"))
+    assert [(r.code, r.amount) for r in movement.changes] == [("3-1000", D("2000000")), ("3-2000", D("-500000"))]
+    assert movement.opening + sum(r.amount for r in movement.changes) + movement.profit == movement.closing
+    assert "31/12/2025" in page.content.decode() and page.content.decode().count("Prive") >= 2  # the balance and its movement

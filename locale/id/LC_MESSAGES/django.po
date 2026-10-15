@@ -477,6 +477,20 @@ msgstr ""
 msgid "Deactivated, as the new legal form doesn't use them: %(accounts)s."
 msgstr "Dinonaktifkan karena tidak dipakai oleh bentuk badan usaha yang baru: %(accounts)s."
 
+#: templates/reports/notes.html
+msgid "Movements in equity"
+msgstr "Perubahan ekuitas"
+
+#: templates/reports/notes.html
+#, python-format
+msgid "Equity at %(date)s"
+msgstr "Ekuitas per %(date)s"
+
+#: templates/reports/notes.html
+#, python-format
+msgid "Profit for %(start)s to %(end)s"
+msgstr "Laba bersih %(start)s s.d. %(end)s"
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."

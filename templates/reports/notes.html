@@ -68,6 +68,15 @@
   {% for row in section.rows %}<tr><td class="text-muted w-28">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-muted">{{ row.previous|rupiah }}</td></tr>{% endfor %}
   <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-muted">{{ section.previous_total|rupiah }}</td></tr>
 </table></div>
+{% if section is bs.equity and bs.equity_movement %}{% with movement=bs.equity_movement %}
+<h3 class="text-sm font-bold mb-1">{% translate "Movements in equity" %}</h3>
+<div class="overflow-x-auto mb-6"><table class="table table-sm table-statement mb-0 text-sm">
+  <tr><td class="w-28"></td><td>{% blocktranslate trimmed with date=bs.previous_as_of|date:"d/m/Y" %}Equity at {{ date }}{% endblocktranslate %}</td><td class="num">{{ movement.opening|rupiah }}</td></tr>
+  {% for row in movement.changes %}<tr><td class="text-muted w-28">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td></tr>{% endfor %}
+  <tr><td></td><td>{% blocktranslate trimmed with start=pl.date_from|date:"d/m/Y" end=pl.date_to|date:"d/m/Y" %}Profit for {{ start }} to {{ end }}{% endblocktranslate %}</td><td class="num">{{ movement.profit|rupiah }}</td></tr>
+  <tr class="subtotal"><td></td><td>{% blocktranslate trimmed with date=bs.as_of|date:"d/m/Y" %}Equity at {{ date }}{% endblocktranslate %}</td><td class="num">{{ movement.closing|rupiah }}</td></tr>
+</table></div>
+{% endwith %}{% endif %}
 {% endwith %}{% endfor %}
 
 {% if report.estimate_changes %}
