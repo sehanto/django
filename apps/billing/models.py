@@ -39,6 +39,14 @@ class SubscriptionInvoice(TimeStampedModel):
         "regions.Village", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("buyer kelurahan/desa"),
     )
     buyer_email = models.EmailField(_("buyer email"), blank=True)
+    # The platform as seller when the invoice was created (BILLING_SELLER_*): a later move doesn't
+    # rewrite earlier receipts. Empty on invoices from before these were kept.
+    seller_name = models.CharField(_("seller name"), max_length=200, blank=True)
+    seller_npwp = models.CharField(_("seller NPWP"), max_length=16, blank=True)
+    seller_address = models.TextField(_("seller address"), blank=True)
+    seller_village = models.ForeignKey(
+        "regions.Village", null=True, blank=True, on_delete=models.PROTECT, related_name="+", verbose_name=_("seller kelurahan/desa"),
+    )
 
     subtotal = money_field(_("subtotal"))
     # Proration: unused time on the previous plan, deducted before PPN.

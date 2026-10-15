@@ -159,6 +159,7 @@ XENDIT_CALLBACK_TOKEN = _required("XENDIT_CALLBACK_TOKEN", "it verifies Xendit's
 BILLING_SELLER_NAME = _required("BILLING_SELLER_NAME", "it is printed on subscription receipts")
 BILLING_SELLER_NPWP = _required("BILLING_SELLER_NPWP", "it is printed on subscription receipts")
 BILLING_SELLER_ADDRESS = _required("BILLING_SELLER_ADDRESS", "it is printed on subscription receipts")
+BILLING_SELLER_VILLAGE = _required("BILLING_SELLER_VILLAGE", "the receipt's region and postcode come from it")
 
 # Email must really go out: password resets, address confirmations, security notices and
 # renewal reminders. SMTP from one URL, e.g. EMAIL_URL=smtp+tls://user:password@smtp.example.com:587

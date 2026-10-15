@@ -153,3 +153,22 @@ def test_sales_records_survive_tenant_deletion(free_org, plans):
     delete_organization(organization=Organization.objects.get(pk=free_org.pk))
     invoice.refresh_from_db()
     assert invoice.organization is None and invoice.buyer_name and invoice.status == Status.PAID
+
+
+def test_the_invoice_keeps_the_seller_with_its_kelurahan(free_org, plans, user, client, jatake):
+    from django.db import IntegrityError, transaction
+    from django.test import override_settings
+    from django.urls import reverse
+
+    seller = {"BILLING_SELLER_NAME": "PT EA-System Indonesia", "BILLING_SELLER_NPWP": "01.234.567.8-901.000",
+              "BILLING_SELLER_ADDRESS": "Jl. Raya  Pagedangan No. 1", "BILLING_SELLER_VILLAGE": jatake.code}
+    with override_settings(**seller):
+        invoice = services.start_checkout(organization=free_org, plan=plans["usaha"], period="monthly", created_by=user)
+    assert (invoice.seller_name, invoice.seller_npwp, invoice.seller_village) == ("PT EA-System Indonesia", "012345678901000", jatake)
+    assert invoice.seller_address == "Jl. Raya Pagedangan No. 1, Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
+
+    client.force_login(user)
+    with override_settings(**{**seller, "BILLING_SELLER_ADDRESS": "Jl. Lain No. 9", "BILLING_SELLER_VILLAGE": ""}):  # the platform moved
+        assert client.get(reverse("billing:invoice", args=[invoice.pk])).context["seller"]["address"] == invoice.seller_address
+    with pytest.raises(IntegrityError), transaction.atomic():  # fixed like the rest of the terms
+        SubscriptionInvoice.objects.filter(pk=invoice.pk).update(seller_address="Jl. Lain No. 9")

@@ -65,7 +65,23 @@ def _seller_problems() -> list[str]:
         problems.append("BILLING_SELLER_ADDRESS is empty")
     elif any(word in address.lower() for word in PLACEHOLDER_WORDS):
         problems.append("BILLING_SELLER_ADDRESS looks like a placeholder")
+    village = (settings.BILLING_SELLER_VILLAGE or "").strip()
+    if not village:
+        problems.append("BILLING_SELLER_VILLAGE is empty")
+    elif not _is_listed_village(village):
+        problems.append(f"BILLING_SELLER_VILLAGE {village!r} is not a kelurahan/desa on the Kemendagri list (manage.py load_regions)")
     return problems
+
+
+def _is_listed_village(code: str) -> bool:
+    from django.db import DatabaseError
+
+    from apps.regions.selectors import village_by_code
+
+    try:
+        return village_by_code(code) is not None
+    except DatabaseError:  # no database (yet): the check can't tell
+        return True
 
 
 @register(Tags.security, deploy=True)
@@ -77,7 +93,8 @@ def check_billing_seller(app_configs, **kwargs):
     return [
         Warning(
             "Subscription receipts would show missing or placeholder seller details: " + "; ".join(problems) + ".",
-            hint="Set BILLING_SELLER_NAME, BILLING_SELLER_NPWP and BILLING_SELLER_ADDRESS to the company's "
+            hint="Set BILLING_SELLER_NAME, BILLING_SELLER_NPWP, BILLING_SELLER_ADDRESS (street line) and "
+            "BILLING_SELLER_VILLAGE (Kemendagri code of the kelurahan/desa, e.g. 36.03.22.2008) to the company's "
             "registered name, NPWP and address.",
             id="core.W003",
         )

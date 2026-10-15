@@ -26,9 +26,18 @@ from config.settings.base import development_field_key
     ("0123456789012345", "Jl. Contoh No. 1, Jakarta (contoh)", True),
     ("0123456789012345", "", True),
 ])
-def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned):
-    with override_settings(BILLING_SELLER_NAME="PT EA-System Indonesia", BILLING_SELLER_NPWP=npwp, BILLING_SELLER_ADDRESS=address):
+def test_deploy_check_flags_placeholder_seller_details(npwp, address, warned, jatake):
+    with override_settings(BILLING_SELLER_NAME="PT EA-System Indonesia", BILLING_SELLER_NPWP=npwp, BILLING_SELLER_ADDRESS=address,
+                           BILLING_SELLER_VILLAGE=jatake.code):
         assert [w.id for w in check_billing_seller(None)] == (["core.W003"] if warned else [])
+
+
+@pytest.mark.parametrize("village", ["", "99.99.99.9999", "Jatake"])
+def test_deploy_check_wants_the_sellers_kelurahan_from_the_list(village, jatake):
+    with override_settings(BILLING_SELLER_NAME="PT EA-System Indonesia", BILLING_SELLER_NPWP="0123456789012345",
+                           BILLING_SELLER_ADDRESS="Jl. Raya Pagedangan No. 1", BILLING_SELLER_VILLAGE=village):
+        [warning] = check_billing_seller(None)
+        assert "BILLING_SELLER_VILLAGE" in warning.msg
 
 
 LIVE_KEY = "xnd_" + "production_" + "NOT-A-REAL-KEY"
@@ -43,7 +52,7 @@ PRODUCTION_ENV = {
     "SITE_URL": "https://app.ea-system.id", "DJANGO_ALLOWED_HOSTS": "app.ea-system.id",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAAsitekey", "TURNSTILE_SECRET_KEY": "0x4AAAAAAAsecret", "FIELD_ENCRYPTION_KEYS": FIELD_KEY,
     "BILLING_SELLER_NAME": "PT EA-System Indonesia", "BILLING_SELLER_NPWP": "0123456789012345",
-    "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta",
+    "BILLING_SELLER_ADDRESS": "Jl. Sudirman No. 1, Jakarta", "BILLING_SELLER_VILLAGE": "36.03.22.2008",
 }
 
 
@@ -64,7 +73,7 @@ def load_production_settings(monkeypatch, **overrides):
         sys.modules["config.settings.base"] = running_base
 
 
-@pytest.mark.parametrize("name", ["BILLING_SELLER_NAME", "BILLING_SELLER_NPWP", "BILLING_SELLER_ADDRESS"])
+@pytest.mark.parametrize("name", ["BILLING_SELLER_NAME", "BILLING_SELLER_NPWP", "BILLING_SELLER_ADDRESS", "BILLING_SELLER_VILLAGE"])
 @pytest.mark.parametrize("value", [None, "", "   "])  # missing, empty, blank
 def test_production_requires_seller_details(monkeypatch, name, value):
     with pytest.raises(ImproperlyConfigured, match=name):

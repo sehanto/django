@@ -24,7 +24,7 @@ from .domain import BillingPeriod, SubscriptionState
 from .gateways import get_gateway
 from .gateways.base import GatewayError, GatewayName, PaymentStatus
 from .models import AutoRenewal, SubscriptionInvoice
-from .selectors import invoices_for, plan_offers, state_of
+from .selectors import invoices_for, plan_offers, seller_of, state_of
 
 logger = logging.getLogger(__name__)
 
@@ -82,13 +82,7 @@ class InvoiceDetailView(ManageMixin, DetailView):
         return invoice
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(
-            seller={
-                "name": settings.BILLING_SELLER_NAME, "npwp": settings.BILLING_SELLER_NPWP,
-                "address": settings.BILLING_SELLER_ADDRESS,
-            },
-            **kwargs,
-        )
+        return super().get_context_data(seller=seller_of(self.object), **kwargs)
 
 
 def _sync_with_feedback(request, invoice):

@@ -169,7 +169,8 @@ BILLING_GRACE_DAYS = env.int("BILLING_GRACE_DAYS", default=7)  # keep the plan t
 # Seller details printed on subscription receipts.
 BILLING_SELLER_NAME = env("BILLING_SELLER_NAME", default="EA-System")
 BILLING_SELLER_NPWP = env("BILLING_SELLER_NPWP", default="")
-BILLING_SELLER_ADDRESS = env("BILLING_SELLER_ADDRESS", default="")
+BILLING_SELLER_ADDRESS = env("BILLING_SELLER_ADDRESS", default="")  # street line
+BILLING_SELLER_VILLAGE = env("BILLING_SELLER_VILLAGE", default="")  # Kemendagri code of the kelurahan/desa
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="EA-System <noreply@ea-system.id>")
 SITE_URL = env("SITE_URL", default="http://localhost:8000")  # absolute links in emails
 

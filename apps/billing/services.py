@@ -23,6 +23,8 @@ from django.urls import reverse
 from django.utils import formats, timezone, translation
 from django.utils.translation import gettext as _
 
+from apps.contacts.validators import normalize_npwp
+from apps.core.crypto import decrypt, encrypt
 from apps.core.exceptions import DomainError, ValidationFailed
 from apps.tenants.models import Membership, Organization, Plan
 from apps.tenants.roles import Role
@@ -30,10 +32,9 @@ from apps.tenants.services import ensure_usage_fits, get_default_plan, set_subsc
 
 from .domain import BillingPeriod, Credit, PaidPeriod, SwitchQuote, coverage_for_payment, switch_quote, unused_credit
 from .gateways import get_gateway
-from apps.core.crypto import decrypt, encrypt
-
 from .gateways.base import ChargeRequest, CheckoutRequest, GatewayError, GatewayName, PaymentStatus, SaveRequest
 from .models import AutoRenewal, SubscriptionInvoice
+from .selectors import platform_seller
 
 logger = logging.getLogger(__name__)
 Status = SubscriptionInvoice.Status
@@ -100,12 +101,14 @@ def _reusable_checkout(organization, plan, period, credit: Decimal) -> Subscript
 
 def _new_invoice(organization, plan, period, quote: SwitchQuote, credit: Credit, *, gateway: GatewayName, created_by, **extra):
     charge = quote.charge
+    seller = platform_seller()
     invoice = SubscriptionInvoice.objects.create(
         number=f"tmp-{uuid.uuid4().hex[:20]}",
         organization=organization, plan=plan, billing_period=period,
         buyer_name=organization.name, buyer_npwp=organization.npwp,
         buyer_address=organization.full_address, buyer_village_id=organization.village_id,
         buyer_email=organization.email or getattr(created_by, "email", ""),
+        seller_name=seller.name, seller_npwp=normalize_npwp(seller.npwp), seller_address=seller.address, seller_village=seller.village,
         subtotal=charge.subtotal, credit_amount=charge.credit, tax_base=charge.tax_base, tax_amount=charge.tax,
         total=charge.total, coverage_value=extra.pop("coverage_value", charge.subtotal),
         credited_plan=organization.plan if charge.credit else None,

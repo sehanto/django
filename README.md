@@ -266,7 +266,13 @@ postcodes, from [cahyadsn/wilayah](https://github.com/cahyadsn/wilayah) and
   `postal_code` and `region_codes` (the code of each level).
 - Issued invoices keep the region as issued: the region line (`contact_city`/`seller_city`) and
   the kelurahan/desa code (`contact_village`/`seller_village`); subscription invoices keep
-  `buyer_village`. Documents issued before these codes existed keep only the text.
+  `buyer_village`, and the platform as seller with `seller_village`. Documents issued before
+  these codes existed keep only the text.
+- The platform's own address (on subscription receipts) is configured the same way: the street
+  line in `BILLING_SELLER_ADDRESS` and the Kemendagri code of its kelurahan/desa in
+  `BILLING_SELLER_VILLAGE` (e.g. `36.03.22.2008`); `check --deploy` (core.W003) warns when the
+  code isn't on the list. Each subscription invoice keeps the seller as it was when created, so
+  a later move doesn't rewrite earlier receipts.
 - Contacts can be filtered by province (list and API `?province=36`).
 - `manage.py load_regions` loads the list after `migrate` and updates it when Kemendagri
   revises the codes: new codes are added, renamed ones updated, and codes no longer listed

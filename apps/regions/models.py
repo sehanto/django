@@ -75,6 +75,11 @@ class Village(Region):
         return f"{self.name}, {district.name}, {regency.name}, {regency.province.name} {self.postal_code}"
 
 
+def format_address(street: str, village: "Village | None") -> str:
+    """The street line, then the region from the list: "Jl. Raya 1, Jatake, Pagedangan, … 15330"."""
+    return ", ".join(part for part in (" ".join(street.split()), village.region_line if village else "") if part)
+
+
 class Address(models.Model):
     """An Indonesian address: the street line typed in, the region chosen from the Kemendagri
     list (the village fixes the district, regency, province and postcode)."""
@@ -102,4 +107,4 @@ class Address(models.Model):
 
     @property
     def full_address(self) -> str:
-        return ", ".join(part for part in (" ".join(self.address.split()), self.region_line) if part)
+        return format_address(self.address, self.village if self.village_id else None)
