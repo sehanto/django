@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.contacts.selectors import customers_for, suppliers_for
 from apps.core.forms import BaseForm, BaseModelForm, BusinessDateField, OrganizationFormMixin
+from apps.core.validators import SECRET_MAX_LENGTH
 from apps.inventory.selectors import cost_of_sales_accounts, inventory_accounts
 from apps.ledger.domain import SystemRole
 from apps.ledger.models import Account
@@ -14,7 +15,10 @@ from apps.tenants.models import BusinessPlace
 
 from .coretax_api import ConnectorName
 from .facilities import ADDITIONAL_INFO, STAMPS, VatFacility
-from .models import EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment, SpecialDocument
+from .models import (
+    EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, CoretaxConnection, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment,
+    SpecialDocument,
+)
 from .selectors import items_for
 from .services import Facility, IncomeTaxInput, SpecialDoc, InvoiceLineInput, ReturnLineInput, returnable_quantity
 
@@ -442,9 +446,12 @@ class SpecialDocumentForm(BaseForm):
 
 class CoretaxConnectionForm(BaseForm):
     connector = forms.ChoiceField(label=_("Connection"), choices=ConnectorName.choices)
-    api_url = forms.URLField(label=_("API address"), required=False, assume_scheme="https", help_text=_("The HTTPS address your provider gave you."))
+    api_url = forms.URLField(
+        label=_("API address"), required=False, assume_scheme="https", max_length=CoretaxConnection._meta.get_field("api_url").max_length,
+        help_text=_("The HTTPS address your provider gave you."),
+    )
     token = forms.CharField(
-        label=_("Access token"), required=False, strip=True, widget=forms.PasswordInput(render_value=False),
+        label=_("Access token"), required=False, strip=True, max_length=SECRET_MAX_LENGTH, widget=forms.PasswordInput(render_value=False),
         help_text=_("Leave empty to keep the stored token. It is stored encrypted."),
     )
     is_active = forms.BooleanField(label=_("Active"), required=False, initial=True)

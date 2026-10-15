@@ -1,11 +1,12 @@
 import re
 
 from django import forms
+from django.core.validators import MaxLengthValidator
 from django.http import QueryDict
 from django.utils.translation import gettext_lazy as _
 
 from .sanitizers import sanitize_text
-from .validators import EARLIEST_BUSINESS_DATE, latest_business_date
+from .validators import EARLIEST_BUSINESS_DATE, PASSWORD_MAX_LENGTH, latest_business_date
 
 
 class SanitizedFormMixin:
@@ -14,7 +15,16 @@ class SanitizedFormMixin:
     Applies to all ``CharField``-based fields (including email/URL fields) except
     passwords, which must be used exactly as typed. Textareas keep line breaks.
     Re-displayed forms show the normalized value, i.e. exactly what will be stored.
+    Passwords are bounded instead (``PASSWORD_MAX_LENGTH``), Django's own forms' too.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field, forms.CharField) and isinstance(field.widget, forms.PasswordInput) and field.max_length is None:
+                field.max_length = PASSWORD_MAX_LENGTH
+                field.validators.append(MaxLengthValidator(PASSWORD_MAX_LENGTH))
+                field.widget.attrs.setdefault("maxlength", str(PASSWORD_MAX_LENGTH))
 
     def full_clean(self):
         if self.is_bound:

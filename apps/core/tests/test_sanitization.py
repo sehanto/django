@@ -16,6 +16,8 @@ from apps.core.forms import BaseForm, BusinessDateField, DigitsField, SanitizedF
 from apps.core.params import choice_param, int_param, text_param, year_param
 from apps.core.sanitizers import csv_safe, sanitize_text
 from apps.core.validators import (
+    EMAIL_MAX_LENGTH,
+    PASSWORD_MAX_LENGTH,
     code_validator,
     ensure_business_date,
     nib_validator,
@@ -146,3 +148,48 @@ def test_param_helpers():
     assert int_param(params, "neg", default=None, minimum=1) is None
     assert int_param(params, "q", default=7) == 7
     assert year_param(params) == timezone.localdate().year
+
+
+def _project_form_classes():
+    for config in apps.get_app_configs():
+        if not config.name.startswith("apps."):
+            continue
+        try:
+            module = importlib.import_module(f"{config.name}.forms")
+        except ModuleNotFoundError:
+            continue
+        for _name, cls in inspect.getmembers(module, inspect.isclass):
+            if cls.__module__ == module.__name__ and issubclass(cls, forms.BaseForm):
+                yield cls
+
+
+def test_every_text_field_is_bounded_by_its_column():
+    """Guard: text never reaches the database longer than its column (a 500 instead of a form error).
+    Django's EmailField accepts 320 characters; an email column holds 254."""
+    offenders = []
+    for cls in _project_form_classes():
+        model = getattr(getattr(cls, "_meta", None), "model", None)
+        for name, field in cls.base_fields.items():
+            if not isinstance(field, forms.CharField) or isinstance(field.widget, forms.PasswordInput):
+                continue
+            column = None
+            if model is not None:
+                try:
+                    column = model._meta.get_field(name).max_length
+                except Exception:  # noqa: BLE001 - a form-only field
+                    column = None
+            limit = EMAIL_MAX_LENGTH if isinstance(field, forms.EmailField) else column
+            if field.max_length is None or (limit is not None and field.max_length > limit):
+                offenders.append(f"{cls.__module__}.{cls.__name__}.{name} ({field.max_length} > {limit})")
+    assert not offenders, offenders
+
+
+def test_passwords_are_bounded_even_in_djangos_forms(user):
+    from apps.accounts.forms import ChangePasswordForm, LoginForm, NewPasswordForm
+
+    for form in (LoginForm(), NewPasswordForm(user), ChangePasswordForm(user, request=None)):
+        for field in form.fields.values():
+            if isinstance(field.widget, forms.PasswordInput):
+                assert field.max_length == PASSWORD_MAX_LENGTH
+    form = NewPasswordForm(user, data={"new_password1": "x" * (PASSWORD_MAX_LENGTH + 1), "new_password2": "x" * (PASSWORD_MAX_LENGTH + 1)})
+    assert not form.is_valid() and "new_password1" in form.errors

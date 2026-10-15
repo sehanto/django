@@ -14,6 +14,12 @@ class CoreConfig(AppConfig):
     verbose_name = _("Core")
 
     def ready(self):
+        from django.urls import register_converter
+
         from . import checks  # noqa: F401 - registers system checks
+        from .converters import MonthConverter, YearConverter
+
+        register_converter(YearConverter, "year")
+        register_converter(MonthConverter, "month")
 
         post_migrate.connect(_grant_app_privileges, sender=self, dispatch_uid="core.grant_app_privileges")

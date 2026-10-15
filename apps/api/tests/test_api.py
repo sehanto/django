@@ -139,3 +139,13 @@ def test_bills_are_paid_with_withholding_returned_and_journals_posted(client, ke
         "date": "2026-03-31", "description": "x", "lines": [{"account": "7-1000", "debit": "1"}, {"account": "1-1100", "credit": "2"}],
     })
     assert unbalanced.status_code == 400
+
+
+@pytest.mark.parametrize("params", [{"offset": str(10**30)}, {"offset": "9223372036854775808"}, {"offset": "1e3"}, {"limit": "x"}])
+def test_paging_parameters_are_checked(client, key, params):
+    response = call(client, "get", "contacts", key, **params)
+    assert response.status_code == 400 and "error" in response.json()
+
+
+def test_an_oversized_limit_is_capped(client, key):
+    assert call(client, "get", "contacts", key, limit=str(10**30)).json()["limit"] == 100

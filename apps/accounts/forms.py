@@ -7,6 +7,7 @@ from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import BaseForm, BaseModelForm, SanitizedFormMixin
+from apps.core.validators import EMAIL_MAX_LENGTH
 from apps.tenants.models import Organization
 
 from . import captcha
@@ -14,7 +15,7 @@ from .models import User
 
 
 class LoginForm(SanitizedFormMixin, AuthenticationForm):
-    username = forms.EmailField(label=_("Email"), widget=forms.EmailInput(attrs={"autofocus": True}))
+    username = forms.EmailField(label=_("Email"), max_length=EMAIL_MAX_LENGTH, widget=forms.EmailInput(attrs={"autofocus": True}))
     error_messages = {
         **AuthenticationForm.error_messages,
         "captcha": _("Please complete the security check, then sign in again."),
@@ -57,7 +58,7 @@ class SignUpForm(CaptchaFirstFormMixin, BaseForm):
     captcha_action = captcha.CaptchaAction.SIGNUP
 
     full_name = forms.CharField(label=_("Full name"), max_length=150)
-    email = forms.EmailField(label=_("Email"))
+    email = forms.EmailField(label=_("Email"), max_length=EMAIL_MAX_LENGTH)
     # strip=False: the login form uses the password exactly as typed, so sign-up must too.
     password = forms.CharField(label=_("Password"), widget=forms.PasswordInput, strip=False)
     organization_name = forms.CharField(label=_("Business name"), max_length=200)
@@ -84,7 +85,7 @@ class ResetPasswordForm(CaptchaFirstFormMixin, SanitizedFormMixin, PasswordReset
 
     captcha_action = captcha.CaptchaAction.PASSWORD_RESET
 
-    email = forms.EmailField(label=_("Email"), max_length=254, widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}))
+    email = forms.EmailField(label=_("Email"), max_length=EMAIL_MAX_LENGTH, widget=forms.EmailInput(attrs={"autocomplete": "email", "autofocus": True}))
 
     def send_mail(self, subject_template_name, email_template_name, context, *args, **kwargs):
         with translation.override(context["user"].language):
@@ -108,7 +109,7 @@ class ChangeEmailForm(CaptchaFirstFormMixin, BaseForm):
 
     captcha_action = captcha.CaptchaAction.CHANGE_EMAIL
 
-    email = forms.EmailField(label=_("Correct email address"), max_length=254)
+    email = forms.EmailField(label=_("Correct email address"), max_length=EMAIL_MAX_LENGTH)
     password = forms.CharField(label=_("Current password"), widget=forms.PasswordInput, strip=False)
 
     def __init__(self, *args, user, **kwargs):

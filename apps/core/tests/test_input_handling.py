@@ -30,6 +30,15 @@ def test_malformed_query_parameters_never_crash(auth_client, url):
     assert auth_client.get(url).status_code == 200
 
 
+@pytest.mark.parametrize("url", [
+    # Periods in the path: a year outside the books or a month outside 1-12 doesn't match (core.converters).
+    "/taxes/withholding/99999/1/", "/taxes/withholding/1999/1/", "/taxes/withholding/2026/13/",
+    "/taxes/withholding/2026/0/ebupot/bpmp.xml", "/payroll/9999/annual/", "/prepayments/99999999999999999999/",
+])
+def test_impossible_path_segments_are_not_found(auth_client, url):
+    assert auth_client.get(url).status_code == 404
+
+
 def test_out_of_range_report_dates_are_reported_to_the_user(auth_client):
     response = auth_client.get("/reports/income-statement/?date_from=0001-01-01&date_to=2026-01-31")
     assert response.context["report"] is None
@@ -131,3 +140,26 @@ def test_unsafe_payment_links_from_the_gateway_are_refused(organization):
 
 def test_checkout_with_non_numeric_plan_is_404(auth_client):
     assert auth_client.post(reverse("billing:checkout"), {"plan": "abc", "period": "monthly"}).status_code == 404
+
+
+# 308 characters: a valid address for Django's EmailField (up to 320), too long for the column (254).
+LONG_EMAIL = "a" * 60 + "." + "b" * 60 + "." + "c" * 60 + "." + "d" * 60 + "@" + "x" * 60 + ".com"
+
+
+def test_overlong_email_addresses_are_form_errors(auth_client):
+    from django.test import Client
+
+    from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
+    from apps.accounts.models import User
+
+    anonymous = Client(raise_request_exception=False)
+    signup = anonymous.post(reverse("accounts:signup"), {
+        "email": LONG_EMAIL, "password": "Rahasia-123-xyz", "full_name": "Ani", "organization_name": "Warung",
+        "legal_form": "perorangan", RESPONSE_FIELD: FAKE_PASSING_TOKEN,
+    })
+    login = anonymous.post(reverse("accounts:login"), {"username": LONG_EMAIL, "password": "x"})
+    auth_client.raise_request_exception = False
+    invite = auth_client.post(reverse("tenants:members"), {"email": LONG_EMAIL, "role": "viewer"})
+    assert (signup.status_code, login.status_code, invite.status_code) == (200, 200, 200)
+    assert "email" in signup.context["form"].errors and "email" in invite.context["form"].errors
+    assert not User.objects.filter(email__startswith="aaaa").exists()

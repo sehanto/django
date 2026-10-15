@@ -35,6 +35,7 @@ from apps.tenants.roles import Permission
 from .services import authenticate
 
 MAX_PAGE = 100
+MAX_OFFSET = 10**9
 
 
 class ApiError(Exception):
@@ -167,6 +168,8 @@ def _page(request, queryset):
         offset = max(int(request.GET.get("offset", 0)), 0)
     except ValueError:
         raise ApiError("'limit' and 'offset' must be whole numbers.") from None
+    if offset > MAX_OFFSET:  # beyond any list, and beyond what the database takes
+        raise ApiError(f"'offset' can be at most {MAX_OFFSET}.")
     return queryset[offset:offset + limit], {"limit": limit, "offset": offset, "count": queryset.count()}
 
 

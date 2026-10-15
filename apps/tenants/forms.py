@@ -6,7 +6,7 @@ from apps.contacts.validators import nitku_validator, npwp_format_validator
 from django.utils import timezone
 
 from apps.core.forms import BaseForm, BaseModelForm, DateInput, DigitsField, OrganizationFormMixin
-from apps.core.validators import nib_validator
+from apps.core.validators import EMAIL_MAX_LENGTH, nib_validator
 from apps.regions.forms import RegionFieldsMixin
 
 from .models import BusinessPlace, Organization
@@ -81,7 +81,7 @@ class OrganizationCreateForm(BaseForm):
 
 
 class AddMemberForm(OrganizationFormMixin, BaseForm):
-    email = forms.EmailField(label=_("User email"))
+    email = forms.EmailField(label=_("User email"), max_length=EMAIL_MAX_LENGTH)
     role = forms.ChoiceField(
         label=_("Role"),
         choices=[(r.value, r.label) for r in Role if r != Role.OWNER],

@@ -26,6 +26,12 @@ tax_invoice_number_validator = RegexValidator(
 )
 
 # Transactions outside this window are almost certainly typos (e.g. year 0026 or 2206).
+# Text that reaches a column or a hash is bounded: an email column holds 254 characters (RFC 5321),
+# while Django's form EmailField accepts up to 320; a password is hashed whole.
+EMAIL_MAX_LENGTH = 254
+PASSWORD_MAX_LENGTH = 4096
+SECRET_MAX_LENGTH = 4096  # access tokens of outside services, stored encrypted
+
 EARLIEST_BUSINESS_DATE = date(2000, 1, 1)
 MAX_DAYS_AHEAD = 366
 
