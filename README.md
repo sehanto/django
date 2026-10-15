@@ -612,7 +612,17 @@ few behaviours live in `static/js/app.js`.
 - **Colours** are semantic tokens: `text-fg`, `text-muted`, `bg-canvas`, `bg-surface`, `bg-subtle`,
   `border-line`, `text-primary`/`bg-primary`, `text-danger`, `text-success`, `text-warning`
   (and `-subtle` backgrounds), `bg-series-1`/`-2` for the chart. They switch with the device's light
-  or dark setting (`prefers-color-scheme`), so templates rarely need `dark:` variants.
+  or dark setting (`prefers-color-scheme`), so templates rarely need `dark:` variants. Components
+  use the same tokens (`bg-danger-strong`, `bg-warning-fill`, `accent-primary`), never an
+  arbitrary `[var(--…)]`.
+- **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
+  `max-h-130` 520 px), and repeated type sizes are tokens (`text-display` 2.5rem for error pages
+  and amounts to pay, `text-figure` 1.75rem for plan prices). Arbitrary values (`w-[16%]`) are for
+  one-off measures only.
+- **Checked.** `test_every_class_in_use_is_in_the_build` fails when a template, an `{% icon %}` or a
+  widget uses a class the build doesn't have (a typo, a leftover of another framework, a component
+  never defined, or a build that wasn't rerun); classes assembled from variables are left to the
+  components they name.
 - **Icons.** `{% icon "receipt" "me-2 text-primary" %}` (a built-in tag, `apps/core/templatetags/icons.py`)
   renders the icon as inline SVG: 1em square, in the text colour, so text utilities size and colour
   it; decorative (`aria-hidden`), so icon-only buttons need an `aria-label`. `{% icon name %}` also
@@ -621,7 +631,7 @@ few behaviours live in `static/js/app.js`.
 - **Build.** `npm ci` installs the pinned Tailwind CLI and `lucide-static` (`package.json`, `package-lock.json`;
   development only, `node_modules/` isn't committed and production needs no Node.js). **After
   using a class or icon that isn't in the build yet, run `manage.py build_css`** and commit
-  `static/build/` and `templates/icons/`; `test_the_built_css_is_up_to_date` fails until
+  `static/build/` and `templates/icons/`; `test_the_built_assets_are_up_to_date` fails until
   then (it is skipped where the tools aren't installed). The build also copies the icons in use
   into `templates/icons/` (with Lucide's licence) and removes those no longer used. The build is
   reproducible.

@@ -20,6 +20,9 @@
   --breakpoint-lg: 62rem;
   --breakpoint-xl: 75rem;
   --breakpoint-2xl: 87.5rem;
+  /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
+  --text-display: 2.5rem;
+  --text-figure: 1.75rem;
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
 }
 
@@ -91,10 +94,13 @@
   --color-primary-strong: var(--app-primary-strong);
   --color-primary-subtle: var(--app-primary-subtle);
   --color-danger: var(--app-danger);
+  --color-danger-strong: var(--app-danger-strong);
   --color-danger-subtle: var(--app-danger-subtle);
   --color-success: var(--app-success);
+  --color-success-strong: var(--app-success-strong);
   --color-success-subtle: var(--app-success-subtle);
   --color-warning: var(--app-warning);
+  --color-warning-fill: var(--app-warning-fill);
   --color-warning-subtle: var(--app-warning-subtle);
   --color-info-subtle: var(--app-info-subtle);
   --color-series-1: var(--app-series-1);
@@ -137,10 +143,10 @@
   }
   .btn-sm { @apply px-2 py-1 text-sm; }
   .btn-primary { @apply bg-primary text-white hover:bg-primary-strong hover:text-white; }
-  .btn-danger { @apply bg-danger text-white hover:bg-[var(--app-danger-strong)] hover:text-white; }
-  .btn-success { @apply bg-success text-white hover:bg-[var(--app-success-strong)] hover:text-white; }
+  .btn-danger { @apply bg-danger text-white hover:bg-danger-strong hover:text-white; }
+  .btn-success { @apply bg-success text-white hover:bg-success-strong hover:text-white; }
   .btn-secondary { @apply bg-gray-600 text-white hover:bg-gray-700 hover:text-white; }
-  .btn-warning { @apply bg-[var(--app-warning-fill)] text-gray-900 hover:bg-amber-500; }
+  .btn-warning { @apply bg-warning-fill text-gray-900 hover:bg-amber-500; }
   .btn-outline-primary { @apply border-primary text-primary-strong hover:bg-primary hover:text-white; }
   .btn-outline-secondary { @apply border-line-strong text-fg hover:bg-subtle hover:text-fg; }
   .btn-outline-danger { @apply border-danger text-danger hover:bg-danger hover:text-white; }
@@ -161,7 +167,7 @@
   .form-control-sm, .form-select-sm { @apply px-2 py-1 text-sm; }
   .form-select-sm { @apply pe-8; }
   textarea.form-control { @apply min-h-20; }
-  .form-check-input { @apply size-4 rounded border-line-strong accent-[var(--app-primary)]; }
+  .form-check-input { @apply size-4 rounded border-line-strong accent-primary; }
   /* A checkbox drawn as a switch. */
   .form-switch {
     @apply relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-line-strong bg-subtle transition-colors
@@ -204,7 +210,7 @@
   .badge-secondary { @apply bg-gray-500 text-white; }
   .badge-success { @apply bg-success text-white; }
   .badge-danger { @apply bg-danger text-white; }
-  .badge-warning { @apply bg-[var(--app-warning-fill)] text-gray-900; }
+  .badge-warning { @apply bg-warning-fill text-gray-900; }
   .badge-dark { @apply bg-gray-800 text-white dark:bg-gray-600; }
   .badge-light { @apply border border-line bg-subtle text-fg; }
   .alert { @apply mb-4 rounded-lg border px-4 py-3; }

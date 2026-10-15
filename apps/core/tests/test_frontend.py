@@ -79,6 +79,50 @@ def test_the_build_has_what_pages_use_and_nothing_else():
     assert "prefers-color-scheme:dark" in css  # light and dark follow the device
 
 
+CLASS_ATTRIBUTE = re.compile(r'\bclass="([^"]*)"')
+ICON_CLASSES = re.compile(r'\{%\s*icon\s+"[^"]+"\s+"([^"]*)"')
+WIDGET_CLASSES = re.compile(r'"class":\s*"([^"]*)"')
+BLOCK_TAG, VARIABLE_TAG = re.compile(r"\{%.*?%\}"), re.compile(r"\{\{.*?\}\}")
+NOT_OURS = {"cf-turnstile"}  # Cloudflare Turnstile's own hook
+
+
+def _complete_classes(value: str):
+    """The class names in an attribute that are written out whole: not ``badge-{{ colour }}`` or
+    ``badge-{% if … %}danger{% else %}…``, whose parts are components built from variables."""
+    value = VARIABLE_TAG.sub("\x01", BLOCK_TAG.sub("\x00", value))
+    for token in value.split():
+        pieces = [piece for piece in token.split("\x00") if piece]
+        if "\x01" not in token and len(pieces) == 1:
+            yield pieces[0]
+
+
+def test_every_class_in_use_is_in_the_build():
+    """Catches a typo, a class left from the old framework or a component never defined: Tailwind
+    generates every utility it finds, so a class missing from the build styles nothing."""
+    from apps.core import assets
+
+    css = assets.OUT_CSS.read_text(encoding="utf-8")
+    defined = {re.sub(r"\\(.)", r"\1", name) for name in re.findall(r"\.((?:\\.|[A-Za-z0-9_-])+)", css)}
+    sources = [*TEMPLATES.rglob("*.html"), *(Path(settings.BASE_DIR) / "apps").rglob("*.py")]
+    missing = set()
+    for path in sources:
+        if "tests" in path.parts or "migrations" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        for pattern in (CLASS_ATTRIBUTE, ICON_CLASSES, WIDGET_CLASSES):
+            for value in pattern.findall(text):
+                missing |= {f"{path.name}: {name}" for name in _complete_classes(value) if name not in defined | NOT_OURS}
+    assert not missing, sorted(missing)
+
+
+def test_components_use_theme_colours():
+    """A colour the components need is a theme token (``bg-danger-strong``), not an arbitrary
+    ``bg-[var(--app-…)]``, so utilities and components share one palette."""
+    from apps.core import assets
+
+    assert "[var(--" not in assets.APP_CSS.read_text(encoding="utf-8")
+
+
 def test_icons_are_inline_svg_from_the_build():
     import pytest
     from django.template import Context, Template, TemplateSyntaxError

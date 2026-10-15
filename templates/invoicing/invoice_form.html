@@ -16,7 +16,7 @@
   {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{% for e in formset.non_form_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   <div class="card"><div class="overflow-x-auto">
     <table class="table formset-table mb-0">
-      <thead><tr><th>{% translate "Item" %}</th><th class="min-w-48">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="w-[5.75rem]">{% translate "Qty" %}</th><th class="w-36">{% translate "Price" %}</th><th class="w-20">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
+      <thead><tr><th>{% translate "Item" %}</th><th class="min-w-48">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="w-23">{% translate "Qty" %}</th><th class="w-36">{% translate "Price" %}</th><th class="w-20">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
