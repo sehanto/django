@@ -13,6 +13,9 @@
 # Daily: post the fixed asset depreciation of months that have ended (each month once).
 0 2 * * * @PROJECT_DIR@/deploy/cron/run.sh post_depreciation
 
+# Daily: recognise the months of prepaid expenses and revenue received in advance that have ended.
+5 2 * * * @PROJECT_DIR@/deploy/cron/run.sh post_deferrals
+
 # Daily: recompute the hash chain of posted journal entries; a failure is mailed (MAILTO).
 0 4 * * * @PROJECT_DIR@/deploy/cron/run.sh verify_ledger
 

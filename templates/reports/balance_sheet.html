@@ -13,6 +13,7 @@
     {% include "reports/_section.html" with section=report.current_assets %}
     {% include "reports/_section.html" with section=report.fixed_assets %}
     {% if report.intangible_assets.rows %}{% include "reports/_section.html" with section=report.intangible_assets %}{% endif %}
+    {% if report.investments.rows %}{% include "reports/_section.html" with section=report.investments %}{% endif %}
     {% translate "TOTAL ASSETS" as label %}{% include "reports/_total.html" with current=report.total_assets previous=report.previous_total_assets %}
   </table></div></div></div>
   <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-statement mb-0">

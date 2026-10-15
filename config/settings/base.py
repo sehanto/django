@@ -44,6 +44,7 @@ LOCAL_APPS = [
     "apps.dashboard",
     "apps.audit",
     "apps.assets",
+    "apps.deferrals",
     "apps.inventory",
     "apps.api",
     "apps.payroll",

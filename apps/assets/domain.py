@@ -29,7 +29,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.money import ZERO, quantize
-from apps.core.periods import month_end
+from apps.core.periods import add_months, month_end
 
 MONTHS_PER_YEAR = 12
 MAX_USEFUL_LIFE_MONTHS = 50 * MONTHS_PER_YEAR
@@ -45,11 +45,6 @@ class DepreciationMethod(models.TextChoices):
 class AssetStatus(models.TextChoices):
     ACTIVE = "active", _("In use")
     DISPOSED = "disposed", _("Disposed")
-
-
-def add_months(year: int, month: int, count: int) -> tuple[int, int]:
-    index = year * MONTHS_PER_YEAR + (month - 1) + count
-    return index // MONTHS_PER_YEAR, index % MONTHS_PER_YEAR + 1
 
 
 @dataclass(frozen=True)

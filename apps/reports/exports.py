@@ -22,6 +22,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
+from apps.deferrals.models import Deferral, DeferralPosting
 from apps.audit.models import RecordChange
 from apps.audit.selectors import trail_head
 from apps.contacts.models import Contact
@@ -260,6 +261,22 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         DepreciationPosting, "organization", ("asset__number", "year", "month"),
+    ),
+    (
+        Table("prepayments.csv", gettext_lazy("Amounts paid or received in advance, spread over the months they cover."), (
+            C("number"), C("kind"), C("description"), C("amount"), C("recorded_on"), C("starts_on"), C("months"),
+            C("balance_account__code", gettext_lazy("Prepaid or received in advance account code")),
+            C("recognition_account__code", gettext_lazy("Expense or revenue account code")),
+            C("opening_entry__number", gettext_lazy("Reclassification journal entry")), C("status"),
+        )),
+        Deferral, "organization", ("number",),
+    ),
+    (
+        Table("prepayments_recognised.csv", gettext_lazy("Prepayments recognised per month."), (
+            C("deferral__number", gettext_lazy("Prepayment")), C("year"), C("month"), C("amount"),
+            C("journal_entry__number", gettext_lazy("Journal entry")),
+        )),
+        DeferralPosting, "organization", ("deferral__number", "year", "month"),
     ),
     (
         Table("pph_final_expenses.csv", gettext_lazy("MSME PPh Final expenses, recognised at the end of each month."), (

@@ -12,13 +12,13 @@ from apps.core.exceptions import InvalidStateTransition, ValidationFailed
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
+from apps.core.periods import add_months, month_end
 from apps.core.validators import ensure_business_date
-from apps.core.periods import month_end
 from apps.ledger.domain import AccountCategory
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import DepreciationMethod, accumulated_before, add_months, months_between
+from .domain import DepreciationMethod, accumulated_before, months_between
 from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 

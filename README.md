@@ -21,6 +21,7 @@ Indonesia by default, with English available per user. Code, comments and docs a
 | **Coretax (nota retur)** | Purchase returns export as a Coretax "Retur Pajak Masukan" XML import file, per return or per month (PPN summary), in the layout of DJP's *Sample Retur Faktur PM Template v.1.1* (converter v1.6): 16-digit NPWPs, every row of the supplier's faktur (rows not returned with quantity 0), DPP nilai lain and PPN per row, unit codes (UM.00xx) mapped from the item unit. Sales returns are filed by the customer in Coretax and approved under Retur Pajak Keluaran, so they aren't exported. |
 | **Persediaan** | Perpetual inventory for goods whose stock is tracked (opt-in per item): purchase bills add stock at cost (including PPN a non-PKP can't credit), sales invoices post their cost of goods sold in the same entry by FIFO or weighted average (the organization's policy), and selling more than is in stock is refused. Stock adjustments record opening stock and count differences. Each item has a stock card (kartu stok); stock value reconciles with the inventory account. |
 | **Aset tetap** | Fixed asset register (a sub-ledger of the fixed asset accounts): cost, useful life, residual value, straight-line or declining-balance depreciation per the organization's policy, land not depreciated. Depreciation is posted monthly (one entry per month, dated its last day, caught up automatically and nightly by cron); sales and write-offs post the gain or loss. A sale can be invoiced instead of received in cash: the disposal issues a sales invoice for the proceeds (with PPN for a PKP, Art. 16D, Faktur Pajak code 09) that credits them to the asset account, and that invoice can't be voided or returned on its own. A revised useful life, residual value or depreciation method applies prospectively (change in estimate) and is disclosed in the notes. The register reconciles with the ledger. |
+| **Dibayar/diterima di muka** | Prepayments register: rent, insurance or subscriptions paid ahead are expensed straight-line over the months they cover (SAK EMKM 14.13), rent or royalties received ahead recognised as revenue the same way (14.7). Registering can move an amount the bill or invoice booked to expense or revenue onto Biaya Dibayar di Muka or Pendapatan Diterima di Muka (a reclassification entry on the document's date); each month is then posted on its last day, nightly by cron. A mistake is voided before any month is recognised. |
 | **Laporan** | Laba Rugi, Posisi Keuangan (with prior-year vs current-year earnings), Catatan atas Laporan Keuangan, Neraca Saldo, Buku Besar, Umur Piutang/Utang, Rekap PPN. Statements export to CSV. See "SAK EMKM" below. |
 | **Dasbor** | Cash and bank balances, AR/AP with amounts overdue, this month's profit, and a 6-month revenue vs expense chart. |
 | **Bahasa** | Bahasa Indonesia or English, per user, with an ID/EN switch everywhere. Invoices print in each customer's or supplier's own document language. See [Languages](#languages). |
@@ -41,6 +42,7 @@ apps/
   invoicing/            items, sales/purchase invoices, payments
   inventory/            perpetual inventory: stock movements, FIFO/weighted-average valuation, adjustments
   assets/               fixed asset register, depreciation schedules and postings, disposals
+  deferrals/            amounts paid or received in advance, recognised straight-line month by month
   reports/              financial statements (pure builders over ledger balances)
   dashboard/            KPIs
 templates/  static/
@@ -106,6 +108,10 @@ Key design decisions:
   and must match a posted journal entry on the last day of their month; an asset's figures are
   fixed once depreciation is posted, disposal is one step with its journal entry, and assets
   with postings or a disposal can't be deleted. Only the name and description stay editable.
+  The prepayments register (`deferrals/0002`) is the same: a prepayment is fixed once registered
+  (only the description changes), voided only before any month is recognised and after its
+  reclassification is reversed, never deleted; recognised months are append-only, inside the term,
+  never more than the amount, each with a posted journal entry on the month's last day.
   Returns (`invoicing/0011`, `0013`) are inserted with their posted journal entry for an issued invoice,
   their lines within what was invoiced, and can only be voided (posted -> void, after their entry is
   reversed); the invoice's `amount_credited` must equal its posted returns, and
@@ -388,6 +394,8 @@ The books follow SAK EMKM (Standar Akuntansi Keuangan Entitas Mikro, Kecil, dan 
 | Inventory | At cost, FIFO or weighted average (organization policy), recorded perpetually for tracked items: cost of goods sold with each sale; other goods are expensed when bought. |
 | Fixed assets (Bab 11) | Cost less accumulated depreciation from the fixed asset register; land not depreciated; monthly depreciation from the month of acquisition, **without a residual value** (11.14: the register refuses one; assets registered earlier keep theirs until their estimate is revised); no impairment; gain or loss on disposal to other income/expense. |
 | Intangible assets (Bab 12) | Bought separately (software, licences): registered like fixed assets on 1-2500 Aset Takberwujud, amortised over a limited life without a residual value (1-2950, 6-1650 Beban Amortisasi; the monthly entry says "Amortisasi aset takberwujud"). Internally generated items are expensed. |
+| Investments in joint ventures (Bab 10) | Measured at cost, never impaired, and presented as their own group of assets (1-3000 Investasi pada Ventura Bersama, category `investment`); distributions are income when received (14.6). |
+| Prepayments (14.13, 14.7, 14.4a) | Rent and other expenses paid in advance are expensed straight-line over the months they cover, rent and royalties received in advance recognised as revenue the same way (**Prepayments**, `deferrals` app; 4-2300 Pendapatan Sewa). Until then they are an asset (1-1600 Biaya Dibayar di Muka) or a liability (2-1500 Pendapatan Diterima di Muka). Construction contract revenue and costs are recognised as billed (14.5). |
 | Receivables (8.10-8.13) | No allowance for doubtful debts. A receivable that can't be collected is written off from its sales invoice (**Write off**): the remaining balance goes to 6-1800 Beban Piutang Tak Tertagih, the invoice shows "Written off" (`ReceivableWriteOff`, guarded like returns, invoicing 0028) and a mistake is voided by reversal. |
 | Prior-period errors (7.16) | A general journal can be marked "Correction of an earlier year's error" (`JournalEntry.restates_year`, fixed once posted and part of the hash). It is posted on its own date (the general ledger and trial balance show it there), but the statements show it in the year it corrects: that year's comparative figures are restated ("restated" on the column), this year's profit is not affected, and the notes list each correction with its effect on that year's profit. |
 | Consistent policies (7.5) | The inventory cost formula and the default depreciation method are fixed in the settings once stock has been valued or assets registered with them; a change is a retrospective restatement (7.8-7.9) recorded as a prior-period correction. |
@@ -910,6 +918,7 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 |---|---|---|
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
 | `post_depreciation` | Daily 02:00 | Post the fixed asset depreciation of months that have ended (each month once, missed months caught up; organizations with a locked month are skipped and reported) |
+| `post_deferrals` | Daily 02:05 | Recognise the months of prepaid expenses and revenue received in advance that have ended (same rules as depreciation) |
 | `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain; failures are mailed (`MAILTO`) |
 | `verify_audit_trail` | Daily 04:10 | Recompute the hash chain of the change history; failures are mailed (`MAILTO`) |
 | `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |

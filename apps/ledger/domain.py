@@ -45,6 +45,7 @@ class AccountCategory(models.TextChoices):
     OTHER_CURRENT_ASSET = "other_current_asset", _("Other current assets")
     FIXED_ASSET = "fixed_asset", _("Fixed assets")
     INTANGIBLE_ASSET = "intangible_asset", _("Intangible assets")
+    INVESTMENT = "investment", _("Investments in joint ventures")  # at cost, never impaired (SAK EMKM Bab 10)
     CURRENT_LIABILITY = "current_liability", _("Current liabilities")
     LONG_TERM_LIABILITY = "long_term_liability", _("Long-term liabilities")
     EQUITY = "equity", _("Equity")
@@ -68,6 +69,7 @@ CATEGORY_TYPES = {
     AccountCategory.OTHER_CURRENT_ASSET: AccountType.ASSET,
     AccountCategory.FIXED_ASSET: AccountType.ASSET,
     AccountCategory.INTANGIBLE_ASSET: AccountType.ASSET,
+    AccountCategory.INVESTMENT: AccountType.ASSET,
     AccountCategory.CURRENT_LIABILITY: AccountType.LIABILITY,
     AccountCategory.LONG_TERM_LIABILITY: AccountType.LIABILITY,
     AccountCategory.EQUITY: AccountType.EQUITY,
@@ -122,6 +124,7 @@ class JournalSource(models.TextChoices):
     PAYROLL = "payroll", _("Payroll")
     REVERSAL = "reversal", _("Reversal")
     WRITE_OFF = "write_off", _("Receivable written off")
+    DEFERRAL = "deferral", _("Prepayment spread over its term")
 
 
 def normal_balance_for(category: str, is_contra: bool) -> NormalBalance:

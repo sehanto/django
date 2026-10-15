@@ -44,6 +44,7 @@ NUMBER_PREFIX = {
     Source.PAYROLL: "JG",
     Source.REVERSAL: "JR",
     Source.WRITE_OFF: "JH",  # hapus piutang
+    Source.DEFERRAL: "JD",  # dibayar/diterima di muka
 }
 
 

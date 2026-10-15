@@ -177,6 +177,7 @@ class BalanceSheet:
     current_assets: Section
     fixed_assets: Section
     intangible_assets: Section
+    investments: Section  # in joint ventures, at cost (SAK EMKM 10.6: a group of assets)
     current_liabilities: Section
     long_term_liabilities: Section
     equity: Section
@@ -192,7 +193,9 @@ class BalanceSheet:
         return self.previous_as_of is not None
 
     def _total_assets(self, previous=False) -> Decimal:
-        return _total(self.current_assets, previous) + _total(self.fixed_assets, previous) + _total(self.intangible_assets, previous)
+        return sum(
+            (_total(s, previous) for s in (self.current_assets, self.fixed_assets, self.intangible_assets, self.investments)), ZERO
+        )
 
     def _total_liabilities(self, previous=False) -> Decimal:
         return _total(self.current_liabilities, previous) + _total(self.long_term_liabilities, previous)
@@ -230,6 +233,7 @@ class BalanceSheet:
         yield from _section_csv(self.current_assets, compare)
         yield from _section_csv(self.fixed_assets, compare)
         yield from _section_csv(self.intangible_assets, compare)
+        yield from _section_csv(self.investments, compare)
         yield row(_("TOTAL ASSETS"), self.total_assets, self.previous_total_assets)
         yield from _section_csv(self.current_liabilities, compare)
         yield from _section_csv(self.long_term_liabilities, compare)
@@ -265,6 +269,7 @@ def build_balance_sheet(
         current_assets=section(_("Current assets"), CURRENT_ASSET_CATEGORIES, asset),
         fixed_assets=section(_("Fixed assets"), {C.FIXED_ASSET}, asset),
         intangible_assets=section(_("Intangible assets"), {C.INTANGIBLE_ASSET}, asset),
+        investments=section(_("Investments in joint ventures"), {C.INVESTMENT}, asset),
         current_liabilities=section(_("Current liabilities"), {C.CURRENT_LIABILITY}, liability),
         long_term_liabilities=section(_("Long-term liabilities"), {C.LONG_TERM_LIABILITY}, liability),
         equity=section(_("Capital"), {C.EQUITY}, equity),
@@ -318,8 +323,8 @@ FIRST_ITEM_NOTE = 3  # 1: general information, 2: accounting policies
 
 
 def item_notes(bs: "BalanceSheet", pl: "IncomeStatement") -> list[ItemNote]:
-    notes = [ItemNote(s, True) for s in (bs.current_assets, bs.fixed_assets, bs.intangible_assets, bs.current_liabilities,
-                                         bs.long_term_liabilities, bs.equity)]
+    notes = [ItemNote(s, True) for s in (bs.current_assets, bs.fixed_assets, bs.intangible_assets, bs.investments,
+                                         bs.current_liabilities, bs.long_term_liabilities, bs.equity)]
     notes += [ItemNote(s, False) for s in (pl.revenue, pl.cost_of_sales, pl.operating_expenses, pl.other_income, pl.other_expenses,
                                           pl.finance_costs, pl.income_tax)]
     return [note for note in notes if note.section.rows]

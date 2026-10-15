@@ -22,6 +22,7 @@ DEFAULT_CHART = [
     ("1-2900", "Akumulasi Penyusutan Aset Tetap", C.FIXED_ASSET, None, True),
     ("1-2500", "Aset Takberwujud", C.INTANGIBLE_ASSET, None, False),  # SAK EMKM Bab 12
     ("1-2950", "Akumulasi Amortisasi Aset Takberwujud", C.INTANGIBLE_ASSET, None, True),
+    ("1-3000", "Investasi pada Ventura Bersama", C.INVESTMENT, None, False),  # at cost (SAK EMKM 10.4)
     # Liabilitas
     ("2-1000", "Utang Usaha", C.CURRENT_LIABILITY, R.PAYABLE, False),
     ("2-1100", "PPN Keluaran", C.CURRENT_LIABILITY, R.OUTPUT_VAT, False),
@@ -49,6 +50,7 @@ DEFAULT_CHART = [
     ("4-2000", "Pendapatan Lain-lain", C.OTHER_INCOME, None, False),
     ("4-2100", "Pendapatan Bunga Bank", C.OTHER_INCOME, None, False),
     ("4-2200", "Pendapatan Hibah", C.OTHER_INCOME, None, False),  # grants (14.10)
+    ("4-2300", "Pendapatan Sewa", C.OTHER_INCOME, None, False),  # straight-line over the contract (14.7)
     # Beban
     ("5-1000", "Beban Pokok Penjualan", C.COST_OF_SALES, R.PURCHASE_EXPENSE, False),
     ("6-1000", "Beban Gaji dan Upah", C.OPERATING_EXPENSE, None, False),

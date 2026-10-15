@@ -3,7 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from apps.assets.domain import DepreciationMethod, Estimate, add_months, depreciation_schedule
+from apps.assets.domain import DepreciationMethod, Estimate, depreciation_schedule
+from apps.core.periods import add_months
 
 D = Decimal
 

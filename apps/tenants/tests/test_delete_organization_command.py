@@ -93,3 +93,19 @@ def test_admin_cannot_delete_organizations(organization, user):
     model_admin = site._registry[Organization]
     assert model_admin.has_delete_permission(request, organization) is False
     assert f"manage.py delete_organization {organization.pk}" in str(model_admin.deletion(organization))
+
+
+def test_deletes_the_prepayments_register_too(organization, account):
+    from apps.deferrals import services as deferrals
+    from apps.deferrals.domain import DeferralKind
+    from apps.deferrals.models import Deferral, DeferralPosting
+
+    deferrals.register_deferral(
+        organization=organization, kind=DeferralKind.PREPAID_EXPENSE, description="Sewa", amount=Decimal("1200"),
+        recorded_on=date(2026, 1, 5), starts_on=date(2026, 1, 1), months=12,
+        balance_account=account("1-1600"), recognition_account=account("6-1100"), reclassify=True,
+    )
+    deferrals.post_deferrals(organization=organization, through=date(2026, 2, 28))
+    call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
+    assert not Deferral.objects.filter(organization_id=organization.pk).exists()
+    assert not DeferralPosting.objects.filter(organization_id=organization.pk).exists()
