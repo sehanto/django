@@ -169,11 +169,13 @@ Key design decisions:
 
 ## Getting started
 
-Requirements: Python 3.12+ and PostgreSQL 18 (developed on Python 3.14 and PostgreSQL 18.6).
+Requirements: Python 3.12+ and PostgreSQL 18 (developed on Python 3.14 and PostgreSQL 18.6);
+Node.js 20+ only to rebuild the stylesheet (developed on Node 24).
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements/dev.txt
+npm ci                 # Tailwind CSS, for manage.py build_css (the built CSS is committed)
 cp .env.example .env   # then set the real password in DATABASE_URL
 ```
 
@@ -545,55 +547,70 @@ The tests cover:
 
 The test database is created by `msme_user`, which needs `CREATEDB`.
 
-## Front end (Bootstrap)
+## Front end (Tailwind CSS)
 
-The interface is Bootstrap 5.3.3 with Bootstrap Icons 1.11.3, served from this site, not from a
-CDN: pages work without third-party requests, and the Content-Security-Policy can stay strict.
-The full releases are kept in `frontend/vendor/` (with their licences; npm releases checked
-against the registry's integrity hash, and the CSS and JS match the SRI hashes Bootstrap
-publishes). Pages load what `manage.py build_css` (`apps/core/assets.py`) makes of them in
-`static/build/`:
+The interface is styled with [Tailwind CSS](https://tailwindcss.com) v4 and uses Bootstrap
+Icons 1.11.3 for icons. Everything is served from this site, not from a CDN: pages work without
+third-party requests, and the Content-Security-Policy stays strict. There is no CSS framework
+script: dialogs are native `<dialog>` elements and the few behaviours live in `static/js/app.js`.
 
-| File | Full release | Built | Sent (Brotli) |
-|---|---|---|---|
-| `app.min.css`: Bootstrap + icons + `frontend/app.css`, one request | 232 KB + 86 KB + 4 KB (≈45 KB gzip, 3 files) | 70 KB | 12 KB |
-| `fonts/bootstrap-icons.woff2` | 130 KB, ~2,000 icons | 6 KB, the 59 in use | 6 KB |
-| `bootstrap.bundle.min.js` (loaded with `defer`) | 81 KB | 81 KB | 21 KB |
+| File | Built | Sent (Brotli) |
+|---|---|---|
+| `static/build/app.min.css`: Tailwind (only the utilities in use) + components + icon rules, one request | 43 KB | 8 KB |
+| `static/build/fonts/bootstrap-icons.woff2` | 6 KB, the 62 icons in use (of ~2,000) | 6 KB |
 
-- The CSS keeps only rules whose classes appear in the templates, scripts or Python code, plus
-  those Bootstrap's JavaScript adds (`show`, `fade`, `modal-backdrop` …); a class composed in a
-  template (`text-bg-{{ … }}`) keeps every combination with the sources' words, a plain variable
-  (`bi-{{ icon }}`) only the values templates assign it. A screenshot comparison of every page
-  (desktop, phone, dark; menus, modals and form errors opened) against the full Bootstrap showed
-  no difference.
-- **After using a Bootstrap class or icon that isn't in the build yet, run
-  `manage.py build_css`** (needs `requirements/dev.txt`) and commit `static/build/`;
-  `test_the_built_css_is_up_to_date` fails until then. The build is reproducible.
-- To upgrade Bootstrap, download the new tarballs, check them the same way, replace the folder in
-  `frontend/vendor/` and the paths in `apps/core/assets.py`, then build.
+- **Source.** `frontend/app.css` is the whole stylesheet: `@import "tailwindcss"`, where class names
+  come from (`@source`: templates, scripts and Python code, not tests or migrations), the theme
+  (Bootstrap's breakpoints, which the layouts were designed for), base typography for content
+  that Tailwind's reset leaves unstyled, and a small `@layer components`.
+- **Utilities first.** Templates use Tailwind utilities for layout, spacing, grid (`grid
+  grid-cols-12`, `md:col-span-6`), typography and colour. Only primitives that every page repeats
+  are components: buttons (`btn btn-primary`, `btn-outline-secondary`, `btn-sm`, `btn-icon` …),
+  form controls (`form-control`, `form-select`, `form-switch`, `form-label`, `form-text`,
+  `is-invalid`), `card`, `table` (plus `table-sm`, `table-hover`, `table-statement`), `num` for
+  amounts, `badge-<colour>` (the colour from `|status_badge`), `alert-<level>` (Django message
+  tags), `modal` dialogs and the menu's `nav-link`. Classes built from variables
+  (`badge-{{ … }}`, `alert-{{ … }}`) must be components, since Tailwind only generates
+  utilities it finds written out.
+- **Colours** are semantic tokens: `text-fg`, `text-muted`, `bg-canvas`, `bg-surface`, `bg-subtle`,
+  `border-line`, `text-primary`/`bg-primary`, `text-danger`, `text-success`, `text-warning`
+  (and `-subtle` backgrounds), `bg-series-1`/`-2` for the chart. They switch with the device's light
+  or dark setting (`prefers-color-scheme`), so templates rarely need `dark:` variants.
+- **Build.** `npm ci` installs the pinned Tailwind CLI (`package.json`, `package-lock.json`;
+  development only, `node_modules/` isn't committed and production needs no Node.js). **After
+  using a class or icon that isn't in the build yet, run `manage.py build_css`** (also needs
+  `requirements/dev.txt`) and commit `static/build/`; `test_the_built_css_is_up_to_date` fails until
+  then (it is skipped where the CLI isn't installed). The build is reproducible.
+  `npm audit` reports `braces` (through the CLI's file watcher, which only `--watch` uses); no
+  fixed release exists yet, and the build only passes the project's own glob patterns.
+- To upgrade Tailwind, change the exact version of both packages in `package.json`, run
+  `npm install`, then build and compare the screenshots of the pages.
 - WhiteNoise serves the files with content hashes in their names (cached for good) and
   precompressed (`brotli` is in the requirements).
 
 - **Layout.** From the `lg` breakpoint the menu is a fixed sidebar; below it a top bar opens the
-  same menu as an offcanvas (`offcanvas-lg`). Light or dark follows the device (Bootstrap colour
-  modes, `static/js/theme.js`). A "skip to content" link comes first for keyboard users.
+  same `<nav>` as a drawer (`data-drawer-open`; Escape, the backdrop or the close button close
+  it). The organization switcher is a `<details data-dropdown>`. Light or dark follows the device.
+  A "skip to content" link comes first for keyboard users.
 - **Content-Security-Policy** (`apps/core/middleware.py`, `CONTENT_SECURITY_POLICY`): scripts,
   styles and fonts only from this site (plus Cloudflare Turnstile for the CAPTCHA), no
   `'unsafe-inline'`, no framing. So templates carry no inline `<script>`, `on…=` handlers or
   `style=` attributes (`test_templates_have_no_inline_scripts_handlers_or_styles`); behaviour is
   declared with data attributes handled by `static/js/app.js`:
-  `data-confirm="…"` on a form asks first in a Bootstrap modal, `data-autosubmit` on a select
-  submits its form, `data-print` prints, `data-fill-<field>` on a modal's trigger fills that field,
-  `data-height` sizes a chart bar.
-- **Styling.** Bootstrap components and utilities first; `frontend/app.css` adds only the
-  sidebar, statement tables, the chart and a small width scale for content blocks (`mw-xs` 480px,
-  `mw-sm` 560, `mw-md` 760, `mw-lg` 900, `mw-xl` 1000) and table columns (`col-code`, …).
-- **Forms** render through `partials/form_fields.html` (`form-control`/`form-select`/`form-switch`,
-  `is-invalid` on errors). Help text and errors carry the ids Django's `aria-describedby` points
-  at (`partials/field_feedback.html`); table-row forms name their inputs with `aria-label`
-  (`core.forms.GridFormMixin`).
+  `data-dialog-open="id"` opens a `<dialog>` (`data-dialog-close` closes it; so do Escape and a
+  click outside), `data-fill-<field>` on the opener fills that field, `data-confirm="…"` on a form
+  asks first in `#confirmModal`, `data-dismiss` closes a message, `data-autosubmit` on a select
+  submits its form, `data-print` prints, `data-height` sizes a chart bar. `print:hidden` leaves
+  the menu and buttons off paper.
+- **Forms** render through `partials/form_fields.html` (labels, `form-control`/`form-select`, a
+  checkbox as `form-switch`, `is-invalid` on errors, in a 12-column grid: pass `col="col-span-12
+  md:col-span-4"` to change the width). Help text and errors carry the ids Django's
+  `aria-describedby` points at (`partials/field_feedback.html`); table-row forms name their inputs
+  with `aria-label` (`core.forms.GridFormMixin`).
 - **Accessibility.** Icons are decorative (`aria-hidden="true"`); icon-only buttons have an
-  `aria-label`. Tables sit in `table-responsive`, charts have a data table.
+  `aria-label`. Wide tables sit in `overflow-x-auto`, charts have a data table, dialogs are labelled
+  by their title. `test_no_bootstrap_markup_is_left` keeps Bootstrap-only classes and `data-bs-`
+  attributes out of the templates.
 
 ## Languages
 

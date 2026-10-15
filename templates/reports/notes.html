@@ -1,24 +1,24 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Notes to the financial statements" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">{% translate "Notes to the financial statements" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.income_statement.date_from|date:"d M Y" end=report.income_statement.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
+<h1 class="text-xl font-medium leading-tight mb-1">{% translate "Notes to the financial statements" %}</h1>
+<p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.income_statement.date_from|date:"d M Y" end=report.income_statement.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" %}
 {% if report %}{% with org=report.organization bs=report.balance_sheet pl=report.income_statement %}
-<div class="card mw-xl"><div class="card-body">
+<div class="card max-w-5xl"><div class="card-body">
 
-<h2 class="h6 fw-bold">1. {% translate "General" %}</h2>
-<dl class="row small mb-4">
-  <dt class="col-sm-3">{% translate "Business name" %}</dt><dd class="col-sm-9">{{ org.name }}</dd>
-  <dt class="col-sm-3">{% translate "Legal form" %}</dt><dd class="col-sm-9">{{ org.get_legal_form_display }}</dd>
-  {% if org.npwp %}<dt class="col-sm-3">{% translate "Tax ID (NPWP)" %}</dt><dd class="col-sm-9">{{ org.npwp }}</dd>{% endif %}
-  {% if org.nib %}<dt class="col-sm-3">{% translate "Business ID (NIB)" %}</dt><dd class="col-sm-9">{{ org.nib }}</dd>{% endif %}
-  {% if org.full_address %}<dt class="col-sm-3">{% translate "Address" %}</dt><dd class="col-sm-9">{{ org.full_address }}</dd>{% endif %}
-  <dt class="col-sm-3">{% translate "Reporting period" %}</dt><dd class="col-sm-9">{% blocktranslate trimmed with start=pl.date_from|date:"d F Y" end=pl.date_to|date:"d F Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</dd>
+<h2 class="text-base leading-tight font-bold">1. {% translate "General" %}</h2>
+<dl class="grid grid-cols-12 gap-x-6 text-sm mb-6">
+  <dt class="col-span-12 sm:col-span-3">{% translate "Business name" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.name }}</dd>
+  <dt class="col-span-12 sm:col-span-3">{% translate "Legal form" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.get_legal_form_display }}</dd>
+  {% if org.npwp %}<dt class="col-span-12 sm:col-span-3">{% translate "Tax ID (NPWP)" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.npwp }}</dd>{% endif %}
+  {% if org.nib %}<dt class="col-span-12 sm:col-span-3">{% translate "Business ID (NIB)" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.nib }}</dd>{% endif %}
+  {% if org.full_address %}<dt class="col-span-12 sm:col-span-3">{% translate "Address" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.full_address }}</dd>{% endif %}
+  <dt class="col-span-12 sm:col-span-3">{% translate "Reporting period" %}</dt><dd class="col-span-12 sm:col-span-9">{% blocktranslate trimmed with start=pl.date_from|date:"d F Y" end=pl.date_to|date:"d F Y" %}{{ start }} to {{ end }}{% endblocktranslate %}</dd>
 </dl>
 
-<h2 class="h6 fw-bold">2. {% translate "Significant accounting policies" %}</h2>
-<ol type="a" class="small mb-4">
+<h2 class="text-base leading-tight font-bold">2. {% translate "Significant accounting policies" %}</h2>
+<ol type="a" class="text-sm mb-6">
   <li class="mb-2"><strong>{% translate "Statement of compliance" %}.</strong>
     {% translate "These financial statements have been prepared in accordance with the Financial Accounting Standards for Micro, Small and Medium Entities (SAK EMKM)." %}</li>
   <li class="mb-2"><strong>{% translate "Basis of preparation" %}.</strong>
@@ -56,19 +56,19 @@
 {% blocktranslate trimmed with start=pl.date_from|date:"d/m/Y" end=pl.date_to|date:"d/m/Y" asvar period %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% blocktranslate trimmed with start=pl.previous_from|date:"d/m/Y" end=pl.previous_to|date:"d/m/Y" asvar previous_period %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% for note in report.item_notes %}{% with section=note.section %}
-<h2 class="h6 fw-bold" id="note-{{ section.note }}">{{ section.note }}. {{ section.title }}</h2>
-<div class="table-responsive mb-4"><table class="table table-sm table-statement mb-0 small">
+<h2 class="text-base leading-tight font-bold" id="note-{{ section.note }}">{{ section.note }}. {{ section.title }}</h2>
+<div class="overflow-x-auto mb-6"><table class="table table-sm table-statement mb-0 text-sm">
   {% if note.is_balance_sheet %}{% include "reports/_columns.html" with compare=True current=bs.as_of|date:"d/m/Y" previous=bs.previous_as_of|date:"d/m/Y" restated=bs.comparative_restated %}
   {% else %}{% include "reports/_columns.html" with compare=True current=period previous=previous_period restated=pl.comparative_restated %}{% endif %}
-  {% for row in section.rows %}<tr><td class="text-secondary col-code">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-secondary">{{ row.previous|rupiah }}</td></tr>{% endfor %}
-  <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-secondary">{{ section.previous_total|rupiah }}</td></tr>
+  {% for row in section.rows %}<tr><td class="text-muted w-28">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td><td class="num text-muted">{{ row.previous|rupiah }}</td></tr>{% endfor %}
+  <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-muted">{{ section.previous_total|rupiah }}</td></tr>
 </table></div>
 {% endwith %}{% endfor %}
 
 {% if report.estimate_changes %}
-<h2 class="h6 fw-bold" id="note-{{ report.estimates_note }}">{{ report.estimates_note }}. {% translate "Changes in accounting estimates" %}</h2>
-<p class="small">{% translate "The useful life, residual value or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
-<div class="table-responsive mb-4"><table class="table table-sm mb-0 small">
+<h2 class="text-base leading-tight font-bold" id="note-{{ report.estimates_note }}">{{ report.estimates_note }}. {% translate "Changes in accounting estimates" %}</h2>
+<p class="text-sm">{% translate "The useful life, residual value or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
+<div class="overflow-x-auto mb-6"><table class="table table-sm mb-0 text-sm">
   <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in report.estimate_changes %}
     <tr><td>{{ r.asset.number }} {{ r.asset.name }}</td><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
@@ -79,9 +79,9 @@
 {% endif %}
 
 {% if report.corrections %}
-<h2 class="h6 fw-bold" id="note-{{ report.corrections_note }}">{{ report.corrections_note }}. {% translate "Corrections of prior period errors" %}</h2>
-<p class="small">{% translate "These errors in earlier years' books were found and corrected in this period. As SAK EMKM requires (7.16), they are corrected retrospectively: the statements show each correction in the year it concerns, so the comparative figures are restated and the effect on earlier years reaches this year's opening retained earnings, not this year's profit." %}</p>
-<div class="table-responsive mb-4"><table class="table table-sm mb-0 small">
+<h2 class="text-base leading-tight font-bold" id="note-{{ report.corrections_note }}">{{ report.corrections_note }}. {% translate "Corrections of prior period errors" %}</h2>
+<p class="text-sm">{% translate "These errors in earlier years' books were found and corrected in this period. As SAK EMKM requires (7.16), they are corrected retrospectively: the statements show each correction in the year it concerns, so the comparative figures are restated and the effect on earlier years reaches this year's opening retained earnings, not this year's profit." %}</p>
+<div class="overflow-x-auto mb-6"><table class="table table-sm mb-0 text-sm">
   <thead><tr><th>{% translate "Journal entry" %}</th><th>{% translate "Recorded on" %}</th><th>{% translate "Year corrected" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Effect on that year's profit" %}</th></tr></thead>
   <tbody>{% for c in report.corrections %}
     <tr><td><a href="{% url 'ledger:journal_detail' c.entry.pk %}">{{ c.entry.number }}</a></td><td>{{ c.entry.date|date:"d/m/Y" }}</td><td>{{ c.entry.restates_year }}</td>
@@ -90,8 +90,8 @@
 </table></div>
 {% endif %}
 
-<h2 class="h6 fw-bold" id="note-{{ report.additional_note }}">{{ report.additional_note }}. {% translate "Additional information" %}</h2>
-<p class="small mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-secondary">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
+<h2 class="text-base leading-tight font-bold" id="note-{{ report.additional_note }}">{{ report.additional_note }}. {% translate "Additional information" %}</h2>
+<p class="text-sm mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-muted">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
 </div></div>
 {% endwith %}{% endif %}
 {% endblock %}

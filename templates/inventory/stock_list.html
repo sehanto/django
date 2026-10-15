@@ -1,37 +1,37 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Inventory" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
-  <h1 class="h4 mb-0">{% translate "Inventory" %}</h1>
+<div class="flex flex-wrap justify-between items-center gap-2 mb-1">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Inventory" %}</h1>
   {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary"><i class="bi bi-plus-slash-minus" aria-hidden="true"></i> {% translate "Stock adjustment" %}</a>{% endif %}
 </div>
-<p class="text-secondary">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>
-<div class="card mb-3"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+<p class="text-muted">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Inventory account" %}</th><th class="num">{% translate "On hand" %}</th><th class="num">{% translate "Average cost" %}</th><th class="num">{% translate "Value" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}
-    <tr class="{% if not row.item.is_active %}text-secondary{% endif %}">
+    <tr class="{% if not row.item.is_active %}text-muted{% endif %}">
       <td><a href="{% url 'inventory:card' row.item.pk %}">{{ row.item }}</a></td>
-      <td class="small">{{ row.item.inventory_account }}</td>
+      <td class="text-sm">{{ row.item.inventory_account }}</td>
       <td class="num">{{ row.quantity|floatformat:"-3" }} {{ row.item.unit }}</td>
       <td class="num">{{ row.average_cost|rupiah }}</td>
       <td class="num">{{ row.value|rupiah }}</td>
     </tr>
   {% empty %}
-    <tr><td colspan="5" class="text-center text-secondary py-4">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</td></tr>
+    <tr><td colspan="5" class="text-center text-muted py-6">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if rows %}<tfoot><tr class="fw-semibold"><td colspan="4">{% translate "Total" %}</td><td class="num">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
+  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4">{% translate "Total" %}</td><td class="num">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
-<h2 class="h6">{% translate "Stock and ledger" %}</h2>
-<div class="card mw-lg"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+<h2 class="text-base font-medium leading-tight">{% translate "Stock and ledger" %}</h2>
+<div class="card max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Stock value" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.stock|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>
-      <td class="num {% if r.difference %}text-danger fw-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
+      <td class="num {% if r.difference %}text-danger font-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
-<p class="small text-secondary mt-2">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
 {% endif %}
 {% endblock %}

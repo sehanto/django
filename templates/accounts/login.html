@@ -1,16 +1,16 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Sign in" %}{% endblock %}
 {% block auth_content %}
-<h2 class="h5 mb-3">{% translate "Sign in" %}</h2>
+<h2 class="text-lg font-medium leading-tight mb-4">{% translate "Sign in" %}</h2>
 <form method="post">{% csrf_token %}
-  {% include "partials/form_fields.html" with col="col-12" %}
+  {% include "partials/form_fields.html" with col="col-span-12" %}
   {% if captcha %}
-    <p class="small text-secondary mt-3 mb-2">{% translate "Several sign-in attempts failed. Please confirm you are not a robot." %}</p>
+    <p class="text-sm text-muted mt-4 mb-2">{% translate "Several sign-in attempts failed. Please confirm you are not a robot." %}</p>
     {% include "accounts/_captcha.html" %}
   {% endif %}
-  <div class="text-end small mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
-  <button class="btn btn-primary w-100 mt-3">{% translate "Sign in" %}</button>
+  <div class="text-end text-sm mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
+  <button class="btn btn-primary w-full mt-4">{% translate "Sign in" %}</button>
 </form>
-<p class="text-center small mt-3 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Sign up free" %}</a></p>
+<p class="text-center text-sm mt-4 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Sign up free" %}</a></p>
 {% endblock %}
 {% block scripts %}{% if captcha %}<script src="{{ captcha.script_url }}" async defer></script>{% endif %}{% endblock %}

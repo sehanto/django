@@ -1,4 +1,4 @@
-{% load i18n %}<ul class="nav nav-tabs mb-3">
-  <li class="nav-item"><a class="nav-link {% if url_name == 'organization' %}active{% endif %}" href="{% url 'audit:organization' %}">{% translate "Activity log" %}</a></li>
-  <li class="nav-item"><a class="nav-link {% if url_name == 'changes' %}active{% endif %}" href="{% url 'audit:changes' %}">{% translate "Change history" %}</a></li>
-</ul>
+{% load i18n %}<nav class="mb-4 border-b border-line" aria-label="{% translate 'Activity' %}"><ul class="-mb-px m-0 flex list-none gap-1 p-0">
+  <li><a class="block rounded-t-md border border-transparent px-4 py-2 no-underline {% if url_name == 'organization' %}border-line border-b-surface bg-surface text-fg{% else %}text-primary-strong hover:border-b-line hover:bg-subtle{% endif %}" href="{% url 'audit:organization' %}" {% if url_name == 'organization' %}aria-current="page"{% endif %}>{% translate "Activity log" %}</a></li>
+  <li><a class="block rounded-t-md border border-transparent px-4 py-2 no-underline {% if url_name == 'changes' %}border-line border-b-surface bg-surface text-fg{% else %}text-primary-strong hover:border-b-line hover:bg-subtle{% endif %}" href="{% url 'audit:changes' %}" {% if url_name == 'changes' %}aria-current="page"{% endif %}>{% translate "Change history" %}</a></li>
+</ul></nav>

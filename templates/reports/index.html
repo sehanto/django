@@ -1,8 +1,8 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Reports" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% translate "Reports" %}</h1>
-<div class="row g-3">
+<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Reports" %}</h1>
+<div class="grid grid-cols-12 gap-4">
   {% include "reports/_card.html" with href="reports:income_statement" icon="graph-up" title=_("Income statement") desc=_("Revenue, expenses and net profit for a period.") %}
   {% include "reports/_card.html" with href="reports:balance_sheet" icon="bank" title=_("Statement of financial position") desc=_("Assets, liabilities and equity at a given date (balance sheet).") %}
   {% include "reports/_card.html" with href="reports:notes" icon="card-text" title=_("Notes to the financial statements") desc=_("Accounting policies and details of each statement line, as SAK EMKM requires.") %}
@@ -10,9 +10,9 @@
   {% include "reports/_card.html" with href="reports:general_ledger" icon="journal-richtext" title=_("General ledger") desc=_("Movements and running balance per account.") %}
   {% include "reports/_card.html" with href="reports:vat" icon="percent" title=_("PPN summary") desc=_("Output and input PPN per tax period.") %}
   {% include "reports/_card.html" with href="taxes:pph_final" icon="calculator" title=_("MSME PPh Final") desc=_("0.5% PPh Final calculated from monthly gross turnover.") %}
-  <div class="col-md-6 col-xl-4"><div class="card h-100"><div class="card-body">
-    <h2 class="h6"><i class="bi bi-hourglass-split me-2 text-primary" aria-hidden="true"></i>{% translate "Receivables & payables aging" %}</h2>
-    <p class="small text-secondary">{% translate "Open balances by days past due." %}</p>
+  <div class="col-span-12 md:col-span-6 xl:col-span-4"><div class="card h-full"><div class="card-body">
+    <h2 class="text-base font-medium leading-tight"><i class="bi bi-hourglass-split me-2 text-primary" aria-hidden="true"></i>{% translate "Receivables & payables aging" %}</h2>
+    <p class="text-sm text-muted">{% translate "Open balances by days past due." %}</p>
     <a href="{% url 'reports:aging' invoice_kinds.SALES %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
     <a href="{% url 'reports:aging' invoice_kinds.PURCHASE %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>
   </div></div></div>

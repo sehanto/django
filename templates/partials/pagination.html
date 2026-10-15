@@ -1,8 +1,8 @@
 {% load i18n %}
 {% if page_obj.has_other_pages %}
-<nav class="mt-3"><ul class="pagination pagination-sm">
-  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="{% translate 'Previous' %}">&laquo;</a></li>{% endif %}
-  <li class="page-item disabled"><span class="page-link">{% blocktranslate trimmed with page=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ page }} of {{ pages }}{% endblocktranslate %}</span></li>
-  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="{% translate 'Next' %}">&raquo;</a></li>{% endif %}
+<nav class="mt-4" aria-label="{% translate 'Pages' %}"><ul class="m-0 inline-flex list-none items-stretch overflow-hidden rounded-md border border-line p-0 text-sm">
+  {% if page_obj.has_previous %}<li><a class="block px-3 py-1 no-underline hover:bg-subtle" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" aria-label="{% translate 'Previous' %}">&laquo;</a></li>{% endif %}
+  <li class="border-x border-line"><span class="block px-3 py-1 text-muted">{% blocktranslate trimmed with page=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ page }} of {{ pages }}{% endblocktranslate %}</span></li>
+  {% if page_obj.has_next %}<li><a class="block px-3 py-1 no-underline hover:bg-subtle" href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" aria-label="{% translate 'Next' %}">&raquo;</a></li>{% endif %}
 </ul></nav>
 {% endif %}

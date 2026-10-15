@@ -1,43 +1,44 @@
 {% load i18n %}
 {% with url=request.resolver_match %}
-{# Below lg: a top bar whose button opens the menu as an offcanvas; from lg up the menu is a fixed sidebar. #}
-<header class="navbar sticky-top bg-body border-bottom px-3 d-lg-none no-print">
-  <button class="navbar-toggler border-0 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar"
-          aria-controls="appSidebar" aria-label="{% translate 'Open the menu' %}"><span class="navbar-toggler-icon"></span></button>
-  <a href="{% url 'dashboard:home' %}" class="navbar-brand fw-bold me-auto ms-2"><i class="bi bi-journal-bookmark-fill text-primary me-1" aria-hidden="true"></i>EA-System</a>
-  <span class="small text-secondary text-truncate app-topbar-org">{{ current_organization.name }}</span>
+{# Below lg: a top bar whose button opens the menu as a drawer; from lg up the menu is a fixed sidebar (static/js/app.js). #}
+<header class="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 lg:hidden print:hidden">
+  <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
+          aria-label="{% translate 'Open the menu' %}"><i class="bi bi-list text-2xl" aria-hidden="true"></i></button>
+  <a href="{% url 'dashboard:home' %}" class="me-auto text-lg font-bold text-fg no-underline"><i class="bi bi-journal-bookmark-fill text-primary me-1" aria-hidden="true"></i>EA-System</a>
+  <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
 </header>
-<div class="app-sidebar no-print">
-<nav id="appSidebar" class="offcanvas-lg offcanvas-start" tabindex="-1" aria-labelledby="appSidebarTitle">
-  <div class="offcanvas-header border-bottom">
-    <span class="offcanvas-title fw-bold fs-5" id="appSidebarTitle">EA-System</span>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="{% translate 'Close' %}"></button>
+<div class="fixed inset-0 z-30 hidden bg-black/40 data-open:block lg:hidden" data-drawer-backdrop="appSidebar"></div>
+<nav id="appSidebar" aria-labelledby="appSidebarTitle" tabindex="-1"
+     class="fixed inset-y-0 start-0 z-40 hidden w-(--sidebar-width) flex-col overflow-y-auto border-e border-line bg-surface p-4 shadow-xl data-open:flex lg:flex lg:shadow-none print:hidden">
+  <div class="mb-4 flex items-center justify-between lg:hidden">
+    <span class="text-lg font-bold" id="appSidebarTitle">EA-System</span>
+    <button type="button" class="btn-icon" data-drawer-close="appSidebar" aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
   </div>
-  <div class="offcanvas-body flex-column p-3">
-  <a href="{% url 'dashboard:home' %}" class="d-none d-lg-flex align-items-center gap-2 mb-3 text-decoration-none text-body" id="appSidebarBrand">
-    <i class="bi bi-journal-bookmark-fill fs-4 text-primary" aria-hidden="true"></i><span class="fw-bold fs-5">EA-System</span>
+  <a href="{% url 'dashboard:home' %}" class="mb-4 hidden items-center gap-2 text-fg no-underline lg:flex" id="appSidebarBrand">
+    <i class="bi bi-journal-bookmark-fill text-2xl text-primary" aria-hidden="true"></i><span class="text-xl font-bold">EA-System</span>
   </a>
-  <div class="dropdown mb-2">
-    <button type="button" class="btn btn-outline-secondary btn-sm w-100 text-start dropdown-toggle text-truncate" data-bs-toggle="dropdown" aria-expanded="false">
-      <i class="bi bi-building me-1" aria-hidden="true"></i>{{ current_organization.name }}
-    </button>
-    <ul class="dropdown-menu w-100">
+  <details class="relative mb-2" data-dropdown>
+    <summary class="btn btn-outline-secondary btn-sm w-full list-none justify-start [&::-webkit-details-marker]:hidden">
+      <i class="bi bi-building" aria-hidden="true"></i><span class="truncate">{{ current_organization.name }}</span>
+      <i class="bi bi-chevron-down ms-auto text-xs" aria-hidden="true"></i>
+    </summary>
+    <ul class="absolute z-50 mt-1 w-full list-none rounded-md border border-line bg-surface p-1 shadow-lg">
       {% for org in user_organizations %}
         <li>
           <form method="post" action="{% url 'tenants:switch' org.pk %}">{% csrf_token %}
-            <button class="dropdown-item {% if org.pk == current_organization.pk %}active{% endif %}">{{ org.name }}</button>
+            <button class="block w-full truncate rounded px-3 py-1.5 text-start text-sm hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{{ org.name }}</button>
           </form>
         </li>
       {% endfor %}
-      <li><hr class="dropdown-divider"></li>
-      <li><a class="dropdown-item" href="{% url 'tenants:create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{% translate "New organization" %}</a></li>
+      <li><hr class="my-1"></li>
+      <li><a class="block rounded px-3 py-1.5 text-sm text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>{% translate "New organization" %}</a></li>
     </ul>
-  </div>
-  <div class="small text-secondary mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
+  </details>
+  <div class="text-sm text-muted mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
     {{ role }} · {{ plan }} plan
   {% endblocktranslate %}</div>
 
-  <ul class="nav flex-column" aria-label="{% translate 'Main menu' %}">
+  <ul class="m-0 list-none space-y-0.5 p-0" aria-label="{% translate 'Main menu' %}">
     <li><a class="nav-link {% if url.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:home' %}"><i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>{% translate "Dashboard" %}</a></li>
     <li class="nav-heading">{% translate "Transactions" %}</li>
     <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.SALES %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.SALES %}"><i class="bi bi-receipt me-2" aria-hidden="true"></i>{% translate "Sales" %}</a></li>
@@ -69,12 +70,10 @@
     {% endif %}
   </ul>
   <hr>
-  <div class="d-flex justify-content-between align-items-center small mb-2">
-    <a href="{% url 'accounts:profile' %}" class="text-decoration-none text-truncate"><i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ request.user.get_short_name }}</a>
+  <div class="flex justify-between items-center text-sm mb-2">
+    <a href="{% url 'accounts:profile' %}" class="no-underline truncate"><i class="bi bi-person-circle me-1" aria-hidden="true"></i>{{ request.user.get_short_name }}</a>
     <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0">{% translate "Sign out" %}</button></form>
   </div>
   {% include "partials/language_switch.html" %}
-  </div>
 </nav>
-</div>
 {% endwith %}

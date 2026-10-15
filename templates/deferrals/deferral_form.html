@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{{ kind.label }}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{{ kind.label }}</h1>
-<form method="post" class="card mw-lg"><div class="card-body">{% csrf_token %}
+<h1 class="text-xl font-medium leading-tight mb-4">{{ kind.label }}</h1>
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
-  <p class="small text-secondary mt-3 mb-0">{% translate "The amount is spread evenly over the term, from the first month; each month is posted on its last day once it has ended." %}</p>
+  <p class="text-sm text-muted mt-4 mb-0">{% translate "The amount is spread evenly over the term, from the first month; each month is posted on its last day once it has ended." %}</p>
 </div>
-<div class="card-footer d-flex gap-2 justify-content-end">
+<div class="card-footer flex gap-2 justify-end">
   <a href="{% url 'deferrals:list' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
 </div></form>
 {% endblock %}

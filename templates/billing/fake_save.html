@@ -1,10 +1,10 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Test payment method" %}{% endblock %}
 {% block content %}
-<div class="mx-auto mw-xs">
+<div class="mx-auto max-w-md">
   <div class="alert alert-info">{% translate "Test page: no real payment method is saved. In production, customers save a card or e-wallet on Xendit's hosted page instead." %}</div>
-  <div class="card"><div class="card-body text-center p-4">
-    <form method="post" class="d-grid gap-2">{% csrf_token %}
+  <div class="card"><div class="card-body text-center p-6">
+    <form method="post" class="grid gap-2">{% csrf_token %}
       <button class="btn btn-success">{% translate "Simulate saving a payment method" %}</button>
     </form>
   </div></div>

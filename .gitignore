@@ -8,3 +8,4 @@ media/
 .coverage
 htmlcov/
 logs/
+node_modules/

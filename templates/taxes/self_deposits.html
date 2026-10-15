@@ -1,27 +1,27 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Self-deposited PPh" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% blocktranslate trimmed %}Self-deposited final PPh {{ year }}{% endblocktranslate %}</h1>
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}Self-deposited final PPh {{ year }}{% endblocktranslate %}</h1>
   <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
-<div class="card mb-3"><div class="table-responsive"><table class="table mb-0 align-middle">
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th>{% translate "Tax object code" %}</th><th>{% translate "Document" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Tax" %}</th><th>{% translate "Paid" %}</th><th>{% translate "BPSP no." %}</th><th></th></tr></thead>
-  <tbody>{% for d in deposits %}<tr class="{% if d.status == d.Status.VOID %}text-secondary{% endif %}">
-    <td>{{ d.month|stringformat:"02d" }}/{{ d.year }}</td><td>{{ d.tax_object }} <span class="small text-secondary">({{ d.rate|floatformat:"-2" }}%)</span></td>
-    <td>{{ d.document_number }}<div class="small text-secondary">{{ d.document_date|date:"d/m/Y" }}</div></td>
-    <td class="num">{{ d.tax_base|rupiah }}</td><td class="num fw-semibold">{{ d.amount|rupiah }}</td>
-    <td>{{ d.paid_on|date:"d/m/Y" }} <a href="{% url 'ledger:journal_detail' d.payment_entry_id %}" class="small">{{ d.payment_entry.number }}</a>{% if d.ntpn %}<div class="small text-secondary">NTPN {{ d.ntpn }}</div>{% endif %}{% if d.status == d.Status.VOID %}<div class="small">{{ d.get_status_display }}</div>{% endif %}</td>
-    <td>{% if d.slip_number %}{{ d.slip_number }}{% elif can_write and d.status == d.Status.POSTED %}<form method="post" action="{% url 'taxes:self_deposit_action' d.pk 'slip' %}" class="d-flex gap-1">{% csrf_token %}<input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'BPSP no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td>
+  <tbody>{% for d in deposits %}<tr class="{% if d.status == d.Status.VOID %}text-muted{% endif %}">
+    <td>{{ d.month|stringformat:"02d" }}/{{ d.year }}</td><td>{{ d.tax_object }} <span class="text-sm text-muted">({{ d.rate|floatformat:"-2" }}%)</span></td>
+    <td>{{ d.document_number }}<div class="text-sm text-muted">{{ d.document_date|date:"d/m/Y" }}</div></td>
+    <td class="num">{{ d.tax_base|rupiah }}</td><td class="num font-semibold">{{ d.amount|rupiah }}</td>
+    <td>{{ d.paid_on|date:"d/m/Y" }} <a href="{% url 'ledger:journal_detail' d.payment_entry_id %}" class="text-sm">{{ d.payment_entry.number }}</a>{% if d.ntpn %}<div class="text-sm text-muted">NTPN {{ d.ntpn }}</div>{% endif %}{% if d.status == d.Status.VOID %}<div class="text-sm">{{ d.get_status_display }}</div>{% endif %}</td>
+    <td>{% if d.slip_number %}{{ d.slip_number }}{% elif can_write and d.status == d.Status.POSTED %}<form method="post" action="{% url 'taxes:self_deposit_action' d.pk 'slip' %}" class="flex gap-1">{% csrf_token %}<input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'BPSP no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td>
     <td class="text-end">{% if can_write and d.status == d.Status.POSTED %}<form method="post" action="{% url 'taxes:self_deposit_action' d.pk 'cancel' %}" data-confirm="{% translate 'Cancel this self-deposit?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0">{% translate "cancel" %}</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No self-deposited tax this year." %}</td></tr>{% endfor %}</tbody>
+  {% empty %}<tr><td colspan="8" class="text-center text-muted py-6">{% translate "No self-deposited tax this year." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if can_write %}
-<form method="post" class="card mw-xl"><div class="card-body">{% csrf_token %}
-  <h2 class="h6">{% translate "Record a self-deposit" %}</h2>
+<form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}
+  <h2 class="text-base font-medium leading-tight">{% translate "Record a self-deposit" %}</h2>
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
-  {% include "partials/form_fields.html" with col="col-md-4" %}
+  {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
 </div><div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save & post" %}</button></div></form>
 {% endif %}
-<p class="small text-secondary mt-2">{% translate "When your customer doesn't withhold the final PPh on your income (e.g. a tenant who isn't a withholding agent, 10% on rent), you deposit it yourself by the 15th of the next month. It is an expense of the month of the income; its deposit settles it. Each one is reported with a BPSP, in the month's eBupot files (Withheld income tax)." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "When your customer doesn't withhold the final PPh on your income (e.g. a tenant who isn't a withholding agent, 10% on rent), you deposit it yourself by the 15th of the next month. It is an expense of the month of the income; its deposit settles it. Each one is reported with a BPSP, in the month's eBupot files (Withheld income tax)." %}</p>
 {% endblock %}

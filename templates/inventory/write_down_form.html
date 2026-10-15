@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Write down stock" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% translate "Write down stock to net realisable value" %}</h1>
-<form method="post" class="card mw-lg"><div class="card-body">{% csrf_token %}
+<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Write down stock to net realisable value" %}</h1>
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
-  <p class="small text-secondary mt-3 mb-0">{% translate "When goods can no longer be sold for what they cost (damaged, expired, obsolete), their stock is carried at the lower net realisable value. The difference is a loss of the period; quantities don't change, and later sales take their cost from the lower value." %}</p>
+  <p class="text-sm text-muted mt-4 mb-0">{% translate "When goods can no longer be sold for what they cost (damaged, expired, obsolete), their stock is carried at the lower net realisable value. The difference is a loss of the period; quantities don't change, and later sales take their cost from the lower value." %}</p>
 </div>
-<div class="card-footer d-flex gap-2 justify-content-end">
+<div class="card-footer flex gap-2 justify-end">
   <a href="{% url 'inventory:list' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Post write-down" %}</button>
 </div></form>
 {% endblock %}

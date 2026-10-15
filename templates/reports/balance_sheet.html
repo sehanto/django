@@ -1,14 +1,14 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Statement of financial position" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">{% translate "Statement of financial position" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
+<h1 class="text-xl font-medium leading-tight mb-1">{% translate "Statement of financial position" %}</h1>
+<p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
 {% if not report.is_balanced %}<div class="alert alert-danger">{% translate "The report does not balance. Check the journal data." %}</div>{% endif %}
 {% with compare=report.has_comparative current=report.as_of|date:"d/m/Y" previous=report.previous_as_of|date:"d/m/Y" %}
-<div class="row g-3">
-  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-sm table-statement mb-0">
+<div class="grid grid-cols-12 gap-4">
+  <div class="col-span-12 xl:col-span-6"><div class="card"><div class="overflow-x-auto"><table class="table table-sm table-statement mb-0">
     {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_assets %}
     {% include "reports/_section.html" with section=report.fixed_assets %}
@@ -16,7 +16,7 @@
     {% if report.investments.rows %}{% include "reports/_section.html" with section=report.investments %}{% endif %}
     {% translate "TOTAL ASSETS" as label %}{% include "reports/_total.html" with current=report.total_assets previous=report.previous_total_assets %}
   </table></div></div></div>
-  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-sm table-statement mb-0">
+  <div class="col-span-12 xl:col-span-6"><div class="card"><div class="overflow-x-auto"><table class="table table-sm table-statement mb-0">
     {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_liabilities %}
     {% include "reports/_section.html" with section=report.long_term_liabilities %}
@@ -30,6 +30,6 @@
   </table></div></div></div>
 </div>
 {% endwith %}
-<p class="small text-secondary mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
+<p class="text-sm text-muted mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
 {% endif %}
 {% endblock %}

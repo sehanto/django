@@ -1,11 +1,11 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n ui %}
 {% block title %}{% translate "Check your email" %}{% endblock %}
 {% block auth_content %}
-<h2 class="h5 mb-3"><i class="bi bi-envelope-check me-2 text-primary" aria-hidden="true"></i>{% translate "Check your email" %}</h2>
+<h2 class="text-lg font-medium leading-tight mb-4"><i class="bi bi-envelope-check me-2 text-primary" aria-hidden="true"></i>{% translate "Check your email" %}</h2>
 <p>{% if email %}{% blocktranslate trimmed %}We sent an email to <strong>{{ email }}</strong>.{% endblocktranslate %}{% else %}{% translate "We sent you an email." %}{% endif %}
   {% translate "Open the link in it to confirm your address, then sign in." %}</p>
-<p class="small text-secondary">{% blocktranslate trimmed with lifetime=lifetime|timeuntil_delta %}
+<p class="text-sm text-muted">{% blocktranslate trimmed with lifetime=lifetime|timeuntil_delta %}
   The link expires in {{ lifetime }}. If no email arrives within a few minutes, check your spam folder. If you already have an account with this address, the email tells you how to sign in instead.
 {% endblocktranslate %}</p>
-<a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary w-100">{% translate "Go to sign in" %}</a>
+<a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary w-full">{% translate "Go to sign in" %}</a>
 {% endblock %}

@@ -2,39 +2,39 @@
 {% block title %}{{ note.number }}{% endblock %}
 {% block content %}
 {% with invoice=note.invoice %}
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3 no-print">
-  <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="small text-decoration-none">&larr; {{ invoice.number }}</a>
-  <div class="d-flex gap-2">
+<div class="flex flex-wrap justify-between items-start gap-2 mb-4 print:hidden">
+  <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="text-sm no-underline">&larr; {{ invoice.number }}</a>
+  <div class="flex gap-2">
     <button type="button" data-print class="btn btn-outline-secondary"><i class="bi bi-printer" aria-hidden="true"></i> {% translate "Print" %}</button>
     {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary"><i class="bi bi-filetype-xml" aria-hidden="true"></i> {% translate "Coretax XML" %}</a>{% endif %}
-    {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#voidModal">{% translate "Void return" %}</button>{% endif %}
+    {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" type="button" data-dialog-open="voidModal">{% translate "Void return" %}</button>{% endif %}
   </div>
 </div>
-<div class="card mw-xl"><div class="card-body">
-  <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
-    <div><h1 class="h4 mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}
-      {% if note.status == note.Status.VOID %}<span class="badge align-middle text-bg-dark">{{ note.get_status_display }}</span>{% endif %}</h1>
-      <div class="text-secondary">{% translate "Nota retur" %} · {{ note.date|date:"d F Y" }}</div></div>
-    <div class="text-end small">
-      <div class="fw-semibold">{{ invoice.seller.name }}</div>{% if invoice.seller.npwp %}<div>NPWP {{ invoice.seller.npwp|npwp }}</div>{% endif %}
+<div class="card max-w-5xl"><div class="card-body">
+  <div class="flex flex-wrap justify-between gap-4 mb-4">
+    <div><h1 class="text-xl font-medium leading-tight mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}
+      {% if note.status == note.Status.VOID %}<span class="badge align-middle badge-dark">{{ note.get_status_display }}</span>{% endif %}</h1>
+      <div class="text-muted">{% translate "Nota retur" %} · {{ note.date|date:"d F Y" }}</div></div>
+    <div class="text-end text-sm">
+      <div class="font-semibold">{{ invoice.seller.name }}</div>{% if invoice.seller.npwp %}<div>NPWP {{ invoice.seller.npwp|npwp }}</div>{% endif %}
     </div>
   </div>
-  <dl class="row small mb-3">
-    <dt class="col-sm-3">{% if note.is_sales %}{% translate "Customer" %}{% else %}{% translate "Supplier" %}{% endif %}</dt><dd class="col-sm-9">{{ invoice.party_name }}{% if invoice.party_npwp %} · NPWP {{ invoice.party_npwp|npwp }}{% endif %}</dd>
-    <dt class="col-sm-3">{% translate "Invoice" %}</dt><dd class="col-sm-9">{{ invoice.number }} ({{ invoice.date|date:"d/m/Y" }}){% if invoice.tax_invoice_number %} · {% translate "tax invoice no." %} {{ invoice.tax_invoice_number }}{% endif %}</dd>
-    <dt class="col-sm-3">{% translate "Reason" %}</dt><dd class="col-sm-9">{{ note.reason }}</dd>
+  <dl class="grid grid-cols-12 gap-x-6 text-sm mb-4">
+    <dt class="col-span-12 sm:col-span-3">{% if note.is_sales %}{% translate "Customer" %}{% else %}{% translate "Supplier" %}{% endif %}</dt><dd class="col-span-12 sm:col-span-9">{{ invoice.party_name }}{% if invoice.party_npwp %} · NPWP {{ invoice.party_npwp|npwp }}{% endif %}</dd>
+    <dt class="col-span-12 sm:col-span-3">{% translate "Invoice" %}</dt><dd class="col-span-12 sm:col-span-9">{{ invoice.number }} ({{ invoice.date|date:"d/m/Y" }}){% if invoice.tax_invoice_number %} · {% translate "tax invoice no." %} {{ invoice.tax_invoice_number }}{% endif %}</dd>
+    <dt class="col-span-12 sm:col-span-3">{% translate "Reason" %}</dt><dd class="col-span-12 sm:col-span-9">{{ note.reason }}</dd>
   </dl>
-  <div class="table-responsive"><table class="table mb-0">
-    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Quantity" %}</th><th class="num">{% translate "Unit price" %}</th><th class="small">{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
+  <div class="overflow-x-auto"><table class="table mb-0">
+    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Quantity" %}</th><th class="num">{% translate "Unit price" %}</th><th class="text-sm">{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
     <tbody>{% for line in note.lines.all %}
       <tr><td>{{ line.invoice_line.description }}</td><td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.invoice_line.unit_price|rupiah }}</td>
-        <td class="small">{{ line.invoice_line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
+        <td class="text-sm">{{ line.invoice_line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
     {% endfor %}</tbody>
     <tfoot>
       <tr><td colspan="4" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ note.subtotal|rupiah }}</td></tr>
       {% if note.tax_amount %}<tr><td colspan="4" class="text-end">{% translate "PPN" %}</td><td class="num">{{ note.tax_amount|rupiah }}</td></tr>{% endif %}
       {% if note.luxury_tax_amount %}<tr><td colspan="4" class="text-end">{% translate "PPnBM" %}</td><td class="num">{{ note.luxury_tax_amount|rupiah }}</td></tr>{% endif %}
-      <tr class="fw-bold"><td colspan="4" class="text-end">{% translate "Total" %}</td><td class="num">{{ note.total|rupiah }}</td></tr>
+      <tr class="font-bold"><td colspan="4" class="text-end">{% translate "Total" %}</td><td class="num">{{ note.total|rupiah }}</td></tr>
       {% if note.credited %}<tr><td colspan="4" class="text-end">{% translate "Credited to the invoice" %}</td><td class="num">{{ note.credited|rupiah }}</td></tr>{% endif %}
       {% if note.refunded %}<tr><td colspan="4" class="text-end">{% blocktranslate trimmed with account=note.cash_account.name %}Refunded through {{ account }}{% endblocktranslate %}</td><td class="num">{{ note.refunded|rupiah }}</td></tr>{% endif %}
       {% if note.vat_withheld %}<tr><td colspan="4" class="text-end">{% translate "PPN withheld by the buyer, which it recovers from the tax office" %}</td><td class="num">{{ note.vat_withheld|rupiah }}</td></tr>{% endif %}
@@ -42,16 +42,16 @@
       {% if note.vat_not_collected %}<tr><td colspan="4" class="text-end">{% translate "PPN not collected (facility)" %}</td><td class="num">{{ note.vat_not_collected|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>
-  {% if note.status == note.Status.POSTED %}<p class="small text-secondary mt-3 mb-0 no-print"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
-  <p class="small text-secondary mt-3 mb-0 no-print">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
+  {% if note.status == note.Status.POSTED %}<p class="text-sm text-muted mt-4 mb-0 print:hidden"><i class="bi bi-info-circle me-1" aria-hidden="true"></i>{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
+  <p class="text-sm text-muted mt-4 mb-0 print:hidden">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
 </div></div>
 {% if can_write and note.status == note.Status.POSTED %}
-<div class="modal fade" id="voidModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'invoicing:return_void' note.pk %}" class="modal-content">{% csrf_token %}
-  <div class="modal-header"><h5 class="modal-title">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
+<dialog class="modal" id="voidModal" aria-labelledby="voidModalTitle"><form method="post" action="{% url 'invoicing:return_void' note.pk %}">{% csrf_token %}
+  <div class="modal-header"><h2 class="modal-title" id="voidModalTitle">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
   <div class="modal-body"><p>{% translate "The return's journal entry is reversed on the void date, including any refund; the invoice owes the credited amount again, and the stock goes back the way it came. This cannot be undone." %}</p>
     <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-control' }}</div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Void return" %}</button></div>
-</form></div></div>
+</form></dialog>
 {% endif %}
 {% endwith %}
 {% endblock %}

@@ -1,1 +1,1 @@
-{% load i18n %}{% if show %}<div class="small mb-2"><a href="{% url 'audit:changes' %}?table={{ table }}&amp;record={{ record }}" class="text-decoration-none"><i class="bi bi-clock-history me-1" aria-hidden="true"></i>{% translate "Change history" %}</a></div>{% endif %}
+{% load i18n %}{% if show %}<div class="text-sm mb-2"><a href="{% url 'audit:changes' %}?table={{ table }}&amp;record={{ record }}" class="no-underline"><i class="bi bi-clock-history me-1" aria-hidden="true"></i>{% translate "Change history" %}</a></div>{% endif %}

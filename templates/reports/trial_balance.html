@@ -1,15 +1,15 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Trial balance" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">{% translate "Trial balance" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %}</p>
+<h1 class="text-xl font-medium leading-tight mb-1">{% translate "Trial balance" %}</h1>
+<p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
-<div class="card mw-lg"><div class="table-responsive"><table class="table table-hover mb-0">
+<div class="card max-w-4xl"><div class="overflow-x-auto"><table class="table table-hover mb-0">
   <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Account" %}</th><th class="num">{% translate "Debit" %}</th><th class="num">{% translate "Credit" %}</th></tr></thead>
   <tbody>{% for r in report.rows %}<tr><td><code>{{ r.code }}</code></td><td>{{ r.name }}</td><td class="num">{% if r.debit %}{{ r.debit|rupiah }}{% endif %}</td><td class="num">{% if r.credit %}{{ r.credit|rupiah }}{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="4" class="text-center text-secondary py-4">{% translate "No transactions yet." %}</td></tr>{% endfor %}</tbody>
-  <tfoot><tr class="fw-bold"><td colspan="2">{% translate "TOTAL" %} {% if report.is_balanced %}<i class="bi bi-check-circle-fill text-success ms-1" title="{% translate 'Balanced' %}" aria-hidden="true"></i> <span class="small fw-normal">{% translate "balanced" %}</span>{% else %}<span class="text-danger small">{% translate "not balanced" %}</span>{% endif %}</td>
+  {% empty %}<tr><td colspan="4" class="text-center text-muted py-6">{% translate "No transactions yet." %}</td></tr>{% endfor %}</tbody>
+  <tfoot><tr class="font-bold"><td colspan="2">{% translate "TOTAL" %} {% if report.is_balanced %}<i class="bi bi-check-circle-fill text-success ms-1" title="{% translate 'Balanced' %}" aria-hidden="true"></i> <span class="text-sm font-normal">{% translate "balanced" %}</span>{% else %}<span class="text-danger text-sm">{% translate "not balanced" %}</span>{% endif %}</td>
     <td class="num">{{ report.total_debit|rupiah }}</td><td class="num">{{ report.total_credit|rupiah }}</td></tr></tfoot>
 </table></div></div>
 {% endif %}

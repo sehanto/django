@@ -1,11 +1,11 @@
 {% load i18n ui %}
-<form method="get" class="row g-2 align-items-end mb-3 no-print">
+<form method="get" class="mb-4 flex flex-wrap items-end gap-2 print:hidden">
   {% for field in form %}
-    <div class="col-sm-auto"><label class="form-label small mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="w-full sm:w-auto"><label class="form-label text-sm mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}</div>
   {% endfor %}
-  <div class="col-sm-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>
-  {% if csv and report %}<div class="col-sm-auto"><button name="download" value="{{ export_formats.CSV }}" class="btn btn-outline-secondary"><i class="bi bi-download" aria-hidden="true"></i> CSV</button></div>{% endif %}
-  <div class="col-sm-auto"><button type="button" data-print class="btn btn-outline-secondary" aria-label="{% translate 'Print' %}"><i class="bi bi-printer" aria-hidden="true"></i></button></div>
-  {% for e in form.non_field_errors %}<div class="col-12 text-danger small" role="alert">{{ e }}</div>{% endfor %}
+  <div class="w-full sm:w-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>
+  {% if csv and report %}<div class="w-full sm:w-auto"><button name="download" value="{{ export_formats.CSV }}" class="btn btn-outline-secondary"><i class="bi bi-download" aria-hidden="true"></i> CSV</button></div>{% endif %}
+  <div class="w-full sm:w-auto"><button type="button" data-print class="btn btn-outline-secondary" aria-label="{% translate 'Print' %}"><i class="bi bi-printer" aria-hidden="true"></i></button></div>
+  {% for e in form.non_field_errors %}<div class="w-full text-sm text-danger" role="alert">{{ e }}</div>{% endfor %}
 </form>

@@ -1,17 +1,17 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Turn off two-factor authentication" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% translate "Turn off two-factor authentication" %}</h1>
-<div class="card mw-md"><div class="card-body">
+<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Turn off two-factor authentication" %}</h1>
+<div class="card max-w-3xl"><div class="card-body">
 {% if required_by %}
   <div class="alert alert-info">{% blocktranslate trimmed with organizations=required_by|join:", " %}You can't turn off two-factor authentication while {{ organizations }} requires it.{% endblocktranslate %}</div>
   <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
 {% else %}
   <div class="alert alert-warning">{% translate "Your account will be protected by your password only. Your authenticator and backup codes will stop working." %}</div>
   <form method="post">{% csrf_token %}
-    {% include "partials/form_fields.html" with col="col-md-6" %}
+    {% include "partials/form_fields.html" with col="col-span-12 md:col-span-6" %}
     {% include "accounts/_captcha.html" %}
-    <div class="d-flex gap-2 justify-content-end mt-4">
+    <div class="flex gap-2 justify-end mt-6">
       <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
       <button class="btn btn-danger">{% translate "Turn off" %}</button>
     </div>

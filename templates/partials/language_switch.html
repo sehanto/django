@@ -1,5 +1,5 @@
 {% load i18n %}{% get_current_language as current_language %}
-<form method="post" action="{% url 'accounts:set_language' %}" class="d-inline-flex gap-1" aria-label="{% translate 'Interface language' %}">
+<form method="post" action="{% url 'accounts:set_language' %}" class="inline-flex gap-1" aria-label="{% translate 'Interface language' %}">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ request.get_full_path }}">
   {% for code, name in LANGUAGES %}

@@ -1,31 +1,31 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Withheld income tax" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% blocktranslate trimmed %}Withheld income tax {{ year }}{% endblocktranslate %}</h1>
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}Withheld income tax {{ year }}{% endblocktranslate %}</h1>
   <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
-<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th>{% translate "Income tax" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Deposit" %}</th><th></th></tr></thead>
   <tbody>{% for row in rows %}
-    <tr><td>{{ row.month.label }} {{ year }}</td><td>{{ row.kind.label }}</td><td class="num fw-semibold">{{ row.due|rupiah }}</td>
+    <tr><td>{{ row.month.label }} {{ year }}</td><td>{{ row.kind.label }}</td><td class="num font-semibold">{{ row.due|rupiah }}</td>
       <td>{% if row.deposit %}
-          <span class="badge text-bg-success">{% blocktranslate trimmed with date=row.deposit.paid_on|date:"d/m/Y" %}Paid {{ date }}{% endblocktranslate %}</span>
-          <a href="{% url 'ledger:journal_detail' row.deposit.journal_entry_id %}" class="small ms-1">{{ row.deposit.journal_entry.number }}</a>
-          {% if row.deposit.ntpn %}<div class="small text-secondary">NTPN {{ row.deposit.ntpn }}</div>{% endif %}
-          {% if can_write %}<form method="post" action="{% url 'taxes:withholding_deposit_cancel' row.deposit.pk %}" class="d-inline" data-confirm="{% translate 'Cancel this deposit?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
+          <span class="badge badge-success">{% blocktranslate trimmed with date=row.deposit.paid_on|date:"d/m/Y" %}Paid {{ date }}{% endblocktranslate %}</span>
+          <a href="{% url 'ledger:journal_detail' row.deposit.journal_entry_id %}" class="text-sm ms-1">{{ row.deposit.journal_entry.number }}</a>
+          {% if row.deposit.ntpn %}<div class="text-sm text-muted">NTPN {{ row.deposit.ntpn }}</div>{% endif %}
+          {% if can_write %}<form method="post" action="{% url 'taxes:withholding_deposit_cancel' row.deposit.pk %}" class="inline" data-confirm="{% translate 'Cancel this deposit?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
         {% elif row.due > 0 and can_write %}
-          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#depositModal" data-fill-month="{{ row.month.value }}" data-fill-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
+          <button class="btn btn-sm btn-outline-primary" type="button" data-dialog-open="depositModal" data-fill-month="{{ row.month.value }}" data-fill-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
         {% endif %}</td>
-      <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="small">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">{% translate "No income tax was withheld this year. Record it when paying a bill or running payroll." %}</td></tr>{% endfor %}</tbody>
+      <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="text-sm">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center text-muted py-6">{% translate "No income tax was withheld this year. Record it when paying a bill or running payroll." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
-<p class="small text-secondary mt-2">{% translate "When you pay a supplier for services (PPh 23), rent of land or buildings (PPh 4(2)) or an individual's fee (PPh 21), and when you pay salaries (PPh 21, or PPh 26 for non-residents), you withhold the tax, deposit it by the 15th of the next month and give a bukti potong from Coretax eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "When you pay a supplier for services (PPh 23), rent of land or buildings (PPh 4(2)) or an individual's fee (PPh 21), and when you pay salaries (PPh 21, or PPh 26 for non-residents), you withhold the tax, deposit it by the 15th of the next month and give a bukti potong from Coretax eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first." %}</p>
 
-<div class="modal fade" id="depositModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'taxes:withholding_deposit' %}" class="modal-content">{% csrf_token %}
+<dialog class="modal" id="depositModal" aria-labelledby="depositModalTitle"><form method="post" action="{% url 'taxes:withholding_deposit' %}">{% csrf_token %}
   <input type="hidden" name="year" value="{{ year }}">
-  <div class="modal-header"><h5 class="modal-title">{% translate "Record deposit" %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
-  <div class="modal-body">{% include "partials/form_fields.html" with form=deposit_form col="col-12" %}</div>
+  <div class="modal-header"><h2 class="modal-title" id="depositModalTitle">{% translate "Record deposit" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-body">{% include "partials/form_fields.html" with form=deposit_form col="col-span-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
-</form></div></div>
+</form></dialog>
 {% endblock %}

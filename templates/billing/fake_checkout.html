@@ -1,13 +1,13 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Test payment" %}{% endblock %}
 {% block content %}
-<div class="mx-auto mw-xs">
+<div class="mx-auto max-w-md">
   <div class="alert alert-info">{% translate "Test payment page: no real money is charged. In production, customers pay on Xendit's hosted page instead." %}</div>
-  <div class="card"><div class="card-body text-center p-4">
-    <div class="text-secondary">{{ invoice.number }}</div>
-    <div class="display-6 fw-bold my-2">{{ invoice.total|rupiah }}</div>
-    <div class="mb-4">{{ invoice.plan.name }} · {{ invoice.get_billing_period_display }}</div>
-    <form method="post" class="d-grid gap-2">{% csrf_token %}
+  <div class="card"><div class="card-body text-center p-6">
+    <div class="text-muted">{{ invoice.number }}</div>
+    <div class="text-[2.5rem] font-bold leading-tight my-2">{{ invoice.total|rupiah }}</div>
+    <div class="mb-6">{{ invoice.plan.name }} · {{ invoice.get_billing_period_display }}</div>
+    <form method="post" class="grid gap-2">{% csrf_token %}
       <button name="outcome" value="{{ paid }}" class="btn btn-success">{% translate "Simulate successful payment" %}</button>
       <button name="outcome" value="{{ expired }}" class="btn btn-outline-secondary">{% translate "Simulate expired link" %}</button>
     </form>

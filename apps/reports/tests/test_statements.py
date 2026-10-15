@@ -134,7 +134,7 @@ def test_notes_state_compliance_policies_and_explain_each_line(auth_client, book
     assert "SAK EMKM" in page and "accrual basis" in page
     assert "First in, first out (FIFO)" in page and "Straight line" in page
     assert "PPN charged to customers" in page  # a PKP
-    assert "<h2 class=\"h6 fw-bold\" id=\"note-3\">3. Current assets</h2>" in page
+    assert "id=\"note-3\">3. Current assets</h2>" in page
     assert "&lt;b&gt;sertifikat&lt;/b&gt;" in page  # user text stays escaped
 
 

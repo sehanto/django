@@ -4,37 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% translate "MSME accounting" %}{% endblock %} · EA-System</title>
-  {# One stylesheet: Bootstrap and its icons trimmed to what the project uses, then app.css (manage.py build_css). #}
+  {# One stylesheet: Tailwind CSS (frontend/app.css) and the icons in use (manage.py build_css). #}
   <link href="{% static 'build/app.min.css' %}" rel="stylesheet">
   <link href="{% static 'build/fonts/bootstrap-icons.woff2' %}" rel="preload" as="font" type="font/woff2" crossorigin>
-  <script src="{% static 'js/theme.js' %}"></script>
 </head>
-<body>
-<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-primary btn-sm z-3" href="#content">{% translate "Skip to content" %}</a>
+<body class="font-sans">
+<a class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 btn btn-primary btn-sm" href="#content">{% translate "Skip to content" %}</a>
 {% block body %}
   {% if current_organization %}
     {% include "partials/sidebar.html" %}
   {% endif %}
-  <main id="content" class="{% if current_organization %}app-main{% endif %}" tabindex="-1">
-    <div class="container-fluid px-3 px-lg-4 py-4">
+  <main id="content" class="min-h-screen {% if current_organization %}lg:ms-(--sidebar-width) print:ms-0{% endif %}" tabindex="-1">
+    <div class="w-full px-4 lg:px-6 py-6">
       {% include "partials/messages.html" %}
       {% if subscription_notice %}{% include "partials/subscription_notice.html" %}{% endif %}
       {% block content %}{% endblock %}
     </div>
   </main>
 {% endblock %}
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
-    <div class="modal-header"><h2 class="modal-title fs-5" id="confirmModalTitle">{% translate "Please confirm" %}</h2>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
-    <div class="modal-body"><p class="mb-0" data-confirm-text></p></div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% translate "Cancel" %}</button>
-      <button type="button" class="btn btn-danger" data-confirm-accept>{% translate "Continue" %}</button>
-    </div>
-  </div></div>
-</div>
-<script src="{% static 'build/bootstrap.bundle.min.js' %}" defer></script>
+<dialog class="modal" id="confirmModal" aria-labelledby="confirmModalTitle">
+  <div class="modal-header"><h2 class="modal-title" id="confirmModalTitle">{% translate "Please confirm" %}</h2>
+    <button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-body"><p class="mb-0" data-confirm-text></p></div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" data-dialog-close>{% translate "Cancel" %}</button>
+    <button type="button" class="btn btn-danger" data-confirm-accept>{% translate "Continue" %}</button>
+  </div>
+</dialog>
 <script src="{% static 'js/app.js' %}" defer></script>
 <script src="{% static 'js/regions.js' %}" defer></script>
 {% block scripts %}{% endblock %}

@@ -3,13 +3,13 @@
 {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 {% endif %}
-<div class="row g-3">
+<div class="grid grid-cols-12 gap-4">
 {% for field in fields|default:form.visible_fields %}
-  <div class="{{ col|default:'col-md-6' }}">
+  <div class="{{ col|default:'col-span-12 md:col-span-6' }}">
     {% if field.field.widget.input_type == 'checkbox' %}
-      <div class="form-check form-switch mt-md-4">
-        {{ field|add_class:'form-check-input' }}
-        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      <div class="flex items-center gap-2 md:mt-8">
+        {{ field|add_class:'form-switch' }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
       </div>
     {% else %}
       <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>

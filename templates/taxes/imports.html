@@ -1,25 +1,25 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Imports (PIB)" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% blocktranslate trimmed %}Imports (PIB) {{ year }}{% endblocktranslate %}</h1>
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}Imports (PIB) {{ year }}{% endblocktranslate %}</h1>
   <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
-<div class="card mb-3"><div class="table-responsive"><table class="table mb-0 align-middle">
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "PIB" %}</th><th>{% translate "Foreign supplier" %}</th><th class="num">{% translate "Import value" %}</th><th class="num">{% translate "PPN impor" %}</th><th class="num">{% translate "PPh 22 impor" %}</th><th class="num">{% translate "Import duty" %}</th><th></th></tr></thead>
-  <tbody>{% for d in declarations %}<tr class="{% if d.status == d.Status.VOID %}text-secondary{% endif %}">
-    <td>{{ d.number }}<div class="small text-secondary">{{ d.date|date:"d/m/Y" }} · <a href="{% url 'ledger:journal_detail' d.journal_entry_id %}">{{ d.journal_entry.number }}</a>{% if d.status == d.Status.VOID %} · {{ d.get_status_display }}{% endif %}</div></td>
-    <td>{{ d.supplier_name }}{% if d.bill %}<div class="small"><a href="{% url 'invoicing:detail' d.bill.kind d.bill_id %}">{{ d.bill.number }}</a></div>{% endif %}</td>
+  <tbody>{% for d in declarations %}<tr class="{% if d.status == d.Status.VOID %}text-muted{% endif %}">
+    <td>{{ d.number }}<div class="text-sm text-muted">{{ d.date|date:"d/m/Y" }} · <a href="{% url 'ledger:journal_detail' d.journal_entry_id %}">{{ d.journal_entry.number }}</a>{% if d.status == d.Status.VOID %} · {{ d.get_status_display }}{% endif %}</div></td>
+    <td>{{ d.supplier_name }}{% if d.bill %}<div class="text-sm"><a href="{% url 'invoicing:detail' d.bill.kind d.bill_id %}">{{ d.bill.number }}</a></div>{% endif %}</td>
     <td class="num">{{ d.customs_value|rupiah }}</td><td class="num">{{ d.vat|rupiah }}</td><td class="num">{{ d.pph22|rupiah }}</td><td class="num">{{ d.import_duty|rupiah }}</td>
     <td class="text-end">{% if can_write and d.status == d.Status.POSTED %}<form method="post" action="{% url 'taxes:import_cancel' d.pk %}" data-confirm="{% translate 'Cancel this PIB?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0">{% translate "cancel" %}</button></form>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No imports recorded this year." %}</td></tr>{% endfor %}</tbody>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No imports recorded this year." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if can_write %}
-<form method="post" class="card mw-xl"><div class="card-body">{% csrf_token %}
-  <h2 class="h6">{% translate "Record a PIB" %}</h2>
+<form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}
+  <h2 class="text-base font-medium leading-tight">{% translate "Record a PIB" %}</h2>
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
-  {% include "partials/form_fields.html" with col="col-md-4" %}
+  {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
 </div><div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save & post" %}</button></div></form>
 {% endif %}
-<p class="small text-secondary mt-2">{% translate "The taxes paid at customs on imported goods: the PPN impor is input PPN of the PIB's month (for a PKP; a cost otherwise), the PPh 22 impor a prepaid income tax, the import duty and PPnBM part of the cost. Record the goods themselves as the foreign supplier's bill, without PPN. PIBs are reported in the SPT Masa PPN as Dokumen Lain Masukan (Reports → PPN)." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "The taxes paid at customs on imported goods: the PPN impor is input PPN of the PIB's month (for a PKP; a cost otherwise), the PPh 22 impor a prepaid income tax, the import duty and PPnBM part of the cost. Record the goods themselves as the foreign supplier's bill, without PPN. PIBs are reported in the SPT Masa PPN as Dokumen Lain Masukan (Reports → PPN)." %}</p>
 {% endblock %}

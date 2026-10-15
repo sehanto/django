@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Fixed assets" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% translate "Fixed asset register" %}</h1>
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Fixed asset register" %}</h1>
   {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {% translate "New fixed asset" %}</a>{% endif %}
 </div>
 {% if due_months %}
-<div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} d-flex flex-wrap justify-content-between align-items-center gap-2">
+<div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} flex flex-wrap justify-between items-center gap-2">
   <div>
     {% blocktranslate trimmed count months=due_months with amount=due_amount|rupiah %}
       Depreciation of {{ amount }} for {{ months }} month is not posted yet.
@@ -19,35 +19,35 @@
   {% if can_write and not locked_due %}<form method="post" action="{% url 'assets:post_depreciation' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">{% translate "Post depreciation" %}</button></form>{% endif %}
 </div>
 {% endif %}
-<div class="card mb-3"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Name" %}</th><th>{% translate "Account" %}</th><th>{% translate "Acquired" %}</th><th class="num">{% translate "Cost" %}</th><th class="num">{% translate "Accumulated depreciation" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}{% with asset=row.asset %}
-    <tr class="{% if asset.status == asset.Status.DISPOSED %}text-secondary{% endif %}">
+    <tr class="{% if asset.status == asset.Status.DISPOSED %}text-muted{% endif %}">
       <td><a href="{% url 'assets:detail' asset.pk %}">{{ asset.number }}</a></td>
       <td>{{ asset.name }}</td>
-      <td class="small">{{ asset.asset_account }}</td>
+      <td class="text-sm">{{ asset.asset_account }}</td>
       <td>{{ asset.acquisition_date|date:"d/m/Y" }}</td>
       <td class="num">{{ asset.cost|rupiah }}</td>
-      <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span class="small">{% translate "not depreciated" %}</span>{% endif %}</td>
+      <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span class="text-sm">{% translate "not depreciated" %}</span>{% endif %}</td>
       <td class="num">{{ row.book_value|rupiah }}</td>
-      <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge text-bg-secondary">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge text-bg-success">{{ asset.get_status_display }}</span>{% endif %}</td>
+      <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-secondary">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
     </tr>
   {% endwith %}{% empty %}
-    <tr><td colspan="8" class="text-center text-secondary py-4">{% translate "No fixed assets yet. Register equipment, vehicles, buildings and land you bought so their depreciation is posted every month." %}</td></tr>
+    <tr><td colspan="8" class="text-center text-muted py-6">{% translate "No fixed assets yet. Register equipment, vehicles, buildings and land you bought so their depreciation is posted every month." %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if rows %}<tfoot><tr class="fw-semibold"><td colspan="4">{% translate "Total in use" %}</td><td class="num">{{ total_cost|rupiah }}</td><td class="num">{{ total_accumulated|rupiah }}</td><td class="num">{{ total_book_value|rupiah }}</td><td></td></tr></tfoot>{% endif %}
+  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4">{% translate "Total in use" %}</td><td class="num">{{ total_cost|rupiah }}</td><td class="num">{{ total_accumulated|rupiah }}</td><td class="num">{{ total_book_value|rupiah }}</td><td></td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
-<h2 class="h6">{% translate "Register and ledger" %}</h2>
-<div class="card mw-lg"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+<h2 class="text-base font-medium leading-tight">{% translate "Register and ledger" %}</h2>
+<div class="card max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "In the register" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.register|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>
-      <td class="num {% if r.difference %}text-danger fw-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
+      <td class="num {% if r.difference %}text-danger font-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
-<p class="small text-secondary mt-2">{% translate "Registering an asset doesn't post its purchase: record that with a purchase bill or a journal entry. A difference means an asset in the books that isn't in the register, or the other way round." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "Registering an asset doesn't post its purchase: record that with a purchase bill or a journal entry. A difference means an asset in the books that isn't in the register, or the other way round." %}</p>
 {% endif %}
 {% endblock %}

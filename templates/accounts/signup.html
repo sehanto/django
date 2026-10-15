@@ -1,12 +1,12 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Sign up" %}{% endblock %}
 {% block auth_content %}
-<h2 class="h5 mb-3">{% translate "Sign up and create your business" %}</h2>
+<h2 class="text-lg font-medium leading-tight mb-4">{% translate "Sign up and create your business" %}</h2>
 <form method="post">{% csrf_token %}
-  {% include "partials/form_fields.html" with col="col-12" %}
+  {% include "partials/form_fields.html" with col="col-span-12" %}
   {% include "accounts/_captcha.html" %}
-  <button class="btn btn-primary w-100 mt-4">{% translate "Sign up" %}</button>
+  <button class="btn btn-primary w-full mt-6">{% translate "Sign up" %}</button>
 </form>
-<p class="text-center small mt-3 mb-0">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a></p>
+<p class="text-center text-sm mt-4 mb-0">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a></p>
 {% endblock %}
 {% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}

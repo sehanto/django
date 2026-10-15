@@ -39,7 +39,7 @@
         const ok = Math.abs(debit - credit) < 0.005 && debit > 0;
         // Labels come from the template so they follow the interface language.
         balance.textContent = ok ? root.dataset.labelBalanced : root.dataset.labelDifference + " " + fmt(Math.abs(debit - credit));
-        balance.className = "badge " + (ok ? "text-bg-success" : "text-bg-warning");
+        balance.className = "badge " + (ok ? "badge-success" : "badge-warning");
       }
     };
 
@@ -71,7 +71,7 @@
       if (!btn) return;
       const row = btn.closest("tr");
       const del = row.querySelector('input[name$="-DELETE"]');
-      if (del) { del.checked = true; row.classList.add("d-none"); }
+      if (del) { del.checked = true; row.classList.add("hidden"); }
       else { row.querySelectorAll("input, select").forEach((el) => { if (el.type !== "hidden") el.value = ""; }); }
       recalc();
     });

@@ -1,34 +1,34 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{{ labels.plural }}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4 mb-0">{{ labels.plural }}</h1>
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{{ labels.plural }}</h1>
   {% if can_write %}<a href="{% url 'invoicing:create' kind %}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ labels.create }}</a>{% endif %}
 </div>
-<div class="row g-3 mb-3">
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary"><i class="bi bi-exclamation-triangle text-danger me-1" aria-hidden="true"></i>{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
-  <div class="col-md-4 d-flex align-items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline-secondary">{{ labels.aging }} &rarr;</a></div>
+<div class="grid grid-cols-12 gap-4 mb-4">
+  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted"><i class="bi bi-exclamation-triangle text-danger me-1" aria-hidden="true"></i>{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline-secondary">{{ labels.aging }} &rarr;</a></div>
 </div>
-<form class="row g-2 mb-3" method="get">
-  <div class="col-md-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, contact, reference' %}"></div>
-  <div class="col-md-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-md-2"><button class="btn btn-outline-secondary w-100">{% translate "Filter" %}</button></div>
+<form class="grid grid-cols-12 gap-2 mb-4" method="get">
+  <div class="col-span-12 md:col-span-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, contact, reference' %}"></div>
+  <div class="col-span-12 md:col-span-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline-secondary w-full">{% translate "Filter" %}</button></div>
 </form>
-<div class="card"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{{ labels.contact }}</th><th>{% translate "Due date" %}</th><th class="num">{% translate "Total" %}</th><th class="num">{% translate "Balance due" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for inv in object_list %}
     <tr>
       <td><a href="{% url 'invoicing:detail' kind inv.pk %}">{{ inv.display_number }}</a></td>
-      <td class="text-nowrap">{{ inv.date|date:"d M Y" }}</td>
+      <td class="whitespace-nowrap">{{ inv.date|date:"d M Y" }}</td>
       <td>{{ inv.party_name }}</td>
-      <td class="text-nowrap {% if inv.is_overdue %}text-danger fw-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
+      <td class="whitespace-nowrap {% if inv.is_overdue %}text-danger font-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
       <td class="num">{{ inv.total|rupiah }}</td>
       <td class="num">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
-      <td><span class="badge text-bg-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span></td>
+      <td><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span></td>
     </tr>
-  {% empty %}<tr><td colspan="7" class="text-center text-secondary py-4">{% translate "No documents yet." %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No documents yet." %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

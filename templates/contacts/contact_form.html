@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load audit i18n %}
 {% block title %}{% translate "Contact" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% if object %}{% blocktranslate trimmed with name=object.name %}Edit {{ name }}{% endblocktranslate %}{% else %}{% translate "New contact" %}{% endif %}</h1>
+<h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% blocktranslate trimmed with name=object.name %}Edit {{ name }}{% endblocktranslate %}{% else %}{% translate "New contact" %}{% endif %}</h1>
 {% history_link object %}
-<form method="post" class="card mw-lg"><div class="card-body">{% csrf_token %}
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
-<div class="card-footer d-flex gap-2 justify-content-end">
+<div class="card-footer flex gap-2 justify-end">
   <a href="{% url 'contacts:list' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
 </div></form>
 {% endblock %}

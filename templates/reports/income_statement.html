@@ -1,14 +1,14 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Income statement" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-1">{% translate "Income statement" %}</h1>
-<p class="text-secondary">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.date_from|date:"d M Y" end=report.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
+<h1 class="text-xl font-medium leading-tight mb-1">{% translate "Income statement" %}</h1>
+<p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.date_from|date:"d M Y" end=report.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>
 {% include "reports/_filter.html" with csv=True %}
 {% if report %}
 {% with compare=report.has_comparative %}
 {% blocktranslate trimmed with start=report.date_from|date:"d/m/Y" end=report.date_to|date:"d/m/Y" asvar current %}{{ start }} to {{ end }}{% endblocktranslate %}
 {% blocktranslate trimmed with start=report.previous_from|date:"d/m/Y" end=report.previous_to|date:"d/m/Y" asvar previous %}{{ start }} to {{ end }}{% endblocktranslate %}
-<div class="card mw-xl"><div class="table-responsive"><table class="table table-sm table-statement mb-0">
+<div class="card max-w-5xl"><div class="overflow-x-auto"><table class="table table-sm table-statement mb-0">
   {% include "reports/_columns.html" %}
   {% include "reports/_section.html" with section=report.revenue %}
   {% include "reports/_section.html" with section=report.cost_of_sales %}
@@ -23,6 +23,6 @@
   {% translate "NET PROFIT (LOSS)" as label %}{% include "reports/_total.html" with current=report.net_profit previous=report.previous_net_profit negative_red=True %}
 </table></div></div>
 {% endwith %}
-<p class="small text-secondary mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
+<p class="text-sm text-muted mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
 {% endif %}
 {% endblock %}

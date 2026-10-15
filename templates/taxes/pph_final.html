@@ -1,9 +1,9 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{% translate "MSME PPh Final" %}{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h4 mb-0">{% blocktranslate trimmed %}MSME PPh Final {{ year }}{% endblocktranslate %}</h1>
-  <form method="get" class="d-flex gap-2"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+  <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}MSME PPh Final {{ year }}{% endblocktranslate %}</h1>
+  <form method="get" class="flex gap-2"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">
     {% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 {% if not current_organization.uses_pph_final %}{% url 'tenants:settings' as settings_url %}
@@ -14,12 +14,12 @@
     Gross turnover this year exceeds {{ limit }}. The MSME PPh Final scheme no longer applies from the next tax year, and the business must register as a PKP.
   {% endblocktranslate %}</div>
 {% endif %}
-<div class="row g-3 mb-3">
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Taxpayer type" %}</div><div class="stat-value fs-6 pt-2">{% if current_organization.is_individual_taxpayer %}{% translate "Individual: exempt up to Rp500 million/year" %}{% else %}{% blocktranslate trimmed with form=current_organization.get_legal_form_display %}Entity: {{ form }}{% endblocktranslate %}{% endif %}</div></div></div></div>
+<div class="grid grid-cols-12 gap-4 mb-4">
+  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Taxpayer type" %}</div><div class="stat-value text-base pt-2">{% if current_organization.is_individual_taxpayer %}{% translate "Individual: exempt up to Rp500 million/year" %}{% else %}{% blocktranslate trimmed with form=current_organization.get_legal_form_display %}Entity: {{ form }}{% endblocktranslate %}{% endif %}</div></div></div></div>
 </div>
-<div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Gross turnover" %}</th><th class="num">{% translate "Exempt" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "PPh Final" %}</th>{% if any_withheld %}<th class="num">{% translate "Withheld by buyers" %}</th>{% endif %}<th>{% translate "Expense" %}</th><th>{% translate "Tax payment" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}{% with m=row.period accrual=row.accrual payment=row.payment %}
@@ -28,44 +28,44 @@
       <td class="num">{{ m.gross_turnover|rupiah }}</td>
       <td class="num">{{ m.exempt_turnover|rupiah }}</td>
       <td class="num">{{ m.taxable_turnover|rupiah }}</td>
-      <td class="num fw-semibold">{{ m.tax|rupiah }}</td>
+      <td class="num font-semibold">{{ m.tax|rupiah }}</td>
       {% if any_withheld %}<td class="num">{{ row.withheld|rupiah }}</td>{% endif %}
       <td>
         {% if accrual %}
-          <span class="badge text-bg-success">{% translate "Recorded" %}</span>
-          <a href="{% url 'ledger:journal_detail' accrual.journal_entry_id %}" class="small ms-1">{{ accrual.journal_entry.number }}</a>
-          {% if row.accrual_outdated %}<div class="small text-danger">{% blocktranslate trimmed with amount=accrual.tax_amount|rupiah %}Recorded as {{ amount }}; the month's turnover has changed since.{% endblocktranslate %}</div>{% endif %}
-          {% if can_write and not payment %}<form method="post" action="{% url 'taxes:pph_final_accrual_cancel' accrual.pk %}" class="d-inline" data-confirm="{% translate 'Cancel this expense?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
-        {% elif payment %}<span class="small text-secondary">{% translate "Expensed when paid" %}</span>
+          <span class="badge badge-success">{% translate "Recorded" %}</span>
+          <a href="{% url 'ledger:journal_detail' accrual.journal_entry_id %}" class="text-sm ms-1">{{ accrual.journal_entry.number }}</a>
+          {% if row.accrual_outdated %}<div class="text-sm text-danger">{% blocktranslate trimmed with amount=accrual.tax_amount|rupiah %}Recorded as {{ amount }}; the month's turnover has changed since.{% endblocktranslate %}</div>{% endif %}
+          {% if can_write and not payment %}<form method="post" action="{% url 'taxes:pph_final_accrual_cancel' accrual.pk %}" class="inline" data-confirm="{% translate 'Cancel this expense?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
+        {% elif payment %}<span class="text-sm text-muted">{% translate "Expensed when paid" %}</span>
         {% elif m.tax and row.has_ended and can_write and current_organization.uses_pph_final %}
-          <form method="post" action="{% url 'taxes:pph_final_accrue' %}" class="d-inline">{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ m.month }}">
+          <form method="post" action="{% url 'taxes:pph_final_accrue' %}" class="inline">{% csrf_token %}<input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ m.month }}">
             <button class="btn btn-sm btn-outline-primary">{% translate "Record expense" %}</button></form>
-        {% elif m.tax and row.has_ended %}<span class="badge text-bg-warning">{% translate "Not recorded yet" %}</span>{% endif %}
+        {% elif m.tax and row.has_ended %}<span class="badge badge-warning">{% translate "Not recorded yet" %}</span>{% endif %}
       </td>
       <td>
         {% if payment %}
-          <span class="badge text-bg-success">{% blocktranslate trimmed with date=payment.paid_on|date:"d/m/Y" %}Paid {{ date }}{% endblocktranslate %}</span>
-          <a href="{% url 'ledger:journal_detail' payment.journal_entry_id %}" class="small ms-1">{{ payment.journal_entry.number }}</a>
-          {% if payment.withheld %}<div class="small text-secondary">{% blocktranslate trimmed with deposited=payment.deposited|rupiah withheld=payment.withheld|rupiah %}Deposited {{ deposited }}; buyers withheld {{ withheld }}.{% endblocktranslate %}</div>{% endif %}
-          {% if payment.ntpn %}<div class="small text-secondary">NTPN {{ payment.ntpn }}</div>{% endif %}
-          {% if can_write %}<form method="post" action="{% url 'taxes:pph_final_cancel' payment.pk %}" class="d-inline" data-confirm="{% translate 'Cancel this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
-        {% elif row.covered_by_withholding %}<span class="badge text-bg-success">{% translate "Covered by buyers' withholding" %}</span>
+          <span class="badge badge-success">{% blocktranslate trimmed with date=payment.paid_on|date:"d/m/Y" %}Paid {{ date }}{% endblocktranslate %}</span>
+          <a href="{% url 'ledger:journal_detail' payment.journal_entry_id %}" class="text-sm ms-1">{{ payment.journal_entry.number }}</a>
+          {% if payment.withheld %}<div class="text-sm text-muted">{% blocktranslate trimmed with deposited=payment.deposited|rupiah withheld=payment.withheld|rupiah %}Deposited {{ deposited }}; buyers withheld {{ withheld }}.{% endblocktranslate %}</div>{% endif %}
+          {% if payment.ntpn %}<div class="text-sm text-muted">NTPN {{ payment.ntpn }}</div>{% endif %}
+          {% if can_write %}<form method="post" action="{% url 'taxes:pph_final_cancel' payment.pk %}" class="inline" data-confirm="{% translate 'Cancel this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
+        {% elif row.covered_by_withholding %}<span class="badge badge-success">{% translate "Covered by buyers' withholding" %}</span>
         {% elif m.tax and row.has_ended and can_write and current_organization.uses_pph_final %}
-          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#payModal" data-fill-month="{{ m.month }}">{% translate "Record tax payment" %}</button>
-        {% elif m.tax and row.has_ended %}<span class="badge text-bg-warning">{% translate "Not paid yet" %}</span>{% endif %}
+          <button class="btn btn-sm btn-outline-primary" type="button" data-dialog-open="payModal" data-fill-month="{{ m.month }}">{% translate "Record tax payment" %}</button>
+        {% elif m.tax and row.has_ended %}<span class="badge badge-warning">{% translate "Not paid yet" %}</span>{% endif %}
       </td>
     </tr>
   {% endwith %}{% endfor %}
   </tbody>
 </table></div></div>
-<p class="small text-secondary mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month. Gross turnover is calculated from posted operating revenue accounts." %}
+<p class="text-sm text-muted mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month. Gross turnover is calculated from posted operating revenue accounts." %}
   {% translate "Under SAK EMKM's accrual basis, each month's PPh Final is an expense of that month: record it after the month ends (it is posted on the last day of the month as a liability), and the payment settles the liability. Recording a payment also records a missing expense." %}
   {% translate "PPh Final that buyers withheld from your receipts (with your Surat Keterangan PP 55) is deposited by them: it counts towards the month of the receipt, and you deposit only the rest." %}</p>
 
-<div class="modal fade" id="payModal" tabindex="-1"><div class="modal-dialog"><form method="post" action="{% url 'taxes:pph_final_pay' %}" class="modal-content">{% csrf_token %}
+<dialog class="modal" id="payModal" aria-labelledby="payModalTitle"><form method="post" action="{% url 'taxes:pph_final_pay' %}">{% csrf_token %}
   <input type="hidden" name="year" value="{{ year }}">
-  <div class="modal-header"><h5 class="modal-title">{% translate "Record PPh Final payment" %}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% translate 'Close' %}"></button></div>
-  <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-12" %}</div>
+  <div class="modal-header"><h2 class="modal-title" id="payModalTitle">{% translate "Record PPh Final payment" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-span-12" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
-</form></div></div>
+</form></dialog>
 {% endblock %}

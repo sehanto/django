@@ -1,35 +1,35 @@
 {% extends "base.html" %}{% load static i18n %}
 {% block title %}{{ labels.title }}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% if invoice %}{{ labels.edit }}{% else %}{{ labels.new }}{% endif %}</h1>
+<h1 class="text-xl font-medium leading-tight mb-4">{% if invoice %}{{ labels.edit }}{% else %}{{ labels.new }}{% endif %}</h1>
 <form method="post" data-formset="form">{% csrf_token %}
-  <div class="card mb-3"><div class="card-body">
+  <div class="card mb-4"><div class="card-body">
     {% if form.facility_fields %}
       {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
-      {% include "partials/form_fields.html" with fields=form.main_fields col="col-md-4" %}
-      <details class="mt-3"{% if form.shows_facility %} open{% endif %}><summary class="small">{{ form.tax_section_label }}</summary>
-        <div class="mt-2">{% include "partials/form_fields.html" with fields=form.facility_fields col="col-md-6" %}</div>
+      {% include "partials/form_fields.html" with fields=form.main_fields col="col-span-12 md:col-span-4" %}
+      <details class="mt-4"{% if form.shows_facility %} open{% endif %}><summary class="text-sm">{{ form.tax_section_label }}</summary>
+        <div class="mt-2">{% include "partials/form_fields.html" with fields=form.facility_fields col="col-span-12 md:col-span-6" %}</div>
       </details>
-    {% else %}{% include "partials/form_fields.html" with col="col-md-4" %}{% endif %}
+    {% else %}{% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}{% endif %}
   </div></div>
   {{ formset.management_form }}
   {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{% for e in formset.non_form_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
-  <div class="card"><div class="table-responsive">
+  <div class="card"><div class="overflow-x-auto">
     <table class="table formset-table mb-0">
-      <thead><tr><th>{% translate "Item" %}</th><th class="min-w-12">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="col-qty">{% translate "Qty" %}</th><th class="col-price">{% translate "Price" %}</th><th class="col-percent">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
+      <thead><tr><th>{% translate "Item" %}</th><th class="min-w-48">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="w-[5.75rem]">{% translate "Qty" %}</th><th class="w-36">{% translate "Price" %}</th><th class="w-20">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
       <tfoot><tr>
         <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add><i class="bi bi-plus" aria-hidden="true"></i> {% translate "Add line" %}</button></td>
-        <td class="text-end fw-semibold">{% translate "Subtotal" %}</td><td class="num fw-semibold" data-subtotal></td><td></td>
+        <td class="text-end font-semibold">{% translate "Subtotal" %}</td><td class="num font-semibold" data-subtotal></td><td></td>
       </tr></tfoot>
     </table>
     <template data-formset-empty>{% include "invoicing/_line_row.html" with f=formset.empty_form %}</template>
   </div>
-  <div class="card-footer d-flex flex-wrap gap-2 justify-content-between align-items-center">
-    <span class="small text-secondary">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
-    <div class="d-flex gap-2">
+  <div class="card-footer flex flex-wrap gap-2 justify-between items-center">
+    <span class="text-sm text-muted">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
+    <div class="flex gap-2">
       <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
       <button name="draft" class="btn btn-outline-primary">{% translate "Save draft" %}</button>
       <button name="issue" class="btn btn-primary">{% translate "Save & issue" %}</button>

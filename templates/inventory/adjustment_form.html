@@ -1,12 +1,12 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Stock adjustment" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% translate "Stock adjustment" %}</h1>
-<form method="post" class="card mw-lg"><div class="card-body">{% csrf_token %}
+<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Stock adjustment" %}</h1>
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
-  <p class="small text-secondary mt-3 mb-0">{% translate "Use this for opening stock and for differences found when counting stock. Purchases and sales update the stock by themselves." %}</p>
+  <p class="text-sm text-muted mt-4 mb-0">{% translate "Use this for opening stock and for differences found when counting stock. Purchases and sales update the stock by themselves." %}</p>
 </div>
-<div class="card-footer d-flex gap-2 justify-content-end">
+<div class="card-footer flex gap-2 justify-end">
   <a href="{% url 'inventory:list' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Post adjustment" %}</button>
 </div></form>
 {% endblock %}

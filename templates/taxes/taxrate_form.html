@@ -1,11 +1,11 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "PPN rates" %}{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">{% if object %}{% translate "Edit rate" %}{% else %}{% translate "New rate" %}{% endif %}</h1>
-<form method="post" class="card mw-md"><div class="card-body">{% csrf_token %}
+<h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% translate "Edit rate" %}{% else %}{% translate "New rate" %}{% endif %}</h1>
+<form method="post" class="card max-w-3xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
-<div class="card-footer d-flex gap-2 justify-content-end">
+<div class="card-footer flex gap-2 justify-end">
   <a href="{% url 'taxes:rates' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
 </div></form>
 {% endblock %}

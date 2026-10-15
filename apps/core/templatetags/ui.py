@@ -20,7 +20,7 @@ def add_class(field, css):
     return field.as_widget(attrs={"class": f"{existing} {css}".strip()})
 
 
-# Bootstrap colour per status. Members of different enums that share a value
+# Badge colour per status (badge-<colour> in frontend/app.css). Members of different enums that share a value
 # (e.g. "paid", "void") are equal as dict keys, so they must share a colour.
 STATUS_BADGES = {
     JournalEntry.Status.DRAFT: "secondary",
