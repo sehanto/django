@@ -33,6 +33,7 @@ from apps.ledger.services import JournalLineInput, create_journal_entry
 from apps.taxes.models import TaxRate
 from apps.tenants.roles import Permission
 
+from . import idempotency
 from .services import authenticate
 
 MAX_PAGE = 100
@@ -77,16 +78,22 @@ def endpoint(*methods: str):
                     return _error("Too many requests. Try again later.", 429)
                 request.organization, request.api_user = key.organization, key.user
                 set_actor(key.user, f"{key.user.email} (API key {key.prefix}…)")  # reset by AuditActorMiddleware
-                try:
-                    return view(request, *args, **kwargs)
-                except ApiError as exc:
-                    return _error(exc.message, exc.status)
-                except DomainError as exc:
-                    return _error(str(exc.message), 400)
+                if request.method == "GET":
+                    return _run(view, request, *args, **kwargs)
+                return idempotency.write(request, key, lambda: _run(view, request, *args, **kwargs))
 
         return wrapper
 
     return decorate
+
+
+def _run(view, request, *args, **kwargs):
+    try:
+        return view(request, *args, **kwargs)
+    except ApiError as exc:
+        return _error(exc.message, exc.status)
+    except DomainError as exc:
+        return _error(str(exc.message), 400)
 
 
 # --- Input helpers --------------------------------------------------------------------------

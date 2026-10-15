@@ -600,6 +600,10 @@ msgstr ""
 "paling lambat tanggal 15 bulan setelah tanggalnya: faktur yang terlambat dikenai denda 1%% dari "
 "DPP-nya (UU KUP Pasal 14 ayat (4)). Catat nomor dari Coretax pada fakturnya."
 
+#: apps/core/submissions.py
+msgid "This form was already sent and is still being processed. Check the result before sending it again."
+msgstr "Formulir ini sudah dikirim dan masih diproses. Periksa hasilnya sebelum mengirim lagi."
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."

@@ -31,3 +31,21 @@ class ApiKey(TimeStampedModel):
     @property
     def is_active(self) -> bool:
         return self.revoked_at is None
+
+
+class IdempotentRequest(models.Model):
+    """A successful API write, kept for ``idempotency.WINDOW`` under the client's ``Idempotency-Key``:
+    a retry of the same request gets this response again instead of creating the document twice.
+
+    Only successes are kept (a failed request changed nothing and may be retried). The row is
+    inserted in the request's transaction before the work, so a concurrent retry waits for it."""
+
+    api_key = models.ForeignKey(ApiKey, on_delete=models.CASCADE, related_name="idempotent_requests")
+    key = models.CharField(max_length=100)
+    fingerprint = models.CharField(max_length=64)  # SHA-256 of method, path and body
+    status = models.PositiveSmallIntegerField(default=0)
+    body = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["api_key", "key"], name="unique_idempotency_key_per_api_key")]

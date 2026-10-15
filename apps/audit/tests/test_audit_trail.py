@@ -37,6 +37,7 @@ D = Decimal
 UNTRACKED = {
     "core_documentsequence": "a counter; guarded instead, and every number is in its document's row",
     "tenants_plan": "the platform's price list, not tenant data",
+    "api_idempotentrequest": "API responses kept 24 hours to answer retries; the documents they created are tracked",
 }
 
 

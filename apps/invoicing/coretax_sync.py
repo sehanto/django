@@ -109,7 +109,10 @@ def submit_withholdings(*, organization, year: int, month: int, document_type: s
     return refresh_submission(submission)
 
 
+@transaction.atomic
 def apply_result(submission: CoretaxSubmission, result: Result) -> CoretaxSubmission:
+    """The outcome and the numbers it brings, together: a submission is never marked done with only
+    some of its numbers recorded (each number is recorded once, so applying it again is harmless)."""
     submission.status = result.status
     submission.results = [{"reference": i.reference, "number": i.number, "error": i.error} for i in result.items]
     submission.save(update_fields=["status", "results", "updated_at"])

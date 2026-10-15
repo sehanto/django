@@ -179,6 +179,13 @@ Key design decisions:
 - **Reopening a locked period** (moving the lock date back or removing it) is for the owner
   only, and records "Locked period reopened" in the audit log; moving it forward is open to
   owners and admins.
+- **Each write once.** Services are atomic and row-locked (`select_for_update`), and what may happen
+  once is a database rule (one posted payroll run or depreciation entry per month, a Faktur Pajak
+  number set once, a payment's journal entry reversed once), so the nightly jobs can run again
+  without posting twice. A form sent twice (a double click, a resend after a slow answer) is
+  processed once: `apps/core/submissions.py` recognises the same rendered form (its masked CSRF
+  token and fields) for 60 seconds and sends the duplicate where the first went, and the page
+  ignores a second submit while the first is on its way. The API has the `Idempotency-Key`.
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -537,6 +544,18 @@ limited to `API_REQUESTS_PER_HOUR` (default 1000) per key, and failed authentica
 
 Lists take `?limit=` (max 100) and `?offset=`. Writes go through the same services as the web
 pages, so every business rule and database guard applies.
+
+Every write is all or nothing: the request runs in one transaction that an error response rolls
+back, so a failed request leaves nothing behind (no draft when issuing the invoice fails) and can
+simply be sent again. To retry safely after a timeout, send an `Idempotency-Key` header (1-100 of
+`A-Z a-z 0-9 _ . : -`, e.g. a UUID) with each POST: the first successful response is kept for 24
+hours, and the same request with the same key gets it back (`Idempotent-Replayed: true`) without
+recording anything again; the key with a different request is a 422 (`apps/api/idempotency.py`).
+
+```bash
+curl -X POST -H "Authorization: Bearer $EA_SYSTEM_KEY" -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" -d @payment.json https://app.example.com/api/v1/invoices/42/payments/
+```
 
 ```bash
 curl -H "Authorization: Bearer $EA_SYSTEM_KEY" https://app.example.com/api/v1/invoices/?status=issued

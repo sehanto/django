@@ -68,6 +68,7 @@ MIDDLEWARE = [
     "apps.tenants.middleware.CurrentOrganizationMiddleware",
     "apps.accounts.middleware.EmailVerificationMiddleware",
     "apps.tenants.middleware.TwoFactorRequirementMiddleware",
+    "apps.core.submissions.DuplicateSubmissionMiddleware",  # a form sent twice is processed once
     # Must be last: turns a locked-out login into the lockout response.
     "axes.middleware.AxesMiddleware",
 ]

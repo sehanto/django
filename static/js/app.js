@@ -121,4 +121,22 @@
     const percent = Number(bar.dataset.height);
     if (Number.isFinite(percent)) bar.style.height = `${Math.min(Math.max(percent, 0), 100)}%`;
   });
+
+  // --- A form is posted once: a second submit while the first is on its way is ignored (the server
+  // drops duplicates too, apps/core/submissions.py). Registered last, so a form that asks to confirm
+  // first (data-confirm) is marked only when it is really sent. A download leaves the page as it
+  // was, so after a few seconds, or on returning to the page, the form can be sent again.
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (event.defaultPrevented || form.method.toLowerCase() !== "post") return;
+    if (form.dataset.submitting) {
+      event.preventDefault();
+      return;
+    }
+    form.dataset.submitting = "yes";
+    setTimeout(() => { delete form.dataset.submitting; }, 5000);
+  });
+  window.addEventListener("pageshow", () => {
+    document.querySelectorAll("form[data-submitting]").forEach((form) => { delete form.dataset.submitting; });
+  });
 })();
