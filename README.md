@@ -164,6 +164,21 @@ Key design decisions:
   are reported. `--expect-head SEQ:HASH` compares against a head recorded earlier; the
   books export README includes it, which catches a fully rewritten chain.
   Every other change is in the [change history](#change-history-audit-trail).
+- **Signed checkpoints outside the database.** The chains are computed in the database, so
+  whoever can rewrite it can also recompute them. With `CHAIN_CHECKPOINT_FILE` set,
+  `verify_ledger` and `verify_audit_trail` append every organization's chain head to that
+  file after each clean run (one JSON line each, `apps/audit/checkpoints.py`), and first
+  check that the entry each organization's last checkpoint names still has its hash: a
+  chain rewritten and recomputed since then fails. Each line is signed with an HMAC under
+  `FIELD_ENCRYPTION_KEYS` (which the database never holds) over its content and the previous
+  line's signature, so a line can't be forged, edited, reordered or removed from the middle
+  unnoticed. Keep the file off the database server, best on append-only storage (e.g. a
+  `chattr +a` file or an object store with retention), and back it up with the keys. Lines
+  stay verifiable while their key is in `FIELD_ENCRYPTION_KEYS`: before removing an old key,
+  archive the file and let the next run start a new one.
+- **Reopening a locked period** (moving the lock date back or removing it) is for the owner
+  only, and records "Locked period reopened" in the audit log; moving it forward is open to
+  owners and admins.
 - **Money** is a `Decimal` with 2 decimal places. Tax amounts are truncated to whole
   rupiah, and display is `Rp 1.234.567,50`.
 
@@ -306,7 +321,7 @@ the time, user, organization, IP address, browser and what changed.
 | Category | Actions |
 |---|---|
 | Account security | Sign-in (and failed attempts, including a wrong two-factor code), lockout, password change and reset, email change, 2FA on/off, new backup codes, backup code used, device remembered/forgotten |
-| Organization | Created, settings changed (each field old → new, e.g. the lock date), member added/removed, books exported, organization deleted |
+| Organization | Created, settings changed (each field old → new, e.g. the lock date), locked period reopened, member added/removed, books exported, organization deleted |
 | Subscription | Plan changed, payment confirmed manually in the admin |
 | System | Encryption keys rotated |
 
@@ -1002,8 +1017,8 @@ If a customer pays by plain bank transfer, staff can confirm it in the Django ad
 | `process_billing` | Daily 01:15 | Close expired payment links, send renewal reminders, downgrade lapsed plans |
 | `post_depreciation` | Daily 02:00 | Post the fixed asset depreciation of months that have ended (each month once, missed months caught up; organizations with a locked month are skipped and reported) |
 | `post_deferrals` | Daily 02:05 | Recognise the months of prepaid expenses and revenue received in advance that have ended (same rules as depreciation) |
-| `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain; failures are mailed (`MAILTO`) |
-| `verify_audit_trail` | Daily 04:10 | Recompute the hash chain of the change history; failures are mailed (`MAILTO`) |
+| `verify_ledger` | Daily 04:00 | Recompute the ledger hash chain and compare it with the last signed checkpoint, then append a new one (`CHAIN_CHECKPOINT_FILE`); failures are mailed (`MAILTO`) |
+| `verify_audit_trail` | Daily 04:10 | The same for the hash chain of the change history |
 | `prune_security_logs` | Daily 03:30 | Delete sign-in/security records after 90 days; blank IP/browser on organization/subscription/system events after 90 days and delete them after 10 years (see [Audit log](#audit-log); needs `DATABASE_OWNER_URL`) |
 
 The jobs are defined in `deploy/cron/crontab`. Install them into the current user's

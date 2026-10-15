@@ -552,6 +552,14 @@ msgstr "Terlambat: jatuh tempo %(date)s"
 msgid "Due %(date)s"
 msgstr "Jatuh tempo %(date)s"
 
+#: apps/audit/domain.py
+msgid "Locked period reopened"
+msgstr "Periode terkunci dibuka kembali"
+
+#: apps/tenants/forms.py
+msgid "Only the owner can move the lock date back or remove it."
+msgstr "Hanya pemilik yang dapat memundurkan atau menghapus tanggal kunci."
+
 #: apps/assets/models.py
 msgid "When the asset was acquired and ready for use: depreciation starts in this month."
 msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."

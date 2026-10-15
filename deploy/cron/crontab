@@ -16,10 +16,11 @@
 # Daily: recognise the months of prepaid expenses and revenue received in advance that have ended.
 5 2 * * * @PROJECT_DIR@/deploy/cron/run.sh post_deferrals
 
-# Daily: recompute the hash chain of posted journal entries; a failure is mailed (MAILTO).
+# Daily: recompute the hash chain of posted journal entries and check it against the last signed
+# checkpoint (CHAIN_CHECKPOINT_FILE), then append a new one; a failure is mailed (MAILTO).
 0 4 * * * @PROJECT_DIR@/deploy/cron/run.sh verify_ledger
 
-# Daily: recompute the hash chain of the audit trail (every recorded change); a failure is mailed.
+# Daily: the same for the audit trail (every recorded change); a failure is mailed.
 10 4 * * * @PROJECT_DIR@/deploy/cron/run.sh verify_audit_trail
 
 # Daily: delete sign-in/security records after SECURITY_LOG_RETENTION_DAYS (90) and

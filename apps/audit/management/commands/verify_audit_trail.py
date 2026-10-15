@@ -2,12 +2,14 @@
 
 Recomputes the hash chain the database writes with each recorded change (audit migration
 0010). Run daily from cron: a success line on stdout, problems on stderr with exit status 1.
+With ``CHAIN_CHECKPOINT_FILE`` set, each organization's trail must still lead to its last
+signed checkpoint, and a run without problems appends the current heads (apps/audit/checkpoints.py).
 """
 
 from django.core.management.base import BaseCommand, CommandError
 
-from apps.audit.models import RecordChange
-from apps.audit.selectors import trail_head, verify_trail
+from apps.audit.checkpoints import Chain, configured_log
+from apps.audit.selectors import trail_head, trail_mismatch, verify_trail
 from apps.tenants.models import Organization
 
 
@@ -37,17 +39,20 @@ class Command(BaseCommand):
             if not organizations.exists():
                 raise CommandError(f"Organization {organization} does not exist.")
 
-        problems, checked, changes = [], 0, 0
+        log = configured_log()
+        checkpoints, log_problems = log.latest(Chain.AUDIT_TRAIL) if log else ({}, [])
+        problems, checked, changes, heads = [str(p) for p in log_problems], 0, 0, {}
         for org in organizations:
             checked += 1
             problems += [f"{org.pk} {org.name}: change #{p.sequence}: {p.problem}" for p in verify_trail(org)]
-            if expect_head:
-                sequence, change_hash = expect_head
-                kept = RecordChange.objects.filter(organization=org, sequence=sequence).values_list("change_hash", flat=True).first()
-                if kept != change_hash:
-                    problems.append(f"{org.pk} {org.name}: change #{sequence} is no longer {change_hash} (the trail was rewritten)")
+            if expect_head and (mismatch := trail_mismatch(org, *expect_head)):
+                problems.append(f"{org.pk} {org.name}: {mismatch}")
+            if (checkpoint := checkpoints.get(org.pk)) and (mismatch := trail_mismatch(org, checkpoint.sequence, checkpoint.hash)):
+                problems.append(f"{org.pk} {org.name}: checkpoint of {checkpoint.recorded_at}: {mismatch}")
             head = trail_head(org)
             changes += head[0] if head else 0
+            if head:
+                heads[org.pk] = head
             if organization:
                 self.stdout.write(f"Trail head of {org.name}: {f'{head[0]}:{head[1]}' if head else 'no changes recorded'}")
 
@@ -55,4 +60,6 @@ class Command(BaseCommand):
             for line in problems:
                 self.stderr.write(line)
             raise CommandError(f"Audit trail verification failed: {len(problems)} problem(s).")
+        if log:
+            log.append(Chain.AUDIT_TRAIL, heads)
         self.stdout.write(f"Audit trail intact: {checked} organization(s), {changes} recorded change(s).")

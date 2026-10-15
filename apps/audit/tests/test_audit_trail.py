@@ -156,7 +156,7 @@ def test_tampering_breaks_the_chain(organization, customer, capsys):
     assert {p.problem for p in verify_trail(organization)} == {"change altered after it was recorded"}
     with pytest.raises(CommandError, match="verification failed"):
         call_command("verify_audit_trail", "--organization", str(organization.pk), "--expect-head", f"{sequence}:{change_hash}")
-    assert "no longer" in capsys.readouterr().err  # the removed last change is caught by the head noted earlier
+    assert "of the recorded head is missing" in capsys.readouterr().err  # the removed last change is caught by the head noted earlier
 
 
 def test_deleting_an_organization_removes_its_trail_only(organization, other_organization, customer):

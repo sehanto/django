@@ -9,7 +9,7 @@ from apps.core.forms import BaseForm, BaseModelForm, DateInput, DigitsField, Org
 from apps.core.validators import EMAIL_MAX_LENGTH, nib_validator
 from apps.regions.forms import RegionFieldsMixin
 
-from .models import BusinessPlace, Organization
+from .models import BusinessPlace, Membership, Organization
 from .roles import Role
 
 
@@ -57,7 +57,18 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
         lock_date = self.cleaned_data["lock_date"]
         if lock_date and lock_date > timezone.localdate():
             raise forms.ValidationError(_("The lock date cannot be in the future."))
+        if reopens_period(self.instance.lock_date, lock_date) and self._acting_role() != Role.OWNER:
+            # Closed books stay closed: reopening them is the owner's decision (and audited).
+            raise forms.ValidationError(_("Only the owner can move the lock date back or remove it."))
         return lock_date
+
+    def _acting_role(self):
+        return Membership.objects.filter(organization=self.instance, user=self.acting_user).values_list("role", flat=True).first()
+
+
+def reopens_period(locked_until, new_lock_date) -> bool:
+    """Moving the lock date back (or removing it) opens a closed period for changes again."""
+    return locked_until is not None and (new_lock_date is None or new_lock_date < locked_until)
 
 
 def policies_in_use(organization) -> dict[str, tuple[bool, str]]:

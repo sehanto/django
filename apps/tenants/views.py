@@ -15,7 +15,7 @@ from apps.core.views import DomainErrorFormMixin, flash_domain_error
 from apps.ledger import services as ledger
 
 from . import services
-from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm
+from .forms import AddMemberForm, BusinessPlaceForm, OrganizationCreateForm, OrganizationSettingsForm, reopens_period
 from .models import BusinessPlace, Invitation
 from .mixins import ManageMixin
 from .selectors import members_of, organizations_for_user, pending_invitations
@@ -45,6 +45,11 @@ class OrganizationSettingsView(ManageMixin, UpdateView):
             audit.record(
                 AuditAction.ORGANIZATION_SETTINGS_CHANGED, request=self.request, organization=self.object,
                 changes={name: [form.initial.get(name), form.cleaned_data[name]] for name in form.changed_data},
+            )
+        if reopens_period(form.initial["lock_date"], form.cleaned_data["lock_date"]):
+            audit.record(
+                AuditAction.PERIOD_REOPENED, request=self.request, organization=self.object,
+                locked_until=form.initial["lock_date"], lock_date=form.cleaned_data["lock_date"],
             )
         # ModelForm already applied the new value to the instance, so use changed_data.
         if "require_two_factor" in form.changed_data and form.cleaned_data["require_two_factor"]:

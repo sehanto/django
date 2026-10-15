@@ -97,3 +97,13 @@ def verify_trail(organization) -> list[TrailProblem]:
 def trail_head(organization) -> tuple[int, str] | None:
     last = RecordChange.objects.filter(organization=organization).order_by("-sequence").values_list("sequence", "change_hash").first()
     return tuple(last) if last else None
+
+
+def trail_mismatch(organization, sequence: int, change_hash: str) -> str | None:
+    """Compare with a head noted earlier: changes removed from the end, or a rewritten trail."""
+    kept = RecordChange.objects.filter(organization=organization, sequence=sequence).values_list("change_hash", flat=True).first()
+    if kept is None:
+        return f"change #{sequence} of the recorded head is missing"
+    if kept != change_hash:
+        return f"change #{sequence} is no longer {change_hash} (the trail was rewritten)"
+    return None

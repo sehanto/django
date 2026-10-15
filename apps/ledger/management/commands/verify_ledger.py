@@ -2,10 +2,13 @@
 
 Recomputes the hash chain written when entries were posted (ledger migration 0006).
 Run daily from cron: silent success line, problems on stderr with exit status 1.
+With ``CHAIN_CHECKPOINT_FILE`` set, each organization's chain must still lead to its last
+signed checkpoint, and a run without problems appends the current heads (apps/audit/checkpoints.py).
 """
 
 from django.core.management.base import BaseCommand, CommandError
 
+from apps.audit.checkpoints import Chain, configured_log
 from apps.ledger.selectors import ChainHead, chain_head, head_mismatch, verify_chain
 from apps.tenants.models import Organization
 
@@ -36,15 +39,23 @@ class Command(BaseCommand):
             if not organizations.exists():
                 raise CommandError(f"Organization {organization} does not exist.")
 
-        problems, checked, entries = [], 0, 0
+        log = configured_log()
+        checkpoints, log_problems = log.latest(Chain.LEDGER) if log else ({}, [])
+        problems, checked, entries, heads = [str(p) for p in log_problems], 0, 0, {}
         for org in organizations:
             checked += 1
             for problem in verify_chain(org):
                 problems.append(f"{org.pk} {org.name}: #{problem.sequence} {problem.number}: {problem.problem}")
             if expect_head and (mismatch := head_mismatch(org, expect_head)):
                 problems.append(f"{org.pk} {org.name}: {mismatch}")
+            if (checkpoint := checkpoints.get(org.pk)) and (
+                mismatch := head_mismatch(org, ChainHead(checkpoint.sequence, checkpoint.hash))
+            ):
+                problems.append(f"{org.pk} {org.name}: checkpoint of {checkpoint.recorded_at}: {mismatch}")
             head = chain_head(org)
             entries += head.sequence if head else 0
+            if head:
+                heads[org.pk] = (head.sequence, head.entry_hash)
             if organization:
                 self.stdout.write(f"Chain head of {org.name}: {head or 'no posted entries'}")
 
@@ -52,4 +63,6 @@ class Command(BaseCommand):
             for line in problems:
                 self.stderr.write(line)
             raise CommandError(f"Ledger verification failed: {len(problems)} problem(s).")
+        if log:
+            log.append(Chain.LEDGER, heads)
         self.stdout.write(f"Ledger intact: {checked} organization(s), {entries} posted entr(y/ies).")

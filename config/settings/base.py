@@ -273,3 +273,8 @@ def development_field_key(secret_key: str) -> str:
 
 
 FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[]) or [development_field_key(SECRET_KEY)]
+
+# Signed checkpoints of the ledger and audit trail hash chains, appended daily by verify_ledger
+# and verify_audit_trail (apps/audit/checkpoints.py). Outside the database, best on separate,
+# append-only storage; empty turns them off.
+CHAIN_CHECKPOINT_FILE = env("CHAIN_CHECKPOINT_FILE", default="")
