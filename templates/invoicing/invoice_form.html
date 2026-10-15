@@ -38,4 +38,4 @@
 </form>
 {{ items|json_script:"items-data" }}
 {% endblock %}
-{% block scripts %}<script src="{% static 'js/formset.js' %}"></script>{% endblock %}
+{% block scripts %}<script src="{% static 'js/formset.js' %}" defer></script>{% endblock %}

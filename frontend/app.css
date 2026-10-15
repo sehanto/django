@@ -4,9 +4,6 @@
   --series-1: #2a78d6; /* pendapatan */
   --series-2: #eb6834; /* beban */
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-bs-theme="light"]) { --surface: #121417; --series-1: #3987e5; --series-2: #d95926; }
-}
 :root[data-bs-theme="dark"] { --surface: #121417; --series-1: #3987e5; --series-2: #d95926; }
 
 body { background: var(--surface); }
@@ -46,14 +43,10 @@ body { background: var(--surface); }
 .cell-days { min-width: 4.5rem; }
 
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.card { border-color: var(--bs-border-color-translucent); }
-.stat-label { font-size: .8rem; color: var(--bs-secondary-color); }
 .stat-value { font-size: 1.4rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.table-statement td { padding-top: .3rem; padding-bottom: .3rem; }
 .table-statement .section-title td { font-weight: 600; background: var(--bs-tertiary-bg); }
 .table-statement .subtotal td { font-weight: 600; border-top: 1px solid var(--bs-border-color); }
 .table-statement .grand-total td { font-weight: 700; border-top: 2px solid var(--bs-emphasis-color); }
-.formset-table td { vertical-align: top; }
 .formset-table .form-control, .formset-table .form-select { min-width: 90px; }
 
 /* Revenue vs expense chart */
@@ -68,7 +61,7 @@ body { background: var(--surface); }
 .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: .35rem; }
 
 @media print {
-  .app-sidebar, .no-print, .navbar { display: none !important; }
+  .app-sidebar, .no-print { display: none !important; }
   .app-main { margin-left: 0; }
   body { background: #fff; }
 }

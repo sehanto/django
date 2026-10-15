@@ -10,9 +10,9 @@
   </div>
 </div>
 <div class="row g-3 mb-3">
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Amount" %}</div><div class="stat-value">{{ deferral.amount|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Recognised" %}</div><div class="stat-value">{{ recognised|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Remaining" %}</div><div class="stat-value">{{ remaining|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Amount" %}</div><div class="stat-value">{{ deferral.amount|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Recognised" %}</div><div class="stat-value">{{ recognised|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Remaining" %}</div><div class="stat-value">{{ remaining|rupiah }}</div></div></div></div>
 </div>
 <dl class="row small mb-4 mw-lg">
   <dt class="col-sm-4">{% translate "Recorded on" %}</dt><dd class="col-sm-8">{{ deferral.recorded_on|date:"d F Y" }}{% if deferral.opening_entry %} · <a href="{% url 'ledger:journal_detail' deferral.opening_entry_id %}">{{ deferral.opening_entry.number }}</a>{% endif %}</dd>

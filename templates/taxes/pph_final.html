@@ -15,9 +15,9 @@
   {% endblocktranslate %}</div>
 {% endif %}
 <div class="row g-3 mb-3">
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
-  <div class="col-md-4"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Taxpayer type" %}</div><div class="stat-value fs-6 pt-2">{% if current_organization.is_individual_taxpayer %}{% translate "Individual: exempt up to Rp500 million/year" %}{% else %}{% blocktranslate trimmed with form=current_organization.get_legal_form_display %}Entity: {{ form }}{% endblocktranslate %}{% endif %}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
+  <div class="col-md-4"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Taxpayer type" %}</div><div class="stat-value fs-6 pt-2">{% if current_organization.is_individual_taxpayer %}{% translate "Individual: exempt up to Rp500 million/year" %}{% else %}{% blocktranslate trimmed with form=current_organization.get_legal_form_display %}Entity: {{ form }}{% endblocktranslate %}{% endif %}</div></div></div></div>
 </div>
 <div class="card"><div class="table-responsive"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Gross turnover" %}</th><th class="num">{% translate "Exempt" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "PPh Final" %}</th>{% if any_withheld %}<th class="num">{% translate "Withheld by buyers" %}</th>{% endif %}<th>{% translate "Expense" %}</th><th>{% translate "Tax payment" %}</th></tr></thead>

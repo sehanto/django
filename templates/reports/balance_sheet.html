@@ -8,7 +8,7 @@
 {% if not report.is_balanced %}<div class="alert alert-danger">{% translate "The report does not balance. Check the journal data." %}</div>{% endif %}
 {% with compare=report.has_comparative current=report.as_of|date:"d/m/Y" previous=report.previous_as_of|date:"d/m/Y" %}
 <div class="row g-3">
-  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-statement mb-0">
+  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-sm table-statement mb-0">
     {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_assets %}
     {% include "reports/_section.html" with section=report.fixed_assets %}
@@ -16,7 +16,7 @@
     {% if report.investments.rows %}{% include "reports/_section.html" with section=report.investments %}{% endif %}
     {% translate "TOTAL ASSETS" as label %}{% include "reports/_total.html" with current=report.total_assets previous=report.previous_total_assets %}
   </table></div></div></div>
-  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-statement mb-0">
+  <div class="col-xl-6"><div class="card"><div class="table-responsive"><table class="table table-sm table-statement mb-0">
     {% include "reports/_columns.html" %}
     {% include "reports/_section.html" with section=report.current_liabilities %}
     {% include "reports/_section.html" with section=report.long_term_liabilities %}

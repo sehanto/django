@@ -547,12 +547,32 @@ The test database is created by `msme_user`, which needs `CREATEDB`.
 
 ## Front end (Bootstrap)
 
-The interface is Bootstrap 5.3.3 with Bootstrap Icons 1.11.3, served from this site
-(`static/vendor/`, with their licences), not from a CDN: pages work without third-party requests,
-and the Content-Security-Policy can stay strict. The files are the npm releases, checked against
-the registry's integrity hash; the CSS and JS also match the SRI hashes Bootstrap publishes. To
-upgrade, download the new tarballs, check them the same way, replace the version folder and the
-paths in `templates/base.html`.
+The interface is Bootstrap 5.3.3 with Bootstrap Icons 1.11.3, served from this site, not from a
+CDN: pages work without third-party requests, and the Content-Security-Policy can stay strict.
+The full releases are kept in `frontend/vendor/` (with their licences; npm releases checked
+against the registry's integrity hash, and the CSS and JS match the SRI hashes Bootstrap
+publishes). Pages load what `manage.py build_css` (`apps/core/assets.py`) makes of them in
+`static/build/`:
+
+| File | Full release | Built | Sent (Brotli) |
+|---|---|---|---|
+| `app.min.css`: Bootstrap + icons + `frontend/app.css`, one request | 232 KB + 86 KB + 4 KB (≈45 KB gzip, 3 files) | 70 KB | 12 KB |
+| `fonts/bootstrap-icons.woff2` | 130 KB, ~2,000 icons | 6 KB, the 59 in use | 6 KB |
+| `bootstrap.bundle.min.js` (loaded with `defer`) | 81 KB | 81 KB | 21 KB |
+
+- The CSS keeps only rules whose classes appear in the templates, scripts or Python code, plus
+  those Bootstrap's JavaScript adds (`show`, `fade`, `modal-backdrop` …); a class composed in a
+  template (`text-bg-{{ … }}`) keeps every combination with the sources' words, a plain variable
+  (`bi-{{ icon }}`) only the values templates assign it. A screenshot comparison of every page
+  (desktop, phone, dark; menus, modals and form errors opened) against the full Bootstrap showed
+  no difference.
+- **After using a Bootstrap class or icon that isn't in the build yet, run
+  `manage.py build_css`** (needs `requirements/dev.txt`) and commit `static/build/`;
+  `test_the_built_css_is_up_to_date` fails until then. The build is reproducible.
+- To upgrade Bootstrap, download the new tarballs, check them the same way, replace the folder in
+  `frontend/vendor/` and the paths in `apps/core/assets.py`, then build.
+- WhiteNoise serves the files with content hashes in their names (cached for good) and
+  precompressed (`brotli` is in the requirements).
 
 - **Layout.** From the `lg` breakpoint the menu is a fixed sidebar; below it a top bar opens the
   same menu as an offcanvas (`offcanvas-lg`). Light or dark follows the device (Bootstrap colour
@@ -565,7 +585,7 @@ paths in `templates/base.html`.
   `data-confirm="…"` on a form asks first in a Bootstrap modal, `data-autosubmit` on a select
   submits its form, `data-print` prints, `data-fill-<field>` on a modal's trigger fills that field,
   `data-height` sizes a chart bar.
-- **Styling.** Bootstrap components and utilities first; `static/css/app.css` adds only the
+- **Styling.** Bootstrap components and utilities first; `frontend/app.css` adds only the
   sidebar, statement tables, the chart and a small width scale for content blocks (`mw-xs` 480px,
   `mw-sm` 560, `mw-md` 760, `mw-lg` 900, `mw-xl` 1000) and table columns (`col-code`, …).
 - **Forms** render through `partials/form_fields.html` (`form-control`/`form-select`/`form-switch`,

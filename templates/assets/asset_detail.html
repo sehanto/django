@@ -15,10 +15,10 @@
   </div>
 </div>
 <div class="row g-3 mb-3">
-  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Cost" %}</div><div class="stat-value">{{ asset.cost|rupiah }}</div></div></div></div>
-  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Accumulated depreciation" %}</div><div class="stat-value">{{ accumulated|rupiah }}</div></div></div></div>
-  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Book value" %}</div><div class="stat-value">{{ book_value|rupiah }}</div></div></div></div>
-  <div class="col-md-3"><div class="card"><div class="card-body"><div class="stat-label">{% translate "Depreciation" %}</div><div class="stat-value fs-6 pt-2">
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Cost" %}</div><div class="stat-value">{{ asset.cost|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Accumulated depreciation" %}</div><div class="stat-value">{{ accumulated|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Book value" %}</div><div class="stat-value">{{ book_value|rupiah }}</div></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><div class="small text-secondary">{% translate "Depreciation" %}</div><div class="stat-value fs-6 pt-2">
     {% if asset.is_depreciable %}{% blocktranslate trimmed count months=asset.current_useful_life_months with method=asset.get_current_method_display %}{{ method }}, {{ months }} month{% plural %}{{ method }}, {{ months }} months{% endblocktranslate %}{% else %}{% translate "Not depreciated (land)" %}{% endif %}
   </div></div></div></div>
 </div>

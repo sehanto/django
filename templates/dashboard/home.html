@@ -11,19 +11,19 @@
 
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3"><div class="card h-100"><div class="card-body">
-    <div class="stat-label">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
+    <div class="small text-secondary">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
     <div class="small text-secondary">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
   </div></div></div>
   <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' invoice_kinds.SALES %}" class="card h-100 text-decoration-none"><div class="card-body">
-    <div class="stat-label">{% translate "Accounts receivable" %}</div><div class="stat-value text-body">{{ receivables.outstanding|rupiah }}</div>
+    <div class="small text-secondary">{% translate "Accounts receivable" %}</div><div class="stat-value text-body">{{ receivables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=receivables %}
   </div></a></div>
   <div class="col-sm-6 col-xl-3"><a href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}" class="card h-100 text-decoration-none"><div class="card-body">
-    <div class="stat-label">{% translate "Accounts payable" %}</div><div class="stat-value text-body">{{ payables.outstanding|rupiah }}</div>
+    <div class="small text-secondary">{% translate "Accounts payable" %}</div><div class="stat-value text-body">{{ payables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=payables %}
   </div></a></div>
   <div class="col-sm-6 col-xl-3"><a href="{% url 'reports:income_statement' %}" class="card h-100 text-decoration-none"><div class="card-body">
-    <div class="stat-label">{% translate "Profit this month" %}</div><div class="stat-value text-body">{{ this_month.profit|rupiah }}</div>
+    <div class="small text-secondary">{% translate "Profit this month" %}</div><div class="stat-value text-body">{{ this_month.profit|rupiah }}</div>
     <div class="small text-secondary">{% blocktranslate trimmed with revenue=this_month.revenue|rupiah expense=this_month.expense|rupiah %}Revenue {{ revenue }} · Expenses {{ expense }}{% endblocktranslate %}</div>
   </div></a></div>
 </div>
