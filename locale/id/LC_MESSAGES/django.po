@@ -463,6 +463,10 @@ msgstr "Alasan"
 msgid "E.g. the machine will be used two years longer than expected."
 msgstr "Misalnya mesin akan dipakai dua tahun lebih lama dari perkiraan."
 
+#: apps/assets/models.py
+msgid "When the asset was acquired and ready for use: depreciation starts in this month."
+msgstr "Tanggal aset diperoleh dan siap digunakan: penyusutan dimulai pada bulan ini."
+
 #: apps/assets/models.py:29 apps/billing/models.py:27 apps/deferrals/models.py:25
 #: apps/invoicing/models.py:122 apps/invoicing/models.py:495 apps/invoicing/models.py:608
 #: apps/ledger/models.py:64
@@ -9421,12 +9425,47 @@ msgstr "Dasar penyusunan"
 msgid ""
 "The financial statements are prepared on the accrual basis and at historical cost, on the "
 "assumption that the business is a going concern. The business is accounted for separately from its"
-" owners: their personal transactions are not recorded, and amounts the owners withdraw reduce "
-"equity."
+" owners: their personal transactions are not recorded."
 msgstr ""
 "Laporan keuangan disusun dengan dasar akrual dan biaya historis, dengan asumsi usaha akan terus "
 "berlanjut (kelangsungan usaha). Usaha dicatat terpisah dari pemiliknya: transaksi pribadi pemilik "
-"tidak dicatat, dan pengambilan oleh pemilik mengurangi ekuitas."
+"tidak dicatat."
+
+#: templates/reports/notes.html:51
+msgid ""
+"Equity consists of paid-up share capital, additional paid-in capital (what shareholders paid above "
+"the shares' nominal value) and retained earnings. Dividends reduce retained earnings when the "
+"shareholders declare them."
+msgstr ""
+"Ekuitas terdiri atas modal saham yang disetor, tambahan modal disetor (yang dibayar pemegang saham "
+"di atas nilai nominal saham) dan saldo laba. Dividen mengurangi saldo laba ketika diumumkan oleh "
+"pemegang saham."
+
+#: templates/reports/notes.html:52
+msgid ""
+"Equity consists of the members' principal and compulsory savings (simpanan pokok and simpanan "
+"wajib), reserves and the retained surplus (sisa hasil usaha). Surplus distributed to members "
+"reduces equity when the members' meeting decides it."
+msgstr ""
+"Ekuitas terdiri atas simpanan pokok dan simpanan wajib anggota, cadangan dan sisa hasil usaha (SHU)"
+" yang belum dibagikan. SHU yang dibagikan kepada anggota mengurangi ekuitas ketika diputuskan oleh "
+"rapat anggota."
+
+#: templates/reports/notes.html:53
+msgid ""
+"Equity consists of the partners' capital and retained earnings. Amounts the partners withdraw for "
+"their own use (prive) reduce equity."
+msgstr ""
+"Ekuitas terdiri atas modal sekutu dan saldo laba. Pengambilan oleh sekutu untuk keperluan pribadi "
+"(prive) mengurangi ekuitas."
+
+#: templates/reports/notes.html:54
+msgid ""
+"Equity consists of the owner's capital and retained earnings. Amounts the owner withdraws for "
+"personal use (prive) reduce equity."
+msgstr ""
+"Ekuitas terdiri atas modal pemilik dan saldo laba. Pengambilan oleh pemilik untuk keperluan pribadi "
+"(prive) mengurangi ekuitas."
 
 #: templates/reports/notes.html:26
 msgid "Presentation currency"

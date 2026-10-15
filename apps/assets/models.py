@@ -33,7 +33,7 @@ class FixedAsset(TenantOwnedModel):
         "ledger.Account", on_delete=models.PROTECT, related_name="+", verbose_name=_("fixed asset account"),
         help_text=_("Where the asset's cost is recorded, e.g. Peralatan Usaha."),
     )
-    acquisition_date = models.DateField(_("acquisition date"))
+    acquisition_date = models.DateField(_("acquisition date"), help_text=_("When the asset was acquired and ready for use: depreciation starts in this month."))
     cost = money_field(_("cost"), validators=[MinValueValidator(1)], help_text=_("Purchase price plus the costs of getting the asset ready for use, excluding refundable PPN."))
     is_depreciable = models.BooleanField(_("depreciable"), default=True, help_text=_("Turn off for land, which is not depreciated."))
     residual_value = money_field(_("residual value"), validators=[MinValueValidator(0)], help_text=_("What the asset is expected to be worth at the end of its useful life. Usually 0."))

@@ -5,7 +5,7 @@ import pytest
 
 from apps.core.exceptions import InvalidStateTransition, PeriodLocked, ValidationFailed
 from apps.ledger import services
-from apps.ledger.chart_template import DEFAULT_CHART
+from apps.ledger.chart_template import chart_for
 from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.selectors import account_balance, account_ledger
@@ -26,7 +26,7 @@ def capital_injection(organization, account, amount=D("10000000"), on=date(2026,
 
 def test_onboarding_seeds_full_chart_with_system_roles(organization):
     accounts = Account.objects.for_organization(organization)
-    assert accounts.count() == len(DEFAULT_CHART)
+    assert accounts.count() == len(chart_for("perorangan"))
     assert set(accounts.exclude(system_role=None).values_list("system_role", flat=True)) == set(SystemRole.values)
 
 

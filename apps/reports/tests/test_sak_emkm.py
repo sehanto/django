@@ -1,13 +1,15 @@
 """SAK EMKM rules the books follow beyond the basic statements: prior-period errors corrected
 retrospectively (7.16), receivables written off without an allowance (8.10-8.13), depreciation
 and amortisation without a residual value (11.14, 12.13), intangible assets (Bab 12), policies
-applied consistently (7.5), the accounts the standard names, and statement items that refer to
-their notes (6.4)."""
+applied consistently (7.5), the accounts the standard names, equity as it is presented for each
+legal form (Bab 13), and statement items that refer to their notes (6.4)."""
 
+import importlib
 from datetime import date
 from decimal import Decimal
 
 import pytest
+from django.apps import apps
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import translation
@@ -201,6 +203,59 @@ def test_the_chart_has_what_sak_emkm_names(user, db):
         "Beban Piutang Tak Tertagih": AccountCategory.OPERATING_EXPENSE, "Tambahan Modal Disetor": AccountCategory.EQUITY,
     }.items() <= names.items()
     assert not Account.objects.filter(organization=sole, name="Tambahan Modal Disetor").exists()  # only for a PT (13.8)
+
+
+def equity_accounts(organization):
+    return {a.code: (a.name, a.is_contra, a.is_active) for a in Account.objects.filter(organization=organization, category=AccountCategory.EQUITY)}
+
+
+def test_equity_follows_the_legal_form(user, db):
+    def chart(legal_form):
+        return equity_accounts(create_organization(owner=user, name=f"Usaha {legal_form}", legal_form=legal_form))
+
+    retained = {"3-3000": ("Saldo Laba", False, True)}
+    assert chart(Organization.LegalForm.PERORANGAN) == {
+        "3-1000": ("Modal Pemilik", False, True), "3-2000": ("Prive", True, True), **retained}
+    assert chart(Organization.LegalForm.CV) == chart(Organization.LegalForm.FIRMA) == {
+        "3-1000": ("Modal Sekutu", False, True), "3-2000": ("Prive Sekutu", True, True), **retained}
+    assert chart(Organization.LegalForm.PT) == chart(Organization.LegalForm.PT_PERORANGAN) == {  # dividends, not prive
+        "3-1000": ("Modal Saham", False, True), "3-1100": ("Tambahan Modal Disetor", False, True), "3-2000": ("Dividen", True, True),
+        **retained}
+    assert chart(Organization.LegalForm.KOPERASI) == {
+        "3-1000": ("Simpanan Pokok", False, True), "3-1100": ("Simpanan Wajib", False, True), "3-1200": ("Cadangan", False, True),
+        **retained}
+
+
+@pytest.mark.parametrize("legal_form, policy", [
+    (Organization.LegalForm.PERORANGAN, "Pengambilan oleh pemilik untuk keperluan pribadi"),
+    (Organization.LegalForm.CV, "Pengambilan oleh sekutu untuk keperluan pribadi"),
+    (Organization.LegalForm.PT, "Dividen mengurangi saldo laba"),
+    (Organization.LegalForm.KOPERASI, "simpanan pokok dan simpanan wajib anggota"),
+])
+def test_the_notes_state_the_equity_policy_of_the_legal_form(auth_client, organization, legal_form, policy):
+    """In the user's language (Indonesian)."""
+    organization.legal_form = legal_form
+    organization.save()
+    page = auth_client.get(reverse("reports:notes"), {"as_of": "2026-12-31"})
+    assert policy in page.content.decode() and page.content.count(b"(prive)") == (legal_form in ("perorangan", "cv"))
+
+
+def test_existing_organizations_get_the_equity_of_their_legal_form(user, account, organization, db):
+    """Ledger 0020: unused accounts are renamed, used ones keep their name and the missing ones are added."""
+    migration = importlib.import_module("apps.ledger.migrations.0020_equity_by_legal_form")
+    journal(organization, date(2026, 1, 2), "Setoran modal",
+            JournalLineInput(account("1-1100"), debit=D("1000")), JournalLineInput(account("3-1000"), credit=D("1000")))
+    cooperative = create_organization(owner=user, name="Koperasi Maju", legal_form=Organization.LegalForm.PERORANGAN)
+    Organization.objects.filter(pk=organization.pk).update(legal_form=Organization.LegalForm.PT)  # charts made before 0020
+    Organization.objects.filter(pk=cooperative.pk).update(legal_form=Organization.LegalForm.KOPERASI)
+    migration.equity_for_legal_form(apps, None)
+    migration.equity_for_legal_form(apps, None)  # nothing more the second time
+    assert equity_accounts(organization) == {
+        "3-1000": ("Modal Pemilik", False, True), "3-1001": ("Modal Saham", False, True),  # its capital was recorded as Modal Pemilik
+        "3-1100": ("Tambahan Modal Disetor", False, True), "3-2000": ("Dividen", True, True), "3-3000": ("Saldo Laba", False, True)}
+    assert equity_accounts(cooperative) == {
+        "3-1000": ("Simpanan Pokok", False, True), "3-1100": ("Simpanan Wajib", False, True), "3-1200": ("Cadangan", False, True),
+        "3-2000": ("Prive", True, False), "3-3000": ("Saldo Laba", False, True)}
 
 
 def test_statement_items_refer_to_their_notes(auth_client, organization, account):

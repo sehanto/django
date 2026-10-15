@@ -126,6 +126,16 @@ class Organization(TimeStampedModel, Address):
         """A PT: its equity shows share capital and additional paid-in capital (SAK EMKM 13.8)."""
         return self.legal_form in (self.LegalForm.PT, self.LegalForm.PT_PERORANGAN)
 
+    @property
+    def is_partnership(self) -> bool:
+        """A CV or Firma: its equity is the partners' capital (SAK EMKM Bab 13)."""
+        return self.legal_form in (self.LegalForm.CV, self.LegalForm.FIRMA)
+
+    @property
+    def is_cooperative(self) -> bool:
+        """A koperasi: its equity is the members' savings, reserves and retained surplus (SHU)."""
+        return self.legal_form == self.LegalForm.KOPERASI
+
 
 class Invitation(TimeStampedModel):
     """An invitation by email to join an organization, for someone without an account yet.

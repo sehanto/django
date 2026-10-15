@@ -27,7 +27,7 @@ from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.validators import EARLIEST_BUSINESS_DATE, ensure_business_date
 
-from .chart_template import DEFAULT_CHART, PT_CHART
+from .chart_template import chart_for
 from .domain import LineAmount, SystemRole, ensure_period_open, validate_lines
 from .models import Account, JournalEntry, JournalLine
 
@@ -70,7 +70,7 @@ def seed_chart_of_accounts(organization) -> None:
                 system_role=role,
                 is_contra=is_contra,
             )
-            for code, name, category, role, is_contra in (*DEFAULT_CHART, *(PT_CHART if organization.is_limited_company else ()))
+            for code, name, category, role, is_contra in chart_for(organization.legal_form)
         ]
     )
 

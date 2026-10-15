@@ -39,9 +39,7 @@ DEFAULT_CHART = [
     ("2-1450", "Utang Bank Jangka Pendek", C.CURRENT_LIABILITY, None, False),
     ("2-1500", "Pendapatan Diterima di Muka", C.CURRENT_LIABILITY, None, False),  # paid before delivery (14.4a)
     ("2-2000", "Utang Bank Jangka Panjang", C.LONG_TERM_LIABILITY, None, False),
-    # Ekuitas
-    ("3-1000", "Modal Pemilik", C.EQUITY, None, False),
-    ("3-2000", "Prive", C.EQUITY, None, True),
+    # Ekuitas: the capital accounts depend on the legal form (EQUITY_BY_LEGAL_FORM)
     ("3-3000", "Saldo Laba", C.EQUITY, R.RETAINED_EARNINGS, False),
     # Pendapatan
     ("4-1000", "Pendapatan Penjualan", C.REVENUE, R.SALES_REVENUE, False),
@@ -71,7 +69,38 @@ DEFAULT_CHART = [
     ("8-1100", "Beban Pajak Penghasilan", C.INCOME_TAX, None, False),  # regular income tax (Bab 15)
 ]
 
-# Only for a PT (SAK EMKM 13.8): what shareholders paid above the shares' nominal value.
-PT_CHART = [
-    ("3-1100", "Tambahan Modal Disetor", C.EQUITY, None, False),
+# Equity as SAK EMKM presents it for each legal form (Bab 13, the illustrative statements): an
+# owner's or partners' capital less their withdrawals (prive); a PT's paid-up share capital and
+# what shareholders paid above the shares' nominal value (13.8), with dividends instead of prive;
+# a cooperative's members' savings and reserves, its retained surplus (SHU) in Saldo Laba.
+SOLE_PROPRIETOR_EQUITY = [
+    ("3-1000", "Modal Pemilik", C.EQUITY, None, False),
+    ("3-2000", "Prive", C.EQUITY, None, True),
 ]
+PARTNERSHIP_EQUITY = [
+    ("3-1000", "Modal Sekutu", C.EQUITY, None, False),
+    ("3-2000", "Prive Sekutu", C.EQUITY, None, True),
+]
+COMPANY_EQUITY = [
+    ("3-1000", "Modal Saham", C.EQUITY, None, False),
+    ("3-1100", "Tambahan Modal Disetor", C.EQUITY, None, False),
+    ("3-2000", "Dividen", C.EQUITY, None, True),
+]
+COOPERATIVE_EQUITY = [
+    ("3-1000", "Simpanan Pokok", C.EQUITY, None, False),
+    ("3-1100", "Simpanan Wajib", C.EQUITY, None, False),
+    ("3-1200", "Cadangan", C.EQUITY, None, False),
+]
+EQUITY_BY_LEGAL_FORM = {  # keyed by Organization.LegalForm
+    "perorangan": SOLE_PROPRIETOR_EQUITY,
+    "cv": PARTNERSHIP_EQUITY,
+    "firma": PARTNERSHIP_EQUITY,
+    "pt": COMPANY_EQUITY,
+    "pt_perorangan": COMPANY_EQUITY,
+    "koperasi": COOPERATIVE_EQUITY,
+}
+
+
+def chart_for(legal_form: str) -> list[tuple]:
+    """The default chart of an organization of this legal form, in code order."""
+    return sorted([*DEFAULT_CHART, *EQUITY_BY_LEGAL_FORM[legal_form]], key=lambda account: account[0])

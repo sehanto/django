@@ -22,7 +22,7 @@
   <li class="mb-2"><strong>{% translate "Statement of compliance" %}.</strong>
     {% translate "These financial statements have been prepared in accordance with the Financial Accounting Standards for Micro, Small and Medium Entities (SAK EMKM)." %}</li>
   <li class="mb-2"><strong>{% translate "Basis of preparation" %}.</strong>
-    {% blocktranslate trimmed %}The financial statements are prepared on the accrual basis and at historical cost, on the assumption that the business is a going concern. The business is accounted for separately from its owners: their personal transactions are not recorded, and amounts the owners withdraw reduce equity.{% endblocktranslate %}</li>
+    {% blocktranslate trimmed %}The financial statements are prepared on the accrual basis and at historical cost, on the assumption that the business is a going concern. The business is accounted for separately from its owners: their personal transactions are not recorded.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Presentation currency" %}.</strong>
     {% translate "The financial statements are presented in Rupiah, the currency of the business's main economic environment." %}</li>
   <li class="mb-2"><strong>{% translate "Revenue and expenses" %}.</strong>
@@ -43,6 +43,11 @@
     {% blocktranslate trimmed %}Liabilities are stated at the amount needed to settle them; loans at the amount borrowed less repayments. Borrowing costs and the transaction costs of loans are expensed when incurred. Provisions and contingent liabilities are not recognised; material ones are disclosed under additional information.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Foreign currency" %}.</strong>
     {% translate "Transactions in a foreign currency are recorded in Rupiah at the spot rate on the date of the transaction." %}</li>
+  <li class="mb-2"><strong>{% translate "Equity" %}.</strong>
+    {% if org.is_limited_company %}{% blocktranslate trimmed %}Equity consists of paid-up share capital, additional paid-in capital (what shareholders paid above the shares' nominal value) and retained earnings. Dividends reduce retained earnings when the shareholders declare them.{% endblocktranslate %}
+    {% elif org.is_cooperative %}{% blocktranslate trimmed %}Equity consists of the members' principal and compulsory savings (simpanan pokok and simpanan wajib), reserves and the retained surplus (sisa hasil usaha). Surplus distributed to members reduces equity when the members' meeting decides it.{% endblocktranslate %}
+    {% elif org.is_partnership %}{% blocktranslate trimmed %}Equity consists of the partners' capital and retained earnings. Amounts the partners withdraw for their own use (prive) reduce equity.{% endblocktranslate %}
+    {% else %}{% blocktranslate trimmed %}Equity consists of the owner's capital and retained earnings. Amounts the owner withdraws for personal use (prive) reduce equity.{% endblocktranslate %}{% endif %}</li>
   <li class="mb-2"><strong>{% translate "Accounting policies, estimates and errors" %}.</strong>
     {% blocktranslate trimmed %}The policies above are applied consistently. Changes in estimates are applied prospectively; errors of prior periods are corrected retrospectively, restating the comparative figures.{% endblocktranslate %}</li>
   <li class="mb-2"><strong>{% translate "Income tax" %}.</strong>
