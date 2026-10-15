@@ -6,10 +6,10 @@
   {% if can_write %}<a href="{% url 'ledger:journal_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New journal entry" %}</a>{% endif %}
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
-  <div class="col-span-12 md:col-span-4"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, description, reference' %}"></div>
+  <div class="col-span-12 md:col-span-4"><input name="q" value="{{ request.GET.q }}" class="form-input" placeholder="{% translate 'Search number, description, reference' %}"></div>
   <div class="col-span-12 md:col-span-3"><select name="source" class="form-select"><option value="">{% translate "All sources" %}</option>{% for v, l in sources %}<option value="{{ v }}" {% if request.GET.source == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-span-12 md:col-span-3"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline-secondary w-full">{% translate "Filter" %}</button></div>
+  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Number" %}</th><th>{% translate "Description" %}</th><th>{% translate "Source" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr></thead>

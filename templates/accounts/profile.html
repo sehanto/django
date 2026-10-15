@@ -8,8 +8,8 @@
     {% include "partials/form_fields.html" %}
     <div class="mt-6 flex gap-2">
       <button class="btn btn-primary">{% translate "Save" %}</button>
-      <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary">{% translate "Change password" %}</a>
-      <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% icon "shield-check" %} {% translate "Security" %}</a>
+      <a href="{% url 'accounts:password_change' %}" class="btn btn-outline">{% translate "Change password" %}</a>
+      <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% icon "shield-check" %} {% translate "Security" %}</a>
     </div>
   </form>
 </div></div>

@@ -14,37 +14,35 @@ register = template.Library()
 @register.filter
 def add_class(field, css):
     """Render a bound form field with extra CSS classes."""
-    existing = field.field.widget.attrs.get("class", "")
-    if field.errors:
-        css = f"{css} is-invalid"
+    existing = field.field.widget.attrs.get("class", "")  # an invalid field is aria-invalid="true" (Django)
     return field.as_widget(attrs={"class": f"{existing} {css}".strip()})
 
 
 # Badge colour per status (badge-<colour> in frontend/app.css). Members of different enums that share a value
 # (e.g. "paid", "void") are equal as dict keys, so they must share a colour.
 STATUS_BADGES = {
-    JournalEntry.Status.DRAFT: "secondary",
+    JournalEntry.Status.DRAFT: "neutral",
     JournalEntry.Status.POSTED: "success",
-    InvoiceStatus.DRAFT: "secondary",
+    InvoiceStatus.DRAFT: "neutral",
     InvoiceStatus.ISSUED: "primary",
     InvoiceStatus.PARTIAL: "warning",
     InvoiceStatus.PAID: "success",
-    InvoiceStatus.WRITTEN_OFF: "dark",
-    InvoiceStatus.VOID: "dark",
+    InvoiceStatus.WRITTEN_OFF: "inactive",
+    InvoiceStatus.VOID: "inactive",
     InvoiceStatusFilter.OVERDUE: "danger",
     Payment.Status.POSTED: "success",
-    Payment.Status.VOID: "dark",
+    Payment.Status.VOID: "inactive",
     SubscriptionInvoice.Status.PENDING: "warning",
     SubscriptionInvoice.Status.PAID: "success",
-    SubscriptionInvoice.Status.EXPIRED: "dark",
-    SubscriptionInvoice.Status.CANCELED: "dark",
+    SubscriptionInvoice.Status.EXPIRED: "inactive",
+    SubscriptionInvoice.Status.CANCELED: "inactive",
     SubscriptionInvoice.Status.FAILED: "danger",
 }
 
 
 @register.filter
 def status_badge(status):
-    return STATUS_BADGES.get(status, "secondary")
+    return STATUS_BADGES.get(status, "neutral")
 
 
 @register.filter

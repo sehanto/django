@@ -5,10 +5,10 @@
   <div><h1 class="text-xl font-medium leading-tight mb-0">{{ asset.name }}</h1><div class="text-muted">{{ asset.number }} · {{ asset.get_status_display }}{% if asset.disposed_on %} {{ asset.disposed_on|date:"d/m/Y" }}{% endif %}</div></div>
 {% history_link asset %}
   <div class="flex gap-2">
-    <a href="{% url 'assets:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
+    <a href="{% url 'assets:list' %}" class="btn btn-outline">{% translate "Back" %}</a>
     {% if can_write %}
-      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline-secondary">{% icon "pencil" %} {% translate "Edit" %}</a>
-      {% if revision_form %}<button class="btn btn-outline-secondary" type="button" data-dialog-open="reviseModal">{% translate "Revise estimate" %}</button>{% endif %}
+      <a href="{% url 'assets:update' asset.pk %}" class="btn btn-outline">{% icon "pencil" %} {% translate "Edit" %}</a>
+      {% if revision_form %}<button class="btn btn-outline" type="button" data-dialog-open="reviseModal">{% translate "Revise estimate" %}</button>{% endif %}
       {% if asset.status == asset.Status.ACTIVE %}<button class="btn btn-outline-danger" type="button" data-dialog-open="disposeModal">{% translate "Sell or write off" %}</button>{% endif %}
       {% if not locked %}<form method="post" action="{% url 'assets:delete' asset.pk %}" data-confirm="{% translate 'Delete this asset from the register?' %}">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="{% translate 'Delete' %}">{% icon "trash-2" %}</button></form>{% endif %}
     {% endif %}

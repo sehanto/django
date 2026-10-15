@@ -598,14 +598,16 @@ few behaviours live in `static/js/app.js`.
 
 - **Source.** `frontend/app.css` is the whole stylesheet: `@import "tailwindcss"`, where class names
   come from (`@source`: templates, scripts and Python code, not tests or migrations), the theme
-  (breakpoints at 576, 768, 992, 1200 and 1400 px, which the layouts were designed for), base typography for content
+  (Tailwind's own breakpoints, 640, 768, 1024, 1280 and 1536 px, and font stack), base typography for content
   that Tailwind's reset leaves unstyled, and a small `@layer components`.
 - **Utilities first.** Templates use Tailwind utilities for layout, spacing, grid (`grid
   grid-cols-12`, `md:col-span-6`), typography and colour. Only primitives that every page repeats
-  are components: buttons (`btn btn-primary`, `btn-outline-secondary`, `btn-sm`, `btn-icon` …),
-  form controls (`form-control`, `form-select`, `form-switch`, `form-label`, `form-text`,
-  `is-invalid`), `card`, `table` (plus `table-sm`, `table-hover`, `table-statement`), `num` for
-  amounts, `badge-<colour>` (the colour from `|status_badge`), `alert-<level>` (Django message
+  are components: buttons (`btn btn-primary`, `btn-outline`, `btn-neutral`, `btn-sm`, `btn-icon` …),
+  form controls named like Tailwind's forms plugin (`form-input`, `form-select`, `form-toggle`,
+  `form-label`, `form-help`, `form-error`; a field with errors is styled by its `aria-invalid`),
+  `card`, `table` (plus `table-sm`, `table-hover`, `table-statement`), `num` for
+  amounts, `badge-<colour>` (`primary`, `success`, `warning`, `danger`, `neutral`, `subtle`,
+  `inactive`; the colour from `|status_badge`), `alert-<level>` (Django message
   tags), `modal` dialogs and the menu's `nav-link`. Classes built from variables
   (`badge-{{ … }}`, `alert-{{ … }}`) must be components, since Tailwind only generates
   utilities it finds written out.
@@ -656,8 +658,8 @@ few behaviours live in `static/js/app.js`.
   asks first in `#confirmModal`, `data-dismiss` closes a message, `data-autosubmit` on a select
   submits its form, `data-print` prints, `data-height` sizes a chart bar. `print:hidden` leaves
   the menu and buttons off paper.
-- **Forms** render through `partials/form_fields.html` (labels, `form-control`/`form-select`, a
-  checkbox as `form-switch`, `is-invalid` on errors, in a 12-column grid: pass `col="col-span-12
+- **Forms** render through `partials/form_fields.html` (labels, `form-input`/`form-select`, a
+  checkbox as `form-toggle`, `aria-invalid` on errors, in a 12-column grid: pass `col="col-span-12
   md:col-span-4"` to change the width). Help text and errors carry the ids Django's
   `aria-describedby` points at (`partials/field_feedback.html`); table-row forms name their inputs
   with `aria-label` (`core.forms.GridFormMixin`).

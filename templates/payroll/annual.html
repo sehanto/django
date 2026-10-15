@@ -12,7 +12,7 @@
     <td>{{ st.employee.name }}<div class="text-sm text-muted">{{ st.employee.tin|default:st.employee.id_label }}</div></td>
     <td>{{ st.first_month|stringformat:"02d" }}–{{ st.last_month|stringformat:"02d" }}</td>
     <td class="num">{{ st.gross|rupiah }}</td><td class="num">{{ st.annual.taxable|rupiah }}</td><td class="num">{{ st.tax|rupiah }}</td><td class="num">{{ st.withheld|rupiah }}</td>
-    <td class="text-end">{% if st.is_final %}<a href="{% url 'payroll:a1' year st.employee.pk %}" class="text-sm">{% translate "Open" %}</a>{% else %}<span class="badge badge-secondary">{% translate "Year not closed" %}</span>{% endif %}</td></tr>
+    <td class="text-end">{% if st.is_final %}<a href="{% url 'payroll:a1' year st.employee.pk %}" class="text-sm">{% translate "Open" %}</a>{% else %}<span class="badge badge-neutral">{% translate "Year not closed" %}</span>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No permanent employee was paid this year." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 <p class="text-sm text-muted mt-2">{% translate "Permanent employees get their 1721-A1 for the year by the end of January, or within a month of leaving. It is the bukti potong of their last period (December or the month they left), created in Coretax eBupot; record its number on that payroll." %}</p>

@@ -8,12 +8,12 @@
 <div class="grid grid-cols-12 gap-4 mb-4">
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% icon "triangle-alert" "text-danger me-1" %}{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline-secondary">{{ labels.aging }} &rarr;</a></div>
+  <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline">{{ labels.aging }} &rarr;</a></div>
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
-  <div class="col-span-12 md:col-span-6"><input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="{% translate 'Search number, contact, reference' %}"></div>
+  <div class="col-span-12 md:col-span-6"><input name="q" value="{{ request.GET.q }}" class="form-input" placeholder="{% translate 'Search number, contact, reference' %}"></div>
   <div class="col-span-12 md:col-span-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline-secondary w-full">{% translate "Filter" %}</button></div>
+  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{{ labels.contact }}</th><th>{% translate "Due date" %}</th><th class="num">{% translate "Total" %}</th><th class="num">{% translate "Balance due" %}</th><th>{% translate "Status" %}</th></tr></thead>

@@ -6,7 +6,7 @@
     <a href="{% url 'billing:overview' %}" class="text-sm no-underline">&larr; {% translate "Subscription plan" %}</a>
     <h1 class="text-xl font-medium leading-tight mb-0">{{ invoice.number }} <span class="badge align-middle badge-{{ invoice.status|status_badge }}">{{ invoice.get_status_display }}</span></h1>
   </div>
-  {% if invoice.status == invoice.Status.PAID %}<button type="button" data-print class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print receipt" %}</button>{% endif %}
+  {% if invoice.status == invoice.Status.PAID %}<button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print receipt" %}</button>{% endif %}
 </div>
 
 {% if invoice.status == invoice.Status.PENDING %}
@@ -14,15 +14,15 @@
   <div class="alert alert-warning flex flex-wrap justify-between items-center gap-2 print:hidden">
     <span>{% blocktranslate trimmed with date=invoice.expires_at|date:"d F Y H:i" %}Waiting for payment. The payment link is valid until {{ date }}.{% endblocktranslate %}</span>
     <span class="flex gap-2">
-      <form method="post" action="{% url 'billing:invoice_refresh' invoice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">{% translate "Check payment status" %}</button></form>
+      <form method="post" action="{% url 'billing:invoice_refresh' invoice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline">{% translate "Check payment status" %}</button></form>
       <a href="{{ invoice.payment_url }}" class="btn btn-sm btn-primary">{% translate "Pay now" %}</a>
     </span>
   </div>
   {% else %}
-  <div class="alert alert-secondary print:hidden">{% translate "This payment link is no longer valid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
+  <div class="alert alert-neutral print:hidden">{% translate "This payment link is no longer valid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
   {% endif %}
 {% elif invoice.status != invoice.Status.PAID %}
-  <div class="alert alert-secondary print:hidden">{% translate "This invoice was not paid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
+  <div class="alert alert-neutral print:hidden">{% translate "This invoice was not paid." %} <a href="{% url 'billing:overview' %}">{% translate "Choose a plan" %}</a></div>
 {% endif %}
 
 <div class="card max-w-4xl"><div class="card-body p-6">

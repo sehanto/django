@@ -5,8 +5,8 @@
   <div><h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with item=item.name %}Stock card: {{ item }}{% endblocktranslate %}</h1>
     <div class="text-muted">{% if item.code %}{{ item.code }} · {% endif %}{{ item.inventory_account }}</div></div>
   <div class="flex gap-2">
-    <a href="{% url 'inventory:list' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
-    {% if can_write %}{% if last and last.quantity > 0 %}<a href="{% url 'inventory:write_down' %}?item={{ item.pk }}" class="btn btn-outline-secondary">{% translate "Write down" %}</a>{% endif %}
+    <a href="{% url 'inventory:list' %}" class="btn btn-outline">{% translate "Back" %}</a>
+    {% if can_write %}{% if last and last.quantity > 0 %}<a href="{% url 'inventory:write_down' %}?item={{ item.pk }}" class="btn btn-outline">{% translate "Write down" %}</a>{% endif %}
       <a href="{% url 'inventory:adjust' %}?item={{ item.pk }}" class="btn btn-primary">{% translate "Stock adjustment" %}</a>{% endif %}
   </div>
 </div>

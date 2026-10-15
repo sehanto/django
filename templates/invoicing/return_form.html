@@ -10,13 +10,13 @@
     <tbody>{% for line, field, available in form.line_fields %}
       <tr><td>{{ line.description }}<div class="text-sm text-muted">{{ line.tax_label }}</div></td>
         <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}{% if line.discount_percent %} <span class="text-sm text-muted">-{{ line.discount_percent|floatformat:"-2" }}%</span>{% endif %}</td>
-        <td>{{ field|add_class:'form-control' }}{% include "partials/field_feedback.html" %}</td></tr>
+        <td>{{ field|add_class:'form-input' }}{% include "partials/field_feedback.html" %}</td></tr>
     {% empty %}<tr><td colspan="4" class="text-muted">{% translate "Everything on this invoice has already been returned." %}</td></tr>{% endfor %}</tbody>
   </table></div>
   <div class="grid grid-cols-12 gap-4">
     {% for field in form %}{% if not field.name|slice:":5" == "line_" %}
       <div class="col-span-12 md:col-span-4"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
-        {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-control' }}{% endif %}
+        {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-input' }}{% endif %}
         {% include "partials/field_feedback.html" %}</div>
     {% endif %}{% endfor %}
   </div>
@@ -29,6 +29,6 @@
   {% endblocktranslate %}{% endif %}</p>
 </div>
 <div class="card-footer flex gap-2 justify-end">
-  <a href="{% url 'invoicing:detail' kind invoice.pk %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Record return" %}</button>
+  <a href="{% url 'invoicing:detail' kind invoice.pk %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Record return" %}</button>
 </div></form>
 {% endblock %}

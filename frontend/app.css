@@ -13,17 +13,11 @@
 @source not "../apps/**/tests";
 @source not "../apps/**/migrations";
 
-/* Breakpoints the layouts were designed for (sm 576px, md 768, lg 992, xl 1200, 2xl 1400). */
+/* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
-  --breakpoint-sm: 36rem;
-  --breakpoint-md: 48rem;
-  --breakpoint-lg: 62rem;
-  --breakpoint-xl: 75rem;
-  --breakpoint-2xl: 87.5rem;
   /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
   --text-display: 2.5rem;
   --text-figure: 1.75rem;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif;
 }
 
 :root {
@@ -145,41 +139,41 @@
   .btn-primary { @apply bg-primary text-white hover:bg-primary-strong hover:text-white; }
   .btn-danger { @apply bg-danger text-white hover:bg-danger-strong hover:text-white; }
   .btn-success { @apply bg-success text-white hover:bg-success-strong hover:text-white; }
-  .btn-secondary { @apply bg-gray-600 text-white hover:bg-gray-700 hover:text-white; }
+  .btn-neutral { @apply bg-gray-600 text-white hover:bg-gray-700 hover:text-white; }
   .btn-warning { @apply bg-warning-fill text-gray-900 hover:bg-amber-500; }
   .btn-outline-primary { @apply border-primary text-primary-strong hover:bg-primary hover:text-white; }
-  .btn-outline-secondary { @apply border-line-strong text-fg hover:bg-subtle hover:text-fg; }
+  .btn-outline { @apply border-line-strong text-fg hover:bg-subtle hover:text-fg; }
   .btn-outline-danger { @apply border-danger text-danger hover:bg-danger hover:text-white; }
   .btn-link { @apply border-0 bg-transparent px-0 text-primary-strong underline underline-offset-2 hover:text-primary; }
   .btn-icon { @apply inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-fg; }
 
-  /* Form controls */
+  /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
+     is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
   .form-label { @apply mb-1 inline-block; }
-  .form-control, .form-select {
+  .form-input, .form-select {
     @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
-      disabled:bg-subtle disabled:opacity-80;
+      disabled:bg-subtle disabled:opacity-80
+      aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:outline-danger/30;
   }
   .form-select {
     @apply appearance-none bg-[length:16px_12px] bg-[position:right_.75rem_center] bg-no-repeat pe-9;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   }
-  .form-control-sm, .form-select-sm { @apply px-2 py-1 text-sm; }
+  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-sm; }
   .form-select-sm { @apply pe-8; }
-  textarea.form-control { @apply min-h-20; }
-  .form-check-input { @apply size-4 rounded border-line-strong accent-primary; }
+  textarea.form-input { @apply min-h-20; }
   /* A checkbox drawn as a switch. */
-  .form-switch {
+  .form-toggle {
     @apply relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-line-strong bg-subtle transition-colors
       checked:border-primary checked:bg-primary;
   }
-  .form-switch::before {
+  .form-toggle::before {
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
   }
-  .form-switch:checked::before { @apply translate-x-4; }
-  .form-text { @apply mt-1 text-sm text-muted; }
-  .invalid-feedback { @apply mt-1 text-sm text-danger; }
-  .is-invalid { @apply border-danger focus:border-danger focus:outline-danger/30; }
+  .form-toggle:checked::before { @apply translate-x-4; }
+  .form-help { @apply mt-1 text-sm text-muted; }
+  .form-error { @apply mt-1 text-sm text-danger; }
 
   /* Cards */
   .card { @apply flex min-w-0 flex-col rounded-lg border border-line bg-surface; }
@@ -193,12 +187,11 @@
   .table > thead > tr > th { @apply font-semibold; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
-  .table-light, .table > thead.table-light > tr > th { @apply bg-subtle; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td).num { @apply text-end; }
   .table-statement .section-title td { @apply bg-subtle font-semibold; }
   .table-statement .subtotal td { @apply border-t border-line font-semibold; }
   .table-statement .grand-total td { @apply border-t-2 border-t-fg font-bold; }
-  .formset-table :is(.form-control, .form-select) { @apply min-w-[90px]; }
+  .formset-table :is(.form-input, .form-select) { @apply min-w-[90px]; }
 
   /* Amounts: right-aligned, figures lined up. */
   .num { @apply text-end whitespace-nowrap tabular-nums; }
@@ -207,18 +200,18 @@
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
   .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-xs leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary text-white; }
-  .badge-secondary { @apply bg-gray-500 text-white; }
+  .badge-neutral { @apply bg-gray-500 text-white; }
   .badge-success { @apply bg-success text-white; }
   .badge-danger { @apply bg-danger text-white; }
   .badge-warning { @apply bg-warning-fill text-gray-900; }
-  .badge-dark { @apply bg-gray-800 text-white dark:bg-gray-600; }
-  .badge-light { @apply border border-line bg-subtle text-fg; }
+  .badge-inactive { @apply bg-gray-800 text-white dark:bg-gray-600; }
+  .badge-subtle { @apply border border-line bg-subtle text-fg; }
   .alert { @apply mb-4 rounded-lg border px-4 py-3; }
   .alert-info { @apply border-sky-200 bg-info-subtle text-sky-900 dark:border-sky-900 dark:text-sky-100; }
   .alert-success { @apply border-green-200 bg-success-subtle text-green-900 dark:border-green-900 dark:text-green-100; }
   .alert-warning { @apply border-amber-200 bg-warning-subtle text-amber-900 dark:border-amber-900 dark:text-amber-100; }
   .alert-danger { @apply border-red-200 bg-danger-subtle text-red-900 dark:border-red-900 dark:text-red-100; }
-  .alert-secondary, .alert-light { @apply border-line bg-subtle text-fg; }
+  .alert-neutral, .alert-neutral { @apply border-line bg-subtle text-fg; }
 
   /* Dialogs: native <dialog>, opened by data-dialog-open (static/js/app.js). */
   .modal {

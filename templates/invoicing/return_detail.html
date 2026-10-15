@@ -5,7 +5,7 @@
 <div class="flex flex-wrap justify-between items-start gap-2 mb-4 print:hidden">
   <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="text-sm no-underline">&larr; {{ invoice.number }}</a>
   <div class="flex gap-2">
-    <button type="button" data-print class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print" %}</button>
+    <button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</button>
     {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary">{% icon "file-code" %} {% translate "Coretax XML" %}</a>{% endif %}
     {% if can_write and note.status == note.Status.POSTED %}<button class="btn btn-outline-danger" type="button" data-dialog-open="voidModal">{% translate "Void return" %}</button>{% endif %}
   </div>
@@ -13,7 +13,7 @@
 <div class="card max-w-5xl"><div class="card-body">
   <div class="flex flex-wrap justify-between gap-4 mb-4">
     <div><h1 class="text-xl font-medium leading-tight mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}
-      {% if note.status == note.Status.VOID %}<span class="badge align-middle badge-dark">{{ note.get_status_display }}</span>{% endif %}</h1>
+      {% if note.status == note.Status.VOID %}<span class="badge align-middle badge-inactive">{{ note.get_status_display }}</span>{% endif %}</h1>
       <div class="text-muted">{% translate "Nota retur" %} · {{ note.date|date:"d F Y" }}</div></div>
     <div class="text-end text-sm">
       <div class="font-semibold">{{ invoice.seller.name }}</div>{% if invoice.seller.npwp %}<div>NPWP {{ invoice.seller.npwp|npwp }}</div>{% endif %}
@@ -49,7 +49,7 @@
 <dialog class="modal" id="voidModal" aria-labelledby="voidModalTitle"><form method="post" action="{% url 'invoicing:return_void' note.pk %}">{% csrf_token %}
   <div class="modal-header"><h2 class="modal-title" id="voidModalTitle">{% blocktranslate trimmed with number=note.number %}Void {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body"><p>{% translate "The return's journal entry is reversed on the void date, including any refund; the invoice owes the credited amount again, and the stock goes back the way it came. This cannot be undone." %}</p>
-    <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-control' }}</div>
+    <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-input' }}</div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Void return" %}</button></div>
 </form></dialog>
 {% endif %}

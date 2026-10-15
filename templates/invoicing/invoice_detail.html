@@ -9,18 +9,18 @@
     {% history_link invoice %}
   </div>
   <div class="flex flex-wrap gap-2">
-    {% if invoice.status != invoice.Status.DRAFT %}<a href="{% url 'invoicing:print' kind invoice.pk %}" target="_blank" class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print" %}</a>{% endif %}
+    {% if invoice.status != invoice.Status.DRAFT %}<a href="{% url 'invoicing:print' kind invoice.pk %}" target="_blank" class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</a>{% endif %}
     {% if coretax_connected and not coretax_problem and not invoice.tax_invoice_number and can_write %}<form method="post" action="{% url 'invoicing:coretax_send_invoice' invoice.pk %}">{% csrf_token %}<button class="btn btn-outline-primary">{% icon "send" %} {% translate "Send to Coretax" %}</button></form>{% endif %}
     {% if show_coretax and not coretax_problem %}<a href="{% url 'invoicing:coretax' kind invoice.pk %}" class="btn btn-outline-primary" title="{% translate 'Import under e-Faktur > Pajak Keluaran > Impor Data in Coretax' %}">{% icon "file-code" %} {% translate "Coretax XML" %}</a>{% endif %}
     {% if can_write %}
       {% if invoice.status == invoice.Status.DRAFT %}
-        <a href="{% url 'invoicing:update' kind invoice.pk %}" class="btn btn-outline-secondary">{% translate "Edit" %}</a>
+        <a href="{% url 'invoicing:update' kind invoice.pk %}" class="btn btn-outline">{% translate "Edit" %}</a>
         <form method="post" action="{% url 'invoicing:delete' kind invoice.pk %}" data-confirm="{% translate 'Delete this draft?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Delete" %}</button></form>
         <form method="post" action="{% url 'invoicing:issue' kind invoice.pk %}">{% csrf_token %}<button class="btn btn-primary">{% translate "Issue" %}</button></form>
       {% else %}
-        {% if invoice.can_return %}<a href="{% url 'invoicing:return_create' kind invoice.pk %}" class="btn btn-outline-secondary">{% icon "undo-2" %} {% if invoice.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %}</a>{% endif %}
+        {% if invoice.can_return %}<a href="{% url 'invoicing:return_create' kind invoice.pk %}" class="btn btn-outline">{% icon "undo-2" %} {% if invoice.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %}</a>{% endif %}
         {% if invoice.status == invoice.Status.ISSUED and not has_posted_returns %}<button class="btn btn-outline-danger" type="button" data-dialog-open="voidModal">{% translate "Void invoice" %}</button>{% endif %}
-        {% if write_off_form and can_write %}<button class="btn btn-outline-secondary" type="button" data-dialog-open="writeOffModal">{% translate "Write off" %}</button>{% endif %}
+        {% if write_off_form and can_write %}<button class="btn btn-outline" type="button" data-dialog-open="writeOffModal">{% translate "Write off" %}</button>{% endif %}
       {% endif %}
     {% endif %}
   </div>
@@ -31,7 +31,7 @@
     {% if show_coretax %}<p class="text-sm text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
       {% if can_write and not coretax_problem and not invoice.tax_invoice_number %}
       <form method="post" action="{% url 'invoicing:tax_invoice_number' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
-        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-control form-control-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
+        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-input form-input-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
         <div class="flex-none"><button class="btn btn-sm btn-outline-primary">{% translate "Record number" %}</button></div>
       </form>
       {% endif %}
@@ -40,8 +40,8 @@
       <p class="text-sm text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
       {% if can_write and not invoice.special_document_number and invoice.status != invoice.Status.VOID %}
       <form method="post" action="{% url 'invoicing:special_document' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
-        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-control form-control-sm" maxlength="100" required></div>
-        <div class="flex-none"><label class="form-label text-sm mb-1" for="special-date">{% translate "Document date" %}</label><input id="special-date" type="date" name="date" class="form-control form-control-sm" required></div>
+        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-input form-input-sm" maxlength="100" required></div>
+        <div class="flex-none"><label class="form-label text-sm mb-1" for="special-date">{% translate "Document date" %}</label><input id="special-date" type="date" name="date" class="form-input form-input-sm" required></div>
         <div class="flex-none"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></div>
       </form>
       {% endif %}
@@ -70,7 +70,7 @@
           <div><div class="text-sm font-semibold">{{ p.number }}</div><div class="text-sm text-muted">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="text-sm text-muted">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}{% if p.income_tax_kind %}<div class="text-sm text-muted">{% if p.income_tax_withheld %}{% blocktranslate trimmed with amount=p.income_tax_withheld|rupiah tax=p.get_income_tax_kind_display %}incl. {{ amount }} withheld as {{ tax }}{% endblocktranslate %}{% else %}{% translate "PPh 26 at the treaty's 0% rate: nothing withheld" %}{% endif %}{% if p.withholding_slip %} · {{ p.withholding_slip }}{% endif %}</div>
             {% if can_write and not invoice.is_sales and not p.withholding_slip and p.status == p.Status.POSTED %}
             <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="flex gap-1 mt-1">{% csrf_token %}
-              <input name="number" class="form-control form-control-sm" maxlength="50" placeholder="{% translate 'Bukti potong no.' %}" aria-label="{% translate 'Bukti potong no.' %}" required>
+              <input name="number" class="form-input form-input-sm" maxlength="50" placeholder="{% translate 'Bukti potong no.' %}" aria-label="{% translate 'Bukti potong no.' %}" required>
               <button class="btn btn-sm btn-outline-primary whitespace-nowrap">{% translate "Record" %}</button></form>{% endif %}{% endif %}</div>
           <div class="text-end"><div class="num">{{ p.amount|rupiah }}</div>
             {% if p.status == p.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:payment_void' p.pk %}" data-confirm="{% translate 'Void this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}
@@ -107,7 +107,7 @@
 <dialog class="modal" id="voidModal" aria-labelledby="voidModalTitle"><form method="post" action="{% url 'invoicing:void' kind invoice.pk %}">{% csrf_token %}
   <div class="modal-header"><h2 class="modal-title" id="voidModalTitle">{% blocktranslate trimmed with number=invoice.number %}Void {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body"><p>{% translate "The invoice's journal entry will be reversed on the void date. This cannot be undone." %}</p>
-    <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-control' }}</div>
+    <label class="form-label">{{ void_form.date.label }}</label>{{ void_form.date|add_class:'form-input' }}</div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Void invoice" %}</button></div>
 </form></dialog>
 {% if write_off_form %}

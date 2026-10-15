@@ -31,7 +31,7 @@
       <td class="num">{{ asset.cost|rupiah }}</td>
       <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span class="text-sm">{% translate "not depreciated" %}</span>{% endif %}</td>
       <td class="num">{{ row.book_value|rupiah }}</td>
-      <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-secondary">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
+      <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-neutral">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
     </tr>
   {% endwith %}{% empty %}
     <tr><td colspan="8" class="text-center text-muted py-6">{% translate "No fixed assets yet. Register equipment, vehicles, buildings and land you bought so their depreciation is posted every month." %}</td></tr>

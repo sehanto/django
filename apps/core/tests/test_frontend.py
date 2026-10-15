@@ -71,7 +71,7 @@ def test_the_build_has_what_pages_use_and_nothing_else():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-switch", ".nav-link.active", ".icon",
+    for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-toggle", ".nav-link.active", ".icon",
                  ".grid-cols-12", ".xl\\:col-span-8", ".print\\:hidden", ".data-open\\:flex"):
         assert kept in css, kept
     for dropped in (".carousel", ".offcanvas", ".grid-cols-7", "@font-face"):
@@ -113,6 +113,37 @@ def test_every_class_in_use_is_in_the_build():
             for value in pattern.findall(text):
                 missing |= {f"{path.name}: {name}" for name in _complete_classes(value) if name not in defined | NOT_OURS}
     assert not missing, sorted(missing)
+
+
+# Names only the old framework has: its form classes and validation states, grid and display
+# helpers, and the colours secondary/light/dark. The project's own are form-input, form-help,
+# form-error, aria-invalid, Tailwind's grid and display utilities, and neutral/subtle/inactive.
+OLD_VOCABULARY = re.compile(
+    r"^(form-control.*|form-check.*|form-floating|(in)?valid-feedback|is-(in)?valid|input-group.*|row|g[xy]?-\d|col(-(sm|md|lg|xl|xxl))?-\d+"
+    r"|d-\w+(-\w+)?|fw-\w+|fs-\d|text-bg-\w+|visually-hidden.*|btn-close|navbar.*|offcanvas.*|dropdown-(menu|item|toggle)"
+    r"|(btn|btn-outline|badge|alert|table|bg|text|border|link)-(secondary|light|dark))$"
+)
+
+
+def test_no_class_comes_from_the_old_framework():
+    """Its names, not just its files: neither used in a template, an {% icon %} or a widget, nor defined."""
+    from apps.core import assets
+
+    css = assets.OUT_CSS.read_text(encoding="utf-8")
+    defined = {re.sub(r"\\(.)", r"\1", name) for name in re.findall(r"\.((?:\\.|[A-Za-z0-9_-])+)", css)}
+    used = set()
+    for path in [*TEMPLATES.rglob("*.html"), *(Path(settings.BASE_DIR) / "apps").rglob("*.py")]:
+        if "tests" in path.parts or "migrations" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        for pattern in (CLASS_ATTRIBUTE, ICON_CLASSES, WIDGET_CLASSES):
+            for value in pattern.findall(text):
+                used |= {f"{path.name}: {name}" for name in _complete_classes(value) if OLD_VOCABULARY.match(name)}
+    assert not used, sorted(used)
+    assert not {name for name in defined if OLD_VOCABULARY.match(name)}
+    from apps.core.templatetags.ui import STATUS_BADGES
+
+    assert not {f"badge-{colour}" for colour in STATUS_BADGES.values()} - defined  # each status colour is a component
 
 
 def test_components_use_theme_colours():

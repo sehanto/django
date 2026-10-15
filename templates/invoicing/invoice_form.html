@@ -30,7 +30,7 @@
   <div class="card-footer flex flex-wrap gap-2 justify-between items-center">
     <span class="text-sm text-muted">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
     <div class="flex gap-2">
-      <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+      <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline">{% translate "Cancel" %}</a>
       <button name="draft" class="btn btn-outline-primary">{% translate "Save draft" %}</button>
       <button name="issue" class="btn btn-primary">{% translate "Save & issue" %}</button>
     </div>

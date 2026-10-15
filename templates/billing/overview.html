@@ -7,7 +7,7 @@
   <div>
     <div class="text-sm text-muted">{% translate "Current plan" %}</div>
     <div class="text-2xl font-semibold">{{ current_organization.plan.name }}
-      <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE %}badge-danger{% else %}badge-secondary{% endif %}">{{ state.label }}</span>
+      <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE %}badge-danger{% else %}badge-neutral{% endif %}">{{ state.label }}</span>
     </div>
   </div>
   <div class="text-muted">

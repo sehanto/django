@@ -19,7 +19,7 @@
       <tbody>{% for s in submissions %}<tr>
         <td class="text-sm whitespace-nowrap">{{ s.created_at|date:"d/m/Y H:i" }}</td><td class="text-sm">{{ s.get_document_type_display }}</td><td>{{ s.label }}</td>
         <td>{{ s.get_status_display }}{% for e in s.errors %}<div class="text-sm text-danger">{{ e.reference }}: {{ e.error }}</div>{% endfor %}</td>
-        <td class="text-end">{% if s.status == s.Status.PENDING %}<form method="post" action="{% url 'invoicing:coretax_refresh' s.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-secondary">{% translate "Check" %}</button></form>{% endif %}</td></tr>
+        <td class="text-end">{% if s.status == s.Status.PENDING %}<form method="post" action="{% url 'invoicing:coretax_refresh' s.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline">{% translate "Check" %}</button></form>{% endif %}</td></tr>
       {% empty %}<tr><td colspan="5" class="text-center text-muted py-6">{% translate "Nothing sent yet." %}</td></tr>{% endfor %}</tbody>
     </table></div></div>
   </div>

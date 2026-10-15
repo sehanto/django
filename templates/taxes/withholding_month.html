@@ -19,7 +19,7 @@
       <td class="num font-semibold">{{ p.income_tax_withheld|rupiah }}</td>
       <td>{% if p.withholding_slip %}{{ p.withholding_slip }}{% elif can_write %}
         <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="flex gap-1">{% csrf_token %}<input type="hidden" name="next" value="withholding">
-          <input name="number" class="form-control form-control-sm" maxlength="50" required aria-label="{% translate 'Bukti potong no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td></tr>
+          <input name="number" class="form-input form-input-sm" maxlength="50" required aria-label="{% translate 'Bukti potong no.' %}"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="8" class="text-center text-muted py-6">{% translate "No income tax was withheld from suppliers this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if run %}<p class="mt-4 mb-0">{% url 'payroll:run' run.pk as url %}{% blocktranslate trimmed with period=run.period %}PPh 21 and PPh 26 withheld from salaries: <a href="{{ url }}">payroll {{ period }}</a>.{% endblocktranslate %}</p>{% endif %}

@@ -4,7 +4,7 @@
   <input type="hidden" name="next" value="{{ request.get_full_path }}">
   {% for code, name in LANGUAGES %}
     <button name="language" value="{{ code }}" title="{{ name }}" aria-label="{{ name }}" lang="{{ code }}"
-            class="btn btn-sm py-0 {% if code == current_language %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+            class="btn btn-sm py-0 {% if code == current_language %}btn-neutral{% else %}btn-outline{% endif %}"
             {% if code == current_language %}aria-pressed="true"{% endif %}>{{ code|upper }}</button>
   {% endfor %}
 </form>

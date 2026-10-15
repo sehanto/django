@@ -31,7 +31,7 @@
       <td class="num">{{ d.amount|rupiah }}</td>
       <td class="num">{{ row.recognised|rupiah }}</td>
       <td class="num">{{ row.remaining|rupiah }}</td>
-      <td><span class="badge {% if d.status == d.Status.VOID %}badge-secondary{% else %}badge-success{% endif %}">{{ d.get_status_display }}</span></td>
+      <td><span class="badge {% if d.status == d.Status.VOID %}badge-neutral{% else %}badge-success{% endif %}">{{ d.get_status_display }}</span></td>
     </tr>
   {% endwith %}{% empty %}
     <tr><td colspan="8" class="text-center text-muted py-6">{% translate "Nothing paid or received in advance yet." %}</td></tr>

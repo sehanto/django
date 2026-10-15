@@ -9,7 +9,7 @@
     {% for code in new_codes %}<li class="mb-1">{{ code }}</li>{% endfor %}
   </ul>
   <div class="flex gap-2 print:hidden">
-    <button type="button" data-print class="btn btn-outline-secondary">{% icon "printer" %} {% translate "Print" %}</button>
+    <button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</button>
     <a href="{% url 'accounts:security' %}" class="btn btn-primary">{% translate "I have saved my codes" %}</a>
   </div>
 {% else %}

@@ -20,7 +20,7 @@
       <td class="whitespace-nowrap text-sm">{{ change.changed_at|date:"d M Y H:i:s" }}<div class="text-muted">#{{ change.sequence }}</div></td>
       <td class="text-sm">{{ change.actor_label|default:_("System") }}<div class="text-muted">{{ change.db_role }}</div></td>
       <td class="text-sm"><a href="?table={{ change.table_name }}&amp;record={{ change.record_id }}">{{ table_label }} {{ change.record_id }}</a>
-        <div><span class="badge {% if change.operation == change.Operation.DELETE %}badge-danger{% elif change.operation == change.Operation.INSERT %}badge-success{% else %}badge-secondary{% endif %}">{{ change.get_operation_display }}</span></div></td>
+        <div><span class="badge {% if change.operation == change.Operation.DELETE %}badge-danger{% elif change.operation == change.Operation.INSERT %}badge-success{% else %}badge-neutral{% endif %}">{{ change.get_operation_display }}</span></div></td>
       <td class="text-sm"><dl class="grid grid-cols-12 gap-x-6 mb-0">{% for f in fields %}
         <dt class="col-span-12 sm:col-span-4 font-normal text-muted">{{ f.label }}</dt>
         <dd class="col-span-12 sm:col-span-8 mb-1 break-words">{% if change.operation == change.Operation.UPDATE %}<del class="text-muted">{{ f.old|default:"—" }}</del> → {{ f.new|default:"—" }}{% elif change.operation == change.Operation.DELETE %}{{ f.old }}{% else %}{{ f.new }}{% endif %}</dd>

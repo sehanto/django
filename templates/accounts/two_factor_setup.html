@@ -14,7 +14,7 @@
     {% include "partials/form_fields.html" with col="col-span-12 md:col-span-6" %}
     {% include "accounts/_captcha.html" %}
     <div class="flex gap-2 justify-end mt-6">
-      <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+      <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% translate "Cancel" %}</a>
       <button class="btn btn-primary">{% translate "Turn on" %}</button>
     </div>
   </form>

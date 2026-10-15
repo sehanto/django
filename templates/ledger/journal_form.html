@@ -15,9 +15,9 @@
         {% for f in formset %}
         <tr data-formset-row>
           <td>{{ f.account|add_class:'form-select form-select-sm' }}{% include "partials/field_feedback.html" with field=f.account hide_help=True %}</td>
-          <td>{{ f.description|add_class:'form-control form-control-sm' }}</td>
-          <td>{{ f.debit|add_class:'form-control form-control-sm text-end' }}</td>
-          <td>{{ f.credit|add_class:'form-control form-control-sm text-end' }}</td>
+          <td>{{ f.description|add_class:'form-input form-input-sm' }}</td>
+          <td>{{ f.debit|add_class:'form-input form-input-sm text-end' }}</td>
+          <td>{{ f.credit|add_class:'form-input form-input-sm text-end' }}</td>
           <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
         </tr>
         {% endfor %}
@@ -31,15 +31,15 @@
     <template data-formset-empty>
       <tr data-formset-row>
         <td>{{ formset.empty_form.account|add_class:'form-select form-select-sm' }}</td>
-        <td>{{ formset.empty_form.description|add_class:'form-control form-control-sm' }}</td>
-        <td>{{ formset.empty_form.debit|add_class:'form-control form-control-sm text-end' }}</td>
-        <td>{{ formset.empty_form.credit|add_class:'form-control form-control-sm text-end' }}</td>
+        <td>{{ formset.empty_form.description|add_class:'form-input form-input-sm' }}</td>
+        <td>{{ formset.empty_form.debit|add_class:'form-input form-input-sm text-end' }}</td>
+        <td>{{ formset.empty_form.credit|add_class:'form-input form-input-sm text-end' }}</td>
         <td><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
       </tr>
     </template>
   </div>
   <div class="card-footer flex gap-2 justify-end">
-    <a href="{% url 'ledger:journals' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+    <a href="{% url 'ledger:journals' %}" class="btn btn-outline">{% translate "Cancel" %}</a>
     <button name="draft" class="btn btn-outline-primary">{% translate "Save draft" %}</button>
     <button name="post" class="btn btn-primary">{% translate "Save & post" %}</button>
   </div></div>

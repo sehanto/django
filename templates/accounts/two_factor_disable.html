@@ -5,14 +5,14 @@
 <div class="card max-w-3xl"><div class="card-body">
 {% if required_by %}
   <div class="alert alert-info">{% blocktranslate trimmed with organizations=required_by|join:", " %}You can't turn off two-factor authentication while {{ organizations }} requires it.{% endblocktranslate %}</div>
-  <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Back" %}</a>
+  <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% translate "Back" %}</a>
 {% else %}
   <div class="alert alert-warning">{% translate "Your account will be protected by your password only. Your authenticator and backup codes will stop working." %}</div>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-span-12 md:col-span-6" %}
     {% include "accounts/_captcha.html" %}
     <div class="flex gap-2 justify-end mt-6">
-      <a href="{% url 'accounts:security' %}" class="btn btn-outline-secondary">{% translate "Cancel" %}</a>
+      <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% translate "Cancel" %}</a>
       <button class="btn btn-danger">{% translate "Turn off" %}</button>
     </div>
   </form>
