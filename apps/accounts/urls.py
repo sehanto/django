@@ -19,6 +19,7 @@ urlpatterns = [
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("password/", views.PasswordChangeView.as_view(), name="password_change"),
     path("language/", views.SetLanguageView.as_view(), name="set_language"),
+    path("appearance/", views.SetThemeView.as_view(), name="set_theme"),
     path("verify-email/", views.VerifyEmailPendingView.as_view(), name="verify_email_pending"),
     path("verify-email/resend/", views.ResendVerificationView.as_view(), name="verify_email_resend"),
     path("verify-email/change/", views.ChangeEmailView.as_view(), name="verify_email_change"),

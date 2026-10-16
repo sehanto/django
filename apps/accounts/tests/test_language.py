@@ -22,14 +22,14 @@ SET_LANGUAGE = reverse("accounts:set_language")
 )
 def test_first_visit_uses_browser_language_as_a_hint(client, db, accept_language, expected):
     response = client.get(reverse("accounts:login"), HTTP_ACCEPT_LANGUAGE=accept_language)
-    assert f'<html lang="{expected}">' in response.content.decode()
+    assert f'<html lang="{expected}" ' in response.content.decode()
     assert response["Content-Language"] == expected
 
 
 def test_explicit_choice_beats_browser_language(client, db):
     client.post(SET_LANGUAGE, {"language": "id", "next": "/"})
     response = client.get(reverse("accounts:login"), HTTP_ACCEPT_LANGUAGE="en-US,en;q=0.9")
-    assert '<html lang="id">' in response.content.decode()
+    assert '<html lang="id" ' in response.content.decode()
 
 
 def test_responses_vary_on_language_signals(client, db):
@@ -44,7 +44,7 @@ def test_visitor_can_switch_to_english_with_cookie(client, db):
     assert response.cookies[settings.LANGUAGE_COOKIE_NAME].value == "en"
 
     html = client.get(reverse("accounts:signup")).content.decode()
-    assert '<html lang="en">' in html
+    assert '<html lang="en" ' in html
     assert "Sign up and create your business" in html
 
 
@@ -67,7 +67,7 @@ def test_unknown_language_and_foreign_redirects_are_ignored(auth_client, user):
 
 
 def test_language_can_be_changed_in_profile(auth_client, user):
-    response = auth_client.post(reverse("accounts:profile"), {"full_name": user.full_name, "phone": "", "language": "en"}, follow=True)
+    response = auth_client.post(reverse("accounts:profile"), {"full_name": user.full_name, "phone": "", "language": "en", "theme": "system"}, follow=True)
     user.refresh_from_db()
     assert user.language == "en"
     assert "Profile updated." in response.content.decode()

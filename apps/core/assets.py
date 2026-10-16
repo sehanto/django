@@ -2,6 +2,8 @@
 
 * ``static/build/app.min.css``: Tailwind CSS compiles ``frontend/app.css``; only the utilities the
   templates, scripts and Python code use are generated, plus the project's components and base styles.
+  Lightning CSS then adds the fallback for ``light-dark()`` (``frontend/light-dark.cjs``), so the colour
+  tokens work in browsers from before 2024 too.
 * ``templates/icons/<name>.svg``: the Lucide icons (``lucide-static``, ISC) that templates use
   through ``{% icon "name" %}`` (``apps/core/templatetags/icons.py``), as small SVG templates.
 
@@ -20,6 +22,7 @@ from django.conf import settings
 ROOT = Path(settings.BASE_DIR)
 APP_CSS = ROOT / "frontend" / "app.css"
 TAILWIND = ROOT / "node_modules" / ".bin" / "tailwindcss"
+LIGHT_DARK = ROOT / "frontend" / "light-dark.cjs"
 LUCIDE = ROOT / "node_modules" / "lucide-static"
 
 OUT_CSS = ROOT / "static" / "build" / "app.min.css"
@@ -79,6 +82,12 @@ def tailwind() -> str:
     return result.stdout.strip() + "\n"
 
 
+def with_light_dark_fallback(css: str) -> str:
+    _installed(ROOT / "node_modules" / "lightningcss")
+    result = subprocess.run(["node", str(LIGHT_DARK)], input=css, cwd=ROOT, capture_output=True, text=True, check=True)
+    return result.stdout.strip() + "\n"
+
+
 @dataclass(frozen=True)
 class Build:
     css: str
@@ -86,7 +95,7 @@ class Build:
 
 
 def build() -> Build:
-    return Build(css=tailwind(), icons=icons())
+    return Build(css=with_light_dark_fallback(tailwind()), icons=icons())
 
 
 def write(result: Build) -> dict[Path, int]:

@@ -67,16 +67,23 @@ class PlanOffer:
 
 def plan_offers(organization) -> list[PlanOffer]:
     """Every plan with what *this* organization would pay now (after any proration credit)."""
-    offers = []
+    today, offers = timezone.localdate(), []
+    other_plans_credit = None  # the same for every plan but the current one: read the paid periods once
     for plan in Plan.objects.all():
         if plan.monthly_price <= 0:
             offers.append(PlanOffer(plan=plan, monthly=None, yearly=None))
             continue
+        if plan.pk == organization.plan_id:
+            credit = Credit.none()
+        else:
+            if other_plans_credit is None:
+                other_plans_credit = switch_credit(organization, plan, today=today)
+            credit = other_plans_credit
         offers.append(PlanOffer(
             plan=plan,
-            monthly=quote_for(organization, plan, BillingPeriod.MONTHLY),
-            yearly=quote_for(organization, plan, BillingPeriod.YEARLY),
-            credit=switch_credit(organization, plan).amount,
+            monthly=switch_quote(price=price_for(plan, BillingPeriod.MONTHLY), credit=credit, period=BillingPeriod.MONTHLY, starts_on=today),
+            yearly=switch_quote(price=price_for(plan, BillingPeriod.YEARLY), credit=credit, period=BillingPeriod.YEARLY, starts_on=today),
+            credit=credit.amount,
         ))
     return offers
 

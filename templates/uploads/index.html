@@ -9,7 +9,7 @@
 <div class="grid grid-cols-12 gap-4 mb-6">
   {% for entry in group.importers %}
   <div class="col-span-12 md:col-span-6 lg:col-span-4"><div class="card h-full"><div class="card-body flex flex-col gap-2">
-    <h3 class="font-medium mb-0">{{ entry.importer.title }}{% if entry.locked %} {% icon "lock" "text-muted" %}{% endif %}</h3>
+    <h3 class="text-base font-semibold mb-0">{{ entry.importer.title }}{% if entry.locked %} {% icon "lock" "text-muted" %}{% endif %}</h3>
     <p class="text-sm text-muted mb-0 grow">{{ entry.importer.description }}</p>
     <div class="flex flex-wrap gap-2">
       {% if can_write %}<a class="btn btn-sm btn-primary" href="{% url 'uploads:upload' entry.slug %}">{% icon "upload" %} {% translate "Upload" %}</a>{% endif %}

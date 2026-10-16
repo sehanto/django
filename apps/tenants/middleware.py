@@ -46,7 +46,7 @@ class TwoFactorRequirementMiddleware:
     EXEMPT = {
         ("accounts", name) for name in (
             "security", "two_factor_setup", "two_factor_backup_codes", "two_factor_verify_session",
-            "logout", "set_language", "verify_email", "verify_email_pending", "verify_email_resend", "verify_email_change",
+            "logout", "set_language", "set_theme", "verify_email", "verify_email_pending", "verify_email_resend", "verify_email_change",
         )
     } | {("tenants", "switch"), ("tenants", "create")}
 

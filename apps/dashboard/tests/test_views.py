@@ -59,7 +59,7 @@ def test_pages_render_in_both_languages(auth_client, user, name, kwargs, languag
     user.save(update_fields=["language"])
     response = auth_client.get(reverse(name, kwargs=kwargs))
     assert response.status_code == 200
-    assert f'<html lang="{language}">' in response.content.decode()
+    assert f'<html lang="{language}" ' in response.content.decode()
 
 
 def test_anonymous_redirected_to_login(client, db):
@@ -190,7 +190,7 @@ def test_printed_invoice_uses_contacts_document_language(auth_client, user, orga
     print_url = reverse("invoicing:print", kwargs={"kind": "sales", "pk": invoice.pk})
 
     html = auth_client.get(print_url).content.decode()  # ...customer document defaults to Indonesian
-    assert '<html lang="id">' in html and "Ditagihkan kepada" in html and "Rp 1.250.000" in html
+    assert '<html lang="id" ' in html and "Ditagihkan kepada" in html and "Rp 1.250.000" in html
 
     customer.document_language = "en"
     customer.save(update_fields=["document_language"])

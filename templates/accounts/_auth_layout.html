@@ -2,7 +2,7 @@
 {% block body %}
 <main id="content" class="min-h-screen flex items-center py-12" tabindex="-1">
   <div class="mx-auto w-full max-w-md px-4">
-    <div class="text-end mb-2">{% include "partials/language_switch.html" %}</div>
+    <div class="flex justify-end gap-2 mb-2">{% include "partials/theme_switch.html" %}{% include "partials/language_switch.html" %}</div>
     <div class="text-center mb-6">
       {% icon "book-marked" "text-primary text-display" %}
       <h1 class="text-xl leading-tight font-bold mt-2">EA-System</h1>

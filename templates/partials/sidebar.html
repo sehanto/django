@@ -76,6 +76,9 @@
     <a href="{% url 'accounts:profile' %}" class="no-underline truncate">{% icon "circle-user" "me-1" %}{{ request.user.get_short_name }}</a>
     <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0">{% translate "Sign out" %}</button></form>
   </div>
-  {% include "partials/language_switch.html" %}
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    {% include "partials/language_switch.html" %}
+    {% include "partials/theme_switch.html" %}
+  </div>
 </nav>
 {% endwith %}

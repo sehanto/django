@@ -620,8 +620,8 @@ few behaviours live in `static/js/app.js`.
 
 | File | Built | Sent (Brotli) |
 |---|---|---|
-| `static/build/app.min.css`: Tailwind (only the utilities in use) + components, one request | 40 KB | 7 KB |
-| `templates/icons/<name>.svg`: the 58 Lucide icons in use (of ~2,100), rendered into the page | 29 KB | inline |
+| `static/build/app.min.css`: Tailwind (only the utilities in use) + components, one request | 43 KB | 7 KB |
+| `templates/icons/<name>.svg`: the 64 Lucide icons in use (of ~2,100), rendered into the page | 30 KB | inline |
 
 - **Source.** `frontend/app.css` is the whole stylesheet: `@import "tailwindcss"`, where class names
   come from (`@source`: templates, scripts and Python code, not tests or migrations), the theme
@@ -639,11 +639,24 @@ few behaviours live in `static/js/app.js`.
   (`badge-{{ … }}`, `alert-{{ … }}`) must be components, since Tailwind only generates
   utilities it finds written out.
 - **Colours** are semantic tokens: `text-fg`, `text-muted`, `bg-canvas`, `bg-surface`, `bg-subtle`,
-  `border-line`, `text-primary`/`bg-primary`, `text-danger`, `text-success`, `text-warning`
-  (and `-subtle` backgrounds), `bg-series-1`/`-2` for the chart. They switch with the device's light
-  or dark setting (`prefers-color-scheme`), so templates rarely need `dark:` variants. Components
-  use the same tokens (`bg-danger-strong`, `bg-warning-fill`, `accent-primary`), never an
+  `border-line`/`border-line-strong` (form controls), text colours `text-primary`, `text-danger`,
+  `text-success`, `text-warning` (and `-subtle` backgrounds), solid `*-fill` backgrounds for white
+  text (`bg-primary-fill`, `bg-danger-fill`, `bg-success-fill`, `bg-neutral-fill`, `bg-inactive-fill`,
+  `bg-warning-fill` with dark text), alert text and borders (`text-info-text`, `border-danger-line` …)
+  and `bg-series-1`/`-2` for the chart. Each is defined once as `light-dark(light, dark)` in
+  `frontend/app.css`, so templates never use `dark:` variants (a test checks), and never an
   arbitrary `[var(--…)]`.
+- **Light and dark.** Pages follow the device's setting until the user picks *Light*, *Dark* or
+  *Device setting* with the switch under the menu (or on the sign-in pages, or in the profile):
+  `accounts.Theme`, saved on the account (`User.theme`) and in a `theme` cookie for signed-out
+  pages, rendered as `<html data-theme>` with matching `color-scheme` and `theme-color` metas, so
+  the first paint is already right (no script, no flash; the CSP allows none inline). Printing is
+  always light. The build adds Lightning CSS's `light-dark()` fallback (`frontend/light-dark.cjs`)
+  for browsers from before 2024.
+- **Contrast.** Every token pair meets WCAG 2.2 AA in both modes: 4.5:1 for text (on canvas, surface
+  and subtle backgrounds, white on every fill, alert text on its background) and 3:1 for control
+  borders and the focus ring. `apps/core/tests/test_contrast.py` computes the ratios from the
+  tokens and Tailwind's palette, so a token change that breaks one fails the tests.
 - **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
   `max-h-130` 520 px), and repeated type sizes are tokens (`text-display` 2.5rem for error pages
   and amounts to pay, `text-figure` 1.75rem for plan prices). Arbitrary values (`w-[16%]`) are for
@@ -657,7 +670,7 @@ few behaviours live in `static/js/app.js`.
   it; decorative (`aria-hidden`), so icon-only buttons need an `aria-label`. `{% icon name %}` also
   takes a variable (the build includes the values templates assign to it, e.g. `icon="landmark"`).
   Names are Lucide's (https://lucide.dev/icons).
-- **Build.** `npm ci` installs the pinned Tailwind CLI and `lucide-static` (`package.json`, `package-lock.json`;
+- **Build.** `npm ci` installs the pinned Tailwind CLI, Lightning CSS and `lucide-static` (`package.json`, `package-lock.json`;
   development only, `node_modules/` isn't committed and production needs no Node.js). **After
   using a class or icon that isn't in the build yet, run `manage.py build_css`** and commit
   `static/build/` and `templates/icons/`; `test_the_built_assets_are_up_to_date` fails until

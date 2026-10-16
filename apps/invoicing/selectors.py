@@ -50,6 +50,15 @@ def payments_for(organization, *, kind: str = "", query: str = "") -> QuerySet[P
     return qs
 
 
+def last_cash_account(organization):
+    """The active cash or bank account of the latest payment recorded, if any."""
+    payment = (
+        Payment.objects.for_organization(organization).filter(cash_account__is_active=True)
+        .select_related("cash_account").order_by("-created_at", "-id").first()
+    )
+    return payment.cash_account if payment is not None else None
+
+
 def items_for(organization, *, active_only: bool = False, query: str = "") -> QuerySet[Item]:
     qs = Item.objects.for_organization(organization)
     if active_only:

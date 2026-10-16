@@ -1,11 +1,17 @@
 {% load static i18n %}<!doctype html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE }}" data-theme="{{ theme|default:'system' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Light or dark from the first paint (no flash): the user's choice is on <html>, the device's setting in the CSS. #}
+  {% if theme == themes.LIGHT %}<meta name="color-scheme" content="light"><meta name="theme-color" content="#f9fafb">
+  {% elif theme == themes.DARK %}<meta name="color-scheme" content="dark"><meta name="theme-color" content="#030712">
+  {% else %}<meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f9fafb"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#030712">{% endif %}
   <title>{% block title %}{% translate "MSME accounting" %}{% endblock %} · EA-System</title>
   {# One stylesheet: Tailwind CSS compiled from frontend/app.css (manage.py build_css); icons are inline SVG. #}
   <link href="{% static 'build/app.min.css' %}" rel="stylesheet">
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">{# Lucide book-marked (ISC), the brand mark #}
 </head>
 <body class="font-sans">
 <a class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 btn btn-primary btn-sm" href="#content">{% translate "Skip to content" %}</a>

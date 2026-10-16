@@ -55,6 +55,13 @@ def set_language(user, language: str) -> None:
         user.save(update_fields=["language"])
 
 
+def set_theme(user, theme: str) -> None:
+    """Keep the appearance chosen by the user (``models.Theme``)."""
+    if user.theme != theme:
+        user.theme = theme
+        user.save(update_fields=["theme"])
+
+
 def verification_address(user) -> str:
     """Where the confirmation link goes: a corrected address waiting for confirmation, or the account's."""
     return user.pending_email or user.email

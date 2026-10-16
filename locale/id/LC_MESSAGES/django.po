@@ -11189,3 +11189,18 @@ msgstr "Tidak ada yang dicatat. Perbaiki berkas lalu unggah lagi."
 
 msgid "Check the file"
 msgstr "Periksa berkas"
+
+msgid "Device setting"
+msgstr "Sesuai perangkat"
+
+msgid "Light"
+msgstr "Terang"
+
+msgid "Dark"
+msgstr "Gelap"
+
+msgid "appearance"
+msgstr "tampilan"
+
+msgid "Appearance"
+msgstr "Tampilan"

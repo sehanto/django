@@ -43,7 +43,8 @@ from .forms import (
     VerifySessionForm,
 )
 from .middleware import SUPPORTED_LANGUAGES
-from .models import BackupCodeDevice
+from .context_processors import THEME_COOKIE
+from .models import BackupCodeDevice, Theme
 
 logger = logging.getLogger(__name__)
 NEXT_URL_MAX_LENGTH = 2000
@@ -197,6 +198,20 @@ class SetLanguageView(View):
         if request.user.is_authenticated:
             services.set_language(request.user, language)
         remember_language(response, request, language)
+        return response
+
+
+class SetThemeView(View):
+    """Switch between light and dark pages (or the device's setting): saved on the account and in a cookie."""
+
+    def post(self, request):
+        theme = choice_param(request.POST, "theme", Theme.values)
+        response = redirect(safe_next_url(request, default="/"))
+        if not theme:
+            return response
+        if request.user.is_authenticated:
+            services.set_theme(request.user, theme)
+        response.set_cookie(THEME_COOKIE, theme, max_age=settings.LANGUAGE_COOKIE_AGE, samesite="Lax", secure=request.is_secure())
         return response
 
 

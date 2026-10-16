@@ -1,13 +1,14 @@
 {
   "name": "ea-system-frontend",
   "private": true,
-  "description": "Build tools only: Tailwind CSS compiles frontend/app.css into static/build (manage.py build_css). Nothing here is served.",
+  "description": "Build tools only: Tailwind CSS compiles frontend/app.css, Lightning CSS adds the light-dark() fallback for older browsers (manage.py build_css). Nothing here is served.",
   "license": "UNLICENSED",
   "scripts": {
     "build": "tailwindcss --input frontend/app.css --output static/build/tailwind.css --minify"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",
+    "lightningcss": "1.32.0",
     "lucide-static": "1.48.0",
     "tailwindcss": "4.3.3"
   }

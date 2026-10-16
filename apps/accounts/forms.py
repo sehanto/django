@@ -77,7 +77,7 @@ class SignUpForm(CaptchaFirstFormMixin, BaseForm):
 class ProfileForm(BaseModelForm):
     class Meta:
         model = User
-        fields = ["full_name", "phone", "language"]
+        fields = ["full_name", "phone", "language", "theme"]
 
 
 class ResetPasswordForm(CaptchaFirstFormMixin, SanitizedFormMixin, PasswordResetForm):

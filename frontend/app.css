@@ -2,7 +2,7 @@
    Templates use Tailwind utilities for layout, spacing and type; the few primitives every page
    repeats (buttons, form controls, cards, tables, badges, alerts, dialogs) are components below.
    Colours are semantic tokens (text-fg, text-muted, bg-surface, border-line, text-primary …)
-   that follow the device's light or dark setting, so templates rarely need dark: variants. */
+   that follow the device's light or dark setting or the user's choice, so templates never need dark: variants. */
 
 @import "tailwindcss" source(none);
 
@@ -20,60 +20,61 @@
   --text-figure: 1.75rem;
 }
 
+/* Colour tokens, each light-dark(light value, dark value): the device's setting decides, unless the
+   user chose Light or Dark (data-theme on <html>, accounts.Theme). Text tokens (fg, muted, primary,
+   danger …) are for text and icons on canvas/surface/subtle; *-fill tokens are solid backgrounds
+   for white text (buttons, badges). Every pair meets WCAG 2.2 AA in both modes (4.5:1 for text,
+   3:1 for control borders and focus rings), which apps/core/tests/test_contrast.py checks. */
 :root {
-  --app-fg: var(--color-gray-900);
-  --app-muted: var(--color-gray-500);
-  --app-canvas: var(--color-gray-50);
-  --app-surface: var(--color-white);
-  --app-subtle: var(--color-gray-100);
-  --app-line: var(--color-gray-200);
-  --app-line-strong: var(--color-gray-300);
-  --app-primary: var(--color-blue-600);
-  --app-primary-strong: var(--color-blue-700);
-  --app-primary-subtle: var(--color-blue-50);
-  --app-danger: var(--color-red-600);
-  --app-danger-strong: var(--color-red-700);
-  --app-danger-subtle: var(--color-red-50);
-  --app-success: var(--color-green-700);
-  --app-success-strong: var(--color-green-800);
-  --app-success-subtle: var(--color-green-50);
-  --app-warning: var(--color-amber-700);
+  color-scheme: light dark;
+  --app-fg: light-dark(var(--color-gray-900), var(--color-gray-100));
+  --app-muted: light-dark(var(--color-gray-600), var(--color-gray-400));
+  --app-canvas: light-dark(var(--color-gray-50), var(--color-gray-950));
+  --app-surface: light-dark(var(--color-white), var(--color-gray-900));
+  --app-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --app-line: light-dark(var(--color-gray-200), var(--color-gray-800));
+  --app-line-strong: var(--color-gray-500); /* control borders: 3:1 on every background in both modes */
+  --app-primary: light-dark(var(--color-blue-600), var(--color-blue-400));
+  --app-primary-strong: light-dark(var(--color-blue-700), var(--color-blue-300));
+  --app-primary-subtle: light-dark(var(--color-blue-50), color-mix(in oklab, var(--color-blue-500) 18%, transparent));
+  --app-primary-fill: var(--color-blue-600);
+  --app-primary-fill-strong: var(--color-blue-700);
+  --app-danger: light-dark(var(--color-red-700), var(--color-red-400));
+  --app-danger-strong: light-dark(var(--color-red-800), var(--color-red-300));
+  --app-danger-subtle: light-dark(var(--color-red-50), color-mix(in oklab, var(--color-red-500) 18%, transparent));
+  --app-danger-fill: var(--color-red-600);
+  --app-danger-fill-strong: var(--color-red-700);
+  --app-success: light-dark(var(--color-green-800), var(--color-green-400));
+  --app-success-strong: light-dark(var(--color-green-900), var(--color-green-300));
+  --app-success-subtle: light-dark(var(--color-green-50), color-mix(in oklab, var(--color-green-500) 18%, transparent));
+  --app-success-fill: var(--color-green-700);
+  --app-success-fill-strong: var(--color-green-800);
+  --app-warning: light-dark(var(--color-amber-800), var(--color-amber-300));
   --app-warning-fill: var(--color-amber-400);
-  --app-warning-subtle: var(--color-amber-50);
-  --app-info-subtle: var(--color-sky-50);
-  --app-series-1: #2a78d6; /* chart: revenue */
-  --app-series-2: #eb6834; /* chart: expenses */
+  --app-warning-fill-strong: var(--color-amber-500);
+  --app-warning-subtle: light-dark(var(--color-amber-50), color-mix(in oklab, var(--color-amber-400) 16%, transparent));
+  --app-info-subtle: light-dark(var(--color-sky-50), color-mix(in oklab, var(--color-sky-400) 16%, transparent));
+  --app-neutral-fill: var(--color-gray-600);
+  --app-neutral-fill-strong: var(--color-gray-700);
+  --app-inactive-fill: light-dark(var(--color-gray-800), var(--color-gray-600));
+  --app-code: light-dark(var(--color-pink-700), var(--color-pink-400));
+  /* Alerts: text and border on their subtle background. */
+  --app-info-text: light-dark(var(--color-sky-900), var(--color-sky-100));
+  --app-info-line: light-dark(var(--color-sky-200), var(--color-sky-900));
+  --app-success-text: light-dark(var(--color-green-900), var(--color-green-100));
+  --app-success-line: light-dark(var(--color-green-200), var(--color-green-900));
+  --app-warning-text: light-dark(var(--color-amber-900), var(--color-amber-100));
+  --app-warning-line: light-dark(var(--color-amber-200), var(--color-amber-900));
+  --app-danger-text: light-dark(var(--color-red-900), var(--color-red-100));
+  --app-danger-line: light-dark(var(--color-red-200), var(--color-red-900));
+  --app-series-1: light-dark(#2a78d6, #3987e5); /* chart: revenue */
+  --app-series-2: light-dark(#eb6834, #d95926); /* chart: expenses */
   --sidebar-width: 248px;
-  color-scheme: light;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --app-fg: var(--color-gray-100);
-    --app-muted: var(--color-gray-400);
-    --app-canvas: var(--color-gray-950);
-    --app-surface: var(--color-gray-900);
-    --app-subtle: var(--color-gray-800);
-    --app-line: var(--color-gray-800);
-    --app-line-strong: var(--color-gray-600);
-    --app-primary: var(--color-blue-500);
-    --app-primary-strong: var(--color-blue-400);
-    --app-primary-subtle: color-mix(in oklab, var(--color-blue-500) 18%, transparent);
-    --app-danger: var(--color-red-400);
-    --app-danger-strong: var(--color-red-300);
-    --app-danger-subtle: color-mix(in oklab, var(--color-red-500) 18%, transparent);
-    --app-success: var(--color-green-400);
-    --app-success-strong: var(--color-green-300);
-    --app-success-subtle: color-mix(in oklab, var(--color-green-500) 18%, transparent);
-    --app-warning: var(--color-amber-300);
-    --app-warning-fill: var(--color-amber-400);
-    --app-warning-subtle: color-mix(in oklab, var(--color-amber-400) 16%, transparent);
-    --app-info-subtle: color-mix(in oklab, var(--color-sky-400) 16%, transparent);
-    --app-series-1: #3987e5;
-    --app-series-2: #d95926;
-    color-scheme: dark;
-  }
-}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+/* Paper is white: printed invoices and reports always use the light colours. */
+@media print { :root, :root[data-theme] { color-scheme: light; } }
 
 /* Semantic colours as utilities: text-fg, bg-surface, border-line, text-primary, bg-danger-subtle … */
 @theme inline {
@@ -87,16 +88,35 @@
   --color-primary: var(--app-primary);
   --color-primary-strong: var(--app-primary-strong);
   --color-primary-subtle: var(--app-primary-subtle);
+  --color-primary-fill: var(--app-primary-fill);
+  --color-primary-fill-strong: var(--app-primary-fill-strong);
   --color-danger: var(--app-danger);
   --color-danger-strong: var(--app-danger-strong);
   --color-danger-subtle: var(--app-danger-subtle);
+  --color-danger-fill: var(--app-danger-fill);
+  --color-danger-fill-strong: var(--app-danger-fill-strong);
+  --color-danger-text: var(--app-danger-text);
+  --color-danger-line: var(--app-danger-line);
   --color-success: var(--app-success);
   --color-success-strong: var(--app-success-strong);
   --color-success-subtle: var(--app-success-subtle);
+  --color-success-fill: var(--app-success-fill);
+  --color-success-fill-strong: var(--app-success-fill-strong);
+  --color-success-text: var(--app-success-text);
+  --color-success-line: var(--app-success-line);
   --color-warning: var(--app-warning);
   --color-warning-fill: var(--app-warning-fill);
+  --color-warning-fill-strong: var(--app-warning-fill-strong);
+  --color-warning-text: var(--app-warning-text);
+  --color-warning-line: var(--app-warning-line);
   --color-warning-subtle: var(--app-warning-subtle);
   --color-info-subtle: var(--app-info-subtle);
+  --color-info-text: var(--app-info-text);
+  --color-info-line: var(--app-info-line);
+  --color-neutral-fill: var(--app-neutral-fill);
+  --color-neutral-fill-strong: var(--app-neutral-fill-strong);
+  --color-inactive-fill: var(--app-inactive-fill);
+  --color-code: var(--app-code);
   --color-series-1: var(--app-series-1);
   --color-series-2: var(--app-series-2);
 }
@@ -117,7 +137,7 @@
   a { color: var(--app-primary-strong); text-decoration: underline; text-underline-offset: 2px; }
   a:hover { color: var(--app-primary); }
   hr { margin-block: 1rem; border-top-width: 1px; }
-  code { font-size: .875em; color: var(--color-pink-600); }
+  code { font-size: .875em; color: var(--app-code); }
   small { font-size: .875em; }
   summary { cursor: pointer; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
@@ -136,14 +156,14 @@
       disabled:pointer-events-none disabled:opacity-60;
   }
   .btn-sm { @apply px-2 py-1 text-sm; }
-  .btn-primary { @apply bg-primary text-white hover:bg-primary-strong hover:text-white; }
-  .btn-danger { @apply bg-danger text-white hover:bg-danger-strong hover:text-white; }
-  .btn-success { @apply bg-success text-white hover:bg-success-strong hover:text-white; }
-  .btn-neutral { @apply bg-gray-600 text-white hover:bg-gray-700 hover:text-white; }
-  .btn-warning { @apply bg-warning-fill text-gray-900 hover:bg-amber-500; }
-  .btn-outline-primary { @apply border-primary text-primary-strong hover:bg-primary hover:text-white; }
+  .btn-primary { @apply bg-primary-fill text-white hover:bg-primary-fill-strong hover:text-white; }
+  .btn-danger { @apply bg-danger-fill text-white hover:bg-danger-fill-strong hover:text-white; }
+  .btn-success { @apply bg-success-fill text-white hover:bg-success-fill-strong hover:text-white; }
+  .btn-neutral { @apply bg-neutral-fill text-white hover:bg-neutral-fill-strong hover:text-white; }
+  .btn-warning { @apply bg-warning-fill text-gray-900 hover:bg-warning-fill-strong hover:text-gray-900; }
+  .btn-outline-primary { @apply border-primary text-primary-strong hover:bg-primary-fill hover:border-primary-fill hover:text-white; }
   .btn-outline { @apply border-line-strong text-fg hover:bg-subtle hover:text-fg; }
-  .btn-outline-danger { @apply border-danger text-danger hover:bg-danger hover:text-white; }
+  .btn-outline-danger { @apply border-danger text-danger hover:bg-danger-fill hover:border-danger-fill hover:text-white; }
   .btn-link { @apply border-0 bg-transparent px-0 text-primary-strong underline underline-offset-2 hover:text-primary; }
   .btn-icon { @apply inline-flex size-8 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-fg; }
 
@@ -166,7 +186,7 @@
   /* A checkbox drawn as a switch. */
   .form-toggle {
     @apply relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-line-strong bg-subtle transition-colors
-      checked:border-primary checked:bg-primary;
+      checked:border-primary-fill checked:bg-primary-fill;
   }
   .form-toggle::before {
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
@@ -199,19 +219,19 @@
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
   .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-xs leading-tight font-semibold whitespace-nowrap; }
-  .badge-primary { @apply bg-primary text-white; }
-  .badge-neutral { @apply bg-gray-500 text-white; }
-  .badge-success { @apply bg-success text-white; }
-  .badge-danger { @apply bg-danger text-white; }
+  .badge-primary { @apply bg-primary-fill text-white; }
+  .badge-neutral { @apply bg-neutral-fill text-white; }
+  .badge-success { @apply bg-success-fill text-white; }
+  .badge-danger { @apply bg-danger-fill text-white; }
   .badge-warning { @apply bg-warning-fill text-gray-900; }
-  .badge-inactive { @apply bg-gray-800 text-white dark:bg-gray-600; }
+  .badge-inactive { @apply bg-inactive-fill text-white; }
   .badge-subtle { @apply border border-line bg-subtle text-fg; }
   .alert { @apply mb-4 rounded-lg border px-4 py-3; }
-  .alert-info { @apply border-sky-200 bg-info-subtle text-sky-900 dark:border-sky-900 dark:text-sky-100; }
-  .alert-success { @apply border-green-200 bg-success-subtle text-green-900 dark:border-green-900 dark:text-green-100; }
-  .alert-warning { @apply border-amber-200 bg-warning-subtle text-amber-900 dark:border-amber-900 dark:text-amber-100; }
-  .alert-danger { @apply border-red-200 bg-danger-subtle text-red-900 dark:border-red-900 dark:text-red-100; }
-  .alert-neutral, .alert-neutral { @apply border-line bg-subtle text-fg; }
+  .alert-info { @apply border-info-line bg-info-subtle text-info-text; }
+  .alert-success { @apply border-success-line bg-success-subtle text-success-text; }
+  .alert-warning { @apply border-warning-line bg-warning-subtle text-warning-text; }
+  .alert-danger { @apply border-danger-line bg-danger-subtle text-danger-text; }
+  .alert-neutral { @apply border-line bg-subtle text-fg; }
 
   /* Dialogs: native <dialog>, opened by data-dialog-open (static/js/app.js). */
   .modal {
@@ -230,4 +250,5 @@
 
 @media print {
   body { background: #fff; color: #000; }
+  .card { break-inside: avoid; }
 }

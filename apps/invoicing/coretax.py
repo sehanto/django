@@ -647,12 +647,31 @@ class SpecialMonth:
     problems: list[str]
 
 
+def _months_with_special_documents(organization, year: int) -> set[int]:
+    """The months that may have Dokumen Lain (a few queries for the year, so that only those months
+    are looked at in detail): exports and equivalent bills by their document's or their own date,
+    PIBs, and returns on equivalent bills."""
+    from apps.taxes.models import ImportDeclaration  # taxes reads invoicing too
+
+    documents = _issued(Invoice.objects.for_organization(organization).filter(
+        special_document__in=[*EXPORT_CODES, SpecialDocument.EQUIVALENT],
+    ))
+    months = set(documents.filter(special_document_date__year=year).values_list("special_document_date__month", flat=True))
+    months |= set(documents.filter(date__year=year).values_list("date__month", flat=True))
+    months |= set(ImportDeclaration.objects.for_organization(organization).filter(
+        date__year=year, status=ImportDeclaration.Status.POSTED).values_list("date__month", flat=True))
+    months |= set(ReturnNote.objects.for_organization(organization).filter(
+        kind=InvoiceKind.PURCHASE, date__year=year, status=ReturnNote.Status.POSTED, invoice__special_document=SpecialDocument.EQUIVALENT,
+    ).values_list("date__month", flat=True))
+    return months
+
+
 def special_months(organization, year: int) -> list[SpecialMonth]:
     """The months of a year with Dokumen Lain to report (PKP only)."""
     if not organization.is_pkp:
         return []
     months = []
-    for month in range(1, 13):
+    for month in sorted(_months_with_special_documents(organization, year)):
         exports, export_problems = month_exports(organization, year, month)
         inputs, input_problems = month_special_inputs(organization, year, month)
         returns = month_special_returns(organization, year, month)

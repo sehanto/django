@@ -45,7 +45,7 @@ class EmailVerificationMiddleware:
     """
 
     EXEMPT_ACCOUNT_VIEWS = {
-        "verify_email", "verify_email_pending", "verify_email_resend", "verify_email_change", "logout", "set_language",
+        "verify_email", "verify_email_pending", "verify_email_resend", "verify_email_change", "logout", "set_language", "set_theme",
     }
 
     def __init__(self, get_response):

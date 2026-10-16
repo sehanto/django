@@ -19,7 +19,7 @@ from .models import (
     EXPORTS, PAYER_WITHHOLDING, RECEIPT_WITHHOLDING, CoretaxConnection, IncomeTaxWithheld, Invoice, InvoiceKind, Item, Payment,
     SpecialDocument,
 )
-from .selectors import items_for
+from .selectors import items_for, last_cash_account
 from .services import Facility, IncomeTaxInput, SpecialDoc, InvoiceLineInput, ReturnLineInput, returnable_quantity
 
 FACILITY_SEPARATOR = "|"
@@ -248,7 +248,10 @@ class PaymentForm(OrganizationFormMixin, BaseModelForm):
 
     def __init__(self, *args, invoice=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["cash_account"].queryset = cash_accounts(self.organization)
+        accounts = cash_accounts(self.organization)
+        self.fields["cash_account"].queryset = accounts
+        # The account used last (most payments go through the same bank), or the only one there is.
+        self.initial.setdefault("cash_account", last_cash_account(self.organization) or (accounts.first() if accounts.count() == 1 else None))
         if invoice is not None and invoice.buyer_withholds_vat:
             self.fields["amount"].help_text = _("What this settles, including what the buyer withheld.")
             self.fields["vat_withheld"].help_text = _("The buyer is a VAT collector: it pays without the PPN and deposits the PPN itself.")

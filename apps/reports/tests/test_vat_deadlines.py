@@ -56,3 +56,9 @@ def test_a_business_that_is_not_a_pkp_is_told_to_register(auth_client, organizat
     organization.is_pkp = True
     organization.save(update_fields=["is_pkp"])
     assert "pkp_by" not in vat_page(auth_client).context
+
+
+def test_the_summary_reads_the_year_in_a_fixed_number_of_queries(auth_client, books, sale, django_assert_max_num_queries):  # noqa: F811
+    """Months without Dokumen Lain aren't looked at one by one (it was ~7 queries a month)."""
+    with django_assert_max_num_queries(30):
+        assert vat_page(auth_client).status_code == 200

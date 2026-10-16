@@ -111,6 +111,7 @@ TEMPLATES = [
                 "apps.tenants.context_processors.current_organization",
                 "apps.billing.context_processors.subscription_notice",
                 "apps.invoicing.context_processors.invoice_kinds",
+                "apps.accounts.context_processors.theme",
             ],
             "builtins": ["apps.core.templatetags.icons"],  # {% icon "name" %} in every template
         },

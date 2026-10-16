@@ -1,0 +1,10 @@
+{% load i18n %}
+<form method="post" action="{% url 'accounts:set_theme' %}" class="inline-flex gap-1" aria-label="{% translate 'Appearance' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% for value, label in themes.choices %}
+    <button name="theme" value="{{ value }}" title="{{ label }}" aria-label="{{ label }}"
+            class="btn btn-sm py-0 {% if value == theme %}btn-neutral{% else %}btn-outline{% endif %}"
+            {% if value == theme %}aria-pressed="true"{% endif %}>{% if value == themes.LIGHT %}{% icon "sun" %}{% elif value == themes.DARK %}{% icon "moon" %}{% else %}{% icon "monitor-smartphone" %}{% endif %}</button>
+  {% endfor %}
+</form>

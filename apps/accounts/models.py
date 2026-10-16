@@ -38,13 +38,24 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra)
 
 
+class Theme(models.TextChoices):
+    """Light or dark pages: the device's setting (system), or the user's own choice."""
+
+    SYSTEM = "system", _("Device setting")
+    LIGHT = "light", _("Light")
+    DARK = "dark", _("Dark")
+
+
 class User(AbstractBaseUser, PermissionsMixin):
+    Theme = Theme
+
     email = models.EmailField(_("email"), unique=True)
     full_name = models.CharField(_("full name"), max_length=150)
     phone = models.CharField(_("phone number"), max_length=30, blank=True, validators=[phone_validator])
     language = models.CharField(
         _("interface language"), max_length=10, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE
     )
+    theme = models.CharField(_("appearance"), max_length=10, choices=Theme.choices, default=Theme.SYSTEM)
     is_active = models.BooleanField(_("active"), default=True)
     is_staff = models.BooleanField(_("staff status"), default=False)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
