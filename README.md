@@ -1006,11 +1006,11 @@ Three tiers, prepaid monthly or yearly (prices exclude PPN; a year costs 10 mont
 
 | Tier | Per month | Per year | Users | Invoices a month | Includes |
 |---|---|---|---|---|---|
-| Starter | Rp99.000 | Rp990.000 | 3 | 300 | Bookkeeping: sales and purchases, payments, the ledger, inventory, prepayments, PPN and PPh (Final, withholding), SAK EMKM statements and notes, the books export, and the Coretax/eBupot files to import |
-| Growth | Rp249.000 | Rp2.490.000 | 10 | Unlimited | Starter, plus payroll (PPh 21/26, BPJS, 1721-A1) and the REST API |
-| Pro | Rp499.000 | Rp4.990.000 | Unlimited | Unlimited | Growth, plus sending to Coretax through a PJAP and the fixed asset register |
+| Starter | Rp99.000 | Rp990.000 | 1 | 300 | Bookkeeping: sales and purchases, payments, the ledger, inventory, prepayments, PPN and PPh (Final, withholding), SAK EMKM statements and notes, the books export, and the Coretax/eBupot files to import |
+| Growth | Rp249.000 | Rp2.490.000 | 3 | Unlimited | Starter, plus payroll (PPh 21/26, BPJS, 1721-A1) and the REST API |
+| Pro | Rp499.000 | Rp4.990.000 | 5 | Unlimited | Growth, plus sending to Coretax through a PJAP and the fixed asset register |
 
-The tiers are `tenants.Plan` rows (seeded by tenants 0015; Usaha became Starter and the earlier Pro
+The tiers are `tenants.Plan` rows (seeded by tenants 0015, users per tier from tenants 0016; Usaha became Starter and the earlier Pro
 became Growth, at their prices); what each includes is `Plan.features` (`tenants.domain.PlanFeature`).
 A feature's pages answer with a page naming the cheapest tier that has it (`PlanFeatureMiddleware`,
 the API with a 403); what was recorded with it stays in the books, reports and export, and the

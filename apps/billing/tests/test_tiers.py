@@ -132,3 +132,28 @@ def test_existing_plans_become_tiers_and_free_organizations_start_a_trial(user, 
     assert new_pro.monthly_price == 499000 and set(new_pro.features) == set(PlanFeature.values)
     assert organization.plan == usaha and organization.trial_ends_on == organization.plan_paid_until == TODAY + timedelta(days=7)
     assert not Plan.objects.filter(code="gratis").exists()
+
+
+def test_the_tiers_allow_one_three_and_five_users(plans, organization, user, make_member):
+    """Starter 1 user, Growth 3, Pro 5 (tenants 0016): inviting one more is refused, and so is a switch
+    to a tier with fewer users than the organization has."""
+    from apps.core.exceptions import PlanLimitExceeded
+    from apps.tenants import services as tenant_services
+    from apps.tenants.roles import Role
+
+    migration = importlib.import_module("apps.tenants.migrations.0016_tier_user_limits")
+    Plan.objects.filter(code__in=migration.USERS).update(max_users=None)
+    migration.set_limits(apps, migration.USERS)
+    limits = dict(Plan.objects.filter(code__in=migration.USERS).values_list("code", "max_users"))
+    assert limits == {"starter": 1, "growth": 3, "pro": 5} == {code: plans[code].max_users for code in limits}
+
+    organization.plan = plans["starter"]
+    organization.save()
+    with pytest.raises(PlanLimitExceeded, match="1 user"):  # the owner is the one user
+        tenant_services.invite_member(organization=organization, email="kasir@example.com", role=Role.ACCOUNTANT, invited_by=user)
+    organization.plan = plans["growth"]
+    organization.save()
+    tenant_services.invite_member(organization=organization, email="kasir@example.com", role=Role.ACCOUNTANT, invited_by=user)
+    make_member(Role.ACCOUNTANT, email="a@example.com")
+    with pytest.raises(PlanLimitExceeded):  # two members: Starter can't hold them
+        tenant_services.ensure_usage_fits(organization=organization, plan=plans["starter"])

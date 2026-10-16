@@ -18,9 +18,9 @@ def plans(db):
     free, _ = Plan.objects.update_or_create(code="test-free", defaults={"name": "Gratis", "max_users": 1, "max_invoices_per_month": 30})
     tiers = {}
     for code, name, monthly, users, invoices, features, order in (
-        ("starter", "Starter", 99000, 3, 300, [], 1),
-        ("growth", "Growth", 249000, 10, None, [PlanFeature.PAYROLL, PlanFeature.API], 2),
-        ("pro", "Pro", 499000, None, None, PlanFeature.values, 3),
+        ("starter", "Starter", 99000, 1, 300, [], 1),
+        ("growth", "Growth", 249000, 3, None, [PlanFeature.PAYROLL, PlanFeature.API], 2),
+        ("pro", "Pro", 499000, 5, None, PlanFeature.values, 3),
     ):
         tiers[code], _ = Plan.objects.update_or_create(code=code, defaults={
             "name": name, "monthly_price": Decimal(monthly), "yearly_price": Decimal(monthly * 10), "max_users": users,

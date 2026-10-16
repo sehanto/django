@@ -32,7 +32,7 @@ def get_default_plan() -> Plan:
     if plan is None:
         plan, _ = Plan.objects.get_or_create(
             code="starter",
-            defaults={"name": "Starter", "monthly_price": 99000, "yearly_price": 990000, "max_users": 3, "max_invoices_per_month": 300,
+            defaults={"name": "Starter", "monthly_price": 99000, "yearly_price": 990000, "max_users": 1, "max_invoices_per_month": 300,
                       "is_default": True, "sort_order": 1},
         )
     return plan
