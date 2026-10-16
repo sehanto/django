@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 
 from apps.core.exceptions import InvalidStateTransition, ValidationFailed
-from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO, quantize
 from apps.core.sequences import next_document_number
 from apps.core.periods import add_months, month_end
@@ -18,7 +17,7 @@ from apps.ledger.domain import AccountCategory
 from apps.ledger.models import JournalEntry
 from apps.ledger.services import JournalLineInput, create_journal_entry
 
-from .domain import DepreciationMethod, accumulated_before, months_between
+from .domain import DepreciationMethod, months_between
 from .models import AssetRevision, DepreciationPosting, FixedAsset
 from .selectors import accumulated_depreciation, due_depreciation, posted_amounts
 
