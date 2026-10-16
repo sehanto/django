@@ -237,7 +237,7 @@ def invoice_json(i: Invoice, *, lines: bool = False) -> dict:
         "date": i.date.isoformat(), "due_date": i.due_date.isoformat(), "reference": i.reference,
         "tax_invoice_number": i.tax_invoice_number, "subtotal": _money(i.subtotal), "tax_amount": _money(i.tax_amount),
         "luxury_tax_amount": _money(i.luxury_tax_amount), "total": _money(i.total), "amount_paid": _money(i.amount_paid),
-        "amount_credited": _money(i.amount_credited), "balance_due": _money(i.balance_due),
+        "amount_credited": _money(i.amount_credited), "balance_due": _money(i.balance_due), "opening_balance": i.opening_balance,
     }
     if lines:
         data["lines"] = [

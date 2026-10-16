@@ -5,7 +5,7 @@
   <div>
     <a href="{% url 'invoicing:list' kind %}" class="text-sm no-underline">&larr; {{ labels.plural }}</a>
     <h1 class="text-xl font-medium leading-tight mb-0">{{ invoice.display_number }}
-      <span class="badge align-middle badge-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.status_label }}{% endif %}</span></h1>
+      <span class="badge align-middle badge-{% if invoice.is_overdue %}danger{% else %}{{ invoice.status|status_badge }}{% endif %}">{% if invoice.is_overdue %}{% blocktranslate trimmed count days=invoice.days_overdue %}Overdue {{ days }} day{% plural %}Overdue {{ days }} days{% endblocktranslate %}{% else %}{{ invoice.status_label }}{% endif %}</span>{% if invoice.opening_balance %} <span class="badge align-middle badge-subtle" title="{% translate 'Still owed on a document of the earlier books; its tax was reported there.' %}">{% translate "Opening balance" %}</span>{% endif %}</h1>
     {% history_link invoice %}
   </div>
   <div class="flex flex-wrap gap-2">

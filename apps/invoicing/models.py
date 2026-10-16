@@ -157,6 +157,11 @@ class Invoice(TenantOwnedModel):
         verbose_name=_("place of business"),
     )
     status = models.CharField(_("status"), max_length=15, choices=Status.choices, default=Status.DRAFT)
+    # What was still owed on a document of the earlier books (services.record_opening_balance):
+    # it is collected or paid, and written off, like any invoice, but posts against the opening
+    # balance equity instead of revenue or cost, and its tax was reported back then, so it stays
+    # out of the Faktur files and the PPN summary. Fixed once issued (invoicing 0004).
+    opening_balance = models.BooleanField(_("opening balance"), default=False, editable=False)
 
     subtotal = money_field(_("subtotal"))
     tax_amount = money_field(_("PPN (VAT)"))
@@ -377,7 +382,10 @@ class Invoice(TenantOwnedModel):
     @property
     def can_return(self) -> bool:
         # Not after a write-off: nothing is left to credit.
-        return self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID) and not self.is_asset_sale
+        return (
+            self.status in (self.Status.ISSUED, self.Status.PARTIAL, self.Status.PAID) and not self.is_asset_sale
+            and not self.opening_balance
+        )
 
     @property
     def is_sales(self) -> bool:

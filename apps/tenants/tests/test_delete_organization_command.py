@@ -109,3 +109,26 @@ def test_deletes_the_prepayments_register_too(organization, account):
     call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
     assert not Deferral.objects.filter(organization_id=organization.pk).exists()
     assert not DeferralPosting.objects.filter(organization_id=organization.pk).exists()
+
+
+def test_deletes_uploads_and_bank_statements_too(organization, user, account, customer):
+    from apps.banking.models import StatementLine
+    from apps.uploads.importers import IMPORTERS, Context, apply
+    from apps.uploads.models import Upload
+    from apps.uploads.services import PendingFile
+
+    bank = account("1-1100")
+    opening = IMPORTERS["opening_balances"]
+    form = opening.options_form({"options-on": "2025-12-31"}, organization=organization, prefix="options")
+    assert form.is_valid()
+    text = b"account code,debit,credit,contact\n1-1100,1000,,\n1-1200,500,,PT Pelanggan\n3-1000,,1500,\n"
+    assert apply(opening, Context(organization, user, form.cleaned_data), PendingFile("opening_balances", "tb.csv", text, {})).ok
+    statement = IMPORTERS["bank_statement"]
+    form = statement.options_form({"options-account": str(bank.pk)}, organization=organization, prefix="options")
+    assert form.is_valid()
+    lines = b"date,description,credit\n02/01/2026,SETORAN,1000\n"
+    assert apply(statement, Context(organization, user, form.cleaned_data), PendingFile("bank_statement", "m.csv", lines, {})).ok
+    assert StatementLine.objects.get(organization=organization).status == StatementLine.Status.UNMATCHED  # not the opening balance
+    call_command("delete_organization", str(organization.pk), "--yes", "--skip-export")
+    assert not Upload.objects.filter(organization_id=organization.pk).exists()
+    assert not StatementLine.objects.filter(organization_id=organization.pk).exists()

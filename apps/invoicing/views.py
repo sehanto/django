@@ -352,17 +352,24 @@ class ItemFormMixin(WriteMixin):
         return items_for(self.organization)
 
     def form_valid(self, form):
-        form.instance.organization = self.organization
+        data = {name: value for name, value in form.cleaned_data.items() if not form.fields[name].disabled}
+        try:
+            self.save(data)
+        except DomainError as exc:
+            form.add_error(None, exc.message)
+            return self.form_invalid(form)
         messages.success(self.request, _("Item saved."))
-        return super().form_valid(form)
+        return redirect(self.success_url)
 
 
 class ItemCreateView(ItemFormMixin, CreateView):
-    pass
+    def save(self, data):
+        services.create_item(organization=self.organization, **data)
 
 
 class ItemUpdateView(ItemFormMixin, UpdateView):
-    pass
+    def save(self, data):
+        services.update_item(item=self.object, **data)
 
 
 class ReturnCreateView(InvoiceKindMixin, WriteMixin, FormView):

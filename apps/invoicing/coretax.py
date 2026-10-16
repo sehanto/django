@@ -282,6 +282,8 @@ def invoice_problem(invoice: Invoice) -> str | None:
         return _("Only sales invoices become a Faktur Pajak Keluaran.")
     if invoice.status not in Invoice.ISSUED_STATUSES:
         return _("Only issued invoices are reported.")
+    if invoice.opening_balance:
+        return _("An opening balance from the earlier books: its Faktur Pajak was reported then.")
     if not organization.is_pkp:
         return _("Only a VAT-registered business (PKP) issues a Faktur Pajak.")
     if len(tin(organization.npwp)) != 16:
@@ -384,7 +386,7 @@ def month_invoices(organization, year: int, month: int):
     start, end = month_start(year, month), month_end(year, month)
     return (
         Invoice.objects.for_organization(organization)
-        .filter(kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES,
+        .filter(kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES, opening_balance=False,
                 date__gte=start, date__lte=end)
         .select_related("organization", "contact").order_by("date", "id")
     )
@@ -444,7 +446,7 @@ def month_retail(organization, year: int, month: int) -> list[RetailRow]:
     rows = []
     invoices = Invoice.objects.for_organization(organization).filter(
         kind=InvoiceKind.SALES, date__year=year, date__month=month,
-        status__in=Invoice.ISSUED_STATUSES,
+        status__in=Invoice.ISSUED_STATUSES, opening_balance=False,
     ).order_by("date", "id")
     for invoice in invoices:
         if is_aggregated(invoice):
@@ -499,7 +501,7 @@ EXPORT_CODES = {  # special document: (TransactionDetail, TransactionDocument)
 
 
 def _issued(queryset):
-    return queryset.filter(status__in=Invoice.ISSUED_STATUSES)
+    return queryset.filter(status__in=Invoice.ISSUED_STATUSES, opening_balance=False)
 
 
 def month_exports(organization, year: int, month: int) -> tuple[list[Invoice], list[str]]:

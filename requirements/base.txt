@@ -9,3 +9,5 @@ django-otp>=1.7,<2
 segno>=1.6
 cryptography>=43
 brotli>=1.1  # whitenoise serves Brotli-compressed static files when it is installed
+openpyxl>=3.1,<4  # reading XLSX uploads (Coretax and bank downloads)
+defusedxml>=0.7  # openpyxl parses through it: no XML entity attacks from an uploaded file

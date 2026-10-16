@@ -22,6 +22,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from apps.assets.models import AssetRevision, DepreciationPosting, FixedAsset
+from apps.banking.models import StatementLine
 from apps.deferrals.models import Deferral, DeferralPosting
 from apps.audit.models import RecordChange
 from apps.audit.selectors import trail_head
@@ -34,6 +35,7 @@ from apps.ledger.selectors import account_balances, chain_head
 from apps.taxes.models import ImportDeclaration, PphFinalAccrual, PphFinalPayment, SelfDeposit, TaxRate, WithholdingDeposit
 from apps.payroll.models import Employee, PayrollRun, Payslip, PriorIncome
 from apps.tenants.models import BusinessPlace, Organization
+from apps.uploads.models import Upload
 
 from .statements import build_trial_balance
 
@@ -165,7 +167,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("contact_name", gettext_lazy("Contact name on the invoice")), C("contact_npwp", gettext_lazy("Contact NPWP on the invoice")),
             C("contact_nitku"), C("contact_id_type"), C("contact_id_number"), C("contact_country"),
             C("contact_address"), C("contact_city"), C("buyer_vat_collector"), C("seller_name"), C("seller_npwp"), C("seller_nitku"),
-            C("date"), C("due_date"), C("reference"),
+            C("date"), C("due_date"), C("reference"), C("opening_balance"),
             C("tax_invoice_number"), C("delivery_kind"), C("business_place__nitku", gettext_lazy("Place of business NITKU")),
             C("vat_facility"), C("facility_info"), C("facility_stamp"), C("special_document"), C("special_document_number"),
             C("special_document_date"),
@@ -277,6 +279,20 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("journal_entry__number", gettext_lazy("Journal entry")),
         )),
         DeferralPosting, "organization", ("deferral__number", "year", "month"),
+    ),
+    (
+        Table("bank_statement_lines.csv", gettext_lazy("Bank statement lines as uploaded, and the journal entries they were reconciled with."), (
+            C("account__code", gettext_lazy("Bank account code")), C("date"), C("description"), C("reference"), C("amount"), C("balance"),
+            C("status"), C("journal_line__entry__number", gettext_lazy("Journal entry")), C("reconciled_at"),
+        )),
+        StatementLine, "organization", ("account__code", "date", "id"),
+    ),
+    (
+        Table("uploads.csv", gettext_lazy("Files applied to the books."), (
+            C("created_at"), C("kind"), C("file_name"), C("sha256"), C("rows"), C("applied"), C("skipped"), C("summary"),
+            C("created_by__email", gettext_lazy("Uploaded by")),
+        )),
+        Upload, "organization", ("created_at", "id"),
     ),
     (
         Table("pph_final_expenses.csv", gettext_lazy("MSME PPh Final expenses, recognised at the end of each month."), (

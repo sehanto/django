@@ -20,7 +20,7 @@ from apps.inventory import services as inventory
 from apps.invoicing import services as invoicing
 from apps.invoicing.models import Invoice, InvoiceKind, Item, ReceivableWriteOff
 from apps.invoicing.services import InvoiceLineInput
-from apps.ledger.domain import AccountCategory
+from apps.ledger.domain import AccountCategory, SystemRole
 from apps.ledger.models import Account, JournalEntry
 from apps.ledger.selectors import account_balances, verify_chain
 from apps.ledger.services import JournalLineInput, adopt_legal_form_equity, create_journal_entry, reverse_journal_entry
@@ -206,7 +206,8 @@ def test_the_chart_has_what_sak_emkm_names(user, db):
 
 
 def equity_accounts(organization):
-    return {a.code: (a.name, a.is_contra, a.is_active) for a in Account.objects.filter(organization=organization, category=AccountCategory.EQUITY)}
+    accounts = Account.objects.filter(organization=organization, category=AccountCategory.EQUITY).exclude(system_role=SystemRole.OPENING_BALANCE)
+    return {a.code: (a.name, a.is_contra, a.is_active) for a in accounts}  # the opening balance account is every form's
 
 
 def test_equity_follows_the_legal_form(user, db):

@@ -118,7 +118,7 @@ class ImportDeclarationForm(OrganizationFormMixin, BaseForm):
             Q(system_role__isnull=True) | Q(system_role=SystemRole.PURCHASE_EXPENSE),
         )
         self.fields["bill"].queryset = Invoice.objects.for_organization(self.organization).filter(
-            kind=InvoiceKind.PURCHASE, status__in=Invoice.ISSUED_STATUSES,
+            kind=InvoiceKind.PURCHASE, status__in=Invoice.ISSUED_STATUSES, opening_balance=False,
         ).order_by("-date", "-id")
         self.fields["cost_account"].queryset = accounts.filter(category__in=services.IMPORT_COST_CATEGORIES)
         prepaid = prepaid_tax_accounts(self.organization)
@@ -149,7 +149,7 @@ class SelfDepositForm(OrganizationFormMixin, BaseForm):
             (code, f"{code} {name} ({rate.normalize():f}%)"[:160]) for code, (name, rate) in sorted(tax_objects.SELF_DEPOSIT.items())
         ]
         self.fields["invoice"].queryset = Invoice.objects.for_organization(self.organization).filter(
-            kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES,
+            kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES, opening_balance=False,
         ).order_by("-date", "-id")
         self.fields["cash_account"].queryset = cash_accounts(self.organization)
 

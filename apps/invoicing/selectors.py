@@ -63,7 +63,7 @@ def invoices_created_this_month(organization) -> int:
     today = timezone.localdate()
     return (
         Invoice.objects.for_organization(organization)
-        .filter(created_at__year=today.year, created_at__month=today.month)
+        .filter(created_at__year=today.year, created_at__month=today.month, opening_balance=False)  # balances brought over are free
         .count()
     )
 
@@ -120,7 +120,7 @@ def vat_summary(organization, year: int) -> list[dict]:
     their PPN not collected."""
     rows = (
         Invoice.objects.for_organization(organization)
-        .filter(date__year=year, status__in=Invoice.ISSUED_STATUSES)
+        .filter(date__year=year, status__in=Invoice.ISSUED_STATUSES, opening_balance=False)
         .values("date__month", "kind")
         .annotate(tax=Sum("tax_amount"), base=Sum("subtotal"), not_collected=Sum("vat_not_collected"), luxury=Sum("luxury_tax_amount"))
     )
@@ -133,7 +133,7 @@ def vat_summary(organization, year: int) -> list[dict]:
     # PPN on sales to VAT collectors (codes 02/03) is deposited by the buyer, not payable by us.
     collected = (
         Invoice.objects.for_organization(organization)
-        .filter(date__year=year, kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES)
+        .filter(date__year=year, kind=InvoiceKind.SALES, status__in=Invoice.ISSUED_STATUSES, opening_balance=False)
         .exclude(buyer_vat_collector="").values("date__month").annotate(tax=Sum("tax_amount"))
     )
     collected_returns = (
@@ -173,7 +173,7 @@ def vat_summary(organization, year: int) -> list[dict]:
         anonymous = (
             Invoice.objects.for_organization(organization)
             .filter(date__year=year, kind=InvoiceKind.SALES, contact_npwp="", contact_id_number="",
-                    status__in=Invoice.ISSUED_STATUSES)
+                    status__in=Invoice.ISSUED_STATUSES, opening_balance=False)
             .values("date__month").annotate(tax=Sum("tax_amount"), base=Sum("subtotal"))
         )
         for row in anonymous:

@@ -10605,3 +10605,587 @@ msgstr "Atur"
 #: templates/tenants/settings.html:40
 msgid "Download all journals, invoices, payments and contacts as a ZIP of CSV files."
 msgstr "Unduh semua jurnal, faktur, pembayaran, dan kontak dalam ZIP berisi berkas CSV."
+
+msgid "File uploaded into the books"
+msgstr "Berkas diunggah ke pembukuan"
+
+msgid "Bank reconciliation"
+msgstr "Rekonsiliasi bank"
+
+msgid "Not reconciled"
+msgstr "Belum direkonsiliasi"
+
+msgid "Reconciled"
+msgstr "Sudah direkonsiliasi"
+
+msgid "Ignored"
+msgstr "Disisihkan"
+
+msgid "Other account"
+msgstr "Akun lawan"
+
+msgid "E.g. Beban Administrasi Bank for bank charges, Pendapatan Bunga Bank for interest."
+msgstr "Mis. Beban Administrasi Bank untuk biaya bank, Pendapatan Bunga Bank untuk bunga."
+
+msgid "As at"
+msgstr "Per tanggal"
+
+msgid "bank account"
+msgstr "rekening bank"
+
+msgid "balance"
+msgstr "saldo"
+
+msgid "line key"
+msgstr "kunci baris"
+
+msgid "journal line"
+msgstr "baris jurnal"
+
+msgid "reconciled at"
+msgstr "direkonsiliasi pada"
+
+msgid "bank statement line"
+msgstr "baris rekening koran"
+
+msgid "bank statement lines"
+msgstr "baris rekening koran"
+
+msgid "Choose an active cash or bank account."
+msgstr "Pilih akun kas atau bank yang aktif."
+
+msgid "A statement line moves money in or out: its amount can't be 0."
+msgstr "Baris rekening koran memindahkan uang masuk atau keluar: jumlahnya tidak boleh 0."
+
+msgid "Choose a posted entry of this organization."
+msgstr "Pilih jurnal terposting milik organisasi ini."
+
+msgid "The entry must be on the statement's bank account."
+msgstr "Jurnal harus pada rekening bank dari rekening koran tersebut."
+
+msgid "The entry's amount on the bank account must equal the statement line's."
+msgstr "Jumlah jurnal pada rekening bank harus sama dengan jumlah baris rekening koran."
+
+msgid "That entry is already reconciled with another statement line."
+msgstr "Jurnal itu sudah direkonsiliasi dengan baris rekening koran lain."
+
+msgid "This statement line is already reconciled or ignored."
+msgstr "Baris rekening koran ini sudah direkonsiliasi atau disisihkan."
+
+msgid "Choose the account for the other side of the entry."
+msgstr "Pilih akun untuk sisi lain jurnal."
+
+msgid "This statement line isn't reconciled."
+msgstr "Baris rekening koran ini belum direkonsiliasi."
+
+msgid "Statement line reconciled."
+msgstr "Baris rekening koran direkonsiliasi."
+
+msgid "Choose the other account of the entry."
+msgstr "Pilih akun lawan jurnal."
+
+msgid "Entry posted and reconciled."
+msgstr "Jurnal diposting dan direkonsiliasi."
+
+msgid "Statement line set aside."
+msgstr "Baris rekening koran disisihkan."
+
+msgid "Reconciliation undone."
+msgstr "Rekonsiliasi dibatalkan."
+
+msgid "An opening balance from the earlier books: its Faktur Pajak was reported then."
+msgstr "Saldo awal dari pembukuan sebelumnya: Faktur Pajaknya sudah dilaporkan saat itu."
+
+msgid "opening balance"
+msgstr "saldo awal"
+
+msgid "The amount still owed must be positive."
+msgstr "Jumlah yang masih terutang harus positif."
+
+msgid "Enter a document number of up to 100 characters."
+msgstr "Isi nomor dokumen paling panjang 100 karakter."
+
+msgid "Opening balance equity"
+msgstr "Ekuitas saldo awal"
+
+msgid "Opening balances"
+msgstr "Saldo awal"
+
+msgid "Bank statement lines as uploaded, and the journal entries they were reconciled with."
+msgstr "Baris rekening koran sebagaimana diunggah, beserta jurnal yang direkonsiliasi dengannya."
+
+msgid "Bank account code"
+msgstr "Kode rekening bank"
+
+msgid "Files applied to the books."
+msgstr "Berkas yang diterapkan ke pembukuan."
+
+msgid "Uploaded by"
+msgstr "Diunggah oleh"
+
+msgid "File uploads"
+msgstr "Unggah berkas"
+
+msgid "Accounts"
+msgstr "Akun"
+
+msgid "Fixed assets brought over"
+msgstr "Aset tetap yang dibawa"
+
+msgid "Faktur Pajak numbers (Coretax, sales)"
+msgstr "Nomor Faktur Pajak (Coretax, penjualan)"
+
+msgid "Input VAT fakturs (Coretax, purchases)"
+msgstr "Faktur PPN masukan (Coretax, pembelian)"
+
+msgid "Bukti potong numbers (Coretax)"
+msgstr "Nomor bukti potong (Coretax)"
+
+msgid "Bank statement"
+msgstr "Rekening koran"
+
+msgid "Added"
+msgstr "Ditambahkan"
+
+msgid "Skipped"
+msgstr "Dilewati"
+
+msgid "Error"
+msgstr "Galat"
+
+msgid "Upload a CSV or XLSX file."
+msgstr "Unggah berkas CSV atau XLSX."
+
+msgid "The file's characters can't be read: save it as CSV UTF-8."
+msgstr "Karakter dalam berkas tidak terbaca: simpan sebagai CSV UTF-8."
+
+msgid "This isn't a CSV file."
+msgstr "Ini bukan berkas CSV."
+
+#, python-format
+msgid "The CSV file can't be read: %(error)s"
+msgstr "Berkas CSV tidak dapat dibaca: %(error)s"
+
+msgid "The XLSX file is too large once unpacked."
+msgstr "Berkas XLSX terlalu besar setelah dibuka."
+
+msgid "The XLSX file can't be read. Save it again from the spreadsheet app."
+msgstr "Berkas XLSX tidak dapat dibaca. Simpan ulang dari aplikasi spreadsheet."
+
+msgid "The file is larger than 2 MB: split it into smaller files."
+msgstr "Berkas lebih besar dari 2 MB: pecah menjadi beberapa berkas yang lebih kecil."
+
+msgid "The file is empty."
+msgstr "Berkas kosong."
+
+#, python-format
+msgid "No header row found: the first row names the columns, e.g. %(columns)s."
+msgstr "Baris judul kolom tidak ditemukan: baris pertama berisi nama kolom, mis. %(columns)s."
+
+#, python-format
+msgid "Row %(row)s has a cell longer than %(limit)s characters."
+msgstr "Baris %(row)s memiliki sel yang lebih panjang dari %(limit)s karakter."
+
+#, python-format
+msgid "The file has more than %(limit)s rows: split it into smaller files."
+msgstr "Berkas memiliki lebih dari %(limit)s baris: pecah menjadi beberapa berkas yang lebih kecil."
+
+msgid "The file has no rows under its header."
+msgstr "Berkas tidak memiliki baris di bawah judul kolomnya."
+
+msgid "CSV or XLSX, up to 2 MB. The first row names the columns; their order doesn't matter."
+msgstr "CSV atau XLSX, paling besar 2 MB. Baris pertama berisi nama kolom; urutannya bebas."
+
+msgid "The file name is too long."
+msgstr "Nama berkas terlalu panjang."
+
+msgid "Start from the lists you already keep in a spreadsheet."
+msgstr "Mulai dari daftar yang sudah Anda simpan di spreadsheet."
+
+msgid "Bring over the balances of the earlier books on the day they end."
+msgstr "Bawa saldo pembukuan sebelumnya pada hari terakhirnya."
+
+msgid "Coretax results"
+msgstr "Hasil Coretax"
+
+msgid "Record what Coretax gave back for the files uploaded to it."
+msgstr "Catat apa yang dikembalikan Coretax untuk berkas yang diunggah ke sana."
+
+msgid "Bank"
+msgstr "Bank"
+
+msgid "Reconcile the bank accounts with the statements from internet banking."
+msgstr "Rekonsiliasi rekening bank dengan rekening koran dari internet banking."
+
+msgid "Bank account"
+msgstr "Rekening bank"
+
+msgid "The account statement downloaded from internet banking (CSV or XLSX): date, description, and the amount in debit and credit columns or in one column marked DB/CR. Lines uploaded before are skipped; each new one is reconciled with the entry in the books that has the same amount within five days, if there is exactly one."
+msgstr "Rekening koran yang diunduh dari internet banking (CSV atau XLSX): tanggal, keterangan, dan jumlah pada kolom debet dan kredit atau pada satu kolom bertanda DB/CR. Baris yang sudah pernah diunggah dilewati; setiap baris baru direkonsiliasi dengan jurnal di pembukuan yang jumlahnya sama dalam lima hari, bila hanya ada satu."
+
+msgid "The file has no amount: it needs debit and credit columns, or an amount column."
+msgstr "Berkas tidak memiliki jumlah: perlu kolom debet dan kredit, atau kolom jumlah."
+
+msgid "Enter the amount in either the debit or the credit column."
+msgstr "Isi jumlah pada kolom debet atau kolom kredit saja."
+
+msgid "The line has no amount."
+msgstr "Baris tidak memiliki jumlah."
+
+#, python-format
+msgid "DB/CR: %(value)s is neither."
+msgstr "DB/CR: %(value)s bukan keduanya."
+
+msgid "Uploaded before."
+msgstr "Sudah pernah diunggah."
+
+#, python-format
+msgid "Reconciled with %(entry)s."
+msgstr "Direkonsiliasi dengan %(entry)s."
+
+msgid "To reconcile."
+msgstr "Perlu direkonsiliasi."
+
+#, python-format
+msgid "The file has no column %(column)s."
+msgstr "Berkas tidak memiliki kolom %(column)s."
+
+msgid "The database refused this row."
+msgstr "Basis data menolak baris ini."
+
+#, python-format
+msgid "%(column)s: %(value)s is not an amount."
+msgstr "%(column)s: %(value)s bukan jumlah uang."
+
+#, python-format
+msgid "%(column)s: enter an amount."
+msgstr "%(column)s: isi jumlahnya."
+
+#, python-format
+msgid "%(column)s: %(value)s is not a date (use DD/MM/YYYY)."
+msgstr "%(column)s: %(value)s bukan tanggal (gunakan HH/BB/TTTT)."
+
+#, python-format
+msgid "%(column)s: enter a date."
+msgstr "%(column)s: isi tanggalnya."
+
+#, python-format
+msgid "%(column)s: write yes or no."
+msgstr "%(column)s: tulis ya atau tidak."
+
+#, python-format
+msgid "%(column)s: %(value)s is not one of the choices."
+msgstr "%(column)s: %(value)s bukan salah satu pilihan."
+
+msgid "The file couldn't be checked. Try again."
+msgstr "Berkas tidak dapat diperiksa. Coba lagi."
+
+#, python-format
+msgid "%(value)s is not a Faktur Pajak number (17 digits)."
+msgstr "%(value)s bukan nomor Faktur Pajak (17 digit)."
+
+#, python-format
+msgid "Status %(status)s in Coretax: not recorded."
+msgstr "Status %(status)s di Coretax: tidak dicatat."
+
+msgid "Faktur Pajak numbers (sales)"
+msgstr "Nomor Faktur Pajak (penjualan)"
+
+msgid "Coretax's list of output fakturs (Pajak Keluaran), downloaded after the faktur file was uploaded and approved: each sales invoice takes its Faktur Pajak number. The faktur's reference is the invoice number; without it, the buyer's NPWP, the date and the PPN find the invoice."
+msgstr "Daftar faktur keluaran Coretax (Pajak Keluaran), diunduh setelah berkas faktur diunggah dan disetujui: setiap faktur penjualan mendapat nomor Faktur Pajaknya. Referensi faktur adalah nomor faktur penjualan; tanpa referensi, faktur dicari dari NPWP pembeli, tanggal, dan PPN."
+
+msgid "faktur date"
+msgstr "tanggal faktur"
+
+msgid "No sales invoice found for this faktur (it may have been made in Coretax directly)."
+msgstr "Tidak ada faktur penjualan untuk Faktur Pajak ini (mungkin dibuat langsung di Coretax)."
+
+msgid "Already recorded."
+msgstr "Sudah dicatat."
+
+#, python-format
+msgid "The invoice already has Faktur Pajak %(number)s: check which one is valid."
+msgstr "Faktur penjualan sudah memiliki Faktur Pajak %(number)s: periksa mana yang berlaku."
+
+#, python-format
+msgid "The faktur's PPN %(faktur)s differs from the invoice's %(invoice)s: not recorded."
+msgstr "PPN Faktur Pajak %(faktur)s berbeda dari PPN faktur penjualan %(invoice)s: tidak dicatat."
+
+msgid "Input VAT fakturs (purchases)"
+msgstr "Faktur PPN masukan (pembelian)"
+
+msgid "Coretax's list of input fakturs (Pajak Masukan): each matching purchase bill (same supplier NPWP and PPN, dated within a month of the faktur) takes its Faktur Pajak number. The check lists the fakturs without a bill and the bills of those months still without a faktur."
+msgstr "Daftar faktur masukan Coretax (Pajak Masukan): setiap tagihan pembelian yang cocok (NPWP pemasok dan PPN sama, bertanggal dalam sebulan dari faktur) mendapat nomor Faktur Pajaknya. Pemeriksaan menampilkan faktur tanpa tagihan dan tagihan pada bulan-bulan itu yang belum memiliki faktur."
+
+msgid "No purchase bill with this supplier and PPN: record the bill to credit this input VAT."
+msgstr "Tidak ada tagihan pembelian dengan pemasok dan PPN ini: catat tagihannya agar PPN masukan ini dapat dikreditkan."
+
+#, python-format
+msgid "Its tax base %(faktur)s differs from the bill's %(bill)s."
+msgstr "DPP-nya %(faktur)s berbeda dari DPP tagihan %(bill)s."
+
+#, python-format
+msgid "Bill %(number)s from %(supplier)s (%(date)s) has no faktur in Coretax yet: its input VAT can't be credited without one."
+msgstr "Tagihan %(number)s dari %(supplier)s (%(date)s) belum memiliki faktur di Coretax: PPN masukannya tidak dapat dikreditkan tanpa faktur."
+
+#, python-format
+msgid "The tax period %(month)s %(year)s can't be read."
+msgstr "Masa pajak %(month)s %(year)s tidak terbaca."
+
+msgid "Bukti potong numbers"
+msgstr "Nomor bukti potong"
+
+msgid "Coretax's list of bukti potong (eBupot) issued for the files uploaded from here: the supplier payments, payslips and self-deposited PPh take their numbers. Payments and self deposits are found by the document number on the bukti potong (the bill's number) and the recipient's NPWP/NIK, payslips by the recipient and the tax period."
+msgstr "Daftar bukti potong (eBupot) Coretax untuk berkas yang diunggah dari sini: pembayaran kepada pemasok, slip gaji, dan PPh yang disetor sendiri mendapat nomornya. Pembayaran dan setoran sendiri dicari dari nomor dokumen pada bukti potong (nomor tagihan) dan NPWP/NIK penerima, slip gaji dari penerima dan masa pajaknya."
+
+msgid "gross income"
+msgstr "penghasilan bruto"
+
+#, python-format
+msgid "It already has bukti potong %(number)s."
+msgstr "Sudah memiliki bukti potong %(number)s."
+
+msgid "No payment, payslip or self deposit found for this bukti potong."
+msgstr "Tidak ada pembayaran, slip gaji, atau setoran sendiri untuk bukti potong ini."
+
+#, python-format
+msgid "Kelurahan/desa code: %(value)s is not a 10-digit Kemendagri code such as 36.03.22.2008."
+msgstr "Kode kelurahan/desa: %(value)s bukan kode Kemendagri 10 digit seperti 36.03.22.2008."
+
+msgid "Customers and suppliers with their NPWP and address. The kelurahan/desa is its Kemendagri code, or found from the postcode when only one has it; the postcode is checked against it."
+msgstr "Pelanggan dan pemasok dengan NPWP dan alamatnya. Kelurahan/desa diisi kode Kemendagri, atau dicari dari kode pos bila hanya satu kelurahan/desa yang memilikinya; kode pos dicocokkan dengannya."
+
+#, python-format
+msgid "Already in your contacts as %(name)s."
+msgstr "Sudah ada di kontak Anda sebagai %(name)s."
+
+msgid "Goods and services with their prices. Accounts are given by their code and the PPN by the name of one of your PPN rates; left empty, the item uses the defaults of the invoice lines."
+msgstr "Barang dan jasa beserta harganya. Akun diisi kodenya dan PPN diisi nama salah satu tarif PPN Anda; bila kosong, barang memakai bawaan baris faktur."
+
+#, python-format
+msgid "%(column)s: there is no account %(code)s."
+msgstr "%(column)s: tidak ada akun %(code)s."
+
+#, python-format
+msgid "PPN rate: there is no active rate named %(name)s."
+msgstr "Tarif PPN: tidak ada tarif aktif bernama %(name)s."
+
+#, python-format
+msgid "Already in your items as %(item)s."
+msgstr "Sudah ada di daftar barang Anda sebagai %(item)s."
+
+msgid "purchase account"
+msgstr "akun pembelian"
+
+msgid "Accounts to add to the chart of accounts, e.g. one per bank account. The category is one of the SAK EMKM groups (as named on the account page, in either language); accounts whose code is already used are left as they are."
+msgstr "Akun yang ditambahkan ke bagan akun, mis. satu per rekening bank. Kategorinya salah satu kelompok SAK EMKM (seperti di halaman akun, dalam bahasa mana pun); akun yang kodenya sudah dipakai dibiarkan apa adanya."
+
+#, python-format
+msgid "The code is already used by %(account)s."
+msgstr "Kode tersebut sudah dipakai oleh %(account)s."
+
+#, python-format
+msgid "Several contacts are named %(name)s: give the NPWP instead."
+msgstr "Ada beberapa kontak bernama %(name)s: isi NPWP-nya."
+
+msgid "customer"
+msgstr "pelanggan"
+
+msgid "supplier"
+msgstr "pemasok"
+
+#, python-format
+msgid "There is no %(what)s %(name)s: add it to the contacts first (or upload the contacts)."
+msgstr "Tidak ada %(what)s %(name)s: tambahkan ke kontak dulu (atau unggah kontaknya)."
+
+msgid "Balances as at"
+msgstr "Saldo per"
+
+msgid "The last day in the earlier books, e.g. 31 December 2025: the entry is posted on it."
+msgstr "Hari terakhir pembukuan sebelumnya, mis. 31 Desember 2025: jurnal diposting pada tanggal itu."
+
+msgid "The trial balance of the earlier books on their last day, one row per account. A receivable or payable gives its customer or supplier (name or NPWP), document number and due date, one row per document still open; the inventory of a tracked item gives the item code and quantity. Fixed assets are in the balances by their cost and accumulated depreciation; add them to the register with the fixed assets file."
+msgstr "Neraca saldo pembukuan sebelumnya pada hari terakhirnya, satu baris per akun. Piutang atau utang diisi pelanggan atau pemasoknya (nama atau NPWP), nomor dokumen, dan tanggal jatuh tempo, satu baris per dokumen yang masih terbuka; persediaan barang yang stoknya dilacak diisi kode barang dan kuantitasnya. Aset tetap masuk dalam saldo dengan harga perolehan dan akumulasi penyusutannya; daftarkan ke register dengan berkas aset tetap."
+
+#, python-format
+msgid "Opening balances come before the first transaction recorded here, but entry %(number)s is dated %(date)s. Choose an earlier date, or record the earlier transactions as journals."
+msgstr "Saldo awal harus sebelum transaksi pertama yang dicatat di sini, tetapi jurnal %(number)s bertanggal %(date)s. Pilih tanggal yang lebih awal, atau catat transaksi sebelumnya sebagai jurnal."
+
+msgid "Enter the balance in either the debit or the credit column."
+msgstr "Isi saldo pada kolom debet atau kolom kredit saja."
+
+#, python-format
+msgid "There is no active account %(code)s."
+msgstr "Tidak ada akun aktif %(code)s."
+
+msgid "A customer's credit balance (an advance) goes on a liability account, e.g. Pendapatan Diterima di Muka."
+msgstr "Saldo kredit pelanggan (uang muka) dicatat pada akun liabilitas, mis. Pendapatan Diterima di Muka."
+
+msgid "A debit balance with a supplier (an advance paid) goes on an asset account, e.g. Uang Muka Pembelian."
+msgstr "Saldo debet pada pemasok (uang muka yang dibayar) dicatat pada akun aset, mis. Uang Muka Pembelian."
+
+msgid "Give the customer or supplier of each receivable or payable, one row per open document."
+msgstr "Isi pelanggan atau pemasok untuk setiap piutang atau utang, satu baris per dokumen yang masih terbuka."
+
+#, python-format
+msgid "Account %(account)s holds tracked stock: give the code of the item and its quantity, one row per item."
+msgstr "Akun %(account)s berisi persediaan yang dilacak: isi kode barang dan kuantitasnya, satu baris per barang."
+
+msgid "Stock can't have a credit balance."
+msgstr "Persediaan tidak boleh bersaldo kredit."
+
+msgid "Enter the quantity on hand."
+msgstr "Isi kuantitas persediaan yang ada."
+
+#, python-format
+msgid "The balances don't balance: debits %(debit)s, credits %(credit)s. A trial balance has as much on each side."
+msgstr "Saldo tidak seimbang: debet %(debit)s, kredit %(credit)s. Neraca saldo memiliki jumlah yang sama di kedua sisi."
+
+msgid "The register of assets already in the opening balances (registering posts nothing). Give the accounts by code, the useful life in months and the month through which the earlier books depreciated them; depreciation goes on from the next month, without a residual value."
+msgstr "Register aset yang sudah ada dalam saldo awal (pendaftaran tidak memposting apa pun). Isi akun dengan kodenya, umur manfaat dalam bulan, dan bulan terakhir yang sudah disusutkan pembukuan sebelumnya; penyusutan berlanjut mulai bulan berikutnya, tanpa nilai residu."
+
+msgid "depreciated through"
+msgstr "disusutkan sampai"
+
+msgid "file"
+msgstr "berkas"
+
+msgid "SHA-256"
+msgstr "SHA-256"
+
+msgid "rows"
+msgstr "baris"
+
+msgid "rows applied"
+msgstr "baris diterapkan"
+
+msgid "rows skipped"
+msgstr "baris dilewati"
+
+msgid "summary"
+msgstr "ringkasan"
+
+msgid "file upload"
+msgstr "unggahan berkas"
+
+msgid "file uploads"
+msgstr "unggahan berkas"
+
+#, python-format
+msgid "This file was already applied on %(date)s."
+msgstr "Berkas ini sudah diterapkan pada %(date)s."
+
+msgid "This file was just applied."
+msgstr "Berkas ini baru saja diterapkan."
+
+msgid "The checked file has expired: upload it again."
+msgstr "Berkas yang sudah diperiksa kedaluwarsa: unggah lagi."
+
+msgid "The options of the checked file are no longer valid: upload it again."
+msgstr "Pilihan untuk berkas yang sudah diperiksa tidak berlaku lagi: unggah lagi."
+
+#, python-format
+msgid "%(file)s applied: %(count)s row recorded."
+msgid_plural "%(file)s applied: %(count)s rows recorded."
+msgstr[0] "%(file)s diterapkan: %(count)s baris dicatat."
+
+msgid "Upload a statement"
+msgstr "Unggah rekening koran"
+
+msgid "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)."
+msgstr "Unggah rekening koran dari internet banking, lalu rekonsiliasi setiap baris dengan jurnal di pembukuan yang mencatatnya, atau posting yang belum ada di pembukuan (biaya bank, bunga)."
+
+msgid "Lines to reconcile"
+msgstr "Baris yang perlu direkonsiliasi"
+
+msgid "No cash or bank accounts."
+msgstr "Tidak ada akun kas atau bank."
+
+#, python-format
+msgid "Bank balance (%(date)s)"
+msgstr "Saldo bank (%(date)s)"
+
+#, python-format
+msgid "Balance in the books (%(date)s)"
+msgstr "Saldo di pembukuan (%(date)s)"
+
+msgid "On the statement, not in the books"
+msgstr "Di rekening koran, belum di pembukuan"
+
+msgid "In the books, not on the statement"
+msgstr "Di pembukuan, belum di rekening koran"
+
+msgid "Reconciliation"
+msgstr "Rekonsiliasi"
+
+msgid "Undo"
+msgstr "Batalkan"
+
+msgid "Set aside"
+msgstr "Sisihkan"
+
+msgid "Match"
+msgstr "Cocokkan"
+
+msgid "Post to…"
+msgstr "Posting ke…"
+
+msgid "Set this line aside? It stays on the statement but needs nothing in the books."
+msgstr "Sisihkan baris ini? Baris tetap ada di rekening koran tetapi tidak perlu dicatat di pembukuan."
+
+msgid "No statement lines here."
+msgstr "Tidak ada baris rekening koran di sini."
+
+msgid "Still owed on a document of the earlier books; its tax was reported there."
+msgstr "Masih terutang atas dokumen pembukuan sebelumnya; pajaknya sudah dilaporkan di sana."
+
+msgid "Bring data in from a spreadsheet, the earlier books, Coretax or internet banking. Each file is checked first: you see what every row will do, and nothing is recorded until you apply it. A file is applied in full or not at all, and never twice."
+msgstr "Masukkan data dari spreadsheet, pembukuan sebelumnya, Coretax, atau internet banking. Setiap berkas diperiksa dulu: Anda melihat apa yang akan dilakukan setiap baris, dan tidak ada yang dicatat sebelum Anda menerapkannya. Berkas diterapkan seluruhnya atau tidak sama sekali, dan tidak pernah dua kali."
+
+msgid "Upload"
+msgstr "Unggah"
+
+msgid "Template"
+msgstr "Templat"
+
+msgid "Applied files"
+msgstr "Berkas yang diterapkan"
+
+msgid "Rows"
+msgstr "Baris"
+
+msgid "Result"
+msgstr "Hasil"
+
+msgid "By"
+msgstr "Oleh"
+
+msgid "No files applied yet."
+msgstr "Belum ada berkas yang diterapkan."
+
+msgid "Columns"
+msgstr "Kolom"
+
+#, python-format
+msgid "Check of %(name)s"
+msgstr "Pemeriksaan %(name)s"
+
+msgid "Row"
+msgstr "Baris"
+
+#, python-format
+msgid "Showing %(shown)s of %(rows)s row."
+msgid_plural "Showing %(shown)s of %(rows)s rows."
+msgstr[0] "Menampilkan %(shown)s dari %(rows)s baris."
+
+msgid "Apply this file"
+msgstr "Terapkan berkas ini"
+
+msgid "Every row is recorded as shown, or none if the books changed in the meantime."
+msgstr "Setiap baris dicatat seperti yang ditampilkan, atau tidak ada sama sekali bila pembukuan berubah sementara itu."
+
+msgid "Nothing was recorded. Correct the file and upload it again."
+msgstr "Tidak ada yang dicatat. Perbaiki berkas lalu unggah lagi."
+
+msgid "Check the file"
+msgstr "Periksa berkas"

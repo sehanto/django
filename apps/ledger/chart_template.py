@@ -41,6 +41,7 @@ DEFAULT_CHART = [
     ("2-2000", "Utang Bank Jangka Panjang", C.LONG_TERM_LIABILITY, None, False),
     # Ekuitas: the capital accounts depend on the legal form (EQUITY_BY_LEGAL_FORM)
     ("3-3000", "Saldo Laba", C.EQUITY, R.RETAINED_EARNINGS, False),
+    ("3-9000", "Ekuitas Saldo Awal", C.EQUITY, R.OPENING_BALANCE, False),  # zero once the opening balances are complete
     # Pendapatan
     ("4-1000", "Pendapatan Penjualan", C.REVENUE, R.SALES_REVENUE, False),
     ("4-1100", "Pendapatan Jasa", C.REVENUE, None, False),

@@ -65,6 +65,26 @@ class InvoiceLineInput:
         return LineSpec(self.quantity, self.unit_price, self.discount_percent, tax)
 
 
+# --- Items --------------------------------------------------------------------
+
+
+@transaction.atomic
+def create_item(*, organization, **fields) -> Item:
+    item = Item(organization=organization, **fields)
+    item.full_clean(exclude=["organization"])
+    item.save()
+    return item
+
+
+@transaction.atomic
+def update_item(*, item: Item, **fields) -> Item:
+    for name, value in fields.items():
+        setattr(item, name, value)
+    item.full_clean(exclude=["organization"])
+    item.save()
+    return item
+
+
 # --- Validation ---------------------------------------------------------------
 
 
@@ -75,14 +95,18 @@ def _belongs(obj, organization) -> bool:
 def _validate_header(organization, kind: str, contact, invoice_date: date, due_date: date) -> None:
     ensure_business_date(invoice_date)
     ensure_business_date(due_date)
+    _check_party(organization, kind, contact)
+    if due_date < invoice_date:
+        raise ValidationFailed(_("The due date cannot be before the invoice date."))
+
+
+def _check_party(organization, kind: str, contact) -> None:
     if not _belongs(contact, organization):
         raise ValidationFailed(_("Contact not found."))
     if kind == InvoiceKind.SALES and not contact.is_customer:
         raise ValidationFailed(_("This contact is not a customer."))
     if kind == InvoiceKind.PURCHASE and not contact.is_supplier:
         raise ValidationFailed(_("This contact is not a supplier."))
-    if due_date < invoice_date:
-        raise ValidationFailed(_("The due date cannot be before the invoice date."))
 
 
 @dataclass(frozen=True)
@@ -449,6 +473,56 @@ def void_invoice(*, invoice: Invoice, on: date, voided_by=None) -> Invoice:
     inventory.record(stock, entry=reversal, on=reversal.date, created_by=voided_by)
     invoice.status = Invoice.Status.VOID
     invoice.save(update_fields=["status", "updated_at"])
+    return invoice
+
+
+# --- Opening balances -----------------------------------------------------------
+
+
+@transaction.atomic
+def record_opening_balance(
+    *, organization, kind: str, contact, on: date, amount: Decimal, due_date: date | None = None, reference: str = "",
+    document_date: date | None = None, created_by=None,
+) -> Invoice:
+    """What a customer still owed (or the business still owed a supplier) on a document of the
+    earlier books, on the day the books start here: an issued invoice that is collected, paid or
+    written off like any other, posted on ``on`` against the opening balance equity (receivable
+    or payable / Ekuitas Saldo Awal), not as revenue or cost. Its PPN and Faktur were reported in
+    the earlier books, so it carries no tax and stays out of the tax files."""
+    amount = quantize(amount)
+    if amount <= 0:
+        raise ValidationFailed(_("The amount still owed must be positive."))
+    due_date = due_date or on  # may be earlier: the balance can be overdue already
+    ensure_business_date(on)
+    ensure_business_date(due_date)
+    _check_party(organization, kind, contact)
+    if reference:
+        reference = ensure_document_number(reference, max_length=100, missing=_("Enter a document number of up to 100 characters."))
+    opening = get_system_account(organization, SystemRole.OPENING_BALANCE)
+    label = "Saldo awal piutang" if kind == InvoiceKind.SALES else "Saldo awal utang"  # stored business records stay Indonesian
+    invoice = Invoice.objects.create(
+        organization=organization, kind=kind, contact=contact, date=on, due_date=due_date, reference=reference,
+        opening_balance=True, subtotal=amount, total=amount, created_by=created_by,
+    )
+    if document_date is not None:
+        ensure_business_date(document_date)
+    dated = f" ({document_date:%d-%m-%Y})" if document_date else ""
+    InvoiceLine.objects.create(
+        invoice=invoice, description=f"{label} {reference}{dated}".strip(), account=opening, quantity=1, unit_price=amount, amount=amount,
+    )
+    invoice.number = next_document_number(organization, INVOICE_PREFIX[kind], on)
+    receivable, payable = SystemRole.RECEIVABLE, SystemRole.PAYABLE
+    debit, credit = (get_system_account(organization, receivable), opening) if kind == InvoiceKind.SALES else (
+        opening, get_system_account(organization, payable))
+    invoice.journal_entry = create_journal_entry(
+        organization=organization, date=on, description=f"{label} {contact.name}", reference=invoice.number,
+        source=JournalEntry.Source.OPENING, created_by=created_by,
+        lines=[JournalLineInput(debit, debit=amount), JournalLineInput(credit, credit=amount)],
+    )
+    invoice.snapshot_parties()
+    invoice.status = Invoice.Status.ISSUED
+    invoice.issued_at = timezone.now()
+    invoice.save()
     return invoice
 
 

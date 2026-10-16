@@ -106,6 +106,8 @@ class SystemRole(models.TextChoices):
     PPH_26_PAYABLE = "pph26_payable", _("Withheld PPh 26 payable")
     BPJS_PAYABLE = "bpjs_payable", _("BPJS contributions payable")
     BAD_DEBT_EXPENSE = "bad_debt_expense", _("Bad debts written off")
+    # The other side of balances brought over from earlier books: zero once they all are.
+    OPENING_BALANCE = "opening_balance", _("Opening balance equity")
 
 
 class JournalStatus(models.TextChoices):
@@ -125,6 +127,7 @@ class JournalSource(models.TextChoices):
     REVERSAL = "reversal", _("Reversal")
     WRITE_OFF = "write_off", _("Receivable written off")
     DEFERRAL = "deferral", _("Prepayment spread over its term")
+    OPENING = "opening", _("Opening balances")
 
 
 def normal_balance_for(category: str, is_contra: bool) -> NormalBalance:

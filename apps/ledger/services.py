@@ -46,6 +46,7 @@ NUMBER_PREFIX = {
     Source.REVERSAL: "JR",
     Source.WRITE_OFF: "JH",  # hapus piutang
     Source.DEFERRAL: "JD",  # dibayar/diterima di muka
+    Source.OPENING: "JS",  # saldo awal
 }
 
 

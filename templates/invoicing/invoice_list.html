@@ -26,7 +26,7 @@
       <td class="whitespace-nowrap {% if inv.is_overdue %}text-danger font-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
       <td class="num">{{ inv.total|rupiah }}</td>
       <td class="num">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
-      <td><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span></td>
+      <td><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span>{% if inv.opening_balance %} <span class="badge badge-subtle">{% translate "Opening balance" %}</span>{% endif %}</td>
     </tr>
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No documents yet." %}</td></tr>
   {% endfor %}
