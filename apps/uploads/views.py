@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
@@ -6,6 +7,7 @@ from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import TemplateView
 
+from apps.accounts.throttle import ThrottleScope, allow
 from apps.core.exceptions import DomainError
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 from apps.tenants.selectors import first_plan_with
@@ -87,6 +89,9 @@ class UploadView(ImporterMixin, WriteMixin, View):
             return locked
         form, options_form = UploadForm(request.POST, request.FILES), self.options_form(request.POST)
         if not form.is_valid() or (options_form is not None and not options_form.is_valid()):
+            return self.page(form=form, options_form=options_form)
+        if not allow(ThrottleScope.FILE_UPLOAD, str(self.organization.pk), limit=settings.FILE_UPLOADS_PER_HOUR, window_seconds=3600):
+            form.add_error("file", _("Too many files checked in the last hour. Please try again later."))
             return self.page(form=form, options_form=options_form)
         upload = form.cleaned_data["file"]
         options = {name: request.POST.get(name, "") for name in (options_form.data if options_form else {}) if name.startswith("options-")}

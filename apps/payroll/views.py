@@ -1,8 +1,7 @@
-import csv
 from enum import StrEnum
 
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -12,7 +11,7 @@ from django.views.generic import CreateView, DetailView, FormView, ListView, Tem
 
 from apps.core.exceptions import DomainError
 from apps.core.params import text_param, year_choices, year_param
-from apps.core.sanitizers import csv_safe
+from apps.core.tables import download
 from apps.core.views import flash_domain_error
 from apps.taxes.domain import Month
 from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
@@ -141,32 +140,27 @@ class PayrollRunView(OrganizationMixin, DetailView):
         )
 
     def render_to_response(self, context, **response_kwargs):
-        if self.kwargs.get("csv"):
-            return self.csv(context)
+        if export_format := self.kwargs.get("export_format"):
+            run = self.object
+            return download(f"pph21-{run.year}-{run.month:02d}", self.rows(context), export_format)
         return super().render_to_response(context, **response_kwargs)
 
-    def csv(self, context):
-        run = self.object
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="pph21-{run.year}-{run.month:02d}.csv"'
-        response.write("﻿")
-        writer = csv.writer(response, delimiter=";")
-        writer.writerow([
+    def rows(self, context):
+        yield [
             _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("TER category"), _("Tax computed as"),
             _("Days worked"), _("Tax allowance"), _("Benefits in kind"), _("Gross income"), _("Rate (%)"),
             # xgettext:no-python-format
             _("Without NPWP (20% higher)"),
             _("Tax withheld"), _("Severance pay"), _("Final PPh 21 on severance"), _("Bukti potong no."),
-        ])
+        ]
         for p in context["payslips"]:
             e = p.employee
-            writer.writerow([csv_safe(cell) for cell in (
+            yield [
                 e.name, e.nik, e.passport_number, e.nationality, e.npwp, p.ptkp_status, p.ter_category, p.get_tax_scheme_display(),
                 p.days_worked or "", p.tax_allowance, p.benefits_in_kind, p.taxable_gross,
                 p.ter_rate if p.ter_rate is not None else (p.pph26_rate if p.pph26_rate is not None else ""), _("yes") if p.without_tin else "",
                 p.pph21, p.severance or "", p.severance_tax or "", p.withholding_slip,
-            )])
-        return response
+            ]
 
 
 class AnnualView(OrganizationMixin, TemplateView):
@@ -176,37 +170,32 @@ class AnnualView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         year = self.kwargs["year"]
-        for name in ("year", "csv"):  # the URL's, replaced below
+        for name in ("year", "export_format"):  # the URL's, replaced below
             kwargs.pop(name, None)
         return super().get_context_data(year=year, statements=selectors.annual_statements(self.organization, year), **kwargs)
 
     def render_to_response(self, context, **response_kwargs):
-        if self.kwargs.get("csv"):
-            return self.csv(context)
+        if export_format := self.kwargs.get("export_format"):
+            return download(f"1721-a1-{context['year']}", self.rows(context), export_format)
         return super().render_to_response(context, **response_kwargs)
 
-    def csv(self, context):
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="1721-a1-{context["year"]}.csv"'
-        response.write("\ufeff")
-        writer = csv.writer(response, delimiter=";")
-        writer.writerow([
+    def rows(self, context):
+        yield [
             _("Name"), _("NIK"), _("Passport no."), _("Country"), _("NPWP"), _("PTKP status"), _("First month"), _("Last month"),
             _("Gross income"), _("Occupational costs"), _("Pension contributions"), _("Zakat"), _("Net income"),
             _("Net income from earlier periods"), _("Net income for the year (annualised)"), _("PTKP"), _("Taxable income"),
             _("PPh 21 for the year"), _("PPh 21 withheld in earlier periods"), _("PPh 21 due"), _("PPh 21 withheld"), _("Bukti potong no."),
-        ])
+        ]
         for st in context["statements"]:
             if not st.is_final:
                 continue
             e, a = st.employee, st.annual
-            writer.writerow([csv_safe(cell) for cell in (
+            yield [
                 e.name, e.nik, e.passport_number, e.nationality, e.npwp, st.final_slip.ptkp_status, st.first_month, st.last_month,
                 st.gross, a.occupational_costs, a.contributions, a.zakat, a.net, a.prior_net, a.annual_net, a.ptkp, a.taxable, st.tax,
                 st.prior_tax, st.due, st.withheld,
                 st.final_slip.withholding_slip,
-            )])
-        return response
+            ]
 
 
 class AnnualStatementView(OrganizationMixin, TemplateView):

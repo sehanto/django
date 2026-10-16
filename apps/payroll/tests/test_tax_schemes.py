@@ -119,7 +119,7 @@ def test_leaving_indonesia_annualises_the_last_month_and_the_1721_a1(organizatio
     client.force_login(user)
     page = client.get(reverse("payroll:a1", args=[2026, expat.pk]))
     assert page.status_code == 200 and "× 4/12" in page.content.decode()
-    listing = client.get(reverse("payroll:annual_csv", args=[2026])).content.decode("utf-8-sig")
+    listing = client.get(reverse("payroll:annual_download", args=[2026, "csv"])).content.decode("utf-8-sig")
     assert "Brown" in listing and "4300000" in listing
 
 

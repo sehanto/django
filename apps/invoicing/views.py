@@ -14,7 +14,7 @@ from apps.core.exceptions import DomainError, ValidationFailed
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.params import choice_param, int_param, text_param
-from apps.core.views import flash_domain_error
+from apps.core.views import ExportMixin, flash_domain_error
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
 from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
@@ -69,9 +69,26 @@ class InvoiceKindMixin:
         return Invoice.objects.for_organization(self.organization).filter(kind=self.kind)
 
 
-class InvoiceListView(InvoiceKindMixin, OrganizationMixin, ListView):
+class InvoiceListView(InvoiceKindMixin, ExportMixin, OrganizationMixin, ListView):
     template_name = "invoicing/invoice_list.html"
     paginate_by = 25
+
+    @property
+    def export_name(self):
+        return "sales-invoices" if self.kind == InvoiceKind.SALES else "purchase-bills"
+
+    def export_rows(self, queryset):
+        yield [
+            _("Number"), _("Date"), _("Due date"), _("Contact"), _("NPWP"), _("Reference"), _("Faktur Pajak no."), _("Subtotal"),
+            _("PPN"), _("PPnBM"), _("Total"), _("Paid"), _("Returns credited"), _("Written off"), _("Balance due"), _("Status"),
+            _("Opening balance"),
+        ]
+        for i in queryset.select_related("contact"):
+            yield [
+                i.display_number, i.date, i.due_date, i.party_name, i.party_npwp, i.reference, i.tax_invoice_number, i.subtotal,
+                i.tax_amount, i.luxury_tax_amount, i.total, i.amount_paid, i.amount_credited, i.amount_written_off, i.balance_due,
+                i.status_label, _("yes") if i.opening_balance else "",
+            ]
 
     def get_queryset(self):
         params = self.request.GET
@@ -294,9 +311,22 @@ class PaymentCreateView(InvoiceActionView):
 # --- Payments -----------------------------------------------------------------
 
 
-class PaymentListView(OrganizationMixin, ListView):
+class PaymentListView(ExportMixin, OrganizationMixin, ListView):
     template_name = "invoicing/payment_list.html"
     paginate_by = 25
+    export_name = "payments"
+
+    def export_rows(self, queryset):
+        yield [
+            _("Number"), _("Date"), _("Type"), _("Invoice"), _("Contact"), _("Cash/bank account"), _("Method"), _("Reference"),
+            _("Amount"), _("PPN withheld"), _("Income tax"), _("Income tax withheld"), _("Bukti potong no."), _("Status"),
+        ]
+        for p in queryset.select_related("invoice", "cash_account"):
+            yield [
+                p.number, p.date, p.invoice.get_kind_display(), p.invoice.number, p.invoice.party_name, p.cash_account.code,
+                p.get_method_display(), p.reference, p.amount, p.vat_withheld, p.get_income_tax_kind_display(), p.income_tax_withheld,
+                p.withholding_slip, p.get_status_display(),
+            ]
 
     def get_queryset(self):
         params = self.request.GET
@@ -335,9 +365,15 @@ class WithholdingSlipView(WriteMixin, View):
 # --- Items --------------------------------------------------------------------
 
 
-class ItemListView(OrganizationMixin, ListView):
+class ItemListView(ExportMixin, OrganizationMixin, ListView):
     template_name = "invoicing/item_list.html"
     paginate_by = 25
+    export_name = "items"
+
+    def export_rows(self, queryset):
+        from apps.uploads.exports import item_rows  # uploads reads invoicing's forms and services
+
+        return item_rows(queryset)  # the upload template's columns: edit and upload again
 
     def get_queryset(self):
         return items_for(self.organization, query=text_param(self.request.GET, "q")).select_related("tax_rate")

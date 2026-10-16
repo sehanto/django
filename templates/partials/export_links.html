@@ -1,0 +1,4 @@
+{% load i18n %}{# Download buttons for a list page with ExportMixin: the rows as filtered, in each format. #}
+<div class="flex flex-wrap gap-2" role="group" aria-label="{% translate 'Download' %}">
+  {% for value, label in export_formats.choices %}<a class="btn btn-outline btn-sm" href="{% querystring download=value page=None %}" rel="nofollow">{% icon "download" %} {{ label }}</a>{% endfor %}
+</div>

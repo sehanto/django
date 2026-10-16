@@ -112,6 +112,7 @@ TEMPLATES = [
                 "apps.billing.context_processors.subscription_notice",
                 "apps.invoicing.context_processors.invoice_kinds",
                 "apps.accounts.context_processors.theme",
+                "apps.core.context_processors.export_formats",
             ],
             "builtins": ["apps.core.templatetags.icons"],  # {% icon "name" %} in every template
         },
@@ -251,6 +252,8 @@ LOGIN_CAPTCHA_WINDOW_MINUTES = env.int("LOGIN_CAPTCHA_WINDOW_MINUTES", default=6
 
 # Books export (ZIP of CSVs) per organization; each one reads the whole ledger.
 BOOKS_EXPORTS_PER_HOUR = env.int("BOOKS_EXPORTS_PER_HOUR", default=10)
+# File uploads checked per organization and hour (each reads up to 2 MB and runs every row).
+FILE_UPLOADS_PER_HOUR = env.int("FILE_UPLOADS_PER_HOUR", default=60)
 
 # Retention, applied daily by manage.py prune_security_logs (deploy/cron/crontab):
 # sign-in and account-security audit events and django-axes sign-in records (IP, browser)...

@@ -3,6 +3,8 @@
 from django.contrib import messages
 
 from .exceptions import DomainError
+from .params import choice_param
+from .tables import ExportFormat, download
 
 
 class DomainErrorFormMixin:
@@ -25,3 +27,20 @@ class DomainErrorFormMixin:
 
 def flash_domain_error(request, exc: DomainError) -> None:
     messages.error(request, exc.message)
+
+
+class ExportMixin:
+    """A list page whose rows, as filtered, download as CSV or Excel (``?download=csv`` or ``xlsx``;
+    ``partials/export_links.html`` shows the buttons). Subclasses give ``export_name`` and
+    ``export_rows(queryset)``: the header, then one row per record (all pages, not just the shown one)."""
+
+    export_name = ""
+
+    def export_rows(self, queryset):  # pragma: no cover - abstract
+        raise NotImplementedError
+
+    def get(self, request, *args, **kwargs):
+        export_format = choice_param(request.GET, "download", ExportFormat.values)
+        if export_format:
+            return download(self.export_name, self.export_rows(self.get_queryset()), export_format)
+        return super().get(request, *args, **kwargs)

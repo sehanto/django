@@ -449,6 +449,19 @@ cost of goods sold or an other expense, the quantities stay, and the lower value
 cost layers, so later issues take their cost from it. Write-ups above cost are refused. A mistaken
 return is voided, not edited.
 
+### Downloads (CSV and Excel)
+
+Every table that downloads comes as CSV or Excel (XLSX), through one helper (`apps/core/tables.py`):
+the financial statements, trial balance and general ledger (**Reports**, with the filter as shown),
+the sales, purchase, payment, contact and item lists (as filtered, every page: `?download=csv` or
+`xlsx`, `core.views.ExportMixin`), the month's withholdings, the payroll run's PPh 21 and the
+year's 1721-A1. CSV is UTF-8 with a BOM and `;`-separated, as Excel opens it in either language;
+XLSX keeps amounts as numbers and dates as dates, with the header row frozen. Text that a
+spreadsheet would run as a formula is neutralised in both (a leading `'` in CSV, a text cell in
+XLSX). Contacts and items download in the columns of their upload template, so a list can be
+edited in a spreadsheet and uploaded again (see [File uploads](#file-uploads)). Coretax, eBupot and
+Dokumen Lain files stay in DJP's XML formats.
+
 ### Exporting the books
 
 Owners and admins can download their organization's complete books from

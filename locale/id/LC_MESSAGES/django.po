@@ -9233,10 +9233,6 @@ msgstr ""
 "Ditanggung pemberi kerja di luar gaji: JKK %(jkk)s, JKM %(jkm)s, JHT %(jht)s, JP %(jp)s, BPJS "
 "Kesehatan %(health)s."
 
-#: templates/payroll/run_detail.html:8
-msgid "Bukti potong (CSV)"
-msgstr "Bukti potong (CSV)"
-
 #: templates/payroll/run_detail.html:9
 msgid "eBupot files"
 msgstr "Berkas eBupot"
@@ -11204,3 +11200,28 @@ msgstr "tampilan"
 
 msgid "Appearance"
 msgstr "Tampilan"
+
+msgid "Faktur Pajak no."
+msgstr "No. Faktur Pajak"
+
+msgid "Cash/bank account"
+msgstr "Akun kas/bank"
+
+msgid "PPN withheld"
+msgstr "PPN dipungut pembeli"
+
+msgid "Income tax withheld"
+msgstr "PPh dipotong"
+
+msgid "no"
+msgstr "tidak"
+
+msgid "Too many files checked in the last hour. Please try again later."
+msgstr "Terlalu banyak berkas yang diperiksa dalam satu jam terakhir. Silakan coba lagi nanti."
+
+msgid "Download"
+msgstr "Unduh"
+
+#, python-format
+msgid "Bukti potong (%(format)s)"
+msgstr "Bukti potong (%(format)s)"

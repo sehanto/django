@@ -125,7 +125,7 @@ def test_the_pages(auth_client, organization, staff):
     payroll = PayrollRun.objects.get(organization=organization)
     assert response.url == reverse("payroll:run", args=[payroll.pk])
     assert auth_client.get(reverse("payroll:index"), {"year": 2026}).status_code == 200
-    csv = auth_client.get(reverse("payroll:run_csv", args=[payroll.pk])).content.decode("utf-8-sig")
+    csv = auth_client.get(reverse("payroll:run_download", args=[payroll.pk, "csv"])).content.decode("utf-8-sig")
     assert "3174061502560011" in csv and "261350" in csv
     assert auth_client.get(reverse("payroll:payslip", args=[payroll.payslips.get().pk])).status_code == 200
     with translation.override("en"):

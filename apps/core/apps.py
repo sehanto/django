@@ -17,9 +17,10 @@ class CoreConfig(AppConfig):
         from django.urls import register_converter
 
         from . import checks  # noqa: F401 - registers system checks
-        from .converters import MonthConverter, YearConverter
+        from .converters import ExportFormatConverter, MonthConverter, YearConverter
 
         register_converter(YearConverter, "year")
         register_converter(MonthConverter, "month")
+        register_converter(ExportFormatConverter, "export_format")
 
         post_migrate.connect(_grant_app_privileges, sender=self, dispatch_uid="core.grant_app_privileges")

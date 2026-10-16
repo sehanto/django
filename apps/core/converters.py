@@ -28,3 +28,17 @@ class MonthConverter:
 
     def to_url(self, value) -> str:
         return str(int(value))
+
+
+class ExportFormatConverter:
+    """``csv`` or ``xlsx`` at the end of a download's URL (``tables.ExportFormat``); anything else is a 404."""
+
+    regex = "csv|xlsx"
+
+    def to_python(self, value: str) -> str:
+        from .tables import ExportFormat
+
+        return ExportFormat(value)
+
+    def to_url(self, value) -> str:
+        return str(value)

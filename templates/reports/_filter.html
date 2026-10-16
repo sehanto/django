@@ -5,7 +5,7 @@
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-input' }}{% endif %}</div>
   {% endfor %}
   <div class="w-full sm:w-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>
-  {% if csv and report %}<div class="w-full sm:w-auto"><button name="download" value="{{ export_formats.CSV }}" class="btn btn-outline">{% icon "download" %} CSV</button></div>{% endif %}
+  {% if csv and report %}{% for value, label in export_formats.choices %}<div class="w-full sm:w-auto"><button name="download" value="{{ value }}" class="btn btn-outline">{% icon "download" %} {{ label }}</button></div>{% endfor %}{% endif %}
   <div class="w-full sm:w-auto"><button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</button></div>
   {% for e in form.non_field_errors %}<div class="w-full text-sm text-danger" role="alert">{{ e }}</div>{% endfor %}
 </form>

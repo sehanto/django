@@ -1,4 +1,3 @@
-import csv
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -16,7 +15,7 @@ from django.views.generic import CreateView, FormView, ListView, TemplateView, U
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
-from apps.core.sanitizers import csv_safe
+from apps.core.tables import download
 from apps.core.params import int_param, text_param, year_choices, year_param
 from apps.core.periods import month_end
 from apps.core.views import flash_domain_error
@@ -234,7 +233,7 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
         year, month = self.kwargs["year"], self.kwargs["month"]
         if not 1 <= month <= 12:
             raise Http404
-        for name in ("year", "month", "csv"):  # the URL's, replaced below
+        for name in ("year", "month", "export_format"):  # the URL's, replaced below
             kwargs.pop(name, None)
         from apps.payroll.selectors import posted_run  # payroll depends on taxes
 
@@ -249,28 +248,22 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
         )
 
     def render_to_response(self, context, **response_kwargs):
-        if self.kwargs.get("csv"):
-            return self.csv(context)
+        if export_format := self.kwargs.get("export_format"):
+            return download(f"bukti-potong-{context['year']}-{context['month']:02d}", self.rows(context), export_format)
         return super().render_to_response(context, **response_kwargs)
 
-    def csv(self, context):
-        period = f"{context['year']}-{context['month']:02d}"
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="bukti-potong-{period}.csv"'
-        response.write("﻿")  # BOM so Excel opens UTF-8 correctly
-        writer = csv.writer(response, delimiter=";")
-        writer.writerow([
+    def rows(self, context):
+        yield [
             _("Date"), _("Payment"), _("Bill"), _("Supplier"), _("NPWP"), _("NIK/ID"), _("Income tax"),
             _("Tax base"), _("Rate (%)"), _("Tax withheld"), _("Bukti potong no."),
-        ])
+        ]
         for p in context["payments"]:
             invoice = p.invoice
-            writer.writerow([csv_safe(cell) for cell in (
-                p.date.isoformat(), p.number, invoice.number, invoice.party_name, invoice.party_tin, invoice.party_id_number,
+            yield [
+                p.date, p.number, invoice.number, invoice.party_name, invoice.party_tin, invoice.party_id_number,
                 p.get_income_tax_kind_display(), p.income_tax_base,
                 p.income_tax_rate if p.income_tax_rate is not None else _("50% × Art. 17"), p.income_tax_withheld, p.withholding_slip,
-            )])
-        return response
+            ]
 
 
 def _ebupot_type(kind: str) -> str:

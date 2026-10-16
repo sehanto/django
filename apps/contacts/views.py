@@ -7,7 +7,8 @@ from django.views.generic import CreateView, ListView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.params import choice_param, text_param
-from apps.core.views import flash_domain_error
+from apps.core.views import ExportMixin, flash_domain_error
+from apps.uploads.exports import contact_rows
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
@@ -18,9 +19,13 @@ from .models import Contact
 from .selectors import contacts_for
 
 
-class ContactListView(OrganizationMixin, ListView):
+class ContactListView(ExportMixin, OrganizationMixin, ListView):
     template_name = "contacts/contact_list.html"
     paginate_by = 25
+    export_name = "contacts"
+
+    def export_rows(self, queryset):
+        return contact_rows(queryset)  # the upload template's columns: edit and upload again
 
     def get_queryset(self):
         params = self.request.GET

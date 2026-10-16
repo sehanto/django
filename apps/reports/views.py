@@ -1,18 +1,16 @@
-import csv
 import tempfile
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.db import models
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 
 from apps.core.params import choice_param, year_choices, year_param
-from apps.core.sanitizers import csv_safe
+from apps.core.tables import ExportFormat, download
 from apps.invoicing import coretax
 from apps.invoicing.models import InvoiceKind
 from apps.invoicing.selectors import (
@@ -31,19 +29,6 @@ from apps.tenants.mixins import ManageMixin, OrganizationMixin
 from .exports import archive_filename, write_books_archive
 from .forms import AsOfForm, LedgerForm, PeriodForm, end_of_previous_year, one_year_earlier, start_of_year
 from .statements import FinancialNotes, build_balance_sheet, build_income_statement, build_trial_balance, number_notes
-
-
-class ExportFormat(models.TextChoices):
-    CSV = "csv", "CSV"
-
-
-def csv_response(filename: str, rows) -> HttpResponse:
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
-    response.write("﻿")  # BOM so Excel opens UTF-8 correctly
-    writer = csv.writer(response, delimiter=";")
-    writer.writerows([csv_safe(cell) for cell in row] for row in rows)  # account names etc. are user data
-    return response
 
 
 def income_statement(organization, date_from, date_to):
@@ -75,10 +60,10 @@ def balance_sheet(organization, as_of):
 
 
 class ReportView(OrganizationMixin, TemplateView):
-    """Base: validate a filter form, build a report, render HTML or CSV."""
+    """Base: validate a filter form, build a report, render HTML or download it (CSV or XLSX)."""
 
     form_class = None
-    csv_name = None
+    export_name = None  # the download's file name, without its extension
 
     def get_form(self):
         return self.form_class(self.request.GET or None)
@@ -89,9 +74,10 @@ class ReportView(OrganizationMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         form = self.get_form()
         report = self.build(form.cleaned_data) if form.is_valid() else None
-        if report is not None and self.csv_name and choice_param(request.GET, "download", ExportFormat.values) == ExportFormat.CSV:
-            return csv_response(self.csv_name, report.csv_rows())
-        return self.render_to_response(self.get_context_data(form=form, report=report, export_formats=ExportFormat))
+        export_format = choice_param(request.GET, "download", ExportFormat.values)
+        if report is not None and self.export_name and export_format:
+            return download(self.export_name, report.csv_rows(), export_format)
+        return self.render_to_response(self.get_context_data(form=form, report=report))
 
 
 class ReportIndexView(OrganizationMixin, TemplateView):
@@ -101,7 +87,7 @@ class ReportIndexView(OrganizationMixin, TemplateView):
 class TrialBalanceView(ReportView):
     template_name = "reports/trial_balance.html"
     form_class = AsOfForm
-    csv_name = "trial-balance.csv"
+    export_name = "trial-balance"
 
     def build(self, data):
         return build_trial_balance(account_balances(self.organization, date_to=data["as_of"]), data["as_of"])
@@ -110,7 +96,7 @@ class TrialBalanceView(ReportView):
 class IncomeStatementView(ReportView):
     template_name = "reports/income_statement.html"
     form_class = PeriodForm
-    csv_name = "income-statement.csv"
+    export_name = "income-statement"
 
     def build(self, data):
         report = income_statement(self.organization, data["date_from"], data["date_to"])
@@ -121,7 +107,7 @@ class IncomeStatementView(ReportView):
 class BalanceSheetView(ReportView):
     template_name = "reports/balance_sheet.html"
     form_class = AsOfForm
-    csv_name = "balance-sheet.csv"
+    export_name = "balance-sheet"
 
     def build(self, data):
         report = balance_sheet(self.organization, data["as_of"])

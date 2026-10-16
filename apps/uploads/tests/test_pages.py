@@ -86,3 +86,12 @@ def test_every_template_names_its_columns(auth_client, kind):
     header = response.content.decode("utf-8-sig").splitlines()[0]
     assert header.split(",") == [column.label for column in IMPORTERS[kind].columns]
     assert auth_client.get(reverse("uploads:upload", args=[slug])).status_code == 200
+
+
+def test_checks_are_limited_per_hour(auth_client, settings):
+    settings.FILE_UPLOADS_PER_HOUR = 2
+    url = reverse("uploads:upload", args=["contacts"])
+    for _ in range(2):
+        assert token_of(auth_client.post(url, {"file": csv_file("name\nPT Satu\n")}))
+    response = auth_client.post(url, {"file": csv_file("name\nPT Satu\n")})
+    assert not token_of(response) and "Too many files" in response.content.decode()
