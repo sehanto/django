@@ -220,7 +220,6 @@ def contact_json(c: Contact) -> dict:
         "id": c.pk, "kind": c.kind, "name": c.name, "npwp": c.npwp, "email": c.email, "phone": c.phone,
         "address": c.address, "village": c.village_id, "region": c.region_line, "postal_code": c.postal_code,
         "region_codes": _region_codes(c.village),
-        "city": c.regency_name,  # kept for clients of the earlier free-text field
         "payment_terms_days": c.payment_terms_days, "is_active": c.is_active,
     }
 

@@ -238,7 +238,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
     (
         Table("fixed_assets.csv", gettext_lazy("The fixed asset register."), (
             C("number"), C("name"), C("description"), C("asset_account__code", gettext_lazy("Fixed asset account code")),
-            C("acquisition_date"), C("cost"), C("is_depreciable"), C("residual_value"), C("useful_life_months"), C("method"),
+            C("acquisition_date"), C("cost"), C("is_depreciable"), C("useful_life_months"), C("method"),
             C("accumulated_depreciation_account__code", gettext_lazy("Accumulated depreciation account code")),
             C("depreciation_expense_account__code", gettext_lazy("Depreciation expense account code")),
             C("depreciated_before_until"), C("status"), C("disposed_on"), C("disposal_proceeds"),
@@ -248,9 +248,9 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
         FixedAsset, "organization", ("number",),
     ),
     (
-        Table("asset_revisions.csv", gettext_lazy("Changes in the useful life, residual value and depreciation method of fixed assets."), (
+        Table("asset_revisions.csv", gettext_lazy("Changes in the useful life and depreciation method of fixed assets."), (
             C("asset__number", gettext_lazy("Fixed asset")), C("effective_from"), C("previous_useful_life_months"),
-            C("useful_life_months"), C("previous_residual_value"), C("residual_value"), C("previous_method"), C("method"),
+            C("useful_life_months"), C("previous_method"), C("method"),
             C("reason"),
         )),
         AssetRevision, "organization", ("asset__number", "effective_from", "pk"),

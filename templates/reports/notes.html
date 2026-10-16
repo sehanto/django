@@ -81,12 +81,11 @@
 
 {% if report.estimate_changes %}
 <h2 class="text-base leading-tight font-bold" id="note-{{ report.estimates_note }}">{{ report.estimates_note }}. {% translate "Changes in accounting estimates" %}</h2>
-<p class="text-sm">{% translate "The useful life, residual value or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
+<p class="text-sm">{% translate "The useful life or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
 <div class="overflow-x-auto mb-6"><table class="table table-sm mb-0 text-sm">
-  <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
+  <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in report.estimate_changes %}
     <tr><td>{{ r.asset.number }} {{ r.asset.name }}</td><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
-      <td class="num">{{ r.previous_residual_value|rupiah }} → {{ r.residual_value|rupiah }}</td>
       <td>{% if r.method == r.previous_method %}{{ r.get_method_display }}{% else %}{{ r.get_previous_method_display }} → {{ r.get_method_display }}{% endif %}</td><td>{{ r.reason }}</td></tr>
   {% endfor %}</tbody>
 </table></div>

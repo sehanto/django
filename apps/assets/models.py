@@ -36,7 +36,8 @@ class FixedAsset(TenantOwnedModel):
     acquisition_date = models.DateField(_("acquisition date"), help_text=_("When the asset was acquired and ready for use: depreciation starts in this month."))
     cost = money_field(_("cost"), validators=[MinValueValidator(1)], help_text=_("Purchase price plus the costs of getting the asset ready for use, excluding refundable PPN."))
     is_depreciable = models.BooleanField(_("depreciable"), default=True, help_text=_("Turn off for land, which is not depreciated."))
-    residual_value = money_field(_("residual value"), validators=[MinValueValidator(0)], help_text=_("What the asset is expected to be worth at the end of its useful life. Usually 0."))
+    # Always 0 (asset_without_residual_value): SAK EMKM depreciates without a residual value (11.14).
+    residual_value = money_field(_("residual value"), editable=False)
     useful_life_months = models.PositiveSmallIntegerField(
         _("useful life (months)"), null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(MAX_USEFUL_LIFE_MONTHS)],
         help_text=_("E.g. 48 for office equipment, 96 for vehicles (tax group 1 and 2)."),
@@ -79,7 +80,8 @@ class FixedAsset(TenantOwnedModel):
                     depreciation_expense_account__isnull=False,
                 ),
             ),
-            models.CheckConstraint(name="residual_below_cost", condition=models.Q(residual_value__lt=models.F("cost"))),
+            # SAK EMKM 11.14 (and 12.13 for intangibles): depreciated and amortised without a residual value.
+            models.CheckConstraint(name="asset_without_residual_value", condition=models.Q(residual_value=0)),
         ]
 
     def __str__(self):
@@ -103,11 +105,6 @@ class FixedAsset(TenantOwnedModel):
         return DepreciationMethod(self.current_method).label
 
     @property
-    def current_residual_value(self):
-        revisions = self.estimates
-        return revisions[-1].residual_value if revisions else self.residual_value
-
-    @property
     def schedule(self) -> list[ScheduledMonth]:
         if not self.is_depreciable:
             return []
@@ -129,8 +126,7 @@ class FixedAsset(TenantOwnedModel):
 
 
 class AssetRevision(TenantOwnedModel):
-    """A change in accounting estimate: a new useful life, residual value and depreciation
-    method from a month on.
+    """A change in accounting estimate: a new useful life and depreciation method from a month on.
 
     Applied prospectively (past depreciation stays as posted). Append-only in the database
     (assets migration 0004): it starts after the last posted month and after earlier
@@ -143,9 +139,9 @@ class AssetRevision(TenantOwnedModel):
         _("useful life (months)"), validators=[MinValueValidator(1), MaxValueValidator(MAX_USEFUL_LIFE_MONTHS)],
         help_text=_("The whole useful life, counted from the month of acquisition."),
     )
-    residual_value = money_field(_("residual value"), validators=[MinValueValidator(0)])
+    residual_value = money_field(_("residual value"), editable=False)  # always 0, like the asset's (SAK EMKM 11.14)
     previous_useful_life_months = models.PositiveSmallIntegerField(_("previous useful life (months)"))
-    previous_residual_value = money_field(_("previous residual value"))
+    previous_residual_value = money_field(_("previous residual value"), editable=False)
     method = models.CharField(_("depreciation method"), max_length=20, choices=DepreciationMethod.choices)
     previous_method = models.CharField(_("previous depreciation method"), max_length=20, choices=DepreciationMethod.choices)
     reason = models.CharField(_("reason"), max_length=255)
@@ -155,6 +151,11 @@ class AssetRevision(TenantOwnedModel):
         ordering = ["effective_from", "pk"]
         verbose_name = _("change in estimate")
         verbose_name_plural = _("changes in estimates")
+        constraints = [
+            models.CheckConstraint(
+                name="revision_without_residual_value", condition=models.Q(residual_value=0, previous_residual_value=0),
+            ),
+        ]
 
     def __str__(self):
         return f"{self.asset.number} {self.effective_from:%m/%Y}"

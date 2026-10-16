@@ -167,7 +167,8 @@ def test_the_api_takes_and_returns_the_region(client, organization, user, region
     )
     assert response.status_code == 201, response.content
     body = response.json()
-    assert (body["village"], body["postal_code"], body["city"]) == (JATAKE, "15330", "Kabupaten Tangerang")
+    assert (body["village"], body["postal_code"], body["region_codes"]["village"]) == (JATAKE, "15330", JATAKE)
+    assert "city" not in body
     assert body["region"] == "Jatake, Pagedangan, Kabupaten Tangerang, Banten 15330"
 
 

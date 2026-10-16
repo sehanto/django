@@ -22,19 +22,16 @@ def depreciated(organization, make_asset):
     return asset
 
 
-def revise(asset, on=date(2026, 4, 1), months=60, residual="0", reason="Dipakai lebih lama", method=None):
-    return services.revise_estimate(
-        asset=asset, effective_from=on, useful_life_months=months, residual_value=D(residual), reason=reason, method=method,
-    )
+def revise(asset, on=date(2026, 4, 1), months=60, reason="Dipakai lebih lama", method=None):
+    return services.revise_estimate(asset=asset, effective_from=on, useful_life_months=months, reason=reason, method=method)
 
 
 def test_a_revision_changes_depreciation_from_its_month_on(organization, depreciated, user):
     revision = services.revise_estimate(
-        asset=depreciated, effective_from=date(2026, 4, 20), useful_life_months=60, residual_value=D("0"),
-        reason="Dipakai lebih lama", created_by=user,
+        asset=depreciated, effective_from=date(2026, 4, 20), useful_life_months=60, reason="Dipakai lebih lama", created_by=user,
     )
     assert revision.effective_from == date(2026, 4, 1)
-    assert (revision.previous_useful_life_months, revision.previous_residual_value) == (48, D("0"))
+    assert revision.previous_useful_life_months == 48
     depreciated.refresh_from_db()
     assert (depreciated.useful_life_months, depreciated.current_useful_life_months) == (48, 60)  # the original stays recorded
 
@@ -65,7 +62,6 @@ def test_only_assets_with_posted_depreciation_are_revised(make_asset):
 @pytest.mark.parametrize("kwargs, message", [
     ({"on": date(2026, 2, 1)}, "from 04/2026"),  # February is posted
     ({"months": 3}, "at least 4 months"),
-    ({"residual": "100000"}, "without a residual value"),  # SAK EMKM 11.14
     ({"reason": "  "}, "reason"),
     ({"months": 48}, "Change the useful life"),  # nothing changes
 ])
@@ -98,9 +94,21 @@ def test_revisions_are_append_only_in_the_database(organization, depreciated):
         with refused():
             AssetRevision.objects.create(
                 organization=organization, asset=depreciated, effective_from=effective_from, useful_life_months=60,
-                residual_value=D("0"), previous_useful_life_months=48, previous_residual_value=D("0"), reason="x",
+                previous_useful_life_months=48, reason="x",
                 method=FixedAsset.Method.STRAIGHT_LINE, previous_method=FixedAsset.Method.STRAIGHT_LINE,
             )
+
+
+def test_the_database_refuses_a_residual_value(organization, depreciated):
+    """SAK EMKM 11.14 (12.13 for intangibles): no residual value, on the asset or in a revision."""
+    with refused():
+        FixedAsset.objects.filter(pk=depreciated.pk).update(residual_value=D("1000"))
+    with refused():
+        AssetRevision.objects.create(
+            organization=organization, asset=depreciated, effective_from=date(2026, 4, 1), useful_life_months=60,
+            residual_value=D("100000"), previous_useful_life_months=48, reason="x",
+            method=FixedAsset.Method.STRAIGHT_LINE, previous_method=FixedAsset.Method.STRAIGHT_LINE,
+        )
 
 
 def test_revising_through_the_page_and_disclosing_it(auth_client, user, organization, depreciated, make_member, client):
@@ -110,7 +118,7 @@ def test_revising_through_the_page_and_disclosing_it(auth_client, user, organiza
     assert detail.context["revision_form"].initial["effective_from"] == date(2026, 4, 1)
 
     auth_client.post(reverse("assets:revise", args=[depreciated.pk]), {
-        "effective_from": "2026-04-01", "useful_life_months": "60", "residual_value": "0", "reason": "Dipakai lebih lama",
+        "effective_from": "2026-04-01", "useful_life_months": "60", "reason": "Dipakai lebih lama",
         "method": FixedAsset.Method.DECLINING_BALANCE,
     })
     assert depreciated.revisions.count() == 1

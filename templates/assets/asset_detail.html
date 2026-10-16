@@ -26,8 +26,6 @@
   <dt class="col-span-12 sm:col-span-4">{% translate "Acquisition date" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
   <dt class="col-span-12 sm:col-span-4">{% translate "Fixed asset account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.asset_account }}</dd>
   {% if asset.is_depreciable %}
-  {% if asset.current_residual_value %}<dt class="col-span-12 sm:col-span-4">{% translate "Residual value" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.current_residual_value|rupiah }}
-    <div class="text-sm text-muted">{% translate "Registered before SAK EMKM's rule was applied here: depreciation is without a residual value (11.14). Revise the estimate to remove it from a month on." %}</div></dd>{% endif %}
   <dt class="col-span-12 sm:col-span-4">{% translate "Accumulated depreciation account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.accumulated_depreciation_account }}</dd>
   <dt class="col-span-12 sm:col-span-4">{% translate "Depreciation expense account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.depreciation_expense_account }}</dd>
   {% if asset.depreciated_before_until %}<dt class="col-span-12 sm:col-span-4">{% translate "Already depreciated through" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.depreciated_before_until|date:"F Y" }}</dd>{% endif %}
@@ -38,10 +36,9 @@
 {% if revisions %}
 <h2 class="text-base font-medium leading-tight">{% translate "Changes in estimate" %}</h2>
 <div class="card mb-6 max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
-  <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th class="num">{% translate "Residual value" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
+  <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in revisions %}
     <tr><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
-      <td class="num">{{ r.previous_residual_value|rupiah }} → {{ r.residual_value|rupiah }}</td>
       <td>{% if r.method == r.previous_method %}{{ r.get_method_display }}{% else %}{{ r.get_previous_method_display }} → {{ r.get_method_display }}{% endif %}</td><td class="text-sm">{{ r.reason }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
@@ -66,7 +63,7 @@
   <div class="modal-header"><h2 class="modal-title" id="reviseModalTitle">{% translate "Revise estimate" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     {% include "partials/form_fields.html" with form=revision_form col="col-span-12" %}
-    <p class="text-sm text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value less the new residual value is depreciated over the remaining months with the chosen method." %}</p>
+    <p class="text-sm text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value is depreciated over the remaining months with the chosen method, without a residual value." %}</p>
   </div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save" %}</button></div>
 </form></dialog>

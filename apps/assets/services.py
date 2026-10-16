@@ -266,13 +266,12 @@ def first_revisable_month(asset: FixedAsset) -> date:
 
 @transaction.atomic
 def revise_estimate(
-    *, asset: FixedAsset, effective_from: date, useful_life_months: int, reason: str, residual_value: Decimal = ZERO,
-    method: str | None = None, created_by=None,
+    *, asset: FixedAsset, effective_from: date, useful_life_months: int, reason: str, method: str | None = None, created_by=None,
 ) -> AssetRevision:
-    """Change the useful life, residual value or depreciation method from a month on (a change
-    in accounting estimate, applied prospectively): depreciation already posted stays, and from
-    that month the remaining book value less the new residual value is depreciated over the
-    remaining life with the (new) method."""
+    """Change the useful life or depreciation method from a month on (a change in accounting
+    estimate, applied prospectively): depreciation already posted stays, and from that month the
+    remaining book value is depreciated over the remaining life with the (new) method, without a
+    residual value (SAK EMKM 11.14)."""
     asset = FixedAsset.objects.select_for_update().get(pk=asset.pk)
     if asset.status != FixedAsset.Status.ACTIVE or not asset.is_depreciable:
         raise InvalidStateTransition(_("Only a depreciable asset in use can be revised."))
@@ -295,20 +294,11 @@ def revise_estimate(
             "The useful life must run past %(period)s: at least %(months)d months from acquisition.",
             elapsed + 1,
         ) % {"period": _period(starts.year, starts.month), "months": elapsed + 1})
-    residual_value = quantize(residual_value or ZERO)
-    if residual_value:  # an earlier residual value can only be revised away
-        raise ValidationFailed(_("SAK EMKM depreciates and amortises without a residual value: leave it at 0."))
     method = DepreciationMethod(method or asset.current_method)
-    if (useful_life_months, residual_value, method) == (asset.current_useful_life_months, asset.current_residual_value, asset.current_method):
-        raise ValidationFailed(_("Change the useful life, the residual value or the depreciation method."))
-    book_value = asset.cost - accumulated_before(asset.schedule, (starts.year, starts.month))
-    if residual_value < 0 or residual_value > book_value:
-        raise ValidationFailed(
-            _("The residual value can't be more than the book value at that point (%(amount)s).") % {"amount": localized_rupiah(book_value)}
-        )
+    if (useful_life_months, method) == (asset.current_useful_life_months, asset.current_method):
+        raise ValidationFailed(_("Change the useful life or the depreciation method."))
     return AssetRevision.objects.create(
         organization=asset.organization, asset=asset, effective_from=starts, useful_life_months=useful_life_months,
-        residual_value=residual_value, previous_useful_life_months=asset.current_useful_life_months,
-        previous_residual_value=asset.current_residual_value, method=method, previous_method=asset.current_method,
+        previous_useful_life_months=asset.current_useful_life_months, method=method, previous_method=asset.current_method,
         reason=reason.strip(), created_by=created_by,
     )
