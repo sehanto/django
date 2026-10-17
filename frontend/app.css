@@ -16,8 +16,8 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text, table cells and form labels 15px (base); captions (sm), badges, small labels, help text
-     and field errors 13px (label); section headings and column headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
+     Body text and table cells 15px (base); captions (sm), badges, small labels, help text and field
+     errors 13px (label); form labels, section headings and column headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.5;
@@ -187,7 +187,7 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block; }
+  .form-label { @apply mb-1 inline-block text-lg; }
   .form-input, .form-select {
     @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
