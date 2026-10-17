@@ -1,6 +1,5 @@
 {% extends "base.html" %}{% load i18n money chart ui %}
 {% block title %}{% translate "Dashboard" %}{% endblock %}
-{% block breadcrumbs %}{% breadcrumbs %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-6">
   <div><h1 class="text-xl font-medium leading-tight mb-0">{% translate "Dashboard" %}</h1><div class="text-muted text-sm">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>

@@ -197,8 +197,9 @@ def test_a_sub_page_shows_its_trail(auth_client):
     assert reverse("payroll:index") in trail and 'aria-current="page"' in trail
 
 
-# Pages outside the app's navigation: errors, sign-in, the gateway stand-ins, print views, invitations.
-WITHOUT_BREADCRUMBS = {"403.html", "404.html", "accounts/_auth_layout.html", "billing/fake_checkout.html", "billing/fake_save.html",
+# The dashboard (where every trail starts) and pages outside the app's navigation: errors, sign-in,
+# the gateway stand-ins, print views, invitations.
+WITHOUT_BREADCRUMBS = {"dashboard/home.html", "403.html", "404.html", "accounts/_auth_layout.html", "billing/fake_checkout.html", "billing/fake_save.html",
                        "invoicing/invoice_print.html", "tenants/invitation.html"}
 
 
@@ -211,9 +212,8 @@ def test_every_page_of_the_app_has_breadcrumbs():
     assert not missing, missing
 
 
-def test_the_dashboard_trail_is_just_the_dashboard(auth_client):
-    trail = auth_client.get(reverse("dashboard:home")).content.decode().split('class="breadcrumbs')[1].split("</nav>")[0]
-    assert trail.count("<li>") == 1 and 'aria-current="page"' in trail
+def test_the_dashboard_has_no_trail(auth_client):
+    assert 'class="breadcrumbs' not in auth_client.get(reverse("dashboard:home")).content.decode()
 
 
 def test_template_comments_close_on_their_line():

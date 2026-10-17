@@ -7,9 +7,8 @@
 
 ``crumb`` takes the label, then a URL name with its arguments (keyword arguments become the query
 string); the last crumb has no URL: it is the current page (``aria-current="page"``). Every trail
-starts at the dashboard, which the tag adds; the dashboard's own page has an empty
-``{% breadcrumbs %}{% endbreadcrumbs %}`` and shows just that. Built-in like ``{% icon %}``; the
-separators come from the ``breadcrumbs`` component in ``frontend/app.css``.
+starts at the dashboard, which the tag adds; the dashboard itself has none. Built-in like
+``{% icon %}``; the separators come from the ``breadcrumbs`` component in ``frontend/app.css``.
 """
 
 from urllib.parse import urlencode
@@ -27,9 +26,8 @@ class BreadcrumbsNode(template.Node):
         self.nodelist = nodelist
 
     def render(self, context):
-        items = self.nodelist.render(context)
-        home = crumb(_("Dashboard"), "dashboard:home" if items.strip() else "")  # the start of every trail
-        return render_to_string("partials/breadcrumbs.html", {"items": home + items})
+        home = crumb(_("Dashboard"), "dashboard:home")  # the start of every trail
+        return render_to_string("partials/breadcrumbs.html", {"items": home + self.nodelist.render(context)})
 
 
 @register.tag

@@ -710,8 +710,8 @@ few behaviours live in `static/js/app.js`.
   "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`
   (`apps/core/templatetags/breadcrumbs.py`, built in). A crumb takes its label, then a URL name and
   arguments (keywords become the query string); the last is the current page (`aria-current`).
-  The tag adds the dashboard crumb (the dashboard itself shows only that); section labels are the
-  sidebar's. Pages outside the app's navigation (errors, sign-in, print views) have none.
+  The tag adds the dashboard crumb; section labels are the sidebar's. The dashboard itself and pages
+  outside the app's navigation (errors, sign-in, print views) have none.
 - **Content-Security-Policy** (`apps/core/middleware.py`, `CONTENT_SECURITY_POLICY`): scripts,
   styles and fonts only from this site (plus Cloudflare Turnstile for the CAPTCHA), no
   `'unsafe-inline'`, no framing. So templates carry no inline `<script>`, `on…=` handlers or
