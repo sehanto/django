@@ -222,7 +222,9 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  .table > thead > tr > th { @apply font-semibold; }
+  /* Column headings a step above the cells: 16px over 14px, 14px over a text-sm table's 12px. */
+  .table > thead > tr > th { @apply text-lg font-semibold; }
+  .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td).num { @apply text-end; }
