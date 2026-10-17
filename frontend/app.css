@@ -196,7 +196,7 @@
     @apply appearance-none bg-[length:16px_12px] bg-[position:right_.75rem_center] bg-no-repeat pe-9;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   }
-  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg md:text-sm; }
+  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg md:text-base; }
   .form-select-sm { @apply pe-8; }
   textarea.form-input { @apply min-h-20; }
   /* A checkbox drawn as a switch. */
