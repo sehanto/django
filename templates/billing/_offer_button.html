@@ -6,7 +6,7 @@
     <button name="period" value="{{ period }}" class="btn {{ css }}">{% blocktranslate trimmed with total=quote.charge.total|rupiah %}Pay yearly · {{ total }}{% endblocktranslate %}</button>
   {% endif %}
 {% else %}
-  <button name="period" value="{{ period }}" class="btn {{ css }}" data-confirm="{% translate 'Switch plan now? Your remaining credit pays for it.' %}">
+  <button name="period" value="{{ period }}" class="btn {{ css }} flex-col whitespace-normal" data-confirm="{% translate 'Switch plan now? Your remaining credit pays for it.' %}">
     {% if period == periods.MONTHLY %}{% translate "Switch monthly · covered by your credit" %}{% else %}{% translate "Switch yearly · covered by your credit" %}{% endif %}
     <span class="block text-sm">{% blocktranslate trimmed with date=quote.covered_until|date:"d M Y" %}active until {{ date }}{% endblocktranslate %}</span>
   </button>

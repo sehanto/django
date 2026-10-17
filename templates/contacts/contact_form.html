@@ -7,7 +7,7 @@
 <form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
-<div class="card-footer flex gap-2 justify-end">
+<div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'contacts:list' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
 </div></form>
 {% endblock %}

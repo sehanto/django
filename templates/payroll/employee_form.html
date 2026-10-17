@@ -5,7 +5,7 @@
 <h1 class="page-title mb-4">{% if object %}{{ object.name }}{% else %}{% translate "New employee" %}{% endif %}</h1>
 {% history_link object %}
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}</div>
-<div class="card-footer flex gap-2 justify-end"><a href="{% url 'payroll:employees' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
+<div class="card-footer flex flex-wrap gap-2 justify-end"><a href="{% url 'payroll:employees' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
 {% if object %}
 <div class="card mt-4 max-w-5xl"><div class="card-body">
   <h2 class="section-heading">{% translate "Income from previous employers" %}</h2>

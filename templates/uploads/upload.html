@@ -4,7 +4,7 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
   <h1 class="page-title mb-0">{{ importer.title }}</h1>
-  <div class="flex gap-2">
+  <div class="flex flex-wrap gap-2">
     <a href="{% url 'uploads:index' %}" class="btn btn-outline">{% translate "Back" %}</a>
     {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=slug what=template_label button="btn btn-outline" %}
   </div>
@@ -51,5 +51,5 @@
   {% if options_form %}{% include "partials/form_fields.html" with form=options_form %}<div class="mb-4"></div>{% endif %}
   {% include "partials/form_fields.html" with form=form col="col-span-12" %}
 </div>
-<div class="card-footer flex gap-2 justify-end"><button class="btn btn-primary">{% icon "file-search" %} {% translate "Check the file" %}</button></div></form>
+<div class="card-footer flex flex-wrap gap-2 justify-end"><button class="btn btn-primary">{% icon "file-search" %} {% translate "Check the file" %}</button></div></form>
 {% endblock %}

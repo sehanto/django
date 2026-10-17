@@ -6,7 +6,7 @@
 <form method="post" class="card max-w-3xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
-<div class="card-footer flex gap-2 justify-end">
+<div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'taxes:rates' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
 </div></form>
 {% endblock %}

@@ -4,7 +4,7 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="page-title mb-0">{% blocktranslate trimmed %}Payroll {{ year }}{% endblocktranslate %}</h1>
-  <div class="flex gap-2">
+  <div class="flex flex-wrap gap-2">
     <a href="{% url 'payroll:employees' %}" class="btn btn-outline">{% icon "users" "me-1" %}{% translate "Employees" %}</a>
     <a href="{% url 'payroll:annual' year %}" class="btn btn-outline">{% icon "file-text" "me-1" %}{% translate "1721-A1" %}</a>
     {% if can_manage %}<a href="{% url 'payroll:settings' %}" class="btn btn-outline" aria-label="{% translate 'Payroll settings' %}" title="{% translate 'Payroll settings' %}">{% icon "settings" %}</a>{% endif %}

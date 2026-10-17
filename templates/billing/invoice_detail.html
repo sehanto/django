@@ -13,7 +13,7 @@
   {% if invoice.is_payable %}
   <div class="alert alert-warning flex flex-wrap justify-between items-center gap-2 print:hidden">
     <span>{% blocktranslate trimmed with date=invoice.expires_at|date:"d F Y H:i" %}Waiting for payment. The payment link is valid until {{ date }}.{% endblocktranslate %}</span>
-    <span class="flex gap-2">
+    <span class="flex flex-wrap gap-2">
       <form method="post" action="{% url 'billing:invoice_refresh' invoice.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline">{% translate "Check payment status" %}</button></form>
       <a href="{{ invoice.payment_url }}" class="btn btn-sm btn-primary">{% translate "Pay now" %}</a>
     </span>

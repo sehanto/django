@@ -7,7 +7,7 @@
   {% include "partials/form_fields.html" %}
   <p class="text-sm text-muted mt-4 mb-0">{% translate "When goods can no longer be sold for what they cost (damaged, expired, obsolete), their stock is carried at the lower net realisable value. The difference is a loss of the period; quantities don't change, and later sales take their cost from the lower value." %}</p>
 </div>
-<div class="card-footer flex gap-2 justify-end">
+<div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'inventory:list' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Post write-down" %}</button>
 </div></form>
 {% endblock %}

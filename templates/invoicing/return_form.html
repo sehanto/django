@@ -28,7 +28,7 @@
     The buyer withheld {{ amount }} of income tax on its payments: a refund gives back its share of that tax (the buyer corrects its withholding slip) instead of paying it out.
   {% endblocktranslate %}{% endif %}</p>
 </div>
-<div class="card-footer flex gap-2 justify-end">
+<div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'invoicing:detail' kind invoice.pk %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Record return" %}</button>
 </div></form>
 {% endblock %}
