@@ -26,7 +26,7 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
             "lock_date", "require_two_factor",
         ]
         widgets = {
-            "additional_notes": forms.Textarea(attrs={"rows": 4}),
+            "additional_notes": forms.Textarea(attrs={"rows": 2}),
             "lock_date": DateInput(),
         }
 
