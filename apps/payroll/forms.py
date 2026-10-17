@@ -23,9 +23,10 @@ class EmployeeForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
             "name", "kind", "pay_basis", "nationality", "nik", "passport_number", "npwp", "is_resident", "resident_since",
             "treaty_rate", "treaty_document", "foreign_tin", "gender", "address", "village", "email", "position", "ptkp_status", "start_date", "end_date",
             "leaves_indonesia", "base_salary", "fixed_allowance", "bpjs_employment", "bpjs_health", "tax_borne_by_employer", "zakat",
-            "is_active",
+            "is_active", "notes",
         ]
         field_classes = {"start_date": BusinessDateField, "end_date": BusinessDateField, "resident_since": BusinessDateField}
+        widgets = {"notes": forms.Textarea(attrs={"rows": 2})}  # the address's size comes from RegionFieldsMixin
 
     def clean_nationality(self):
         return (self.cleaned_data.get("nationality") or "").upper()

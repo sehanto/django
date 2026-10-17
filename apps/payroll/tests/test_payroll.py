@@ -132,3 +132,19 @@ def test_the_pages(auth_client, organization, staff):
         auth_client.post(reverse("payroll:run_action", args=[payroll.pk, "pay"]), {"paid_on": "2026-02-28", "cash_account": acc(organization, "1-1100").pk})
     payroll.refresh_from_db()
     assert payroll.paid_on == date(2026, 2, 28)
+
+
+def test_an_employee_keeps_notes(auth_client, organization):
+    from apps.payroll.forms import EmployeeForm
+
+    data = {"name": "John Smith", "kind": "permanent", "pay_basis": "monthly", "nationality": "GBR", "passport_number": "P1",
+            "ptkp_status": "TK/0", "start_date": "2026-01-01", "base_salary": "1", "fixed_allowance": "0", "zakat": "0",
+            "gender": "", "address": "10 Downing Street, London", "notes": "Kontrak 2 tahun\nCuti tahunan 12 hari"}
+    form = EmployeeForm(data=data, organization=organization)
+    assert form.fields["notes"].widget.attrs["rows"] == 2 and form.is_valid(), form.errors
+    employee = form.save(commit=False)
+    employee.organization = organization
+    employee.save()
+    assert Employee.objects.get(pk=employee.pk).notes == "Kontrak 2 tahun\nCuti tahunan 12 hari"  # line breaks kept
+    page = auth_client.get(reverse("payroll:employee_update", args=[employee.pk])).content.decode()
+    assert 'name="notes"' in page and "Cuti tahunan 12 hari" in page

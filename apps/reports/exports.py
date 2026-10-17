@@ -342,6 +342,7 @@ TABLES: tuple[tuple[Table, type[Model], str, tuple[str, ...]], ...] = (
             C("resident_since"), C("leaves_indonesia"), C("treaty_rate"), C("treaty_document"), C("tax_borne_by_employer"), C("zakat"),
             C("gender"), *ADDRESS, C("email"), C("position"), C("ptkp_status"),
             C("start_date"), C("end_date"), C("base_salary"), C("fixed_allowance"), C("bpjs_employment"), C("bpjs_health"), C("is_active"),
+            C("notes"),
         )),
         Employee, "organization", ("name", "id"),
     ),

@@ -115,6 +115,7 @@ class Employee(TenantOwnedModel, Address):
         _("active"), default=True,
         help_text=_("Untick when nothing more is paid to them; a former employee who is still active can be paid severance in instalments."),
     )
+    notes = models.TextField(_("notes"), max_length=2000, blank=True)
 
     class Meta:
         ordering = ["name"]
