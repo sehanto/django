@@ -171,7 +171,7 @@
       font-normal leading-normal no-underline whitespace-nowrap transition-colors select-none
       disabled:pointer-events-none disabled:opacity-60;
   }
-  .btn-sm { @apply px-2 py-1 text-sm; }
+  .btn-sm { @apply px-2 py-1 text-base; }
   .btn-primary { @apply bg-primary-fill text-white hover:bg-primary-fill-strong hover:text-white; }
   .btn-danger { @apply bg-danger-fill text-white hover:bg-danger-fill-strong hover:text-white; }
   .btn-success { @apply bg-success-fill text-white hover:bg-success-fill-strong hover:text-white; }
