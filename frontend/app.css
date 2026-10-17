@@ -15,6 +15,9 @@
 
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
+  /* Body text, and everything sized text-base (form fields, buttons, tables): 17px. */
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.5;
   /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
   --text-display: 2.5rem;
   --text-figure: 1.75rem;
@@ -124,7 +127,7 @@
 /* Content typography, which Tailwind's reset (Preflight) leaves unstyled. */
 @layer base {
   *, ::before, ::after { border-color: var(--app-line); }
-  body { background: var(--app-canvas); color: var(--app-fg); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { background: var(--app-canvas); color: var(--app-fg); font-size: var(--text-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4, h5, h6 { font-weight: 500; line-height: 1.2; margin-bottom: .5rem; }
   h1 { font-size: 1.75rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.375rem; }
   h4 { font-size: 1.25rem; } h5 { font-size: 1.125rem; } h6 { font-size: 1rem; }
