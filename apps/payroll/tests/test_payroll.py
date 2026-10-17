@@ -148,3 +148,8 @@ def test_an_employee_keeps_notes(auth_client, organization):
     assert Employee.objects.get(pk=employee.pk).notes == "Kontrak 2 tahun\nCuti tahunan 12 hari"  # line breaks kept
     page = auth_client.get(reverse("payroll:employee_update", args=[employee.pk])).content.decode()
     assert 'name="notes"' in page and "Cuti tahunan 12 hari" in page
+    listing = auth_client.get(reverse("payroll:employees")).content.decode()
+    assert "Kontrak 2 tahun" in listing  # the list shows the notes
+    Employee.objects.filter(pk=employee.pk).update(notes="Catatan panjang " * 10)
+    listing = auth_client.get(reverse("payroll:employees")).content.decode()
+    assert 'title="Catatan panjang' in listing and "…" in listing  # long notes shortened, in full on hover
