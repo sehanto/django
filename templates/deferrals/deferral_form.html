@@ -2,7 +2,7 @@
 {% block title %}{{ kind.label }}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") "deferrals:list" %}{% crumb kind.label %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{{ kind.label }}</h1>
+<h1 class="page-title mb-4">{{ kind.label }}</h1>
 <form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <p class="text-sm text-muted mt-4 mb-0">{% translate "The amount is spread evenly over the term, from the first month; each month is posted on its last day once it has ended." %}</p>

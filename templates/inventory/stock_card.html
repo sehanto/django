@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") "inventory:list" %}{% crumb item.name %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <div><h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with item=item.name %}Stock card: {{ item }}{% endblocktranslate %}</h1>
+  <div><h1 class="page-title mb-0">{% blocktranslate trimmed with item=item.name %}Stock card: {{ item }}{% endblocktranslate %}</h1>
     <div class="text-muted">{% if item.code %}{{ item.code }} · {% endif %}{{ item.inventory_account }}</div></div>
   <div class="flex gap-2">
     <a href="{% url 'inventory:list' %}" class="btn btn-outline">{% translate "Back" %}</a>

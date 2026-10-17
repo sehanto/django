@@ -2,7 +2,7 @@
 {% block title %}{% translate "Account" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Chart of accounts") "ledger:accounts" %}{% if object %}{% crumb object %}{% else %}{% crumb _("New account") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% blocktranslate trimmed with code=object.code %}Edit account {{ code }}{% endblocktranslate %}{% else %}{% translate "New account" %}{% endif %}</h1>
+<h1 class="page-title mb-4">{% if object %}{% blocktranslate trimmed with code=object.code %}Edit account {{ code }}{% endblocktranslate %}{% else %}{% translate "New account" %}{% endif %}</h1>
 {% history_link object %}
 <form method="post" class="card max-w-3xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}

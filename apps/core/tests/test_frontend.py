@@ -226,3 +226,13 @@ def test_template_comments_close_on_their_line():
             if re.search(r"\{#(?!.*#\})", line):
                 offenders.append(f"{path.relative_to(TEMPLATES)}:{number}")
     assert not offenders, offenders
+
+
+def test_page_titles_share_one_style():
+    """A page of the app titles itself with .page-title (one size, set in frontend/app.css)."""
+    offenders = []
+    for path in _templates():
+        text = path.read_text()
+        if "{% block breadcrumbs %}" in text or path.name == "home.html":
+            offenders += [f"{path.relative_to(TEMPLATES)}: {h1}" for h1 in re.findall(r"<h1[^>]*>", text) if "page-title" not in h1]
+    assert not offenders, offenders

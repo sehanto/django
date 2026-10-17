@@ -2,7 +2,7 @@
 {% block title %}{% translate "Dashboard" %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-6">
-  <div><h1 class="text-xl font-medium leading-tight mb-0">{% translate "Dashboard" %}</h1><div class="text-muted text-sm">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
+  <div><h1 class="page-title mb-0">{% translate "Dashboard" %}</h1><div class="text-muted text-sm">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
   {% if can_write %}<div class="flex gap-2">
     <a href="{% url 'invoicing:create' invoice_kinds.SALES %}" class="btn btn-primary">{% icon "receipt" %} {% translate "Sales invoice" %}</a>
     <a href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}" class="btn btn-outline-primary">{% icon "shopping-bag" %} {% translate "Record purchase" %}</a>

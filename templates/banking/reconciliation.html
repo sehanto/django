@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") "banking:accounts" %}{% crumb account %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{{ account }}</h1>
+  <h1 class="page-title mb-0">{{ account }}</h1>
   <div class="flex gap-2">
     <a href="{% url 'banking:accounts' %}" class="btn btn-outline">{% translate "Back" %}</a>
     {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}

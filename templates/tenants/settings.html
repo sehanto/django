@@ -2,7 +2,7 @@
 {% block title %}{% translate "Organization settings" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Organization settings" %}</h1>
+<h1 class="page-title mb-4">{% translate "Organization settings" %}</h1>
 <form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <div class="alert alert-neutral border text-sm mt-6 mb-0">

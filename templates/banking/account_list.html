@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Bank reconciliation" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Bank reconciliation" %}</h1>
   {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
 </div>
 <p class="text-muted text-sm max-w-4xl">{% translate "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)." %}</p>

@@ -2,7 +2,7 @@
 {% block title %}{% translate "General journal" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("General journal") "ledger:journals" %}{% if entry %}{% crumb entry.number "ledger:journal_detail" entry.pk %}{% crumb _("Edit") %}{% else %}{% crumb _("New general journal entry") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% if entry %}{% blocktranslate trimmed with number=entry.number %}Edit draft {{ number }}{% endblocktranslate %}{% else %}{% translate "New general journal entry" %}{% endif %}</h1>
+<h1 class="page-title mb-4">{% if entry %}{% blocktranslate trimmed with number=entry.number %}Edit draft {{ number }}{% endblocktranslate %}{% else %}{% translate "New general journal entry" %}{% endif %}</h1>
 <form method="post" data-formset="form" data-label-balanced="{% translate 'Balanced' %}" data-label-difference="{% translate 'Difference' %}">{% csrf_token %}
   <div class="card mb-4"><div class="card-body">
     {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}

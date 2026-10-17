@@ -2,7 +2,7 @@
 {% block title %}{% translate "General ledger" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% crumb _("General ledger") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-1">{% translate "General ledger" %}</h1>
+<h1 class="page-title mb-1">{% translate "General ledger" %}</h1>
 <p class="text-muted">{{ current_organization.name }}</p>
 {% include "reports/_filter.html" %}
 {% if report %}

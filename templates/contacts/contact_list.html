@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Contacts") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Contacts" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Contacts" %}</h1>
   <div class="flex flex-wrap items-center gap-2">{% include "partials/export_links.html" %}
   {% if can_write %}<a href="{% url 'uploads:upload' 'contacts' %}" class="btn btn-outline">{% icon "upload" %} {% translate "Upload" %}</a>
   <a href="{% url 'contacts:create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New contact" %}</a>{% endif %}</div>

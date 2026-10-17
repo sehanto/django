@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("File uploads") "uploads:index" %}{% crumb importer.title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
-  <h1 class="text-xl font-medium leading-tight mb-0">{{ importer.title }}</h1>
+  <h1 class="page-title mb-0">{{ importer.title }}</h1>
   <div class="flex gap-2">
     <a href="{% url 'uploads:index' %}" class="btn btn-outline">{% translate "Back" %}</a>
     {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=slug what=template_label button="btn btn-outline" %}

@@ -2,7 +2,7 @@
 {% block title %}{% translate "Coretax connection" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") "tenants:settings" %}{% crumb _("Coretax connection") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Coretax connection" %}</h1>
+<h1 class="page-title mb-4">{% translate "Coretax connection" %}</h1>
 <div class="grid grid-cols-12 gap-6">
   <div class="col-span-12 lg:col-span-5">
     <form method="post" class="card"><div class="card-body">{% csrf_token %}

@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Fixed assets") "assets:list" %}{% crumb asset.name %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <div><h1 class="text-xl font-medium leading-tight mb-0">{{ asset.name }}</h1><div class="text-muted">{{ asset.number }} · {{ asset.get_status_display }}{% if asset.disposed_on %} {{ asset.disposed_on|date:"d/m/Y" }}{% endif %}</div></div>
+  <div><h1 class="page-title mb-0">{{ asset.name }}</h1><div class="text-muted">{{ asset.number }} · {{ asset.get_status_display }}{% if asset.disposed_on %} {{ asset.disposed_on|date:"d/m/Y" }}{% endif %}</div></div>
 {% history_link asset %}
   <div class="flex gap-2">
     <a href="{% url 'assets:list' %}" class="btn btn-outline">{% translate "Back" %}</a>

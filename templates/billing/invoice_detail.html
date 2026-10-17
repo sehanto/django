@@ -4,7 +4,7 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-start gap-2 mb-4 print:hidden">
   <div>
-    <h1 class="text-xl font-medium leading-tight mb-0">{{ invoice.number }} <span class="badge align-middle badge-{{ invoice.status|status_badge }}">{{ invoice.get_status_display }}</span></h1>
+    <h1 class="page-title mb-0">{{ invoice.number }} <span class="badge align-middle badge-{{ invoice.status|status_badge }}">{{ invoice.get_status_display }}</span></h1>
   </div>
   {% if invoice.status == invoice.Status.PAID %}<button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print receipt" %}</button>{% endif %}
 </div>

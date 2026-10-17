@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Fixed assets") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Fixed asset register" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Fixed asset register" %}</h1>
   {% if can_write %}<a href="{% url 'assets:create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New fixed asset" %}</a>{% endif %}
 </div>
 {% if due_months %}

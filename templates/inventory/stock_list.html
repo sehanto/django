@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-1">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Inventory" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Inventory" %}</h1>
   {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary">{% icon "diff" %} {% translate "Stock adjustment" %}</a>{% endif %}
 </div>
 <p class="text-muted">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>

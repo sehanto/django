@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb feature.label %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="card max-w-xl"><div class="card-body">
-  <h1 class="text-xl font-medium leading-tight mb-2">{% icon "lock" "me-1 text-muted" %}{{ feature.label }}</h1>
+  <h1 class="page-title mb-2">{% icon "lock" "me-1 text-muted" %}{{ feature.label }}</h1>
   <p>{% if plan %}{% blocktranslate trimmed with feature=feature.label plan=plan.name current=current_organization.plan.name %}
     {{ feature }} is included from the {{ plan }} plan. Your organization is on {{ current }}.
   {% endblocktranslate %}{% else %}{% blocktranslate trimmed with feature=feature.label %}{{ feature }} isn't included in any plan at the moment.{% endblocktranslate %}{% endif %}</p>

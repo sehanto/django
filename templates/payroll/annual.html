@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=year %}{% blocktranslate trimmed asvar annual %}1721-A1 {{ year }}{% endblocktranslate %}{% crumb annual %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <div>    <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}Annual PPh 21 statements (1721-A1) {{ year }}{% endblocktranslate %}</h1></div>
+  <div>    <h1 class="page-title mb-0">{% blocktranslate trimmed %}Annual PPh 21 statements (1721-A1) {{ year }}{% endblocktranslate %}</h1></div>
   {% if statements %}{% include "partials/export_links.html" with url_name="payroll:annual_download" arg1=year button="btn btn-outline-primary" %}{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">

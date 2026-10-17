@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% blocktranslate trimmed asvar vat_title %}PPN summary {{ year }}{% endblocktranslate %}{% crumb vat_title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}PPN summary {{ year }}{% endblocktranslate %}</h1>
+  <h1 class="page-title mb-0">{% blocktranslate trimmed %}PPN summary {{ year }}{% endblocktranslate %}</h1>
   <form method="get"><select name="year" class="form-select" data-autosubmit aria-label="{% translate 'Year' %}">{% for y in years %}<option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>{% endfor %}</select></form>
 </div>
 {% if pkp_by %}<div class="alert alert-danger">{% blocktranslate trimmed with limit=pkp_limit|rupiah date=pkp_by|date:"d/m/Y" %}

@@ -2,7 +2,7 @@
 {% block title %}{% translate "Profile" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("My profile") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% translate "My profile" %}</h1>
+<h1 class="page-title mb-4">{% translate "My profile" %}</h1>
 <div class="card"><div class="card-body">
   <p class="text-muted">{% translate "Email" %}: <strong>{{ request.user.email }}</strong></p>
   <form method="post">{% csrf_token %}

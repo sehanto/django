@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Chart of accounts") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex justify-between items-center mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Chart of accounts" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Chart of accounts" %}</h1>
   {% if can_write %}<a href="{% url 'ledger:account_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New account" %}</a>{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">

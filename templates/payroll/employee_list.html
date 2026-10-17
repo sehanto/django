@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" %}{% crumb _("Employees") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex justify-between items-center mb-4">
-  <div><h1 class="text-xl font-medium leading-tight mb-0">{% translate "Employees" %}</h1></div>
+  <div><h1 class="page-title mb-0">{% translate "Employees" %}</h1></div>
   {% if can_write %}<a href="{% url 'payroll:employee_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New employee" %}</a>{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">

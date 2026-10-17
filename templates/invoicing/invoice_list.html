@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% if kind == invoice_kinds.SALES %}{% crumb _("Sales") %}{% else %}{% crumb _("Purchases") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{{ labels.plural }}</h1>
+  <h1 class="page-title mb-0">{{ labels.plural }}</h1>
   <div class="flex flex-wrap items-center gap-2">{% include "partials/export_links.html" %}
   {% if can_write %}<a href="{% url 'invoicing:create' kind %}" class="btn btn-primary">{% icon "plus" %} {{ labels.create }}</a>{% endif %}</div>
 </div>

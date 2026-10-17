@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("PPN rates") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex justify-between items-center mb-4">
-  <h1 class="text-xl font-medium leading-tight mb-0">{% translate "PPN rates" %}</h1>
+  <h1 class="page-title mb-0">{% translate "PPN rates" %}</h1>
   {% if can_write %}<a href="{% url 'taxes:rate_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New rate" %}</a>{% endif %}
 </div>
 {% if not current_organization.is_pkp %}

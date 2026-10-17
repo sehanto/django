@@ -2,7 +2,7 @@
 {% block title %}{% translate "Employee" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" %}{% crumb _("Employees") "payroll:employees" %}{% if object %}{% crumb object.name %}{% else %}{% crumb _("New employee") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{{ object.name }}{% else %}{% translate "New employee" %}{% endif %}</h1>
+<h1 class="page-title mb-4">{% if object %}{{ object.name }}{% else %}{% translate "New employee" %}{% endif %}</h1>
 {% history_link object %}
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}</div>
 <div class="card-footer flex gap-2 justify-end"><a href="{% url 'payroll:employees' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button></div></form>

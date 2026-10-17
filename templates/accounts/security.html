@@ -2,7 +2,7 @@
 {% block title %}{% translate "Security" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("My profile") "accounts:profile" %}{% crumb _("Security") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% translate "Security" %}</h1>
+<h1 class="page-title mb-4">{% translate "Security" %}</h1>
 {% if required_by and not two_factor_enabled %}
   <div class="alert alert-warning max-w-3xl">{% icon "shield-alert" "me-1" %}
     {% blocktranslate trimmed with organizations=required_by|join:", " %}{{ organizations }} requires two-factor authentication. Turn it on to continue.{% endblocktranslate %}

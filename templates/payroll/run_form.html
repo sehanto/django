@@ -2,7 +2,7 @@
 {% block title %}{% translate "Run payroll" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=year %}{% blocktranslate trimmed with period=month.label asvar run_title %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<h1 class="text-xl font-medium leading-tight mb-4">{% blocktranslate trimmed with period=month.label %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}</h1>
+<h1 class="page-title mb-4">{% blocktranslate trimmed with period=month.label %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}</h1>
 <form method="post">{% csrf_token %}
 {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">

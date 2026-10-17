@@ -247,6 +247,9 @@
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
   .nav-heading { @apply px-3 pt-4 pb-1 text-[.7rem] tracking-wider text-muted uppercase; }
 
+  /* A page's title (its <h1>); the margin below stays a utility on the page. */
+  .page-title { @apply text-2xl font-medium leading-tight; }
+
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-base; }
   .breadcrumbs ol { @apply m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-0.5 p-0; }
