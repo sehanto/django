@@ -23,7 +23,7 @@
   </div>
   <div class="col-span-12 lg:col-span-4">
     <div class="card"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% translate "New key" %}</h2>
+      <h2 class="section-heading">{% translate "New key" %}</h2>
       <form method="post">{% csrf_token %}{% include "partials/form_fields.html" with col="col-span-12" %}<button class="btn btn-primary mt-4">{% translate "Create key" %}</button></form>
     </div></div>
   </div>

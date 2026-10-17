@@ -25,7 +25,7 @@
 {% if run %}<p class="mt-4 mb-0">{% url 'payroll:run' run.pk as url %}{% blocktranslate trimmed with period=run.period %}PPh 21 and PPh 26 withheld from salaries: <a href="{{ url }}">payroll {{ period }}</a>.{% endblocktranslate %}</p>{% endif %}
 <p class="text-sm text-muted mt-2">{% translate "Create each bukti potong in Coretax (eBupot) from this list, then record its number here." %}</p>
 
-<h2 class="text-lg font-medium leading-tight mt-6">{% translate "Coretax eBupot files" %}</h2>
+<h2 class="section-heading mt-6">{% translate "Coretax eBupot files" %}</h2>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "File" %}</th><th class="num">{% translate "Bukti potong" %}</th><th></th></tr></thead>
   <tbody>{% for batch in batches %}<tr>

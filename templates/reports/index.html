@@ -13,7 +13,7 @@
   {% translate "0.5% PPh Final calculated from monthly gross turnover." as pph_final_desc %}{# _("…") in a tag argument would double the % #}
   {% include "reports/_card.html" with href="taxes:pph_final" icon="calculator" title=_("MSME PPh Final") desc=pph_final_desc %}
   <div class="col-span-12 md:col-span-6 xl:col-span-4"><div class="card h-full"><div class="card-body">
-    <h2 class="text-base font-medium leading-tight">{% icon "hourglass" "me-2 text-primary" %}{% translate "Receivables & payables aging" %}</h2>
+    <h2 class="section-heading">{% icon "hourglass" "me-2 text-primary" %}{% translate "Receivables & payables aging" %}</h2>
     <p class="text-sm text-muted">{% translate "Open balances by days past due." %}</p>
     <a href="{% url 'reports:aging' invoice_kinds.SALES %}" class="btn btn-sm btn-outline-primary">{% translate "Receivables" %}</a>
     <a href="{% url 'reports:aging' invoice_kinds.PURCHASE %}" class="btn btn-sm btn-outline-primary">{% translate "Payables" %}</a>

@@ -6,7 +6,7 @@
 <p class="text-muted">{{ current_organization.name }}</p>
 {% include "reports/_filter.html" %}
 {% if report %}
-<h2 class="text-lg font-medium leading-tight">{{ report.account }}</h2>
+<h2 class="section-heading">{{ report.account }}</h2>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Entry no." %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Debit" %}</th><th class="num">{% translate "Credit" %}</th><th class="num">{% translate "Balance" %}</th></tr></thead>
   <tbody>

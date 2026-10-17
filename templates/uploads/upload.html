@@ -18,7 +18,7 @@
 
 {% if report %}
 <div class="card mb-6 max-w-5xl"><div class="card-body">
-  <h2 class="text-base font-medium leading-tight">{% blocktranslate trimmed with name=file_name %}Check of {{ name }}{% endblocktranslate %}</h2>
+  <h2 class="section-heading">{% blocktranslate trimmed with name=file_name %}Check of {{ name }}{% endblocktranslate %}</h2>
   {% for problem in report.problems %}<div class="alert alert-danger" role="alert">{{ problem }}</div>{% endfor %}
   <div class="flex flex-wrap gap-2 mb-4">
     {% for value, label, count in counts %}<span class="badge {% if value == outcomes.ERROR %}badge-danger{% elif value == outcomes.SKIPPED %}badge-neutral{% else %}badge-success{% endif %}">{{ label }}: {{ count }}</span>{% endfor %}

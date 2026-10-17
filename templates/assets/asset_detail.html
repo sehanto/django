@@ -35,7 +35,7 @@
   {% if asset.description %}<dt class="col-span-12 sm:col-span-4">{% translate "Description" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.description }}</dd>{% endif %}
 </dl>
 {% if revisions %}
-<h2 class="text-base font-medium leading-tight">{% translate "Changes in estimate" %}</h2>
+<h2 class="section-heading">{% translate "Changes in estimate" %}</h2>
 <div class="card mb-6 max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in revisions %}
@@ -45,7 +45,7 @@
 </table></div></div>
 {% endif %}
 {% if schedule %}
-<h2 class="text-base font-medium leading-tight">{% translate "Depreciation schedule" %}</h2>
+<h2 class="section-heading">{% translate "Depreciation schedule" %}</h2>
 <div class="card max-w-4xl"><div class="overflow-x-auto max-h-130 overflow-y-auto"><table class="table table-sm mb-0 align-middle">
   <thead class="sticky top-0 z-20"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Depreciation" %}</th><th class="num">{% translate "Accumulated" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
   <tbody>{% for month, posting, elsewhere in schedule %}

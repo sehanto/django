@@ -25,7 +25,7 @@
 {% if current_organization.plan_paid_until and state != states.TRIAL and state != states.LAPSED %}
 <div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-4">
   <div>
-    <h2 class="text-base font-medium leading-tight mb-1">{% translate "Automatic renewal" %}</h2>
+    <h2 class="section-heading mb-1">{% translate "Automatic renewal" %}</h2>
     {% if renewal and renewal.status == renewal_statuses.ACTIVE %}
       <p class="text-sm mb-0">{% blocktranslate trimmed with period=renewal.get_billing_period_display|lower date=current_organization.plan_paid_until|date:"d F Y" %}On: the plan is renewed {{ period }} with your saved payment method, shortly before {{ date }}.{% endblocktranslate %}</p>
       {% if renewal.last_error %}<p class="text-sm text-danger mb-0">{% blocktranslate trimmed with error=renewal.last_error_label %}The last attempt failed ({{ error }}).{% endblocktranslate %}</p>{% endif %}
@@ -94,7 +94,7 @@
   Pay by QRIS, bank virtual account, e-wallet or card through our payment partner Xendit.
 {% endblocktranslate %}</p>
 
-<h2 class="text-lg font-medium leading-tight mt-6">{% translate "Billing history" %}</h2>
+<h2 class="section-heading mt-6">{% translate "Billing history" %}</h2>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Plan" %}</th><th>{% translate "Billing period" %}</th><th class="num">{% translate "Total" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>{% for inv in invoices %}

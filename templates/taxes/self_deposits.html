@@ -19,7 +19,7 @@
 </table></div></div>
 {% if can_write %}
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}
-  <h2 class="text-base font-medium leading-tight">{% translate "Record a self-deposit" %}</h2>
+  <h2 class="section-heading">{% translate "Record a self-deposit" %}</h2>
   {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
 </div><div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save & post" %}</button></div></form>

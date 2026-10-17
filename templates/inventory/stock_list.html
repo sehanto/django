@@ -25,7 +25,7 @@
   {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4">{% translate "Total" %}</td><td class="num">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
-<h2 class="text-base font-medium leading-tight">{% translate "Stock and ledger" %}</h2>
+<h2 class="section-heading">{% translate "Stock and ledger" %}</h2>
 <div class="card max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Stock value" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}

@@ -1,6 +1,6 @@
 {% load i18n money ui %}
 <div class="card mb-4"><div class="card-body">
-  <div class="flex justify-between items-baseline gap-2 mb-1"><h2 class="text-base font-medium leading-tight mb-0">{{ title }}</h2><a class="text-sm" href="{% url 'invoicing:list' kind %}">{% translate "All" %}</a></div>
+  <div class="flex justify-between items-baseline gap-2 mb-1"><h2 class="section-heading mb-0">{{ title }}</h2><a class="text-sm" href="{% url 'invoicing:list' kind %}">{% translate "All" %}</a></div>
   {% for inv in invoices %}
     <div class="flex items-start justify-between gap-3 border-t border-line py-2 text-sm">
       <div class="min-w-0">

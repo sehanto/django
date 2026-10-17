@@ -21,7 +21,7 @@
   <tfoot><tr class="font-bold"><td>{% translate "Total" %}</td><td class="num">{{ totals.output_base|rupiah }}</td><td class="num">{{ totals.output|rupiah }}</td>{% if totals.luxury %}<td class="num">{{ totals.luxury|rupiah }}</td>{% endif %}{% if totals.not_collected %}<td class="num">{{ totals.not_collected|rupiah }}</td>{% endif %}{% if totals.collected %}<td class="num">{{ totals.collected|rupiah }}</td>{% endif %}<td class="num">{{ totals.input_base|rupiah }}</td><td class="num">{{ totals.input|rupiah }}</td><td class="num">{{ totals.net|rupiah }}</td><td class="print:hidden"></td></tr></tfoot>
 </table></div></div>
 {% if totals.aggregated_base %}
-<h2 class="text-base font-medium leading-tight mt-6">{% translate "Retail sales reported in total (digunggung)" %}</h2>
+<h2 class="section-heading mt-6">{% translate "Retail sales reported in total (digunggung)" %}</h2>
 <p class="text-sm text-muted">{% translate "Included above. Sales to customers without an NPWP or identity document: report each month's total in the SPT Masa PPN instead of individual fakturs; they are left out of the Faktur files. Each month's XML imports them into the SPT Masa PPN draft in Coretax (1.A5, 1.A9 for facilities, 1.B without PPN). Returns of these sales recorded in the month are in its file as negative rows." %}</p>
 <div class="card"><div class="overflow-x-auto"><table class="table table-sm mb-0">
   <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Sales value" %}</th><th class="num">{% translate "Output PPN" %}</th><th class="print:hidden"></th></tr></thead>
@@ -31,7 +31,7 @@
 </table></div></div>
 {% endif %}
 {% if special_months %}
-<h2 class="text-base font-medium leading-tight mt-6">{% translate "Other tax documents (Dokumen Lain)" %}</h2>
+<h2 class="section-heading mt-6">{% translate "Other tax documents (Dokumen Lain)" %}</h2>
 <p class="text-sm text-muted">{% translate "Exports (with their PEB), imports (PIB: the PPN impor is input PPN) and bills equivalent to a Faktur Pajak are reported in the SPT Masa PPN as Dokumen Lain, by the date of their document. Import each file in Coretax (e-Faktur → Dokumen Lain → Impor Data)." %}</p>
 <div class="card"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Period" %}</th><th class="num">{% translate "Exports" %}</th><th class="num">{% translate "Imports and equivalent bills" %}</th><th class="num">{% translate "Returns of equivalent bills" %}</th><th class="print:hidden"></th></tr></thead>

@@ -236,3 +236,12 @@ def test_page_titles_share_one_style():
         if "{% block breadcrumbs %}" in text or path.name == "home.html":
             offenders += [f"{path.relative_to(TEMPLATES)}: {h1}" for h1 in re.findall(r"<h1[^>]*>", text) if "page-title" not in h1]
     assert not offenders, offenders
+
+
+def test_section_headings_share_one_style():
+    """A section's <h2> is .section-heading (one size, set in frontend/app.css), not a size of its own."""
+    offenders = [
+        f"{path.relative_to(TEMPLATES)}: {h2}" for path in _templates()
+        for h2 in re.findall(r'<h2 class="text-base font-medium leading-tight(?: m[tb]-\d)?">', path.read_text())
+    ]
+    assert not offenders, offenders

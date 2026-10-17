@@ -51,7 +51,7 @@
   <div class="col-span-12 xl:col-span-4">
     {% if invoice.is_open and can_write %}
     <div class="card mb-4"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% if invoice.is_sales %}{% translate "Receive payment" %}{% else %}{% translate "Pay bill" %}{% endif %}</h2>
+      <h2 class="section-heading">{% if invoice.is_sales %}{% translate "Receive payment" %}{% else %}{% translate "Pay bill" %}{% endif %}</h2>
       <form method="post" action="{% url 'invoicing:pay' kind invoice.pk %}">{% csrf_token %}
         {% if payment_form.income_tax_fields %}
           {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-span-12" %}
@@ -64,7 +64,7 @@
     </div></div>
     {% endif %}
     <div class="card"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% translate "Payment history" %}</h2>
+      <h2 class="section-heading">{% translate "Payment history" %}</h2>
       {% for p in invoice.payments.all %}
         <div class="flex justify-between items-start border-t py-2 {% if p.status == p.Status.VOID %}line-through text-muted{% endif %}">
           <div><div class="text-sm font-semibold">{{ p.number }}</div><div class="text-sm text-muted">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="text-sm text-muted">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}{% if p.income_tax_kind %}<div class="text-sm text-muted">{% if p.income_tax_withheld %}{% blocktranslate trimmed with amount=p.income_tax_withheld|rupiah tax=p.get_income_tax_kind_display %}incl. {{ amount }} withheld as {{ tax }}{% endblocktranslate %}{% else %}{% translate "PPh 26 at the treaty's 0% rate: nothing withheld" %}{% endif %}{% if p.withholding_slip %} · {{ p.withholding_slip }}{% endif %}</div>
@@ -80,7 +80,7 @@
     </div></div>
     {% if write_offs %}
     <div class="card mt-4"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% translate "Written off as uncollectible" %}</h2>
+      <h2 class="section-heading">{% translate "Written off as uncollectible" %}</h2>
       {% for w in write_offs %}
         <div class="flex justify-between items-start border-t py-2 {% if w.status == w.Status.VOID %}line-through text-muted{% endif %}">
           <div><div class="text-sm">{{ w.date|date:"d M Y" }} · {{ w.reason }}</div><a href="{% url 'ledger:journal_detail' w.journal_entry_id %}" class="text-sm">{{ w.journal_entry.number }}</a></div>
@@ -92,7 +92,7 @@
     {% endif %}
     {% if returns %}
     <div class="card mt-4"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% translate "Returns" %}</h2>
+      <h2 class="section-heading">{% translate "Returns" %}</h2>
       {% for r in returns %}
         <div class="flex justify-between items-start border-t py-2 {% if r.status == r.Status.VOID %}line-through text-muted{% endif %}">
           <div><a href="{% url 'invoicing:return_detail' r.pk %}" class="text-sm font-semibold">{{ r.number }}</a><div class="text-sm text-muted">{{ r.date|date:"d M Y" }} · {{ r.reason }}</div></div>

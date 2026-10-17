@@ -18,7 +18,7 @@
       </tbody>
     </table></div></div>
     {% if invitations %}
-    <h2 class="text-base font-medium leading-tight mt-6">{% translate "Pending invitations" %}</h2>
+    <h2 class="section-heading mt-6">{% translate "Pending invitations" %}</h2>
     <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
       <tbody>{% for i in invitations %}<tr><td>{{ i.email }}</td><td>{{ i.get_role_display }}</td>
         <td class="text-sm text-muted">{% blocktranslate trimmed with date=i.expires_at|date:"d/m/Y" %}valid until {{ date }}{% endblocktranslate %}</td>
@@ -33,7 +33,7 @@
   </div>
   <div class="col-span-12 lg:col-span-5">
     <div class="card"><div class="card-body">
-      <h2 class="text-base font-medium leading-tight">{% translate "Add member" %}</h2>
+      <h2 class="section-heading">{% translate "Add member" %}</h2>
       <p class="text-sm text-muted">{% translate "Someone with an account is added at once; anyone else gets an invitation by email." %}</p>
       <form method="post">{% csrf_token %}
         {% include "partials/form_fields.html" with col="col-span-12" %}

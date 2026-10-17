@@ -11,7 +11,7 @@
 <div class="card mb-4 max-w-3xl"><div class="card-body">
   <div class="flex justify-between items-start gap-4">
     <div>
-      <h2 class="text-base font-medium leading-tight mb-1">{% translate "Two-factor authentication" %}
+      <h2 class="section-heading mb-1">{% translate "Two-factor authentication" %}
         {% if two_factor_enabled %}<span class="badge badge-success ms-1">{% translate "On" %}</span>{% else %}<span class="badge badge-neutral ms-1">{% translate "Off" %}</span>{% endif %}</h2>
       <p class="text-sm text-muted mb-0">{% translate "Besides your password, signing in asks for a code from an authenticator app on your phone (such as Google Authenticator, Microsoft Authenticator or 1Password). Someone who learns your password still can't get in." %}</p>
     </div>
@@ -28,7 +28,7 @@
 </div></div>
 {% if two_factor_enabled %}
 <div class="card mb-4 max-w-3xl"><div class="card-body">
-  <h2 class="text-base font-medium leading-tight">{% translate "Remembered devices" %}</h2>
+  <h2 class="section-heading">{% translate "Remembered devices" %}</h2>
   <p class="text-sm text-muted">{% translate "These devices don't ask for a code when you sign in. Changing your password forgets all of them." %}</p>
   {% if trusted_devices %}
     <ul class="mb-4 list-none divide-y divide-line rounded-lg border border-line ps-0">
@@ -47,11 +47,11 @@
 </div></div>
 {% endif %}
 <div class="card max-w-3xl"><div class="card-body">
-  <h2 class="text-base font-medium leading-tight">{% translate "Password" %}</h2>
+  <h2 class="section-heading">{% translate "Password" %}</h2>
   <a href="{% url 'accounts:password_change' %}" class="btn btn-outline">{% translate "Change password" %}</a>
 </div></div>
 <div class="card mt-6 max-w-3xl"><div class="card-body">
-  <h2 class="text-base font-medium leading-tight">{% translate "Recent security activity" %}</h2>
+  <h2 class="section-heading">{% translate "Recent security activity" %}</h2>
   <p class="text-sm text-muted">{% translate "Sign-ins and security changes on your account. If you don't recognize something, change your password and turn on two-factor authentication." %}</p>
   {% if recent_activity %}
   <ul class="mb-0 list-none divide-y divide-line ps-0 text-sm">

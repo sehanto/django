@@ -17,7 +17,7 @@
 </form>
 <div class="card mt-6"><div class="card-body">
   <div class="flex flex-wrap justify-between items-center gap-2">
-    <div><h2 class="text-base font-medium leading-tight mb-1">{% translate "Places of business" %}</h2>
+    <div><h2 class="section-heading mb-1">{% translate "Places of business" %}</h2>
       <p class="text-sm text-muted mb-0">{% translate "Branches registered in Coretax with their own NITKU. A sales invoice made from one carries its NITKU and address; others come from the head office (the NPWP followed by 000000)." %}</p></div>
     <a href="{% url 'tenants:place_create' %}" class="btn btn-outline-primary">{% icon "plus" "me-1" %}{% translate "Add place" %}</a>
   </div>
@@ -31,13 +31,13 @@
 </div></div>
 {% if current_organization.is_pkp %}
 <div class="card mt-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
-  <div><h2 class="text-base font-medium leading-tight mb-1">{% translate "Coretax connection" %}</h2>
+  <div><h2 class="section-heading mb-1">{% translate "Coretax connection" %}</h2>
     <p class="text-sm text-muted mb-0">{% translate "Send fakturs to Coretax through your tax application provider (PJAP) instead of importing files." %}</p></div>
   <a href="{% url 'invoicing:coretax_connection' %}" class="btn btn-outline-primary">{% translate "Set up" %}</a>
 </div></div>
 {% endif %}
 <div class="card mt-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
-  <div><h2 class="text-base font-medium leading-tight mb-1">{% translate "Export books" %}</h2>
+  <div><h2 class="section-heading mb-1">{% translate "Export books" %}</h2>
     <p class="text-sm text-muted mb-0">{% translate "Download all journals, invoices, payments and contacts as a ZIP of CSV files." %}</p></div>
   <a href="{% url 'reports:export_books' %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}{% translate "Export books" %}</a>
 </div></div>

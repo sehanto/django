@@ -21,7 +21,7 @@
   <dt class="col-span-12 sm:col-span-4">{% translate "Prepaid or received in advance account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ deferral.balance_account }}</dd>
   <dt class="col-span-12 sm:col-span-4">{% translate "Expense or revenue account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ deferral.recognition_account }}</dd>
 </dl>
-<h2 class="text-base font-medium leading-tight">{% translate "Schedule" %}</h2>
+<h2 class="section-heading">{% translate "Schedule" %}</h2>
 <div class="card max-w-4xl"><div class="overflow-x-auto max-h-130 overflow-y-auto"><table class="table table-sm mb-0 align-middle">
   <thead class="sticky top-0 z-20"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Amount" %}</th><th class="num">{% translate "Recognised" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
   <tbody>{% for month, entry in schedule %}
