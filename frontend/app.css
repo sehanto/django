@@ -16,8 +16,8 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text is 14px (base), as dense business apps use; captions 12px (sm, the smallest), badges and
-     small labels 13px (label), table cells and form labels 15px (md); section headings and column
+     Body text is 14px (base), as dense business apps use; captions 12px (sm, the smallest); badges,
+     small labels, help text and field errors 13px (label), table cells and form labels 15px (md); section headings and column
      headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
@@ -214,8 +214,8 @@
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
   }
   .form-toggle:checked::before { @apply translate-x-4; }
-  .form-help { @apply mt-1 text-sm text-muted; }
-  .form-error { @apply mt-1 text-sm text-danger; }
+  .form-help { @apply mt-1 text-label text-muted; }
+  .form-error { @apply mt-1 text-label text-danger; }
 
   /* Cards */
   .card { @apply flex min-w-0 flex-col rounded-lg border border-line bg-surface; }
