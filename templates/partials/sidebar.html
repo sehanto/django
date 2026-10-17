@@ -18,7 +18,7 @@
     {% icon "book-marked" "text-2xl text-primary" %}<span class="text-xl font-bold">EA-System</span>
   </a>
   <details class="relative mb-2" data-dropdown>
-    <summary class="btn btn-outline btn-sm w-full list-none justify-start [&::-webkit-details-marker]:hidden">
+    <summary class="btn btn-outline btn-sm w-full list-none justify-start text-nav [&::-webkit-details-marker]:hidden">
       {% icon "building" %}<span class="truncate">{{ current_organization.name }}</span>
       {% icon "chevron-down" "ms-auto text-xs" %}
     </summary>
@@ -26,12 +26,12 @@
       {% for org in user_organizations %}
         <li>
           <form method="post" action="{% url 'tenants:switch' org.pk %}">{% csrf_token %}
-            <button class="block w-full truncate rounded px-3 py-1.5 text-start text-sm hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{{ org.name }}</button>
+            <button class="block w-full truncate rounded px-3 py-1.5 text-start text-nav hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{{ org.name }}</button>
           </form>
         </li>
       {% endfor %}
       <li><hr class="my-1"></li>
-      <li><a class="block rounded px-3 py-1.5 text-sm text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
+      <li><a class="block rounded px-3 py-1.5 text-nav text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
     </ul>
   </details>
   <div class="text-sm text-muted mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
