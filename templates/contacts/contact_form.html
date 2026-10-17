@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load audit i18n %}
 {% block title %}{% translate "Contact" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Contacts") "contacts:list" %}{% if object %}{% crumb object.name %}{% else %}{% crumb _("New contact") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% blocktranslate trimmed with name=object.name %}Edit {{ name }}{% endblocktranslate %}{% else %}{% translate "New contact" %}{% endif %}</h1>
 {% history_link object %}

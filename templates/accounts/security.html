@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n audit %}
 {% block title %}{% translate "Security" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("My profile") "accounts:profile" %}{% crumb _("Security") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Security" %}</h1>
 {% if required_by and not two_factor_enabled %}

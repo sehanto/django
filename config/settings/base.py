@@ -114,7 +114,8 @@ TEMPLATES = [
                 "apps.accounts.context_processors.theme",
                 "apps.core.context_processors.export_formats",
             ],
-            "builtins": ["apps.core.templatetags.icons"],  # {% icon "name" %} in every template
+            # {% icon "name" %} and {% breadcrumbs %}/{% crumb %} in every template
+            "builtins": ["apps.core.templatetags.icons", "apps.core.templatetags.breadcrumbs"],
         },
     },
 ]

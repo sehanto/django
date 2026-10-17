@@ -171,3 +171,26 @@ def test_pages_carry_the_content_security_policy(auth_client):
     assert "frame-ancestors 'none'" in policy and "'unsafe-inline'" not in policy
     content = response.content.decode()
     assert '<dialog class="modal" id="confirmModal"' in content and 'data-drawer-open="appSidebar"' in content
+
+
+def test_breadcrumbs_link_each_level_and_mark_the_current_page():
+    from django.template import Context, Template
+    from django.utils import translation
+
+    with translation.override("en"):
+        html = Template('{% breadcrumbs %}{% crumb "Payroll" "payroll:index" year=2026 %}{% crumb "Employees" %}{% endbreadcrumbs %}').render(Context())
+    assert '<nav class="breadcrumbs' in html and 'aria-label="Breadcrumb"' in html
+    assert '<a href="/payroll/?year=2026">Payroll</a>' in html and '<span aria-current="page">Employees</span>' in html
+    user_data = Template("{% breadcrumbs %}{% crumb name %}{% endbreadcrumbs %}").render(Context({"name": "<b>PT X</b>"}))
+    assert "&lt;b&gt;PT X&lt;/b&gt;" in user_data  # names from records are escaped
+
+
+def test_sub_pages_use_breadcrumbs_not_back_links():
+    offenders = [str(path.relative_to(TEMPLATES)) for path in _templates() if "&larr;" in path.read_text()]
+    assert not offenders, offenders
+
+
+def test_a_sub_page_shows_its_trail(auth_client):
+    page = auth_client.get(reverse("payroll:employees")).content.decode()
+    trail = page.split('class="breadcrumbs')[1].split("</nav>")[0]
+    assert reverse("payroll:index") in trail and 'aria-current="page"' in trail

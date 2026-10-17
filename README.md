@@ -705,6 +705,12 @@ few behaviours live in `static/js/app.js`.
   same `<nav>` as a drawer (`data-drawer-open`; Escape, the backdrop or the close button close
   it). The organization switcher is a `<details data-dropdown>`. Light or dark follows the device.
   A "skip to content" link comes first for keyboard users.
+- **Breadcrumbs.** Every page below a sidebar section starts with its trail, e.g. Payroll ›
+  Payroll 12/2026 › (employee): `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
+  "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`
+  (`apps/core/templatetags/breadcrumbs.py`, built in). A crumb takes its label, then a URL name and
+  arguments (keywords become the query string); the last is the current page (`aria-current`).
+  Section labels are the sidebar's; pages the sidebar opens directly have none.
 - **Content-Security-Policy** (`apps/core/middleware.py`, `CONTENT_SECURITY_POLICY`): scripts,
   styles and fonts only from this site (plus Cloudflare Turnstile for the CAPTCHA), no
   `'unsafe-inline'`, no framing. So templates carry no inline `<script>`, `on…=` handlers or

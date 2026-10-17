@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}1721-A1 {{ st.year }} {{ st.employee.name }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=st.year %}{% blocktranslate trimmed with year=st.year asvar annual %}1721-A1 {{ year }}{% endblocktranslate %}{% crumb annual "payroll:annual" st.year %}{% crumb st.employee.name %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'payroll:annual' st.year %}" class="text-sm no-underline print:hidden">&larr; {% translate "1721-A1" %} {{ st.year }}</a>
 <div class="card mt-2 max-w-4xl"><div class="card-body">
   <div class="flex justify-between">
     <div><div class="text-sm text-muted">{% translate "Bukti pemotongan PPh Pasal 21 bagi pegawai tetap" %}</div><div class="text-lg font-medium leading-tight mb-0">1721-A1 · {{ st.year }}</div>

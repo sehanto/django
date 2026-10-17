@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load audit i18n money %}
 {% block title %}{{ deferral.number }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") "deferrals:list" %}{% crumb deferral.description %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <div><h1 class="text-xl font-medium leading-tight mb-0">{{ deferral.description }}</h1><div class="text-muted">{{ deferral.number }} · {{ deferral.get_kind_display }} · {{ deferral.get_status_display }}</div></div>

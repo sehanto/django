@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Run payroll" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=year %}{% blocktranslate trimmed with period=month.label asvar run_title %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'payroll:index' %}?year={{ year }}" class="text-sm no-underline">&larr; {% translate "Payroll" %}</a>
 <h1 class="text-xl font-medium leading-tight mb-4">{% blocktranslate trimmed with period=month.label %}Payroll for {{ period }} {{ year }}{% endblocktranslate %}</h1>
 <form method="post">{% csrf_token %}
 {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load audit i18n %}
 {% block title %}{% translate "Account" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Chart of accounts") "ledger:accounts" %}{% if object %}{% crumb object %}{% else %}{% crumb _("New account") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% blocktranslate trimmed with code=object.code %}Edit account {{ code }}{% endblocktranslate %}{% else %}{% translate "New account" %}{% endif %}</h1>
 {% history_link object %}

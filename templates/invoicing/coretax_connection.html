@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Coretax connection" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") "tenants:settings" %}{% crumb _("Coretax connection") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'tenants:settings' %}" class="text-sm no-underline">&larr; {% translate "Organization settings" %}</a>
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Coretax connection" %}</h1>
 <div class="grid grid-cols-12 gap-6">
   <div class="col-span-12 lg:col-span-5">

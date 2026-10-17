@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "PPN summary" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% blocktranslate trimmed asvar vat_title %}PPN summary {{ year }}{% endblocktranslate %}{% crumb vat_title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed %}PPN summary {{ year }}{% endblocktranslate %}</h1>

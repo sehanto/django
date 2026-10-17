@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Income statement" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% crumb _("Income statement") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-1">{% translate "Income statement" %}</h1>
 <p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with start=report.date_from|date:"d M Y" end=report.date_to|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>

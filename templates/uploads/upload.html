@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{{ importer.title }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("File uploads") "uploads:index" %}{% crumb importer.title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
   <h1 class="text-xl font-medium leading-tight mb-0">{{ importer.title }}</h1>

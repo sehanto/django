@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Export books" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% crumb _("Export books") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Export books" %}</h1>
 <div class="card max-w-3xl"><div class="card-body">

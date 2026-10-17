@@ -1,9 +1,9 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{{ note.number }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% with invoice=note.invoice %}{% if invoice.is_sales %}{% crumb _("Sales") "invoicing:list" invoice.kind %}{% else %}{% crumb _("Purchases") "invoicing:list" invoice.kind %}{% endif %}{% crumb invoice.number "invoicing:detail" invoice.kind invoice.pk %}{% crumb note.number %}{% endwith %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 {% with invoice=note.invoice %}
-<div class="flex flex-wrap justify-between items-start gap-2 mb-4 print:hidden">
-  <a href="{% url 'invoicing:detail' invoice.kind invoice.pk %}" class="text-sm no-underline">&larr; {{ invoice.number }}</a>
+<div class="flex flex-wrap justify-end items-start gap-2 mb-4 print:hidden">
   <div class="flex gap-2">
     <button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</button>
     {% if not coretax_problem %}<a href="{% url 'invoicing:return_coretax' note.pk %}" class="btn btn-outline-primary">{% icon "file-code" %} {% translate "Coretax XML" %}</a>{% endif %}

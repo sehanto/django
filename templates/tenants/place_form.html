@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Place of business" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") "tenants:settings" %}{% if object %}{% crumb object.name %}{% else %}{% crumb _("New place of business") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'tenants:settings' %}" class="text-sm no-underline">&larr; {% translate "Organization settings" %}</a>
 <h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{{ object.name }}{% else %}{% translate "New place of business" %}{% endif %}</h1>
 <form method="post" class="card max-w-3xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}

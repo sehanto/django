@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{{ account.name }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") "banking:accounts" %}{% crumb account %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{{ account }}</h1>

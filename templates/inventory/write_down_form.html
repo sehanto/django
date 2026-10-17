@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Write down stock" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") "inventory:list" %}{% crumb _("Write down stock") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Write down stock to net realisable value" %}</h1>
 <form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}

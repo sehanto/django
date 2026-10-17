@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load static i18n %}
 {% block title %}{{ labels.title }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% if kind == invoice_kinds.SALES %}{% crumb _("Sales") "invoicing:list" kind %}{% else %}{% crumb _("Purchases") "invoicing:list" kind %}{% endif %}{% if invoice %}{% crumb invoice.display_number "invoicing:detail" kind invoice.pk %}{% crumb _("Edit") %}{% else %}{% crumb labels.new %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% if invoice %}{{ labels.edit }}{% else %}{{ labels.new }}{% endif %}</h1>
 <form method="post" data-formset="form">{% csrf_token %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Statement of financial position" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Financial reports") "reports:index" %}{% crumb _("Statement of financial position") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-1">{% translate "Statement of financial position" %}</h1>
 <p class="text-muted">{{ current_organization.name }}{% if report %} · {% blocktranslate trimmed with date=report.as_of|date:"d F Y" %}as of {{ date }}{% endblocktranslate %}{% endif %} · {% translate "Amounts in Rupiah" %}</p>

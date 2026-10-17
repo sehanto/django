@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{% if invoice.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% if invoice.is_sales %}{% crumb _("Sales") "invoicing:list" invoice.kind %}{% else %}{% crumb _("Purchases") "invoicing:list" invoice.kind %}{% endif %}{% crumb invoice.number "invoicing:detail" invoice.kind invoice.pk %}{% if invoice.is_sales %}{% crumb _("Sales return") %}{% else %}{% crumb _("Purchase return") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'invoicing:detail' kind invoice.pk %}" class="text-sm no-underline">&larr; {{ invoice.number }}</a>
 <h1 class="text-xl font-medium leading-tight mb-4">{% if invoice.is_sales %}{% blocktranslate trimmed with number=invoice.number %}Sales return of {{ number }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with number=invoice.number %}Purchase return of {{ number }}{% endblocktranslate %}{% endif %}</h1>
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}

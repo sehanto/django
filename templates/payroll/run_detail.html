@@ -1,9 +1,9 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Payroll" %} {{ run.period }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=run.year %}{% blocktranslate trimmed with period=run.period asvar run_title %}Payroll {{ period }}{% endblocktranslate %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-start gap-2 mb-4">
-  <div><a href="{% url 'payroll:index' %}?year={{ run.year }}" class="text-sm no-underline">&larr; {% translate "Payroll" %}</a>
-    <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with period=run.period %}Payroll {{ period }}{% endblocktranslate %} <span class="badge align-middle badge-{% if run.status == run.Status.VOID %}neutral{% else %}success{% endif %}">{{ run.get_status_display }}</span></h1></div>
+  <div>    <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with period=run.period %}Payroll {{ period }}{% endblocktranslate %} <span class="badge align-middle badge-{% if run.status == run.Status.VOID %}neutral{% else %}success{% endif %}">{{ run.get_status_display }}</span></h1></div>
   <div class="flex gap-2">
     {% translate "Bukti potong" as bukti_potong %}{% include "partials/export_links.html" with url_name="payroll:run_download" arg1=run.pk what=bukti_potong button="btn btn-outline-primary" %}
     <a href="{% url 'taxes:withholding_month' run.year run.month %}" class="btn btn-outline-primary">{% icon "file-code" "me-1" %}{% translate "eBupot files" %}</a>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load audit i18n money %}
 {% block title %}{% translate "Employee" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" %}{% crumb _("Employees") "payroll:employees" %}{% if object %}{% crumb object.name %}{% else %}{% crumb _("New employee") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<a href="{% url 'payroll:employees' %}" class="text-sm no-underline">&larr; {% translate "Employees" %}</a>
 <h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{{ object.name }}{% else %}{% translate "New employee" %}{% endif %}</h1>
 {% history_link object %}
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}</div>

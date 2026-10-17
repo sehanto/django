@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "PPN rates" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("PPN rates") "taxes:rates" %}{% if object %}{% crumb _("Edit rate") %}{% else %}{% crumb _("New rate") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% if object %}{% translate "Edit rate" %}{% else %}{% translate "New rate" %}{% endif %}</h1>
 <form method="post" class="card max-w-3xl"><div class="card-body">{% csrf_token %}

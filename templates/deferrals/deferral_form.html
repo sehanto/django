@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{{ kind.label }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") "deferrals:list" %}{% crumb kind.label %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{{ kind.label }}</h1>
 <form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}

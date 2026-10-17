@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load audit i18n money ui %}
 {% block title %}{{ entry.number }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("General journal") "ledger:journals" %}{% crumb entry.number %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-start gap-2 mb-4">
   <div>

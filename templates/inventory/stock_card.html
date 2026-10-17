@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{{ item.name }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") "inventory:list" %}{% crumb item.name %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <div><h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with item=item.name %}Stock card: {{ item }}{% endblocktranslate %}</h1>
