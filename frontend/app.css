@@ -16,8 +16,8 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text and table cells 15px (base); captions (sm), badges, small labels, help text and field
-     errors 13px (label); form labels, section headings and column headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
+     Body text 15px (base); captions (sm), badges, small labels, help text and field errors 13px
+     (label); form labels, table cells and headings, and section headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.5;
@@ -222,7 +222,9 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Column headings a step above the cells: 16px over 15px, 15px over a text-sm table's 13px. */
+  /* Cells and column headings 16px (headings bold); a compact text-sm table keeps 13px cells under 15px headings. */
+  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-lg; }
+  .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
   .table > thead > tr > th { @apply text-lg font-semibold; }
   .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
