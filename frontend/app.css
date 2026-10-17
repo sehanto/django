@@ -16,12 +16,11 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text 16px (base), as are form labels and tables (lg); menu group labels and badges 12px (xs),
-     as are captions, chart labels, small form labels, help text and field errors (sm); the menu
+     Body text 16px (base), as are form labels and tables (lg); captions, badges, menu group labels,
+     chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu
      and breadcrumbs 14px (nav); section headings 18px (xl), page titles 24px (2xl). Form fields stay
      16px on phones (see .form-input), where iOS zooms into anything smaller. */
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1.5;
+  --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
@@ -241,7 +240,7 @@
   .stat-value { @apply text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-xs leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
@@ -268,7 +267,7 @@
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
   .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-nav text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-xs tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-2xl font-medium leading-tight; }
