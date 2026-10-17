@@ -31,6 +31,9 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 1.25rem;
   --text-2xl--line-height: 1.3;
+  /* Table cells: a little above body text, for reading rows of figures. */
+  --text-cell: 0.9375rem;
+  --text-cell--line-height: 1.5;
   /* Badges, menu group labels and chart labels: a step above captions, so they stand out from the text around them. */
   --text-label: 0.8125rem;
   /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
@@ -222,7 +225,9 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Column headings a step above the cells: 16px over 14px, 14px over a text-sm table's 12px. */
+  /* Cells 15px and column headings 16px; a compact text-sm table 13px and 14px. */
+  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-cell; }
+  .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-label; }
   .table > thead > tr > th { @apply text-lg font-semibold; }
   .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
