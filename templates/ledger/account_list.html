@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Chart of accounts" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Chart of accounts") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Chart of accounts" %}</h1>

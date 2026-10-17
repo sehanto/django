@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Bank reconciliation" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Bank reconciliation" %}</h1>

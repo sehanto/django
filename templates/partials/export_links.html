@@ -1,6 +1,6 @@
-{% load i18n ui %}{# Download buttons, one per format (core.tables.ExportFormat).
+{% load i18n ui %}{% comment %}Download buttons, one per format (core.tables.ExportFormat).
   url_name (with arg1, arg2): a download whose URL ends in its format; without it, this list page's rows as filtered (?download=, core.views.ExportMixin).
-  Optional: what (the button text before the format) and button (the buttons' classes). #}
+  Optional: what (the button text before the format) and button (the buttons' classes).{% endcomment %}
 <div class="flex flex-wrap gap-2" role="group" aria-label="{% translate 'Download' %}">
   {% for value, label in export_formats.choices %}<a class="{{ button|default:'btn btn-outline btn-sm' }}" rel="nofollow"
      href="{% if url_name %}{% download_url url_name value arg1 arg2 %}{% else %}{% querystring download=value page=None %}{% endif %}">{% icon "download" %} {% if what %}{% blocktranslate trimmed with format=label %}{{ what }} ({{ format }}){% endblocktranslate %}{% else %}{{ label }}{% endif %}</a>{% endfor %}

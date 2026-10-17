@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Team members" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Team members") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Team members" %}</h1>
 <div class="grid grid-cols-12 gap-6">

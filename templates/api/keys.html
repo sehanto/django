@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "API keys" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("API keys") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "API keys" %}</h1>
 {% if secret %}

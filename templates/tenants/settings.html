@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Organization settings" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Organization settings" %}</h1>
 <form method="post" class="card"><div class="card-body">{% csrf_token %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money ui %}
 {% block title %}{% translate "Subscription plan" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Subscription plan") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="text-xl font-medium leading-tight mb-4">{% translate "Subscription plan" %}</h1>
 

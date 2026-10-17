@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n money %}
 {% block title %}{% translate "Prepayments" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% translate "Paid and received in advance" %}</h1>

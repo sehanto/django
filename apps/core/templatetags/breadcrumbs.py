@@ -6,9 +6,10 @@
     {% endbreadcrumbs %}{% endblock %}
 
 ``crumb`` takes the label, then a URL name with its arguments (keyword arguments become the query
-string); the last crumb has no URL: it is the current page (``aria-current="page"``). Pages the
-sidebar opens directly have none. Built-in like ``{% icon %}``; the separators come from the
-``breadcrumbs`` component in ``frontend/app.css``.
+string); the last crumb has no URL: it is the current page (``aria-current="page"``). Every trail
+starts at the dashboard, which the tag adds; the dashboard's own page has an empty
+``{% breadcrumbs %}{% endbreadcrumbs %}`` and shows just that. Built-in like ``{% icon %}``; the
+separators come from the ``breadcrumbs`` component in ``frontend/app.css``.
 """
 
 from urllib.parse import urlencode
@@ -16,6 +17,7 @@ from urllib.parse import urlencode
 from django import template
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 register = template.Library()
 
@@ -25,7 +27,9 @@ class BreadcrumbsNode(template.Node):
         self.nodelist = nodelist
 
     def render(self, context):
-        return render_to_string("partials/breadcrumbs.html", {"items": self.nodelist.render(context)})
+        items = self.nodelist.render(context)
+        home = crumb(_("Dashboard"), "dashboard:home" if items.strip() else "")  # the start of every trail
+        return render_to_string("partials/breadcrumbs.html", {"items": home + items})
 
 
 @register.tag

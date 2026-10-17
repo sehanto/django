@@ -180,6 +180,7 @@ def test_breadcrumbs_link_each_level_and_mark_the_current_page():
     with translation.override("en"):
         html = Template('{% breadcrumbs %}{% crumb "Payroll" "payroll:index" year=2026 %}{% crumb "Employees" %}{% endbreadcrumbs %}').render(Context())
     assert '<nav class="breadcrumbs' in html and 'aria-label="Breadcrumb"' in html
+    assert '<a href="/">Dashboard</a>' in html.split("</li>")[0]  # every trail starts at the dashboard
     assert '<a href="/payroll/?year=2026">Payroll</a>' in html and '<span aria-current="page">Employees</span>' in html
     user_data = Template("{% breadcrumbs %}{% crumb name %}{% endbreadcrumbs %}").render(Context({"name": "<b>PT X</b>"}))
     assert "&lt;b&gt;PT X&lt;/b&gt;" in user_data  # names from records are escaped
@@ -194,3 +195,34 @@ def test_a_sub_page_shows_its_trail(auth_client):
     page = auth_client.get(reverse("payroll:employees")).content.decode()
     trail = page.split('class="breadcrumbs')[1].split("</nav>")[0]
     assert reverse("payroll:index") in trail and 'aria-current="page"' in trail
+
+
+# Pages outside the app's navigation: errors, sign-in, the gateway stand-ins, print views, invitations.
+WITHOUT_BREADCRUMBS = {"403.html", "404.html", "accounts/_auth_layout.html", "billing/fake_checkout.html", "billing/fake_save.html",
+                       "invoicing/invoice_print.html", "tenants/invitation.html"}
+
+
+def test_every_page_of_the_app_has_breadcrumbs():
+    missing = [
+        name for path in _templates()
+        if '{% extends "base.html" %}' in (text := path.read_text()) and "{% block breadcrumbs %}" not in text
+        and (name := str(path.relative_to(TEMPLATES))) not in WITHOUT_BREADCRUMBS
+    ]
+    assert not missing, missing
+
+
+def test_the_dashboard_trail_is_just_the_dashboard(auth_client):
+    trail = auth_client.get(reverse("dashboard:home")).content.decode().split('class="breadcrumbs')[1].split("</nav>")[0]
+    assert trail.count("<li>") == 1 and 'aria-current="page"' in trail
+
+
+def test_template_comments_close_on_their_line():
+    """Django's {# … #} is one line only: one that runs on is printed on the page. Use {% comment %}."""
+    offenders = []
+    for path in TEMPLATES.rglob("*"):
+        if path.suffix not in (".html", ".txt", ".svg"):
+            continue
+        for number, line in enumerate(path.read_text().splitlines(), start=1):
+            if re.search(r"\{#(?!.*#\})", line):
+                offenders.append(f"{path.relative_to(TEMPLATES)}:{number}")
+    assert not offenders, offenders

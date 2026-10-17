@@ -1,5 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{{ feature.label }}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb feature.label %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="card max-w-xl"><div class="card-body">
   <h1 class="text-xl font-medium leading-tight mb-2">{% icon "lock" "me-1 text-muted" %}{{ feature.label }}</h1>
