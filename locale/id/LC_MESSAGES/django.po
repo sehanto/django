@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 21:07+0700\n"
+"POT-Creation-Date: 2026-10-17 21:08+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -9103,12 +9103,9 @@ msgstr ""
 "penyesuaian stok."
 
 #: templates/inventory/write_down_form.html:2 templates/inventory/write_down_form.html:3
+#: templates/inventory/write_down_form.html:5
 msgid "Write down stock"
 msgstr "Turunkan nilai stok"
-
-#: templates/inventory/write_down_form.html:5
-msgid "Write down stock to net realisable value"
-msgstr "Turunkan nilai stok ke nilai realisasi neto"
 
 #: templates/inventory/write_down_form.html:8
 msgid ""
@@ -9724,7 +9721,7 @@ msgid "Open the menu"
 msgstr "Buka menu"
 
 #: templates/partials/sidebar.html:34 templates/tenants/create.html:2
-#: templates/tenants/create.html:3
+#: templates/tenants/create.html:3 templates/tenants/create.html:6
 msgid "New organization"
 msgstr "Organisasi baru"
 
@@ -11399,10 +11396,6 @@ msgstr ""
 "Berkas dalam format impor eBupot DJP: unggah di Coretax (eBupot → Impor Data), atau kirim melalui "
 "koneksi Coretax Anda, yang mencatat nomor yang diberikan Coretax. Bukti potong yang sudah bernomor"
 " tidak diikutkan. Pekerja harian mendapat satu bukti potong per hari kerja."
-
-#: templates/tenants/create.html:6
-msgid "Create a new organization"
-msgstr "Buat Organisasi Baru"
 
 #: templates/tenants/create.html:7
 msgid "A standard SAK EMKM chart of accounts and PPN rates will be created automatically."
