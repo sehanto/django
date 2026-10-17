@@ -16,14 +16,14 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text 15px (base); captions (sm), badges, small labels, help text and field errors 13px
-     (label); form labels, table cells and headings, and section headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
+     Body text 16px (base), as are form labels, tables and section headings (lg); captions (sm), badges,
+     small labels, help text and field errors 13px (label); page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.5;
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
-  --text-base: 0.9375rem;
+  --text-base: 1rem;
   --text-base--line-height: 1.5;
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
