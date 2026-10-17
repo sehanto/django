@@ -676,7 +676,7 @@ few behaviours live in `static/js/app.js`.
   tokens and Tailwind's palette, so a token change that breaks one fails the tests.
 - **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
   `max-h-130` 520 px), and repeated type sizes are tokens (`text-display` 2rem for error pages
-  and amounts to pay, `text-figure` 1.5rem for plan prices). Arbitrary values (`w-[16%]`) are for
+  and amounts to pay). Arbitrary values (`w-[16%]`) are for
   one-off measures only.
 - **Checked.** `test_every_class_in_use_is_in_the_build` fails when a template, an `{% icon %}` or a
   widget uses a class the build doesn't have (a typo, a leftover of another framework, a component
@@ -709,8 +709,8 @@ few behaviours live in `static/js/app.js`.
   still scales the whole interface: body text, buttons, the menu, form labels,
   tables and form fields 16px (`text-base`, `text-lg`),
   captions (`text-sm`), badges, menu group labels, chart labels and form help text and errors 13px (`text-label`), section
-  headings 16px (`section-heading`), page titles 20px (`page-title`), large figures `text-figure`
-  and `text-display`. Form fields stay 16px below the `md` breakpoint: iOS zooms into a smaller field
+  headings 18px (`section-heading`, also dialog titles), page titles 24px (`page-title`, also dashboard
+  figures and plan prices), large figures `text-display`. Form fields stay 16px below the `md` breakpoint: iOS zooms into a smaller field
   when it is tapped. No size is written by hand (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
