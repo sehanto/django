@@ -16,8 +16,8 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text 16px (base), as are form labels and tables (lg); menu group labels 12px (xs, the
-     smallest); captions (sm), badges, small labels, help text and field errors 13px (label); the menu
+     Body text 16px (base), as are form labels and tables (lg); menu group labels and badges 12px (xs,
+     the smallest); captions (sm), small labels, help text and field errors 13px (label); the menu
      and breadcrumbs 14px (nav); section headings 18px (xl), page titles 24px (2xl). Form fields stay
      16px on phones (see .form-input), where iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
@@ -32,7 +32,7 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.3;
-  /* Badges and chart labels: a step above captions, so they stand out from the text around them. */
+  /* Chart labels, form help text and errors, compact form labels: the size of captions. */
   --text-label: 0.8125rem;
   /* Navigation (the menu and breadcrumbs): below body text, so it stays out of the way of the page. */
   --text-nav: 0.875rem;
@@ -243,7 +243,7 @@
   .stat-value { @apply text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-label leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-xs leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
