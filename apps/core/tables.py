@@ -26,7 +26,7 @@ WIDTH_SAMPLE_ROWS = 200  # column widths come from the first rows; the rest stre
 
 class ExportFormat(models.TextChoices):
     CSV = "csv", _("CSV")
-    XLSX = "xlsx", _("Excel (XLSX)")
+    XLSX = "xlsx", _("Excel")
 
 
 def _csv(rows: Iterable[list]) -> bytes:

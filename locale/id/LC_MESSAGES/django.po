@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 20:02+0700\n"
+"POT-Creation-Date: 2026-10-17 20:13+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -1769,8 +1769,8 @@ msgid "CSV"
 msgstr "CSV"
 
 #: apps/core/tables.py:29
-msgid "Excel (XLSX)"
-msgstr "Excel (XLSX)"
+msgid "Excel"
+msgstr "Excel"
 
 #: apps/core/templatetags/breadcrumbs.py:29 apps/dashboard/apps.py:7 templates/dashboard/home.html:2
 #: templates/dashboard/home.html:5 templates/partials/sidebar.html:42
