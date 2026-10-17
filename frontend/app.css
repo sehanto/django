@@ -31,7 +31,7 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 1.25rem;
   --text-2xl--line-height: 1.3;
-  /* Badges and menu group labels: a step above captions, so they stand out from the text around them. */
+  /* Badges, menu group labels and chart labels: a step above captions, so they stand out from the text around them. */
   --text-label: 0.8125rem;
   /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
   --text-display: 2rem;
