@@ -55,3 +55,46 @@ def test_downloaded_contacts_upload_again_unchanged(auth_client, organization, u
     assert report.ok, [(r.number, r.message) for r in report.results]
     again = Contact.objects.get(organization=organization, name="PT Bolak Balik")
     assert (again.npwp, again.village, again.payment_terms_days) == ("012345678901000", jatake, 45)
+
+
+def test_xlsx_formats_follow_each_column_and_show_local_time():
+    from datetime import datetime, timezone as dt_timezone
+
+    rows = [["Amount", "Quantity", "Paid at"], [Decimal("2000.00"), Decimal("1.500"), datetime(2026, 10, 15, 3, 30, tzinfo=dt_timezone.utc)],
+            [Decimal("1500.50"), Decimal("2.000"), None]]
+    sheet = load_workbook(io.BytesIO(download("x", rows, ExportFormat.XLSX).content)).active
+    (whole, quantity, paid), (cents, _q, _p) = (list(sheet[2]), list(sheet[3]))
+    assert whole.number_format == cents.number_format == "#,##0.00"  # one format per money column
+    assert quantity.number_format == "#,##0.000"
+    assert paid.value == datetime(2026, 10, 15, 10, 30) and paid.number_format == "yyyy-mm-dd hh:mm"  # WIB, not UTC
+
+
+def test_list_downloads_are_bounded(auth_client, customer, supplier, settings):
+    url = reverse("contacts:list")
+    settings.MAX_EXPORT_ROWS = 1
+    response = auth_client.get(url, {"download": "csv", "q": ""})
+    assert response.status_code == 302 and response.url == f"{url}?q="  # back to the list, with its filter
+    settings.MAX_EXPORT_ROWS, settings.LIST_EXPORTS_PER_HOUR = 100, 1
+    assert auth_client.get(url, {"download": "csv"}).status_code == 200
+    assert auth_client.get(url, {"download": "csv"}).status_code == 302  # the hour's limit
+
+
+def test_the_payments_download_reads_each_contact_with_its_payment(auth_client, organization, customer, account):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    from apps.invoicing import services as invoicing
+    from apps.invoicing.models import InvoiceKind
+    from apps.invoicing.services import InvoiceLineInput
+
+    for day in range(1, 6):
+        invoice = invoicing.issue_invoice(invoice=invoicing.create_invoice(
+            organization=organization, kind=InvoiceKind.SALES, contact=customer, date=date(2026, 3, day),
+            lines=[InvoiceLineInput("Jasa", account("4-1100"), Decimal("1"), Decimal("1000"))],
+        ))
+        invoicing.record_payment(invoice=invoice, date=date(2026, 3, day), amount=Decimal("1000"), cash_account=account("1-1100"))
+    with CaptureQueriesContext(connection) as queries:
+        response = auth_client.get(reverse("invoicing:payments"), {"download": "csv"})
+    assert response.status_code == 200 and response.content.decode("utf-8-sig").count(customer.name) == 5
+    contact_lookups = [q["sql"] for q in queries.captured_queries if q["sql"].lstrip().startswith('SELECT "contacts_contact"')]
+    assert not contact_lookups  # read with the payments (payments_for joins them), not once per payment

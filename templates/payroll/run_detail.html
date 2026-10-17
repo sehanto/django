@@ -5,7 +5,7 @@
   <div><a href="{% url 'payroll:index' %}?year={{ run.year }}" class="text-sm no-underline">&larr; {% translate "Payroll" %}</a>
     <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with period=run.period %}Payroll {{ period }}{% endblocktranslate %} <span class="badge align-middle badge-{% if run.status == run.Status.VOID %}neutral{% else %}success{% endif %}">{{ run.get_status_display }}</span></h1></div>
   <div class="flex gap-2">
-    {% for value, label in export_formats.choices %}<a href="{% url 'payroll:run_download' run.pk value %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}{% blocktranslate trimmed with format=label %}Bukti potong ({{ format }}){% endblocktranslate %}</a>{% endfor %}
+    {% translate "Bukti potong" as bukti_potong %}{% include "partials/export_links.html" with url_name="payroll:run_download" arg1=run.pk what=bukti_potong button="btn btn-outline-primary" %}
     <a href="{% url 'taxes:withholding_month' run.year run.month %}" class="btn btn-outline-primary">{% icon "file-code" "me-1" %}{% translate "eBupot files" %}</a>
     {% if can_write and run.status == run.Status.POSTED and not run.paid_on and not run.bpjs_paid_on %}<form method="post" action="{% url 'payroll:run_action' run.pk 'void' %}" data-confirm="{% translate 'Void this payroll?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Void" %}</button></form>{% endif %}
   </div>

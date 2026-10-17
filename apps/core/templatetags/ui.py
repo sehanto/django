@@ -1,4 +1,5 @@
 from django import template
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.timesince import timeuntil
 
@@ -62,3 +63,9 @@ def timeuntil_delta(delta):
 def npwp(value) -> str:
     """Display an NPWP: 15 digits dotted, 16 digits in groups of four (see ``format_npwp``)."""
     return format_npwp(str(value)) if value else ""
+
+
+@register.simple_tag
+def download_url(url_name, export_format, *args):
+    """The URL of a download whose path ends in its format (``<export_format:export_format>``)."""
+    return reverse(url_name, args=[*(a for a in args if a not in (None, "")), export_format])

@@ -7,8 +7,6 @@ never write models themselves, so every rule of the pages (validation, tenancy, 
 guards, the audit trail) holds for an uploaded row too.
 """
 
-import csv
-import io
 from collections.abc import Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -20,7 +18,6 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 
 from apps.core.exceptions import DomainError
-from apps.core.sanitizers import csv_safe
 
 from ..domain import (
     Column,
@@ -84,13 +81,11 @@ class Importer:
 
     # --- Template ---------------------------------------------------------------
 
-    def template_csv(self) -> str:
-        buffer = io.StringIO()
-        writer = csv.writer(buffer)
-        writer.writerow([column.label for column in self.columns])
+    def template_rows(self):
+        """The template to fill in: the column names, then the example rows (``core.tables.download``)."""
+        yield [column.label for column in self.columns]
         for row in self.example:
-            writer.writerow([csv_safe(row.get(column.key, "")) for column in self.columns])
-        return buffer.getvalue()
+            yield [row.get(column.key, "") for column in self.columns]
 
     # --- Rows -------------------------------------------------------------------
 

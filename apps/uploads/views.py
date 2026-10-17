@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -9,6 +9,7 @@ from django.views.generic import TemplateView
 
 from apps.accounts.throttle import ThrottleScope, allow
 from apps.core.exceptions import DomainError
+from apps.core.tables import download
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 from apps.tenants.selectors import first_plan_with
 
@@ -74,10 +75,8 @@ class ImporterMixin:
 
 
 class UploadTemplateView(ImporterMixin, OrganizationMixin, View):
-    def get(self, request, slug):
-        response = HttpResponse("﻿" + self.importer.template_csv(), content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="{slug}.csv"'
-        return response
+    def get(self, request, slug, export_format):
+        return download(slug, self.importer.template_rows(), export_format)
 
 
 class UploadView(ImporterMixin, WriteMixin, View):

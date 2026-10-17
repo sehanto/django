@@ -321,7 +321,7 @@ class PaymentListView(ExportMixin, OrganizationMixin, ListView):
             _("Number"), _("Date"), _("Type"), _("Invoice"), _("Contact"), _("Cash/bank account"), _("Method"), _("Reference"),
             _("Amount"), _("PPN withheld"), _("Income tax"), _("Income tax withheld"), _("Bukti potong no."), _("Status"),
         ]
-        for p in queryset.select_related("invoice", "cash_account"):
+        for p in queryset:  # payments_for joins the invoice, its contact and the cash account
             yield [
                 p.number, p.date, p.invoice.get_kind_display(), p.invoice.number, p.invoice.party_name, p.cash_account.code,
                 p.get_method_display(), p.reference, p.amount, p.vat_withheld, p.get_income_tax_kind_display(), p.income_tax_withheld,
@@ -492,8 +492,6 @@ class MonthCoretaxView(OrganizationMixin, View):
     """A month's purchase returns in one Coretax import file; returns that can't be reported are left out."""
 
     def get(self, request, year, month):
-        if not 1 <= month <= 12:
-            raise Http404
         notes = [n for n in coretax.month_returns(self.organization, year, month) if not coretax.exportable_problem(n)]
         if not notes:
             messages.info(request, _("No purchase return of %(period)s can be reported to Coretax.") % {"period": f"{month:02d}/{year}"})
@@ -518,8 +516,6 @@ class MonthInvoicesCoretaxView(OrganizationMixin, View):
     """A month's sales invoices in one Coretax import file; invoices that can't be reported are left out."""
 
     def get(self, request, year, month):
-        if not 1 <= month <= 12:
-            raise Http404
         invoices = [i for i in coretax.month_invoices(self.organization, year, month) if not coretax.invoice_problem(i)]
         if not invoices:
             messages.info(request, _("No sales invoice of %(period)s can be reported to Coretax.") % {"period": f"{month:02d}/{year}"})
@@ -533,8 +529,6 @@ class MonthRetailCoretaxView(OrganizationMixin, View):
     1.A5, 1.A9 and 1.B), in DJP's retail import format."""
 
     def get(self, request, year, month):
-        if not 1 <= month <= 12:
-            raise Http404
         rows = coretax.month_retail(self.organization, year, month)
         if not rows or len(coretax.tin(self.organization.npwp)) != 16:
             messages.info(request, _("There are no retail sales of %(period)s to report in total, or the organization has no NPWP.")
@@ -549,7 +543,7 @@ class MonthSpecialDocumentsView(OrganizationMixin, View):
     equivalent to a faktur (masukan), or returns of those bills (retur masukan)."""
 
     def get(self, request, year, month, kind):
-        if not 1 <= month <= 12 or kind not in coretax.SpecialFile.values or not self.organization.is_pkp:
+        if kind not in coretax.SpecialFile.values or not self.organization.is_pkp:
             raise Http404
         xml = coretax.special_file(self.organization, year, month, kind)
         if xml is None:
@@ -633,8 +627,6 @@ class CoretaxSendView(WriteMixin, View):
             send = partial(coretax_sync.submit_invoices, organization=organization, invoices=[invoice], label=invoice.number)
         else:
             year, month = kwargs["year"], kwargs["month"]
-            if not 1 <= month <= 12:
-                raise Http404
             target, label = f"{reverse('reports:vat')}?year={year}", f"{year}-{month:02d}"
             if kwargs.get("returns"):
                 send = partial(coretax_sync.submit_returns, organization=organization, notes=coretax.month_returns(organization, year, month), label=label)

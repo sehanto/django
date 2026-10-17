@@ -1,10 +1,12 @@
 """The upload pages: check, then apply; never twice; only for the organization's writers."""
 
+import io
 import re
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from openpyxl import load_workbook
 
 from apps.audit.domain import AuditAction
 from apps.audit.models import AuditEvent
@@ -81,10 +83,13 @@ def test_viewers_and_strangers_upload_nothing(client, organization, make_member)
 @pytest.mark.parametrize("kind", sorted(IMPORTERS))
 def test_every_template_names_its_columns(auth_client, kind):
     slug = kind.replace("_", "-")
-    response = auth_client.get(reverse("uploads:template", args=[slug]))
+    response = auth_client.get(reverse("uploads:template", args=[slug, "csv"]))
     assert response["Content-Type"].startswith("text/csv")
     header = response.content.decode("utf-8-sig").splitlines()[0]
-    assert header.split(",") == [column.label for column in IMPORTERS[kind].columns]
+    assert header.split(";") == [column.label for column in IMPORTERS[kind].columns]
+    workbook = auth_client.get(reverse("uploads:template", args=[slug, "xlsx"]))
+    sheet = load_workbook(io.BytesIO(workbook.content)).active
+    assert [cell.value for cell in sheet[1]] == [column.label for column in IMPORTERS[kind].columns]
     assert auth_client.get(reverse("uploads:upload", args=[slug])).status_code == 200
 
 

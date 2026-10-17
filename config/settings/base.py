@@ -254,6 +254,9 @@ LOGIN_CAPTCHA_WINDOW_MINUTES = env.int("LOGIN_CAPTCHA_WINDOW_MINUTES", default=6
 BOOKS_EXPORTS_PER_HOUR = env.int("BOOKS_EXPORTS_PER_HOUR", default=10)
 # File uploads checked per organization and hour (each reads up to 2 MB and runs every row).
 FILE_UPLOADS_PER_HOUR = env.int("FILE_UPLOADS_PER_HOUR", default=60)
+# List downloads (sales, payments, contacts …) per organization and hour, and their size.
+LIST_EXPORTS_PER_HOUR = env.int("LIST_EXPORTS_PER_HOUR", default=60)
+MAX_EXPORT_ROWS = env.int("MAX_EXPORT_ROWS", default=50_000)
 
 # Retention, applied daily by manage.py prune_security_logs (deploy/cron/crontab):
 # sign-in and account-security audit events and django-axes sign-in records (IP, browser)...

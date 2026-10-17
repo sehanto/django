@@ -454,9 +454,13 @@ return is voided, not edited.
 Every table that downloads comes as CSV or Excel (XLSX), through one helper (`apps/core/tables.py`):
 the financial statements, trial balance and general ledger (**Reports**, with the filter as shown),
 the sales, purchase, payment, contact and item lists (as filtered, every page: `?download=csv` or
-`xlsx`, `core.views.ExportMixin`), the month's withholdings, the payroll run's PPh 21 and the
-year's 1721-A1. CSV is UTF-8 with a BOM and `;`-separated, as Excel opens it in either language;
-XLSX keeps amounts as numbers and dates as dates, with the header row frozen. Text that a
+`xlsx`, `core.views.ExportMixin`), the month's withholdings, the payroll run's PPh 21, the
+year's 1721-A1 and the upload templates. CSV is UTF-8 with a BOM and `;`-separated, as Excel opens
+it in either language; XLSX keeps amounts as numbers (each column with its own decimals: money 2,
+quantities 3) and dates as dates (times in local time), with the header row frozen, and is written
+row by row (openpyxl's write-only mode). A list download is bounded: at most `MAX_EXPORT_ROWS`
+rows (50,000; narrow the filter for more) and `LIST_EXPORTS_PER_HOUR` downloads per organization
+(60). Download buttons come from `partials/export_links.html`. Text that a
 spreadsheet would run as a formula is neutralised in both (a leading `'` in CSV, a text cell in
 XLSX). Contacts and items download in the columns of their upload template, so a list can be
 edited in a spreadsheet and uploaded again (see [File uploads](#file-uploads)). Coretax, eBupot and

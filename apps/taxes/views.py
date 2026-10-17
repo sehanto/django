@@ -230,9 +230,7 @@ class WithholdingMonthView(OrganizationMixin, TemplateView):
     template_name = "taxes/withholding_month.html"
 
     def get_context_data(self, **kwargs):
-        year, month = self.kwargs["year"], self.kwargs["month"]
-        if not 1 <= month <= 12:
-            raise Http404
+        year, month = self.kwargs["year"], self.kwargs["month"]  # the URL's converters check both
         for name in ("year", "month", "export_format"):  # the URL's, replaced below
             kwargs.pop(name, None)
         from apps.payroll.selectors import posted_run  # payroll depends on taxes
@@ -277,8 +275,6 @@ class EbupotXmlView(OrganizationMixin, View):
 
     def get(self, request, year, month, kind):
         document_type = _ebupot_type(kind)
-        if not 1 <= month <= 12:
-            raise Http404
         batch = ebupot.month_batches(self.organization, year, month).get(document_type)
         if batch is None or not batch.records:
             raise Http404

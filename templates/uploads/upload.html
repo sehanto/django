@@ -5,7 +5,7 @@
   <h1 class="text-xl font-medium leading-tight mb-0">{{ importer.title }}</h1>
   <div class="flex gap-2">
     <a href="{% url 'uploads:index' %}" class="btn btn-outline">{% translate "Back" %}</a>
-    <a href="{% url 'uploads:template' slug %}" class="btn btn-outline">{% icon "download" %} {% translate "Template" %}</a>
+    {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=slug what=template_label button="btn btn-outline" %}
   </div>
 </div>
 <p class="text-muted text-sm max-w-4xl">{{ importer.description }}</p>

@@ -101,11 +101,6 @@ class PayrollRunCreateView(WriteMixin, FormView):
     template_name = "payroll/run_form.html"
     form_class = PayrollRunForm
 
-    def dispatch(self, request, *args, **kwargs):
-        if not 1 <= kwargs["month"] <= 12:
-            raise Http404
-        return super().dispatch(request, *args, **kwargs)
-
     def get_form_kwargs(self):
         year, month = self.kwargs["year"], self.kwargs["month"]
         return {**super().get_form_kwargs(), "employees": selectors.employees_paid_in(self.organization, year, month), "year": year, "month": month}

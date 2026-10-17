@@ -12,6 +12,7 @@ class ThrottleScope(StrEnum):
     PASSWORD_RESET_IP = "password-reset-ip"
     BOOKS_EXPORT = "books-export"
     FILE_UPLOAD = "file-upload"
+    LIST_EXPORT = "list-export"
     API = "api"
     API_AUTH_FAILURE_IP = "api-auth-failure-ip"
     LOGIN_FAILURE_IP = "login-failure-ip"

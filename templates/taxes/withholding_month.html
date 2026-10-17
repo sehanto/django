@@ -4,7 +4,7 @@
 <a href="{% url 'taxes:withholding' %}?year={{ year }}" class="text-sm no-underline">&larr; {% translate "Withheld income tax" %}</a>
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="text-xl font-medium leading-tight mb-0">{% blocktranslate trimmed with period=month.label %}Bukti potong {{ period }} {{ year }}{% endblocktranslate %}</h1>
-  {% if payments %}{% for value, label in export_formats.choices %}<a href="{% url 'taxes:withholding_month_download' year month.value value %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}{{ label }}</a>{% endfor %}{% endif %}
+  {% if payments %}{% include "partials/export_links.html" with url_name="taxes:withholding_month_download" arg1=year arg2=month.value button="btn btn-outline-primary" %}{% endif %}
 </div>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Supplier" %}</th><th>{% translate "Income tax" %}</th><th>{% translate "Tax object code" %}</th><th class="num">{% translate "Tax base" %}</th><th class="num">{% translate "Rate" %}</th><th class="num">{% translate "Withheld" %}</th><th>{% translate "Bukti potong no." %}</th></tr></thead>
