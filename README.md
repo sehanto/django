@@ -707,7 +707,7 @@ few behaviours live in `static/js/app.js`.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
   still scales the whole interface: body text, tables, buttons and the menu 14px (`text-base`),
-  captions and help text 13px (`text-sm`), badges and labels 12px (`text-xs`, the smallest), section
+  captions and help text (`text-sm`), badges and labels (`text-xs`) 12px, the smallest, section
   headings 16px (`section-heading`), page titles 20px (`page-title`), large figures `text-figure`
   and `text-display`. Form fields stay 16px below the `md` breakpoint: iOS zooms into a smaller field
   when it is tapped. No size is written by hand (`text-[…]`); a test checks.
