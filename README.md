@@ -675,8 +675,8 @@ few behaviours live in `static/js/app.js`.
   borders and the focus ring. `apps/core/tests/test_contrast.py` computes the ratios from the
   tokens and Tailwind's palette, so a token change that breaks one fails the tests.
 - **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
-  `max-h-130` 520 px), and repeated type sizes are tokens (`text-display` 2.5rem for error pages
-  and amounts to pay, `text-figure` 1.75rem for plan prices). Arbitrary values (`w-[16%]`) are for
+  `max-h-130` 520 px), and repeated type sizes are tokens (`text-display` 2rem for error pages
+  and amounts to pay, `text-figure` 1.5rem for plan prices). Arbitrary values (`w-[16%]`) are for
   one-off measures only.
 - **Checked.** `test_every_class_in_use_is_in_the_build` fails when a template, an `{% icon %}` or a
   widget uses a class the build doesn't have (a typo, a leftover of another framework, a component
@@ -707,7 +707,7 @@ few behaviours live in `static/js/app.js`.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
   still scales the whole interface: body text, tables, buttons and the menu 14px (`text-base`),
-  captions and help text (`text-sm`), badges and labels (`text-xs`) 12px, the smallest, section
+  captions and help text (`text-sm`) and menu labels (`text-xs`) 12px, the smallest, badges 13px (`text-badge`), section
   headings 16px (`section-heading`), page titles 20px (`page-title`), large figures `text-figure`
   and `text-display`. Form fields stay 16px below the `md` breakpoint: iOS zooms into a smaller field
   when it is tapped. No size is written by hand (`text-[…]`); a test checks.
