@@ -1,7 +1,7 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Sign in" %}{% endblock %}
 {% block auth_content %}
-<h2 class="text-lg font-medium leading-tight mb-4">{% translate "Sign in" %}</h2>
+<h2 class="card-title mb-4">{% translate "Sign in" %}</h2>
 <form method="post">{% csrf_token %}
   {% include "partials/form_fields.html" with col="col-span-12" %}
   {% if captcha %}

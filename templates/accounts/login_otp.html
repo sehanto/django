@@ -1,7 +1,7 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Two-factor authentication" %}{% endblock %}
 {% block auth_content %}
-<h2 class="text-lg font-medium leading-tight mb-2">{% icon "shield-check" "me-2 text-primary" %}{% translate "Two-factor authentication" %}</h2>
+<h2 class="card-title mb-2">{% icon "shield-check" "me-2 text-primary" %}{% translate "Two-factor authentication" %}</h2>
 <p class="text-sm text-muted">{% translate "Open your authenticator app and enter the 6-digit code for this account. Lost your phone? Enter one of your backup codes instead." %}</p>
 <form method="post">{% csrf_token %}
   {% include "partials/form_fields.html" with col="col-span-12" %}

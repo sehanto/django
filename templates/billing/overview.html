@@ -51,7 +51,7 @@
     <div class="card h-full {% if plan.pk == current_organization.plan_id %}border-primary border-2{% endif %}">
       <div class="card-body">
         <div class="flex justify-between items-start">
-          <h2 class="text-lg font-medium leading-tight">{{ plan.name }}</h2>
+          <h2 class="card-title">{{ plan.name }}</h2>
           {% if plan.pk == current_organization.plan_id %}<span class="badge badge-primary">{% translate "Current plan" %}</span>{% endif %}
         </div>
         {% if offer.is_free %}

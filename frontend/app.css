@@ -271,8 +271,9 @@
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-2xl font-medium leading-tight; }
 
-  /* A heading of a section or card within a page (its <h2>): between the title and body text. */
-  .section-heading { @apply text-xl font-medium leading-tight; }
+  /* A heading of a section within a page (its <h2>), and the title of a card (a report, a plan, a file
+     type, the sign-in box): between the page title and body text. */
+  .section-heading, .card-title { @apply text-xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-base; }
