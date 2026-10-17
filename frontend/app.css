@@ -16,15 +16,14 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text is 14px (base), as dense business apps use; captions (sm), badges,
-     small labels, help text and field errors 13px (label), table cells and form labels 15px (md); section headings and column
-     headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
+     Body text, table cells and form labels 15px (base); captions (sm), badges, small labels, help text
+     and field errors 13px (label); section headings and column headings 16px (lg), page titles 20px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.5;
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
-  --text-base: 0.875rem;
+  --text-base: 0.9375rem;
   --text-base--line-height: 1.5;
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
@@ -32,9 +31,6 @@
   --text-xl--line-height: 1.4;
   --text-2xl: 1.25rem;
   --text-2xl--line-height: 1.3;
-  /* Table cells and form labels: a little above body text, for reading rows of figures and naming fields. */
-  --text-md: 0.9375rem;
-  --text-md--line-height: 1.5;
   /* Badges, menu group labels and chart labels: a step above captions, so they stand out from the text around them. */
   --text-label: 0.8125rem;
   /* Large figures: error pages and amounts to pay (display), plan prices (figure). */
@@ -191,7 +187,7 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block text-md; }
+  .form-label { @apply mb-1 inline-block; }
   .form-input, .form-select {
     @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
@@ -226,9 +222,7 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells 15px and column headings 16px; a compact text-sm table 13px and 14px. */
-  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-md; }
-  .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-label; }
+  /* Column headings a step above the cells: 16px over 15px, 15px over a text-sm table's 13px. */
   .table > thead > tr > th { @apply text-lg font-semibold; }
   .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
