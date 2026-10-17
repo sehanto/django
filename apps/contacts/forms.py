@@ -22,7 +22,7 @@ class ContactForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
             "kind", "name", "npwp", "nitku", "id_type", "id_number", "country", "foreign_tin", "treaty_document", "email", "phone", "address", "village", "payment_terms_days",
             "document_language", "vat_collector", "notes", "is_active",
         ]
-        widgets = {"address": forms.Textarea(attrs={"rows": 2}), "notes": forms.Textarea(attrs={"rows": 2})}
+        widgets = {"notes": forms.Textarea(attrs={"rows": 2})}  # the address's size comes from RegionFieldsMixin
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

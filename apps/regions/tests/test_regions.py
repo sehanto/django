@@ -225,3 +225,13 @@ def test_contacts_are_filtered_by_province(auth_client, client, organization, us
         ("CV Jogja", {"province": "34", "regency": "34.04", "district": "34.04.07", "village": CATURTUNGGAL}),
     ]
     assert client.get(reverse("api:contacts"), {"province": "99"}, HTTP_AUTHORIZATION=f"Bearer {key}").status_code == 400
+
+
+def test_every_address_form_has_the_same_short_street_box(organization, user):
+    from apps.contacts.forms import ContactForm
+    from apps.payroll.forms import EmployeeForm
+    from apps.tenants.forms import BusinessPlaceForm, OrganizationSettingsForm
+
+    forms = [EmployeeForm(organization=organization), ContactForm(organization=organization), BusinessPlaceForm(organization=organization),
+             OrganizationSettingsForm(instance=organization, acting_user=user)]
+    assert {form.fields["address"].widget.attrs["rows"] for form in forms} == {2}

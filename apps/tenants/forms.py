@@ -26,7 +26,7 @@ class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseMod
             "lock_date", "require_two_factor",
         ]
         widgets = {
-            "address": forms.Textarea(attrs={"rows": 2}), "additional_notes": forms.Textarea(attrs={"rows": 4}),
+            "additional_notes": forms.Textarea(attrs={"rows": 4}),
             "lock_date": DateInput(),
         }
 
@@ -113,7 +113,6 @@ class BusinessPlaceForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm)
     class Meta:
         model = BusinessPlace
         fields = ["name", "nitku", "address", "village", "is_active"]
-        widgets = {"address": forms.Textarea(attrs={"rows": 2})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

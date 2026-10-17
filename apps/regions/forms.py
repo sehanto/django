@@ -38,8 +38,13 @@ class RegionFieldsMixin:
     """Adds the region selects and the postcode after the ``address`` field. ``is_domestic(cleaned_data)``
     says whether the address is in Indonesia (an address abroad is written in full, without them)."""
 
+    ADDRESS_ROWS = 2  # the street line: a short box (with the CSS minimum height, about three lines)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        street = self.fields.get("address")
+        if street is not None and isinstance(street.widget, forms.Textarea):
+            street.widget.attrs["rows"] = self.ADDRESS_ROWS
         village = self.instance.village if getattr(self.instance, "village_id", None) else None
         district = village.district if village else None
         regency = district.regency if district else None
