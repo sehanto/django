@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 20:13+0700\n"
+"POT-Creation-Date: 2026-10-17 21:06+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -5377,7 +5377,7 @@ msgstr "Jalan, nomor, RT/RW, dan gedung; untuk alamat di luar negeri, tulis selu
 msgid "kelurahan/desa"
 msgstr "kelurahan/desa"
 
-#: apps/reports/apps.py:7 templates/reports/index.html:2 templates/reports/index.html:5
+#: apps/reports/apps.py:7
 msgid "Reports"
 msgstr "Laporan"
 
@@ -9778,8 +9778,9 @@ msgstr "Tarif PPN"
 #: templates/partials/sidebar.html:64 templates/reports/aging.html:3
 #: templates/reports/balance_sheet.html:3 templates/reports/export_books.html:3
 #: templates/reports/general_ledger.html:3 templates/reports/income_statement.html:3
-#: templates/reports/index.html:3 templates/reports/notes.html:3
-#: templates/reports/trial_balance.html:3 templates/reports/vat.html:3
+#: templates/reports/index.html:2 templates/reports/index.html:3 templates/reports/index.html:5
+#: templates/reports/notes.html:3 templates/reports/trial_balance.html:3
+#: templates/reports/vat.html:3
 msgid "Financial reports"
 msgstr "Laporan Keuangan"
 
