@@ -1,7 +1,7 @@
 {% load i18n ui %}
 <form method="get" class="mb-4 flex flex-wrap items-end gap-2 print:hidden">
   {% for field in form %}
-    <div class="w-full sm:w-auto"><label class="form-label text-sm mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <div class="w-full sm:w-auto"><label class="form-label text-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
       {% if field.field.widget.input_type == 'select' %}{{ field|add_class:'form-select' }}{% else %}{{ field|add_class:'form-input' }}{% endif %}</div>
   {% endfor %}
   <div class="w-full sm:w-auto"><button class="btn btn-primary">{% translate "Show" %}</button></div>

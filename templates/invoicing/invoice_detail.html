@@ -31,7 +31,7 @@
     {% if show_coretax %}<p class="text-sm text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
       {% if can_write and not coretax_problem and not invoice.tax_invoice_number %}
       <form method="post" action="{% url 'invoicing:tax_invoice_number' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
-        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-input form-input-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
+        <div class="min-w-0 flex-1"><label class="form-label text-label" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-input form-input-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
         <div class="flex-none"><button class="btn btn-sm btn-outline-primary">{% translate "Record number" %}</button></div>
       </form>
       {% endif %}
@@ -40,8 +40,8 @@
       <p class="text-sm text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
       {% if can_write and not invoice.special_document_number and invoice.status != invoice.Status.VOID %}
       <form method="post" action="{% url 'invoicing:special_document' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
-        <div class="min-w-0 flex-1"><label class="form-label text-sm mb-1" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-input form-input-sm" maxlength="100" required></div>
-        <div class="flex-none"><label class="form-label text-sm mb-1" for="special-date">{% translate "Document date" %}</label><input id="special-date" type="date" name="date" class="form-input form-input-sm" required></div>
+        <div class="min-w-0 flex-1"><label class="form-label text-label" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-input form-input-sm" maxlength="100" required></div>
+        <div class="flex-none"><label class="form-label text-label" for="special-date">{% translate "Document date" %}</label><input id="special-date" type="date" name="date" class="form-input form-input-sm" required></div>
         <div class="flex-none"><button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></div>
       </form>
       {% endif %}
