@@ -17,7 +17,7 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Body text 16px (base), as are form labels and tables (lg); captions (sm), badges, small labels,
-     help text and field errors 13px (label); section headings 18px (xl), page titles 24px (2xl). Form fields stay 16px on phones (see .form-input), where
+     help text and field errors 13px (label); breadcrumbs 14px (crumb); section headings 18px (xl), page titles 24px (2xl). Form fields stay 16px on phones (see .form-input), where
      iOS zooms into anything smaller. */
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.5;
@@ -33,6 +33,9 @@
   --text-2xl--line-height: 1.3;
   /* Badges, menu group labels and chart labels: a step above captions, so they stand out from the text around them. */
   --text-label: 0.8125rem;
+  /* Breadcrumbs: below body text, so the trail stays out of the way of the page title. */
+  --text-crumb: 0.875rem;
+  --text-crumb--line-height: 1.5;
   /* Large figures: error pages and amounts to pay. */
   --text-display: 2rem;
 }
@@ -276,7 +279,7 @@
   .section-heading, .card-title { @apply text-xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
-  .breadcrumbs { @apply mb-2 text-base; }
+  .breadcrumbs { @apply mb-2 text-crumb; }
   .breadcrumbs ol { @apply m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-0.5 p-0; }
   .breadcrumbs li { @apply flex items-center gap-x-1.5; }
   .breadcrumbs li + li::before { content: "\203A"; @apply text-muted; }
