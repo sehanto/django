@@ -248,7 +248,7 @@
   .nav-heading { @apply px-3 pt-4 pb-1 text-[.7rem] tracking-wider text-muted uppercase; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
-  .breadcrumbs { @apply mb-1 text-sm; }
+  .breadcrumbs { @apply mb-2 text-base; }
   .breadcrumbs ol { @apply m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-0.5 p-0; }
   .breadcrumbs li { @apply flex items-center gap-x-1.5; }
   .breadcrumbs li + li::before { content: "\203A"; @apply text-muted; }
