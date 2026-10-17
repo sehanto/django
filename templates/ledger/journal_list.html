@@ -1,9 +1,9 @@
 {% extends "base.html" %}{% load i18n money ui %}
-{% block title %}{% translate "Journal entries" %}{% endblock %}
+{% block title %}{% translate "General journal" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("General journal") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex justify-between items-center mb-4">
-  <h1 class="page-title mb-0">{% translate "Journal entries" %}</h1>
+  <h1 class="page-title mb-0">{% translate "General journal" %}</h1>
   {% if can_write %}<a href="{% url 'ledger:journal_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New journal entry" %}</a>{% endif %}
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">

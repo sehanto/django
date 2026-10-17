@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 21:06+0700\n"
+"POT-Creation-Date: 2026-10-17 21:07+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -364,7 +364,8 @@ msgstr "Beri nama kunci ini."
 #: apps/assets/apps.py:7 apps/ledger/domain.py:46 apps/reports/statements.py:290
 #: templates/assets/asset_detail.html:3 templates/assets/asset_form.html:3
 #: templates/assets/asset_list.html:2 templates/assets/asset_list.html:3
-#: templates/partials/sidebar.html:54 templates/reports/notes.html:35
+#: templates/assets/asset_list.html:6 templates/partials/sidebar.html:54
+#: templates/reports/notes.html:35
 msgid "Fixed assets"
 msgstr "Aset Tetap"
 
@@ -1825,7 +1826,8 @@ msgstr "Terlalu banyak unduhan dalam satu jam terakhir. Silakan coba lagi nanti.
 
 #: apps/deferrals/apps.py:7 templates/deferrals/deferral_detail.html:3
 #: templates/deferrals/deferral_form.html:3 templates/deferrals/deferral_list.html:2
-#: templates/deferrals/deferral_list.html:3 templates/partials/sidebar.html:55
+#: templates/deferrals/deferral_list.html:3 templates/deferrals/deferral_list.html:6
+#: templates/partials/sidebar.html:55
 msgid "Prepayments"
 msgstr "Dibayar/diterima di muka"
 
@@ -4195,7 +4197,8 @@ msgstr "Diposting"
 
 #: apps/ledger/domain.py:119 templates/ledger/journal_detail.html:3
 #: templates/ledger/journal_form.html:2 templates/ledger/journal_form.html:3
-#: templates/ledger/journal_list.html:3 templates/partials/sidebar.html:49
+#: templates/ledger/journal_list.html:2 templates/ledger/journal_list.html:3
+#: templates/ledger/journal_list.html:6 templates/partials/sidebar.html:49
 msgid "General journal"
 msgstr "Jurnal Umum"
 
@@ -6453,7 +6456,7 @@ msgstr "REST API"
 msgid "Sending to Coretax"
 msgstr "Pengiriman ke Coretax"
 
-#: apps/tenants/domain.py:22 templates/assets/asset_list.html:6
+#: apps/tenants/domain.py:22
 msgid "Fixed asset register"
 msgstr "Daftar aset tetap"
 
@@ -8981,10 +8984,6 @@ msgstr ""
 "Jumlahnya dibagi rata selama jangka waktu, mulai bulan pertama; setiap bulan dijurnal pada hari "
 "terakhirnya setelah bulan itu berakhir."
 
-#: templates/deferrals/deferral_list.html:6
-msgid "Paid and received in advance"
-msgstr "Dibayar dan diterima di muka"
-
 #: templates/deferrals/deferral_list.html:8
 msgid "Paid in advance"
 msgstr "Dibayar di muka"
@@ -9665,10 +9664,6 @@ msgstr "Seimbang"
 #: templates/taxes/withholding.html:31
 msgid "Save & post"
 msgstr "Simpan & Posting"
-
-#: templates/ledger/journal_list.html:2 templates/ledger/journal_list.html:6
-msgid "Journal entries"
-msgstr "Jurnal"
 
 #: templates/ledger/journal_list.html:7
 msgid "New journal entry"

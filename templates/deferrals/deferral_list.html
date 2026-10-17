@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="page-title mb-0">{% translate "Paid and received in advance" %}</h1>
+  <h1 class="page-title mb-0">{% translate "Prepayments" %}</h1>
   {% if can_write %}<div class="flex flex-wrap gap-2">
     <a href="{% url 'deferrals:create' kinds.PREPAID_EXPENSE %}" class="btn btn-primary">{% icon "plus" %} {% translate "Paid in advance" %}</a>
     <a href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}" class="btn btn-outline-primary">{% icon "plus" %} {% translate "Received in advance" %}</a>
