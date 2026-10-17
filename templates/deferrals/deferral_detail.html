@@ -7,7 +7,7 @@
 {% history_link deferral %}
   <div class="flex flex-wrap gap-2">
     <a href="{% url 'deferrals:list' %}" class="btn btn-outline">{% translate "Back" %}</a>
-    {% if can_write and can_void %}<form method="post" action="{% url 'deferrals:void' deferral.pk %}" data-confirm="{% translate 'Void this prepayment? Its reclassification entry, if any, is reversed.' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Void" %}</button></form>{% endif %}
+    {% if can_write and can_void %}<form method="post" action="{% url 'deferrals:void' deferral.pk %}" data-confirm="{% translate 'Void this prepayment? Its reclassification entry, if any, is reversed.' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Void" context "button" %}</button></form>{% endif %}
   </div>
 </div>
 <div class="grid grid-cols-12 gap-4 mb-4">

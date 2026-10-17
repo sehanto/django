@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-17 15:15+0700\n"
+"POT-Creation-Date: 2026-10-17 20:02+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -1772,8 +1772,8 @@ msgstr "CSV"
 msgid "Excel (XLSX)"
 msgstr "Excel (XLSX)"
 
-#: apps/core/templatetags/breadcrumbs.py:31 apps/dashboard/apps.py:7 templates/dashboard/home.html:2
-#: templates/dashboard/home.html:6 templates/partials/sidebar.html:42
+#: apps/core/templatetags/breadcrumbs.py:29 apps/dashboard/apps.py:7 templates/dashboard/home.html:2
+#: templates/dashboard/home.html:5 templates/partials/sidebar.html:42
 msgid "Dashboard"
 msgstr "Dasbor"
 
@@ -1839,8 +1839,7 @@ msgstr "Pendapatan diterima di muka"
 
 #: apps/deferrals/domain.py:34 apps/invoicing/domain.py:24 apps/invoicing/models.py:501
 #: apps/invoicing/models.py:579 apps/invoicing/models.py:612 apps/payroll/models.py:172
-#: apps/taxes/models.py:61 templates/deferrals/deferral_detail.html:10
-#: templates/payroll/run_detail.html:10
+#: apps/taxes/models.py:61
 msgid "Void"
 msgstr "Dibatalkan"
 
@@ -3747,7 +3746,7 @@ msgid "This write-off is already void."
 msgstr "Penghapusan ini sudah dibatalkan."
 
 #: apps/invoicing/views.py:36 apps/ledger/domain.py:120 apps/taxes/forms.py:139
-#: templates/dashboard/home.html:8
+#: templates/dashboard/home.html:7
 msgid "Sales invoice"
 msgstr "Faktur Penjualan"
 
@@ -4058,7 +4057,7 @@ msgstr "Liabilitas"
 msgid "Equity"
 msgstr "Ekuitas"
 
-#: apps/ledger/domain.py:25 templates/dashboard/home.html:37 templates/dashboard/home.html:51
+#: apps/ledger/domain.py:25 templates/dashboard/home.html:36 templates/dashboard/home.html:51
 msgid "Revenue"
 msgstr "Pendapatan"
 
@@ -4122,11 +4121,11 @@ msgstr "Beban keuangan"
 msgid "Income tax expense"
 msgstr "Beban Pajak Penghasilan"
 
-#: apps/ledger/domain.py:93 templates/dashboard/home.html:19
+#: apps/ledger/domain.py:93 templates/dashboard/home.html:18
 msgid "Accounts receivable"
 msgstr "Piutang Usaha"
 
-#: apps/ledger/domain.py:94 templates/dashboard/home.html:23
+#: apps/ledger/domain.py:94 templates/dashboard/home.html:22
 msgid "Accounts payable"
 msgstr "Utang Usaha"
 
@@ -8868,41 +8867,41 @@ msgstr "Tidak ada yang jatuh tempo"
 msgid "All"
 msgstr "Semua"
 
-#: templates/dashboard/home.html:9
+#: templates/dashboard/home.html:8
 msgid "Record purchase"
 msgstr "Catat Pembelian"
 
-#: templates/dashboard/home.html:15
+#: templates/dashboard/home.html:14
 msgid "Cash & bank"
 msgstr "Kas & Bank"
 
-#: templates/dashboard/home.html:27
+#: templates/dashboard/home.html:26
 msgid "Profit this month"
 msgstr "Laba bulan ini"
 
-#: templates/dashboard/home.html:28
+#: templates/dashboard/home.html:27
 #, python-format
 msgid "Revenue %(revenue)s · Expenses %(expense)s"
 msgstr "Pendapatan %(revenue)s · Beban %(expense)s"
 
-#: templates/dashboard/home.html:35
+#: templates/dashboard/home.html:34
 msgid "Revenue vs expenses · last 6 months"
 msgstr "Pendapatan vs Beban · 6 bulan terakhir"
 
-#: templates/dashboard/home.html:38 templates/dashboard/home.html:51
+#: templates/dashboard/home.html:37 templates/dashboard/home.html:51
 msgid "Expenses"
 msgstr "Beban"
 
-#: templates/dashboard/home.html:41
+#: templates/dashboard/home.html:40
 msgid "Monthly revenue and expenses chart; the table below has the full data."
 msgstr "Grafik pendapatan dan beban per bulan; data lengkap ada pada tabel di bawah."
 
-#: templates/dashboard/home.html:44
+#: templates/dashboard/home.html:43
 #, python-format
 msgid "%(month)s · Revenue %(amount)s"
 msgstr "%(month)s · Pendapatan %(amount)s"
 
-#: templates/dashboard/home.html:45
+#: templates/dashboard/home.html:44
 #, python-format
 msgid "%(month)s · Expenses %(amount)s"
 msgstr "%(month)s · Beban %(amount)s"
@@ -8930,6 +8929,11 @@ msgstr "Belum ada tagihan pembelian."
 #: templates/deferrals/deferral_detail.html:10
 msgid "Void this prepayment? Its reclassification entry, if any, is reversed."
 msgstr "Batalkan pos ini? Jurnal reklasifikasinya, jika ada, dibalik."
+
+#: templates/deferrals/deferral_detail.html:10 templates/payroll/run_detail.html:10
+msgctxt "button"
+msgid "Void"
+msgstr "Batalkan"
 
 #: templates/deferrals/deferral_detail.html:15 templates/deferrals/deferral_detail.html:26
 #: templates/deferrals/deferral_list.html:24
@@ -9690,11 +9694,11 @@ msgstr "Belum ada jurnal."
 msgid "Breadcrumb"
 msgstr "Navigasi jejak"
 
-#: templates/partials/export_links.html:4
+#: templates/partials/export_links.html:5
 msgid "Download"
 msgstr "Unduh"
 
-#: templates/partials/export_links.html:6
+#: templates/partials/export_links.html:7
 #, python-format
 msgid "%(what)s (%(format)s)"
 msgstr "%(what)s (%(format)s)"
