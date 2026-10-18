@@ -16,12 +16,12 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Body text, the menu and breadcrumbs 15px (base); buttons, form fields, form labels and
-     tables 16px (lg); captions, badges, menu group labels, chart labels, help text and field errors
-     13px (sm, the smallest); card and dialog titles, the brand and sellers' names 20px (xl);
-     section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
-     24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms into a
-     smaller field when it is tapped. */
+     16px). Body text, the menu, breadcrumbs and compact tables 15px (base); buttons, form fields,
+     form labels and tables 16px (lg); captions, badges, menu group labels, chart labels, help text
+     and field errors 13px (sm, the smallest); card and dialog titles, the brand and sellers' names
+     20px (xl); section headings 22px (heading); dashboard figures, plan prices and the printed
+     invoice heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS
+     zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 13px (text-sm) */
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
@@ -225,11 +225,11 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells and column headings 16px (headings bold); a compact text-sm table has 12px cells under 15px headings. */
+  /* Cells and column headings 16px (headings bold); a .table-compact (the dashboard's, the notes') 15px. */
   .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-lg; }
-  .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
+  .table-compact > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
   .table > thead > tr > th { @apply text-lg font-semibold; }
-  .table.text-sm > thead > tr > th { @apply text-base; }
+  .table-compact > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td).num { @apply text-end; }
