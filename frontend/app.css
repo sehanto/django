@@ -18,7 +18,7 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu
-     and breadcrumbs 14px (nav); card and dialog titles 18px (lg), section headings 20px (xl), page titles 24px (2xl). Form fields must
+     and breadcrumbs 14px (nav); card and dialog titles 18px (lg), section headings 20px (xl), page titles 28px (2xl). Form fields must
      stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
@@ -29,8 +29,8 @@
   --text-lg--line-height: 1.4;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.3;
-  --text-2xl: 1.5rem;
-  --text-2xl--line-height: 1.3;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.25;
   /* Navigation (the menu and breadcrumbs): below body text, so it stays out of the way of the page. */
   --text-nav: 0.875rem;
   --text-nav--line-height: 1.5;

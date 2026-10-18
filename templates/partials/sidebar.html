@@ -3,7 +3,7 @@
 {# Below lg: a top bar whose button opens the menu as a drawer; from lg up the menu is a fixed sidebar (static/js/app.js). #}
 <header class="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 lg:hidden print:hidden">
   <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
-          aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-2xl" %}</button>
+          aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-xl" %}</button>
   <a href="{% url 'dashboard:home' %}" class="me-auto text-base font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
   <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
 </header>
@@ -15,7 +15,7 @@
     <button type="button" class="btn-icon" data-drawer-close="appSidebar" aria-label="{% translate 'Close' %}">{% icon "x" %}</button>
   </div>
   <a href="{% url 'dashboard:home' %}" class="mb-4 hidden items-center gap-2 text-fg no-underline lg:flex" id="appSidebarBrand">
-    {% icon "book-marked" "text-2xl text-primary" %}<span class="text-xl font-bold">EA-System</span>
+    {% icon "book-marked" "text-xl text-primary" %}<span class="text-xl font-bold">EA-System</span>
   </a>
   <details class="relative mb-2" data-dropdown>
     <summary class="btn btn-outline btn-sm w-full list-none justify-start text-nav [&::-webkit-details-marker]:hidden">
