@@ -2,7 +2,7 @@
 {% block title %}{% translate "Chart of accounts" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Chart of accounts") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="page-title mb-0">{% translate "Chart of accounts" %}</h1>
   {% if can_write %}<a href="{% url 'ledger:account_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New account" %}</a>{% endif %}
 </div>
