@@ -253,7 +253,7 @@ def test_the_type_scale_and_phone_form_fields():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for token in ("--text-base:1rem", "--text-sm:.875rem", "--text-xl:1.25rem", "--text-2xl:1.5rem", "--text-heading:1.75rem", "--text-4xl:2.25rem"):
+    for token in ("--text-base:1rem", "--text-sm:.875rem", "--text-xl:1.25rem", "--text-2xl:1.5rem", "--text-3xl:1.75rem", "--text-4xl:2.25rem"):
         assert token in css, token
     source = (Path(settings.BASE_DIR) / "frontend" / "app.css").read_text()
     assert re.search(r"--text-base:\s*1rem;", source) and "py-1.5 text-base text-fg" in source  # .form-input/-select
