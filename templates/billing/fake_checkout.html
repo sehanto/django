@@ -5,7 +5,7 @@
   <div class="alert alert-info">{% translate "Test payment page: no real money is charged. In production, customers pay on Xendit's hosted page instead." %}</div>
   <div class="card"><div class="card-body text-center p-6">
     <div class="text-muted">{{ invoice.number }}</div>
-    <div class="text-3xl font-bold leading-tight my-2">{{ invoice.total|rupiah }}</div>
+    <div class="text-4xl font-bold leading-tight my-2">{{ invoice.total|rupiah }}</div>
     <div class="mb-6">{{ invoice.plan.name }} · {{ invoice.get_billing_period_display }}</div>
     <form method="post" class="grid gap-2">{% csrf_token %}
       <button name="outcome" value="{{ paid }}" class="btn btn-success">{% translate "Simulate successful payment" %}</button>

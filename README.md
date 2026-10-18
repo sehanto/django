@@ -675,7 +675,8 @@ few behaviours live in `static/js/app.js`.
   borders and the focus ring. `apps/core/tests/test_contrast.py` computes the ratios from the
   tokens and Tailwind's palette, so a token change that breaks one fails the tests.
 - **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
-  `max-h-130` 520 px), and repeated type sizes are tokens (`text-3xl` 2rem for amounts to pay). Arbitrary values (`w-[16%]`) are for
+  `max-h-130` 520 px), and repeated type sizes are tokens (`text-4xl` 2.25rem for page titles, error
+  pages and amounts to pay). Arbitrary values (`w-[16%]`) are for
   one-off measures only.
 - **Checked.** `test_every_class_in_use_is_in_the_build` fails when a template, an `{% icon %}` or a
   widget uses a class the build doesn't have (a typo, a leftover of another framework, a component
@@ -709,8 +710,9 @@ few behaviours live in `static/js/app.js`.
   form labels and tables 16px (`text-base`),
   captions, badges, menu group labels, chart labels and form help text and errors 14px (`text-sm`, the smallest), card and
   dialog titles, dashboard figures, plan prices and the printed invoice heading 24px (`card-title`,
-  `modal-title`, `text-2xl`), section headings 28px (`section-heading`, `text-heading`), amounts
-  to pay 32px (`text-3xl`), page titles and error page headings 36px (`page-title`, `text-4xl`). Form fields must stay at least 16px: iOS zooms into a
+  `modal-title`, `text-2xl`), section headings 28px (`section-heading`, `text-heading`), the
+  sign-in logo 32px (`text-3xl`), page titles, error page headings and amounts to pay 36px
+  (`page-title`, `text-4xl`). Form fields must stay at least 16px: iOS zooms into a
   smaller field when it is tapped. No size is written by hand (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
