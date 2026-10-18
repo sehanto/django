@@ -18,7 +18,7 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu and
-     breadcrumbs 14px (nav); card and dialog titles 18px (lg); the brand and sellers' names 20px (xl);
+     breadcrumbs 14px (nav); dialog titles 18px (lg); card titles, the brand and sellers' names 20px (xl);
      section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
      24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms into a
      smaller field when it is tapped. */
@@ -281,7 +281,7 @@
   /* A heading of a section within a page (its <h2>): between the page title and body text. */
   .section-heading { @apply text-heading font-medium leading-tight; }
   /* The title of a card (a report, a plan, a file type, the sign-in box): a step below a section heading. */
-  .card-title { @apply text-lg font-medium leading-tight; }
+  .card-title { @apply text-xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-nav; }
