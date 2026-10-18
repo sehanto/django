@@ -18,7 +18,7 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu
-     and breadcrumbs 14px (nav); card titles 18px (lg), section headings 20px (xl), page titles 24px (2xl). Form fields must
+     and breadcrumbs 14px (nav); card and dialog titles 18px (lg), section headings 20px (xl), page titles 24px (2xl). Form fields must
      stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
@@ -260,7 +260,7 @@
     @apply m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-line bg-surface p-0 text-fg shadow-xl backdrop:bg-black/50;
   }
   .modal-header { @apply flex items-center justify-between gap-2 border-b border-line px-4 py-3; }
-  .modal-title { @apply mb-0 text-xl font-medium; }
+  .modal-title { @apply mb-0 text-lg font-medium; }
   .modal-body { @apply px-4 py-4; }
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 
