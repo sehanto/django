@@ -18,14 +18,15 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu
-     and breadcrumbs 14px (nav); section headings 20px (xl), page titles 24px (2xl). Form fields must
+     and breadcrumbs 14px (nav); card titles 18px (lg), section headings 20px (xl), page titles 24px (2xl). Form fields must
      stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
   --text-base--line-height: 1.5;
-  --text-lg: initial; /* one name per size: 16px is text-base */
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.4;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.3;
   --text-2xl: 1.5rem;
@@ -271,9 +272,10 @@
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-2xl font-medium leading-tight; }
 
-  /* A heading of a section within a page (its <h2>), and the title of a card (a report, a plan, a file
-     type, the sign-in box): between the page title and body text. */
-  .section-heading, .card-title { @apply text-xl font-medium leading-tight; }
+  /* A heading of a section within a page (its <h2>): between the page title and body text. */
+  .section-heading { @apply text-xl font-medium leading-tight; }
+  /* The title of a card (a report, a plan, a file type, the sign-in box): a step below a section heading. */
+  .card-title { @apply text-lg font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-nav; }

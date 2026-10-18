@@ -253,7 +253,7 @@ def test_the_type_scale_and_phone_form_fields():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for token in ("--text-base:1rem", "--text-sm:.75rem", "--text-nav:.875rem", "--text-xl:1.25rem", "--text-2xl:1.5rem"):
+    for token in ("--text-base:1rem", "--text-sm:.75rem", "--text-nav:.875rem", "--text-lg:1.125rem", "--text-xl:1.25rem", "--text-2xl:1.5rem"):
         assert token in css, token
     source = (Path(settings.BASE_DIR) / "frontend" / "app.css").read_text()
     assert re.search(r"--text-base:\s*1rem;", source) and source.count("text-base text-fg") >= 1  # fields are 16px everywhere
