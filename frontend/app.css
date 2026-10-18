@@ -16,18 +16,19 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
-     chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu and
-     breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px (xl);
+     Body text, buttons and form fields on wider screens 15px (base); form labels, tables and form
+     fields on phones 16px (lg); captions, badges, menu group labels, chart labels, small form labels,
+     help text and field errors 12px (sm, the smallest); the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px (xl);
      section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
-     24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms into a
+     24px (figure); page titles 28px (2xl). Form fields stay 16px below md: iOS zooms into a
      smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
-  --text-base: 1rem;
+  --text-base: 0.9375rem;
   --text-base--line-height: 1.5;
-  --text-lg: initial; /* not on the scale: titles go from 16px straight to 20px */
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5;
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.3;
   --text-heading: 1.375rem;
@@ -192,9 +193,9 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block text-base; }
+  .form-label { @apply mb-1 inline-block text-lg; }
   .form-input, .form-select {
-    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-base text-fg
+    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
       disabled:bg-subtle disabled:opacity-80
       aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:outline-danger/30;
@@ -203,7 +204,7 @@
     @apply appearance-none bg-[length:16px_12px] bg-[position:right_.75rem_center] bg-no-repeat pe-9;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   }
-  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-base; }
+  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg md:text-base; }
   .form-select-sm { @apply pe-8; }
   textarea.form-input { @apply min-h-20; }
   /* A checkbox drawn as a switch. */
@@ -227,10 +228,10 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells and column headings 16px (headings bold); a compact text-sm table keeps 13px cells under 15px headings. */
-  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
+  /* Cells and column headings 16px (headings bold); a compact text-sm table has 12px cells under 15px headings. */
+  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-lg; }
   .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
-  .table > thead > tr > th { @apply text-base font-semibold; }
+  .table > thead > tr > th { @apply text-lg font-semibold; }
   .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
