@@ -19,8 +19,8 @@
      Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu and
      breadcrumbs 14px (nav); card and dialog titles 18px (lg); section headings 20px (xl); dashboard
-     figures and plan prices 24px (figure); page titles 28px (2xl). Form fields must stay at least
-     16px: iOS zooms into a smaller field when it is tapped. */
+     figures, plan prices and the printed invoice heading 24px (figure); page titles 28px (2xl). Form
+     fields must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
@@ -35,7 +35,7 @@
   /* Navigation (the menu and breadcrumbs): below body text, so it stays out of the way of the page. */
   --text-nav: 0.875rem;
   --text-nav--line-height: 1.5;
-  /* Figures: dashboard amounts and plan prices (figure); error pages and amounts to pay (display). */
+  /* Figures: dashboard amounts, plan prices and the printed invoice's heading (figure); error pages and amounts to pay (display). */
   --text-figure: 1.5rem;
   --text-figure--line-height: 1.25;
   --text-display: 2rem;
