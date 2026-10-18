@@ -17,14 +17,17 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu, breadcrumbs, buttons, form fields, form labels and tables 16px
-     (base); captions, badges, menu group labels, chart labels, help text and field errors 13px (sm,
-     the smallest); the brand and sellers' names 20px (xl); card and dialog titles 22px (title);
-     section headings, dashboard figures, plan prices and the printed invoice heading 24px (2xl);
-     page titles, error pages and amounts to pay 32px (3xl). Form fields must stay at least 16px:
-     iOS zooms into a smaller field when it is tapped. */
+     (base); captions, badges, chart labels, help text and field errors 13px (sm, the smallest);
+     menu group labels 14px (label); the brand and sellers' names 20px (xl); card and dialog titles
+     22px (title); section headings, dashboard figures, plan prices and the printed invoice heading
+     24px (2xl); page titles, error pages and amounts to pay 32px (3xl). Form fields must stay at
+     least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 13px (text-sm) */
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
+  /* Menu group labels: capitals, a step above captions. */
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.5;
   --text-base: 1rem;
   --text-base--line-height: 1.5;
   --text-lg: initial; /* one name per size: 16px is text-base */
@@ -266,7 +269,7 @@
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
   .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-label tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-3xl font-medium leading-tight; }
