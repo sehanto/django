@@ -20,9 +20,8 @@
      (base); captions, badges, menu group labels, chart labels, help text and field errors 14px (sm,
      the smallest); the brand and sellers' names 20px (xl); card and dialog titles, dashboard
      figures, plan prices and the printed invoice heading 24px (2xl); section headings 28px
-     (heading); the sign-in page's logo 32px (3xl); page titles, error page headings and amounts to
-     pay 36px (4xl). Form fields must stay at least 16px: iOS zooms into a smaller field when it is
-     tapped. */
+     (heading); page titles, error page headings, amounts to pay and the sign-in page's logo 36px
+     (4xl). Form fields must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
@@ -36,8 +35,7 @@
   /* Section headings: between card titles and the page title. */
   --text-heading: 1.75rem;
   --text-heading--line-height: 1.25;
-  --text-3xl: 2rem;
-  --text-3xl--line-height: 1.2;
+  --text-3xl: initial; /* not on the scale: page titles go from section headings' 28px to 36px */
   --text-4xl: 2.25rem;
   --text-4xl--line-height: 1.15;
 }
