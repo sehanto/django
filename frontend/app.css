@@ -16,12 +16,12 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Body text 15px (base); buttons, form fields, form labels and tables 16px (lg); captions,
-     badges, menu group labels, chart labels, help text and field errors 12px (sm, the smallest);
-     the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px
-     (xl); section headings 22px (heading); dashboard figures, plan prices and the printed invoice
-     heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms
-     into a smaller field when it is tapped. */
+     16px). Body text and the menu 15px (base); buttons, form fields, form labels and tables 16px
+     (lg); captions, badges, menu group labels, chart labels, help text and field errors 12px (sm,
+     the smallest); breadcrumbs 14px (crumb); card and dialog titles, the brand and sellers' names
+     20px (xl); section headings 22px (heading); dashboard figures, plan prices and the printed
+     invoice heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS
+     zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
@@ -35,9 +35,9 @@
   --text-heading--line-height: 1.3;
   --text-2xl: 1.75rem;
   --text-2xl--line-height: 1.25;
-  /* Navigation (the menu and breadcrumbs): below body text, so it stays out of the way of the page. */
-  --text-nav: 0.875rem;
-  --text-nav--line-height: 1.5;
+  /* Breadcrumbs: below body text, so the trail stays out of the way of the page title. */
+  --text-crumb: 0.875rem;
+  --text-crumb--line-height: 1.5;
   /* Figures: dashboard amounts, plan prices and the printed invoice's heading (figure); error pages and amounts to pay (display). */
   --text-figure: 1.5rem;
   --text-figure--line-height: 1.25;
@@ -271,7 +271,7 @@
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
-  .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-nav text-fg no-underline hover:bg-subtle hover:text-fg; }
+  .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
   .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
 
@@ -284,7 +284,7 @@
   .card-title { @apply text-xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
-  .breadcrumbs { @apply mb-2 text-nav; }
+  .breadcrumbs { @apply mb-2 text-crumb; }
   .breadcrumbs ol { @apply m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-0.5 p-0; }
   .breadcrumbs li { @apply flex items-center gap-x-1.5; }
   .breadcrumbs li + li::before { content: "\203A"; @apply text-muted; }
