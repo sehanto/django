@@ -708,7 +708,7 @@ few behaviours live in `static/js/app.js`.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
   still scales the whole interface: body text, the menu and breadcrumbs 15px (`text-base`), buttons, form fields,
   form labels and tables 16px (`text-lg`),
-  badges and menu group labels 12px (`text-xs`, the smallest), captions, chart labels and form help text and errors 13px (`text-sm`), section
+  menu group labels 12px (`text-xs`, the smallest), captions, badges, chart labels and form help text and errors 13px (`text-sm`), section
   headings 22px (`section-heading`, `text-heading`), card and dialog titles 20px (`card-title`, `modal-title`, `text-xl`), page titles 28px (`page-title`), dashboard
   figures, plan prices and the printed invoice heading 24px (`text-figure`), large figures `text-display`. Form fields must stay at least 16px: iOS zooms into a
   smaller field when it is tapped. No size is written by hand (`text-[…]`); a test checks.

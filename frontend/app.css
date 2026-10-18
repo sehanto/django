@@ -17,7 +17,7 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu and breadcrumbs 15px (base); buttons, form fields, form labels and
-     tables 16px (lg); badges and menu group labels 12px (xs, the smallest); captions, chart labels,
+     tables 16px (lg); menu group labels 12px (xs, the smallest); captions, badges, chart labels,
      help text and field errors 13px (sm); card and dialog titles, the brand and sellers' names 20px
      (xl); section headings 22px (heading); dashboard figures, plan prices and the printed invoice
      heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms
@@ -244,7 +244,7 @@
   .stat-value { @apply text-figure font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-xs leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
