@@ -16,7 +16,7 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text, buttons and form fields on wider screens 15px (base); form labels, tables and form
+     Body text and form fields on wider screens 15px (base); buttons, form labels, tables and form
      fields on phones 16px (lg); captions, badges, menu group labels, chart labels, small form labels,
      help text and field errors 12px (sm, the smallest); the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px (xl);
      section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
@@ -175,11 +175,11 @@
 
   /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-center text-base
+    @apply inline-flex items-center justify-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-center text-lg
       font-normal leading-normal no-underline whitespace-nowrap transition-colors select-none
       disabled:pointer-events-none disabled:opacity-60;
   }
-  .btn-sm { @apply px-2 py-1 text-base; }
+  .btn-sm { @apply px-2 py-1 text-lg; }
   .btn-primary { @apply bg-primary-fill text-white hover:bg-primary-fill-strong hover:text-white; }
   .btn-danger { @apply bg-danger-fill text-white hover:bg-danger-fill-strong hover:text-white; }
   .btn-success { @apply bg-success-fill text-white hover:bg-success-fill-strong hover:text-white; }
