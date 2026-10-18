@@ -47,7 +47,7 @@
     </div>
     {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, one line on phones. #}
     <div class="-mx-2.5 mt-1 flex text-sm text-muted">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M y" }}</span>{% endfor %}</div>
-    <div class="overflow-x-auto"><table class="table table-sm table-compact mt-4 mb-0">
+    <div class="overflow-x-auto"><table class="table table-sm mt-4 mb-0">
       <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
       <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
     </table></div>
