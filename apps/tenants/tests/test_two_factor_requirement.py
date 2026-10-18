@@ -4,6 +4,7 @@ import time
 from datetime import timedelta
 from unittest import mock
 
+import pytest
 from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
@@ -14,6 +15,8 @@ from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice
 from apps.tenants.roles import Role
 from apps.tenants.services import create_organization
+
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
 
 SETTINGS = reverse("tenants:settings")
 SECURITY = reverse("accounts:security")

@@ -16,6 +16,8 @@ from apps.accounts.models import AuthenticatorDevice, User
 from apps.accounts.tests.test_two_factor import code_for
 from apps.core.checks import check_captcha_keys
 
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
+
 LOGIN = reverse("accounts:login")
 PASSWORD = "Rahasia-123"  # from the ``user`` fixture
 THRESHOLD = settings.LOGIN_CAPTCHA_AFTER_FAILURES

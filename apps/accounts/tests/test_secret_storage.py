@@ -19,6 +19,8 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice, BackupCode
 
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
+
 OLD_KEY, NEW_KEY = Fernet.generate_key().decode(), Fernet.generate_key().decode()
 
 

@@ -1,5 +1,6 @@
 """Shared pytest fixtures."""
 
+import time
 from datetime import date
 from decimal import Decimal
 
@@ -15,6 +16,14 @@ from apps.tenants.domain import PlanFeature
 from apps.tenants.models import Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import create_organization
+
+
+@pytest.fixture
+def still_clock(monkeypatch):
+    """Authenticator codes follow time.time() in 30-second steps. Held still, a step can't end in the
+    middle of a test, where the codes a test makes and the server's drift estimate would disagree."""
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now)
 
 
 @pytest.fixture(autouse=True)

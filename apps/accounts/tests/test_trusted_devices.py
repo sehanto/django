@@ -17,6 +17,8 @@ from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice, TrustedDevice
 from apps.accounts.trusted_devices import COOKIE_NAME
 
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
+
 LOGIN = reverse("accounts:login")
 OTP = reverse("accounts:login_otp")
 PASSWORD = "Rahasia-123"

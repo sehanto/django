@@ -17,6 +17,8 @@ from apps.accounts.captcha import FAKE_PASSING_TOKEN, RESPONSE_FIELD
 from apps.accounts import two_factor
 from apps.accounts.models import AuthenticatorDevice
 
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
+
 LOGIN = reverse("accounts:login")
 OTP = reverse("accounts:login_otp")
 PASSWORD = "Rahasia-123"  # from the ``user`` fixture

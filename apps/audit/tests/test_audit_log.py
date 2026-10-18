@@ -20,6 +20,8 @@ from apps.tenants.models import Plan
 from apps.tenants.roles import Role
 from apps.tenants.services import set_subscription
 
+pytestmark = pytest.mark.usefixtures("still_clock")  # authenticator codes: see conftest
+
 LOGIN = reverse("accounts:login")
 PASSWORD = "Rahasia-123"  # from the ``user`` fixture
 A = AuditAction
