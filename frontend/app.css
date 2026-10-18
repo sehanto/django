@@ -17,13 +17,12 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu and breadcrumbs 15px (base); buttons, form fields, form labels and
-     tables 16px (lg); menu group labels 12px (xs, the smallest); captions, badges, chart labels,
-     help text and field errors 13px (sm); card and dialog titles, the brand and sellers' names 20px
-     (xl); section headings 22px (heading); dashboard figures, plan prices and the printed invoice
-     heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms
-     into a smaller field when it is tapped. */
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1.5;
+     tables 16px (lg); captions, badges, menu group labels, chart labels, help text and field errors
+     13px (sm, the smallest); card and dialog titles, the brand and sellers' names 20px (xl);
+     section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
+     24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms into a
+     smaller field when it is tapped. */
+  --text-xs: initial; /* not on the scale: the smallest text is 13px (text-sm) */
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
   --text-base: 0.9375rem;
@@ -271,7 +270,7 @@
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
   .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-xs tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-2xl font-medium leading-tight; }
