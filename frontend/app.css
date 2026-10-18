@@ -17,11 +17,11 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text 15px (base); buttons, form fields, form labels and tables 16px (lg); captions,
-     badges, menu group labels, chart labels, small form labels, help text and field errors 12px
-     (sm, the smallest); the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and
-     sellers' names 20px (xl); section headings 22px (heading); dashboard figures, plan prices and
-     the printed invoice heading 24px (figure); page titles 28px (2xl). Form fields must stay at
-     least 16px: iOS zooms into a smaller field when it is tapped. */
+     badges, menu group labels, chart labels, help text and field errors 12px (sm, the smallest);
+     the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px
+     (xl); section headings 22px (heading); dashboard figures, plan prices and the printed invoice
+     heading 24px (figure); page titles 28px (2xl). Form fields must stay at least 16px: iOS zooms
+     into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
