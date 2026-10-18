@@ -18,10 +18,10 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu, breadcrumbs, buttons, form fields, form labels and tables 16px
      (base); captions, badges, menu group labels, chart labels, help text and field errors 13px (sm,
-     the smallest); card and dialog titles, the brand and sellers' names 20px (xl); section
-     headings, dashboard figures, plan prices and the printed invoice heading 24px (2xl); page
-     titles, error pages and amounts to pay 32px (3xl). Form fields must stay at least 16px: iOS
-     zooms into a smaller field when it is tapped. */
+     the smallest); dialog titles, the brand and sellers' names 20px (xl); card titles 22px (card);
+     section headings, dashboard figures, plan prices and the printed invoice heading 24px (2xl);
+     page titles, error pages and amounts to pay 32px (3xl). Form fields must stay at least 16px:
+     iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 13px (text-sm) */
   --text-sm: 0.8125rem;
   --text-sm--line-height: 1.5;
@@ -30,6 +30,9 @@
   --text-lg: initial; /* one name per size: 16px is text-base */
   --text-xl: 1.25rem;
   --text-xl--line-height: 1.3;
+  /* Card titles: between dialog titles and section headings. */
+  --text-card: 1.375rem;
+  --text-card--line-height: 1.3;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.25;
   --text-3xl: 2rem;
@@ -271,7 +274,7 @@
   /* A heading of a section within a page (its <h2>): between the page title and body text. */
   .section-heading { @apply text-2xl font-medium leading-tight; }
   /* The title of a card (a report, a plan, a file type, the sign-in box): a step below a section heading. */
-  .card-title { @apply text-xl font-medium leading-tight; }
+  .card-title { @apply text-card font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-base; }
