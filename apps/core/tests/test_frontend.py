@@ -253,9 +253,10 @@ def test_the_type_scale_and_phone_form_fields():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for token in ("--text-base:1rem", "--text-sm:.75rem", "--text-nav:.875rem", "--text-lg:1rem", "--text-2xl:1.5rem"):
+    for token in ("--text-base:1rem", "--text-sm:.75rem", "--text-nav:.875rem", "--text-2xl:1.5rem"):
         assert token in css, token
     source = (Path(settings.BASE_DIR) / "frontend" / "app.css").read_text()
-    assert source.count("text-lg md:text-base") >= 2  # .form-input/-select and their -sm
+    assert re.search(r"--text-base:\s*1rem;", source) and source.count("text-base text-fg") >= 1  # fields are 16px everywhere
+    assert ".form-input-sm, .form-select-sm { @apply px-2 py-1 text-base; }" in source
     handwritten = [str(p.relative_to(TEMPLATES)) for p in TEMPLATES.rglob("*.html") if re.search(r"\btext-\[[0-9.]+(rem|px|em)\]", p.read_text())]
     assert not handwritten and not re.search(r"\btext-\[[0-9.]+(rem|px|em)\]", source), handwritten

@@ -3,11 +3,11 @@
 {% block content %}
 <div class="card mx-auto max-w-xl"><div class="card-body">
   {% if invitation %}
-    <h1 class="text-lg font-medium leading-tight">{% blocktranslate trimmed with organization=invitation.organization.name %}Join {{ organization }}{% endblocktranslate %}</h1>
+    <h1 class="text-base font-medium leading-tight">{% blocktranslate trimmed with organization=invitation.organization.name %}Join {{ organization }}{% endblocktranslate %}</h1>
     <p>{% blocktranslate trimmed with role=invitation.get_role_display email=invitation.email %}You are invited as {{ role }}. The invitation is for {{ email }}.{% endblocktranslate %}</p>
     <form method="post">{% csrf_token %}<button class="btn btn-primary">{% translate "Accept invitation" %}</button></form>
   {% else %}
-    <h1 class="text-lg font-medium leading-tight">{% translate "Invitation not valid" %}</h1>
+    <h1 class="text-base font-medium leading-tight">{% translate "Invitation not valid" %}</h1>
     <p class="mb-0">{% translate "This invitation has expired, was revoked or has already been used. Ask the organization for a new one." %}</p>
   {% endif %}
 </div></div>

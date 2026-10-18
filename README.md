@@ -707,10 +707,10 @@ few behaviours live in `static/js/app.js`.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
   still scales the whole interface: body text, buttons, form labels,
-  tables and form fields 16px (`text-base`, `text-lg`),
+  tables and form fields 16px (`text-base`),
   captions, badges, menu group labels, chart labels and form help text and errors 12px (`text-sm`, the smallest), the menu and breadcrumbs 14px (`text-nav`), section
   headings 18px (`section-heading`, also card titles `card-title` and dialog titles), page titles 24px (`page-title`, also dashboard
-  figures and plan prices), large figures `text-display`. Form fields stay 16px below the `md` breakpoint: iOS zooms into a smaller field
+  figures and plan prices), large figures `text-display`. Form fields must stay at least 16px: iOS zooms into a smaller field
   when it is tapped. No size is written by hand (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")

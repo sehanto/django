@@ -33,7 +33,7 @@
       {% if seller.npwp %}<div class="text-sm">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
     </div>
     <div class="text-end">
-      <div class="text-lg font-medium leading-tight uppercase mb-1">{% if invoice.status == invoice.Status.PAID %}{% translate "Receipt" %}{% else %}{% translate "Invoice" %}{% endif %}</div>
+      <div class="text-base font-medium leading-tight uppercase mb-1">{% if invoice.status == invoice.Status.PAID %}{% translate "Receipt" %}{% else %}{% translate "Invoice" %}{% endif %}</div>
       <div class="font-semibold">{{ invoice.number }}</div>
       <div class="text-sm">{{ invoice.created_at|date:"d F Y" }}</div>
     </div>

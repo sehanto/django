@@ -4,14 +4,14 @@
 <header class="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 lg:hidden print:hidden">
   <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
           aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-2xl" %}</button>
-  <a href="{% url 'dashboard:home' %}" class="me-auto text-lg font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
+  <a href="{% url 'dashboard:home' %}" class="me-auto text-base font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
   <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
 </header>
 <div class="fixed inset-0 z-30 hidden bg-black/40 data-open:block lg:hidden" data-drawer-backdrop="appSidebar"></div>
 <nav id="appSidebar" aria-labelledby="appSidebarTitle" tabindex="-1"
      class="fixed inset-y-0 start-0 z-40 hidden w-(--sidebar-width) flex-col overflow-y-auto border-e border-line bg-surface p-4 shadow-xl data-open:flex lg:flex lg:shadow-none print:hidden">
   <div class="mb-4 flex items-center justify-between lg:hidden">
-    <span class="text-lg font-bold" id="appSidebarTitle">EA-System</span>
+    <span class="text-base font-bold" id="appSidebarTitle">EA-System</span>
     <button type="button" class="btn-icon" data-drawer-close="appSidebar" aria-label="{% translate 'Close' %}">{% icon "x" %}</button>
   </div>
   <a href="{% url 'dashboard:home' %}" class="mb-4 hidden items-center gap-2 text-fg no-underline lg:flex" id="appSidebarBrand">

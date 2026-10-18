@@ -16,17 +16,16 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text 16px (base), as are form labels and tables (lg); captions, badges, menu group labels,
+     Body text, form labels, tables and form fields 16px (base); captions, badges, menu group labels,
      chart labels, small form labels, help text and field errors 12px (sm, the smallest); the menu
-     and breadcrumbs 14px (nav); section headings 18px (xl), page titles 24px (2xl). Form fields stay
-     16px on phones (see .form-input), where iOS zooms into anything smaller. */
+     and breadcrumbs 14px (nav); section headings 18px (xl), page titles 24px (2xl). Form fields must
+     stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
   --text-base--line-height: 1.5;
-  --text-lg: 1rem;
-  --text-lg--line-height: 1.5;
+  --text-lg: initial; /* one name per size: 16px is text-base */
   --text-xl: 1.125rem;
   --text-xl--line-height: 1.4;
   --text-2xl: 1.5rem;
@@ -144,7 +143,7 @@
   *, ::before, ::after { border-color: var(--app-line); }
   body { background: var(--app-canvas); color: var(--app-fg); font-size: var(--text-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4, h5, h6 { font-weight: 500; line-height: 1.2; margin-bottom: .5rem; }
-  h1 { font-size: var(--text-2xl); } h2 { font-size: var(--text-xl); } h3 { font-size: var(--text-lg); }
+  h1 { font-size: var(--text-2xl); } h2 { font-size: var(--text-xl); } h3 { font-size: var(--text-base); }
   h4, h5 { font-size: var(--text-base); } h6 { font-size: var(--text-sm); }
   p, ul, ol, dl { margin-bottom: 1rem; }
   ul, ol { padding-inline-start: 2rem; }
@@ -187,9 +186,9 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block text-lg; }
+  .form-label { @apply mb-1 inline-block text-base; }
   .form-input, .form-select {
-    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
+    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
       disabled:bg-subtle disabled:opacity-80
       aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:outline-danger/30;
@@ -198,7 +197,7 @@
     @apply appearance-none bg-[length:16px_12px] bg-[position:right_.75rem_center] bg-no-repeat pe-9;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   }
-  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg md:text-base; }
+  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-base; }
   .form-select-sm { @apply pe-8; }
   textarea.form-input { @apply min-h-20; }
   /* A checkbox drawn as a switch. */
@@ -223,9 +222,9 @@
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
   /* Cells and column headings 16px (headings bold); a compact text-sm table keeps 13px cells under 15px headings. */
-  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-lg; }
+  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
   .table.text-sm > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
-  .table > thead > tr > th { @apply text-lg font-semibold; }
+  .table > thead > tr > th { @apply text-base font-semibold; }
   .table.text-sm > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
