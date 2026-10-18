@@ -2,6 +2,8 @@
 
 import base64
 import hashlib
+import os
+from collections.abc import Mapping
 from datetime import timedelta
 from pathlib import Path
 
@@ -9,7 +11,25 @@ import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+
+class _LiteralEnviron(Mapping):
+    """The environment with every "$" escaped. django-environ reads a value starting with "$" as the
+    name of another variable, so a random secret starting with "$" came out empty; escaped here and
+    unescaped by escape_proxy, each value is taken exactly as written."""
+
+    def __getitem__(self, name):
+        return os.environ[name].replace("$", "\\$")
+
+    def __iter__(self):
+        return iter(os.environ)
+
+    def __len__(self):
+        return len(os.environ)
+
+
 env = environ.Env()
+env.ENVIRON = _LiteralEnviron()
+env.escape_proxy = True
 environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="insecure-dev-key")

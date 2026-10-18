@@ -151,6 +151,17 @@ def test_production_requires_a_real_secret_key(monkeypatch, value):
         load_production_settings(monkeypatch, DJANGO_SECRET_KEY=value)
 
 
+@pytest.mark.parametrize("key", [
+    "$" + SECRET_KEY[1:],  # get_random_secret_key() starts one key in 50 with "$"
+    SECRET_KEY[:20] + "$" + SECRET_KEY[21:],
+    SECRET_KEY[:20] + "\\$" + SECRET_KEY[22:],
+])
+def test_settings_are_read_as_written(monkeypatch, key):
+    """django-environ would read "$NAME" as another variable's value, so a random key starting
+    with "$" came out empty; every value is taken literally."""
+    assert load_production_settings(monkeypatch, DJANGO_SECRET_KEY=key).SECRET_KEY == key
+
+
 @pytest.mark.parametrize(("name", "url"), [
     ("DATABASE_URL", "postgres://msme_app@db.internal:5432/msme_db"),  # no password
     ("DATABASE_URL", "postgres://msme_app:short1@db.internal:5432/msme_db"),
