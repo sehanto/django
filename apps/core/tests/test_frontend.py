@@ -248,14 +248,15 @@ def test_section_headings_share_one_style():
 
 
 def test_the_type_scale_and_phone_form_fields():
-    """Body text 15px from one scale in rem (the browser's font size still scales it); form fields stay
-    16px below md, where iOS zooms into anything smaller; no font size is written by hand."""
+    """Body text 15px from one scale in rem (the browser's font size still scales it); form fields are
+    16px, where iOS zooms into anything smaller; no font size is written by hand."""
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
     for token in ("--text-base:.9375rem", "--text-lg:1rem", "--text-sm:.75rem", "--text-nav:.875rem", "--text-xl:1.25rem", "--text-heading:1.375rem", "--text-2xl:1.75rem", "--text-figure:1.5rem"):
         assert token in css, token
     source = (Path(settings.BASE_DIR) / "frontend" / "app.css").read_text()
-    assert re.search(r"--text-lg:\s*1rem;", source) and source.count("text-lg md:text-base") >= 2  # .form-input/-select and their -sm
+    assert re.search(r"--text-lg:\s*1rem;", source) and "py-1.5 text-lg text-fg" in source  # .form-input/-select
+    assert ".form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg; }" in source
     handwritten = [str(p.relative_to(TEMPLATES)) for p in TEMPLATES.rglob("*.html") if re.search(r"\btext-\[[0-9.]+(rem|px|em)\]", p.read_text())]
     assert not handwritten and not re.search(r"\btext-\[[0-9.]+(rem|px|em)\]", source), handwritten

@@ -15,13 +15,13 @@
 
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
-  /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
-     Body text and form fields on wider screens 15px (base); buttons, form labels, tables and form
-     fields on phones 16px (lg); captions, badges, menu group labels, chart labels, small form labels,
-     help text and field errors 12px (sm, the smallest); the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and sellers' names 20px (xl);
-     section headings 22px (heading); dashboard figures, plan prices and the printed invoice heading
-     24px (figure); page titles 28px (2xl). Form fields stay 16px below md: iOS zooms into a
-     smaller field when it is tapped. */
+  /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
+     16px). Body text 15px (base); buttons, form fields, form labels and tables 16px (lg); captions,
+     badges, menu group labels, chart labels, small form labels, help text and field errors 12px
+     (sm, the smallest); the menu and breadcrumbs 14px (nav); card and dialog titles, the brand and
+     sellers' names 20px (xl); section headings 22px (heading); dashboard figures, plan prices and
+     the printed invoice heading 24px (figure); page titles 28px (2xl). Form fields must stay at
+     least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* one name per size: 12px is text-sm */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;
@@ -195,7 +195,7 @@
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
   .form-label { @apply mb-1 inline-block text-lg; }
   .form-input, .form-select {
-    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
+    @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
       disabled:bg-subtle disabled:opacity-80
       aria-invalid:border-danger aria-invalid:focus:border-danger aria-invalid:focus:outline-danger/30;
@@ -204,7 +204,7 @@
     @apply appearance-none bg-[length:16px_12px] bg-[position:right_.75rem_center] bg-no-repeat pe-9;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   }
-  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg md:text-base; }
+  .form-input-sm, .form-select-sm { @apply px-2 py-1 text-lg; }
   .form-select-sm { @apply pe-8; }
   textarea.form-input { @apply min-h-20; }
   /* A checkbox drawn as a switch. */
