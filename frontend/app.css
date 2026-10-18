@@ -20,8 +20,8 @@
      (base); captions, badges, menu group labels, chart labels, help text and field errors 14px (sm,
      the smallest); the brand and sellers' names 20px (xl); card and dialog titles, dashboard
      figures, plan prices and the printed invoice heading 24px (2xl); section headings 28px
-     (heading); page titles, error pages and amounts to pay 32px (3xl). Form fields must stay at
-     least 16px: iOS zooms into a smaller field when it is tapped. */
+     (heading); error pages and amounts to pay 32px (3xl); page titles 36px (4xl). Form fields must
+     stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
@@ -37,6 +37,8 @@
   --text-heading--line-height: 1.25;
   --text-3xl: 2rem;
   --text-3xl--line-height: 1.2;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.15;
 }
 
 /* Colour tokens, each light-dark(light value, dark value): the device's setting decides, unless the
@@ -145,7 +147,7 @@
   *, ::before, ::after { border-color: var(--app-line); }
   body { background: var(--app-canvas); color: var(--app-fg); font-size: var(--text-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4, h5, h6 { font-weight: 500; line-height: 1.2; margin-bottom: .5rem; }
-  h1 { font-size: var(--text-3xl); } h2 { font-size: var(--text-heading); } h3 { font-size: var(--text-base); }
+  h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-heading); } h3 { font-size: var(--text-base); }
   h4, h5 { font-size: var(--text-base); } h6 { font-size: var(--text-sm); }
   p, ul, ol, dl { margin-bottom: 1rem; }
   ul, ol { padding-inline-start: 2rem; }
@@ -269,7 +271,7 @@
   .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
-  .page-title { @apply text-3xl font-medium leading-tight; }
+  .page-title { @apply text-4xl font-medium leading-tight; }
 
   /* A heading of a section within a page (its <h2>): between the page title and card titles. */
   .section-heading { @apply text-heading font-medium leading-tight; }
