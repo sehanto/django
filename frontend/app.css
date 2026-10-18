@@ -225,11 +225,11 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells and column headings 16px (headings bold); a .table-compact (the dashboard's, the notes') 15px. */
+  /* Cells and column headings 16px (headings bold); a .table-compact (the dashboard's, the notes')
+     has 15px cells under the same 16px headings. */
   .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-lg; }
   .table-compact > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
   .table > thead > tr > th { @apply text-lg font-semibold; }
-  .table-compact > thead > tr > th { @apply text-base; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td).num { @apply text-end; }
