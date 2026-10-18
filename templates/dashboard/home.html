@@ -45,8 +45,8 @@
         </div>
       {% endfor %}
     </div>
-    {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, one line on phones. #}
-    <div class="-mx-2.5 mt-1 flex text-sm text-muted">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M y" }}</span>{% endfor %}</div>
+    {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, on one line. In a row narrower than 18rem (the narrowest phones) the year is left out. #}
+    <div class="@container -mx-2.5 mt-1 text-sm text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @2xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
     <div class="overflow-x-auto"><table class="table table-sm mt-4 mb-0">
       <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
       <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
