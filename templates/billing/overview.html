@@ -7,7 +7,7 @@
 <div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div>
     <div class="text-sm text-muted">{% translate "Current plan" %}</div>
-    <div class="text-2xl font-semibold">{{ current_organization.plan.name }}
+    <div class="text-figure font-semibold">{{ current_organization.plan.name }}
       <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.TRIAL %}badge-primary{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE or state == states.LAPSED %}badge-danger{% else %}badge-neutral{% endif %}">{{ state.label }}</span>
     </div>
   </div>
@@ -55,9 +55,9 @@
           {% if plan.pk == current_organization.plan_id %}<span class="badge badge-primary">{% translate "Current plan" %}</span>{% endif %}
         </div>
         {% if offer.is_free %}
-          <div class="text-2xl font-bold">{% translate "Free" %}</div>
+          <div class="text-figure font-bold">{% translate "Free" %}</div>
         {% else %}
-          <div class="text-2xl font-bold">{{ offer.monthly.charge.subtotal|rupiah }}<span class="text-base font-normal text-muted">{% translate "/month" %}</span></div>
+          <div class="text-figure font-bold">{{ offer.monthly.charge.subtotal|rupiah }}<span class="text-base font-normal text-muted">{% translate "/month" %}</span></div>
           <div class="text-sm text-muted">{% blocktranslate trimmed with price=offer.yearly.charge.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
           {% if offer.credit %}
             <div class="text-sm text-success mt-2">{% icon "refresh-cw" "me-1" %}{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
