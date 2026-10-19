@@ -20,8 +20,8 @@
      text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
      tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
      is tapped. Section headings, card and dialog titles, dashboard figures, plan prices, the
-     printed invoice heading and sellers' names on invoices are 24px (2xl). The brand name wherever
-     it appears, 2FA backup codes and the phone menu button are 28px (3xl); page titles, error page
+     printed invoice heading sellers' names on invoices and the brand name wherever it appears are
+     24px (2xl). 2FA backup codes and the phone menu button are 28px (3xl); page titles, error page
      headings, amounts to pay and the sign-in page's logo 36px (4xl). */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-base) */
   --text-sm: initial; /* one name per size: 14px is text-base */
@@ -31,7 +31,7 @@
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
     --text-xl: initial; /* not on the scale: after body text the next size is 28px */
-  /* Section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice's heading and sellers' names. */
+  /* Section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice's heading, sellers' names and the brand name. */
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.25;
   /* Section headings, card and dialog titles, figures and the printed invoice's heading: a step below the page title. */
