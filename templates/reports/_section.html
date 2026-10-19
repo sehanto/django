@@ -1,5 +1,5 @@
 {% load i18n money %}
-<tr class="section-title"><td colspan="2">{{ section.title }}{% if section.note %} <a href="{% url 'reports:notes' %}#note-{{ section.note }}" class="text-base font-normal ms-1">{% blocktranslate trimmed with number=section.note %}Note {{ number }}{% endblocktranslate %}</a>{% endif %}</td><td></td>{% if compare %}<td></td>{% endif %}</tr>
+<tr class="section-title"><td colspan="2">{{ section.title }}{% if section.note %} <a href="{% url 'reports:notes' %}#note-{{ section.note }}" class="text-sm font-normal ms-1">{% blocktranslate trimmed with number=section.note %}Note {{ number }}{% endblocktranslate %}</a>{% endif %}</td><td></td>{% if compare %}<td></td>{% endif %}</tr>
 {% for row in section.rows %}<tr><td class="ps-6 text-muted w-28">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td>{% if compare %}<td class="num text-muted">{{ row.previous|rupiah }}</td>{% endif %}</tr>
-{% empty %}<tr><td></td><td class="text-muted text-base">{% translate "No balance" %}</td><td></td>{% if compare %}<td></td>{% endif %}</tr>{% endfor %}
+{% empty %}<tr><td></td><td class="text-muted text-sm">{% translate "No balance" %}</td><td></td>{% if compare %}<td></td>{% endif %}</tr>{% endfor %}
 <tr class="subtotal"><td></td><td>{% blocktranslate trimmed with section=section.title %}Total {{ section }}{% endblocktranslate %}</td><td class="num">{{ section.total|rupiah }}</td>{% if compare %}<td class="num text-muted">{{ section.previous_total|rupiah }}</td>{% endif %}</tr>

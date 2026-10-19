@@ -15,10 +15,10 @@
   <button class="btn btn-outline">{% translate "Show" %}</button>
 </form>
 <div class="grid grid-cols-12 gap-4 mb-6">
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% blocktranslate trimmed with date=summary.statement_date|date:"d/m/Y" %}Bank balance ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{% if summary.statement is None %}—{% else %}{{ summary.statement|rupiah }}{% endif %}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% blocktranslate trimmed with date=as_of|date:"d/m/Y" %}Balance in the books ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{{ summary.books|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "On the statement, not in the books" %}</div><div class="stat-value">{{ summary.unrecorded|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "In the books, not on the statement" %}</div><div class="stat-value">{{ summary.in_transit|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% blocktranslate trimmed with date=summary.statement_date|date:"d/m/Y" %}Bank balance ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{% if summary.statement is None %}—{% else %}{{ summary.statement|rupiah }}{% endif %}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% blocktranslate trimmed with date=as_of|date:"d/m/Y" %}Balance in the books ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{{ summary.books|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "On the statement, not in the books" %}</div><div class="stat-value">{{ summary.unrecorded|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "In the books, not on the statement" %}</div><div class="stat-value">{{ summary.in_transit|rupiah }}</div></div></div></div>
 </div>
 <div class="flex flex-wrap gap-2 mb-2">
   {% for value, label in statuses.choices %}<a href="?status={{ value }}" class="btn btn-sm {% if value == status %}btn-primary{% else %}btn-outline{% endif %}">{{ label }}</a>{% endfor %}
@@ -28,9 +28,9 @@
   <tbody>{% for line, suggestions in rows %}
     <tr>
       <td class="whitespace-nowrap">{{ line.date|date:"d/m/Y" }}</td>
-      <td class="text-base">{{ line.description }}{% if line.reference %}<div class="text-muted">{{ line.reference }}</div>{% endif %}</td>
+      <td class="text-sm">{{ line.description }}{% if line.reference %}<div class="text-muted">{{ line.reference }}</div>{% endif %}</td>
       <td class="num whitespace-nowrap {% if line.amount < 0 %}text-danger{% endif %}">{{ line.amount|rupiah }}</td>
-      <td class="text-base">
+      <td class="text-sm">
         {% if line.status == statuses.MATCHED %}
           <a href="{% url 'ledger:journal_detail' line.journal_line.entry_id %}">{{ line.journal_line.entry.number }}</a> · {{ line.journal_line.entry.description }}
           {% if can_write %}<form method="post" action="{% url 'banking:line_action' line.pk actions.UNDO %}" class="inline">{% csrf_token %}<button class="btn btn-sm btn-link">{% translate "Undo" %}</button></form>{% endif %}

@@ -20,7 +20,7 @@
       <td class="whitespace-nowrap">{{ entry.date|date:"d M Y" }}</td>
       <td><a href="{% url 'ledger:journal_detail' entry.pk %}">{{ entry.number }}</a></td>
       <td>{{ entry.description }}</td>
-      <td class="text-base">{{ entry.get_source_display }}</td>
+      <td class="text-sm">{{ entry.get_source_display }}</td>
       <td class="num">{{ entry.total|rupiah }}</td>
       <td><span class="badge badge-{{ entry.status|status_badge }}">{{ entry.get_status_display }}</span></td>
     </tr>
