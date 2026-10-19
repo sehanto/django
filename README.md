@@ -707,8 +707,8 @@ few behaviours live in `static/js/app.js`.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
   still scales the whole interface. Four sizes: 14px (`text-sm`, the smallest) for captions, form help
-  text, field errors, badges, chart labels and menu group labels; 16px (`text-base`) for everything else that isn't a heading or a
-  figure (body text, the menu, breadcrumbs, buttons, form fields and labels, tables); 28px (`text-3xl`) for
+  text, field errors, badges, chart labels, menu group labels and breadcrumbs; 16px (`text-base`) for everything else that isn't a heading or a
+  figure (body text, the menu, buttons, form fields and labels, tables); 28px (`text-3xl`) for
   section headings, card and dialog titles (`section-heading`, `card-title`, `modal-title`),
   dashboard figures, plan prices, the printed invoice heading, sellers' names on invoices, the brand
   name, 2FA backup codes and the phone menu button; 36px (`text-4xl`) for page titles
