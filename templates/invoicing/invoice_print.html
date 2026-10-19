@@ -5,7 +5,7 @@
   <div class="flex justify-between mb-6">
     <div>
       {% with seller=invoice.seller %}
-      <h2 class="text-3xl leading-tight font-bold mb-1">{{ seller.name }}</h2>
+      <h2 class="text-2xl leading-tight font-bold mb-1">{{ seller.name }}</h2>
       <div class="text-base">{{ seller.address|linebreaksbr }}{% if seller.city %}, {{ seller.city }}{% endif %}</div>
       {% if seller.npwp %}<div class="text-base">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
       {% endwith %}
