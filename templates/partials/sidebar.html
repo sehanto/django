@@ -26,12 +26,12 @@
       {% for org in user_organizations %}
         <li>
           <form method="post" action="{% url 'tenants:switch' org.pk %}">{% csrf_token %}
-            <button class="block w-full truncate rounded px-3 py-1.5 text-start text-base hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{% icon "building" "me-1" %}{{ org.name }}</button>
+            <button class="block w-full truncate rounded px-2 py-1.5 text-start text-base hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{% icon "building" "me-1" %}{{ org.name }}</button>
           </form>
         </li>
       {% endfor %}
       <li><hr class="my-1"></li>
-      <li><a class="block rounded px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
+      <li><a class="block rounded px-2 py-1.5 text-base text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
     </ul>
   </details>
   <div class="text-base text-muted mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
