@@ -6,7 +6,7 @@
 
 <div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div>
-    <div class="text-sm text-muted">{% translate "Current plan" %}</div>
+    <div class="text-base text-muted">{% translate "Current plan" %}</div>
     <div class="text-3xl font-semibold">{{ current_organization.plan.name }}
       <span class="badge align-middle {% if state == states.ACTIVE %}badge-success{% elif state == states.TRIAL %}badge-primary{% elif state == states.EXPIRING %}badge-warning{% elif state == states.GRACE or state == states.LAPSED %}badge-danger{% else %}badge-neutral{% endif %}">{{ state.label }}</span>
     </div>
@@ -27,12 +27,12 @@
   <div>
     <h2 class="section-heading mb-1">{% translate "Automatic renewal" %}</h2>
     {% if renewal and renewal.status == renewal_statuses.ACTIVE %}
-      <p class="text-sm mb-0">{% blocktranslate trimmed with period=renewal.get_billing_period_display|lower date=current_organization.plan_paid_until|date:"d F Y" %}On: the plan is renewed {{ period }} with your saved payment method, shortly before {{ date }}.{% endblocktranslate %}</p>
-      {% if renewal.last_error %}<p class="text-sm text-danger mb-0">{% blocktranslate trimmed with error=renewal.last_error_label %}The last attempt failed ({{ error }}).{% endblocktranslate %}</p>{% endif %}
+      <p class="text-base mb-0">{% blocktranslate trimmed with period=renewal.get_billing_period_display|lower date=current_organization.plan_paid_until|date:"d F Y" %}On: the plan is renewed {{ period }} with your saved payment method, shortly before {{ date }}.{% endblocktranslate %}</p>
+      {% if renewal.last_error %}<p class="text-base text-danger mb-0">{% blocktranslate trimmed with error=renewal.last_error_label %}The last attempt failed ({{ error }}).{% endblocktranslate %}</p>{% endif %}
     {% elif renewal and renewal.status == renewal_statuses.SETUP %}
-      <p class="text-sm mb-0">{% translate "Waiting for your payment method to be saved." %} <a href="{{ renewal.setup_url }}">{% translate "Open the page again" %}</a> · <a href="{% url 'billing:auto_renewal_return' %}">{% translate "Check again" %}</a></p>
+      <p class="text-base mb-0">{% translate "Waiting for your payment method to be saved." %} <a href="{{ renewal.setup_url }}">{% translate "Open the page again" %}</a> · <a href="{% url 'billing:auto_renewal_return' %}">{% translate "Check again" %}</a></p>
     {% else %}
-      <p class="text-sm text-muted mb-0">{% translate "Save a card or e-wallet with our payment partner and your plan renews by itself; you can turn it off any time." %}</p>
+      <p class="text-base text-muted mb-0">{% translate "Save a card or e-wallet with our payment partner and your plan renews by itself; you can turn it off any time." %}</p>
     {% endif %}
   </div>
   {% if renewal and renewal.status != renewal_statuses.CANCELED %}
@@ -58,12 +58,12 @@
           <div class="text-3xl font-bold">{% translate "Free" %}</div>
         {% else %}
           <div class="text-3xl font-bold">{{ offer.monthly.charge.subtotal|rupiah }}<span class="text-base font-normal text-muted">{% translate "/month" %}</span></div>
-          <div class="text-sm text-muted">{% blocktranslate trimmed with price=offer.yearly.charge.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
+          <div class="text-base text-muted">{% blocktranslate trimmed with price=offer.yearly.charge.subtotal|rupiah %}or {{ price }}/year (2 months free){% endblocktranslate %} · {% translate "excl. PPN" %}</div>
           {% if offer.credit %}
-            <div class="text-sm text-success mt-2">{% icon "refresh-cw" "me-1" %}{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
+            <div class="text-base text-success mt-2">{% icon "refresh-cw" "me-1" %}{% blocktranslate trimmed with credit=offer.credit|rupiah plan=current_organization.plan.name %}You have {{ credit }} credit for unused {{ plan }} time{% endblocktranslate %}</div>
           {% endif %}
         {% endif %}
-        <ul class="list-none ps-0 mt-4 text-sm">
+        <ul class="list-none ps-0 mt-4 text-base">
           <li>{% icon "check" "text-success me-1" %}{% if plan.max_users %}{% blocktranslate trimmed count count=plan.max_users %}{{ count }} user{% plural %}{{ count }} users{% endblocktranslate %}{% else %}{% translate "Unlimited users" %}{% endif %}</li>
           <li>{% icon "check" "text-success me-1" %}{% if plan.max_invoices_per_month %}{% blocktranslate trimmed count count=plan.max_invoices_per_month %}{{ count }} invoice/month{% plural %}{{ count }} invoices/month{% endblocktranslate %}{% else %}{% translate "Unlimited invoices" %}{% endif %}</li>
           <li>{% icon "check" "text-success me-1" %}{% translate "SAK EMKM financial reports" %}</li>
@@ -73,13 +73,13 @@
       </div>
       <div class="card-footer bg-transparent">
         {% if offer.is_free %}
-          <p class="text-sm text-muted mb-0">{% translate "No payment needed." %}</p>
+          <p class="text-base text-muted mb-0">{% translate "No payment needed." %}</p>
         {% else %}
           <form method="post" action="{% url 'billing:checkout' %}" class="grid gap-2">{% csrf_token %}
             <input type="hidden" name="plan" value="{{ plan.pk }}">
             {% include "billing/_offer_button.html" with quote=offer.monthly period=periods.MONTHLY css="btn-outline-primary" %}
             {% include "billing/_offer_button.html" with quote=offer.yearly period=periods.YEARLY css="btn-primary" %}
-            <div class="text-sm text-muted text-center">{% translate "Amounts include PPN." %}</div>
+            <div class="text-base text-muted text-center">{% translate "Amounts include PPN." %}</div>
           </form>
         {% endif %}
       </div>
@@ -87,7 +87,7 @@
   </div>
 {% endwith %}{% endfor %}
 </div>
-<p class="text-sm text-muted mt-4">{% blocktranslate trimmed %}
+<p class="text-base text-muted mt-4">{% blocktranslate trimmed %}
   Prices exclude PPN of 12% on a tax base of 11/12 (effectively 11%). Paying for your current plan extends it from its end date.
   A different plan starts on the payment date, and unused paid time on your current plan is credited against it; if the credit
   covers the whole price, you switch right away and the rest becomes extra days.

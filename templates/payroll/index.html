@@ -20,11 +20,11 @@
       <td class="num">{{ run.gross|rupiah }}</td><td class="num">{{ run.income_tax|rupiah }}</td>
       <td class="num">{{ run.employer_contributions|add:run.employee_contributions|rupiah }}</td><td class="num font-semibold">{{ run.net_pay|rupiah }}</td>
       <td>{% if run.paid_on %}<span class="badge badge-success">{{ run.paid_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-warning">{% translate "Not paid yet" %}</span>{% endif %}</td>
-      <td class="text-end"><a href="{% url 'payroll:run' run.pk %}" class="text-sm">{% translate "Open" %}</a></td>
+      <td class="text-end"><a href="{% url 'payroll:run' run.pk %}" class="text-base">{% translate "Open" %}</a></td>
     {% else %}
       <td colspan="5"></td><td class="text-end">{% if can_write and has_employees %}<a href="{% url 'payroll:run_create' year month.value %}" class="btn btn-sm btn-outline-primary">{% translate "Run payroll" %}</a>{% endif %}</td>
     {% endif %}
   </tr>{% endfor %}</tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "PPh 21 (PP 58/2023): January to November use the monthly effective rate (TER) of the employee's category on gross income, including the JKK, JKM and BPJS Kesehatan premiums the employer pays; the last month of the year (December, or the month an employee leaves) uses the Article 17 rates on the year's income, less what was withheld before. Non-permanent workers: the monthly TER, or the daily rates for those paid by the day. Non-resident foreigners: 20% PPh 26. Without an NPWP (or NIK), PPh 21 is 20% higher. Deposit under Taxes → Withheld income tax by the 15th of the next month." %}</p>
+<p class="text-base text-muted mt-2">{% translate "PPh 21 (PP 58/2023): January to November use the monthly effective rate (TER) of the employee's category on gross income, including the JKK, JKM and BPJS Kesehatan premiums the employer pays; the last month of the year (December, or the month an employee leaves) uses the Article 17 rates on the year's income, less what was withheld before. Non-permanent workers: the monthly TER, or the daily rates for those paid by the day. Non-resident foreigners: 20% PPh 26. Without an NPWP (or NIK), PPh 21 is 20% higher. Deposit under Taxes → Withheld income tax by the 15th of the next month." %}</p>
 {% endblock %}

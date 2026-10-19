@@ -16,16 +16,15 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Body text, the menu and its group labels, breadcrumbs, buttons, form fields, form labels
-     and tables 16px (base); captions, badges, chart labels, help text and field errors 14px (sm,
-     the smallest); section headings, card and dialog titles, dashboard figures, plan prices, the
-     printed invoice heading sellers' names on invoices the brand name wherever it appears, 2FA
-     backup codes and the phone menu button 28px (3xl); page titles, error page headings, amounts to
-     pay and the sign-in page's logo 36px (4xl). Form fields must stay at least 16px: iOS zooms into
-     a smaller field when it is tapped. */
-  --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
-  --text-sm: 0.875rem;
-  --text-sm--line-height: 1.5;
+     16px). Everything that isn't a heading or a figure is 16px (base): body text, captions, help
+     text and field errors, badges, the menu and its group labels, breadcrumbs, buttons, form fields
+     and labels, tables and chart labels. Section headings, card and dialog titles, dashboard
+     figures, plan prices, the printed invoice heading, sellers' names on invoices, the brand name
+     wherever it appears, 2FA backup codes and the phone menu button are 28px (3xl); page titles,
+     error page headings, amounts to pay and the sign-in page's logo 36px (4xl). Form fields must
+     stay at least 16px: iOS zooms into a smaller field when it is tapped. */
+  --text-xs: initial; /* not on the scale: the smallest text is 16px (text-base) */
+  --text-sm: initial;
   --text-base: 1rem;
   --text-base--line-height: 1.5;
   --text-lg: initial; /* one name per size: 16px is text-base */
@@ -145,7 +144,7 @@
   body { background: var(--app-canvas); color: var(--app-fg); font-size: var(--text-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4, h5, h6 { font-weight: 500; line-height: 1.2; margin-bottom: .5rem; }
   h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-3xl); } h3 { font-size: var(--text-base); }
-  h4, h5 { font-size: var(--text-base); } h6 { font-size: var(--text-sm); }
+  h4, h5 { font-size: var(--text-base); } h6 { font-size: var(--text-base); }
   p, ul, ol, dl { margin-bottom: 1rem; }
   ul, ol { padding-inline-start: 2rem; }
   ul { list-style: disc; } ol { list-style: decimal; }
@@ -210,8 +209,8 @@
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
   }
   .form-toggle:checked::before { @apply translate-x-4; }
-  .form-help { @apply mt-1 text-sm text-muted; }
-  .form-error { @apply mt-1 text-sm text-danger; }
+  .form-help { @apply mt-1 text-base text-muted; }
+  .form-error { @apply mt-1 text-base text-danger; }
 
   /* Cards */
   .card { @apply flex min-w-0 flex-col rounded-lg border border-line bg-surface; }
@@ -238,7 +237,7 @@
   .stat-value { @apply text-3xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-base leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }

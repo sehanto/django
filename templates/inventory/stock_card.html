@@ -17,8 +17,8 @@
   {% for row in rows %}{% with m=row.movement %}
     <tr>
       <td>{{ m.date|date:"d/m/Y" }}</td>
-      <td>{{ m.get_kind_display }}{% if m.cost_formula %} <span class="text-sm text-muted">({{ m.get_cost_formula_display }})</span>{% endif %}{% if m.reason %}<div class="text-sm text-muted">{{ m.reason }}</div>{% endif %}</td>
-      <td class="text-sm">{% if m.invoice_line %}<a href="{% url 'invoicing:detail' m.invoice_line.invoice.kind m.invoice_line.invoice_id %}">{{ m.invoice_line.invoice.number }}</a> · {% endif %}{% if m.return_line %}<a href="{% url 'invoicing:return_detail' m.return_line.return_note_id %}">{{ m.return_line.return_note.number }}</a> · {% endif %}<a href="{% url 'ledger:journal_detail' m.journal_entry_id %}">{{ m.journal_entry.number }}</a></td>
+      <td>{{ m.get_kind_display }}{% if m.cost_formula %} <span class="text-base text-muted">({{ m.get_cost_formula_display }})</span>{% endif %}{% if m.reason %}<div class="text-base text-muted">{{ m.reason }}</div>{% endif %}</td>
+      <td class="text-base">{% if m.invoice_line %}<a href="{% url 'invoicing:detail' m.invoice_line.invoice.kind m.invoice_line.invoice_id %}">{{ m.invoice_line.invoice.number }}</a> · {% endif %}{% if m.return_line %}<a href="{% url 'invoicing:return_detail' m.return_line.return_note_id %}">{{ m.return_line.return_note.number }}</a> · {% endif %}<a href="{% url 'ledger:journal_detail' m.journal_entry_id %}">{{ m.journal_entry.number }}</a></td>
       <td class="num">{{ m.quantity|floatformat:"-3" }}</td>
       <td class="num">{{ row.unit_cost|rupiah }}</td>
       <td class="num">{{ m.value|rupiah }}</td>
