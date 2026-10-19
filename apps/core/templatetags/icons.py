@@ -3,7 +3,7 @@
 The SVGs are templates in ``templates/icons/``, copied by ``manage.py build_css`` from the pinned
 ``lucide-static`` package for the icons the templates use (``apps.core.assets``). They are
 decorative (``aria-hidden``): give icon-only buttons an ``aria-label``. The icon is 1em square
-and follows the text colour, so text utilities (``text-2xl``, ``text-primary``) size and colour it.
+and follows the text colour, so text utilities (``text-xl``, ``text-primary``) size and colour it.
 """
 
 import re

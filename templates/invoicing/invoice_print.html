@@ -12,7 +12,7 @@
       {% if invoice.organization.phone %}<div class="text-sm">{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
     </div>
     <div class="text-end">
-      <h1 class="text-2xl font-medium leading-tight uppercase mb-1">{% if invoice.is_sales %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</h1>
+      <h1 class="text-3xl font-medium leading-tight uppercase mb-1">{% if invoice.is_sales %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</h1>
       <div class="font-semibold">{{ invoice.number }}</div>
       {% if invoice.status == invoice.Status.VOID %}<div class="text-danger font-bold">{% translate "VOID" %}</div>{% elif invoice.status == invoice.Status.PAID %}<div class="text-success font-bold">{% translate "PAID" %}</div>{% endif %}
     </div>
