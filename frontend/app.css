@@ -17,15 +17,15 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Captions, form help text, field errors, badges, chart labels, the menu (with its group
-     labels and the organization switcher), breadcrumbs, buttons and form labels are 14px (sm, the
-     smallest); everything else that isn't a heading or a figure is 16px (base): body text, form
-     fields and tables. Section headings, card and dialog titles, dashboard figures, plan prices,
-     the printed invoice heading, sellers' names on invoices, the brand name wherever it appears,
-     2FA backup codes and the phone menu button are 28px (3xl); page titles, error page headings,
-     amounts to pay and the sign-in page's logo 36px (4xl). Form fields must stay at least 16px: iOS
-     zooms into a smaller field when it is tapped. */
+     labels and the organization switcher), breadcrumbs, buttons, form labels and table cells are
+     14px (sm, the smallest); everything else that isn't a heading or a figure is 16px (base): body
+     text, form fields and table column headings. Section headings, card and dialog titles,
+     dashboard figures, plan prices, the printed invoice heading, sellers' names on invoices, the
+     brand name wherever it appears, 2FA backup codes and the phone menu button are 28px (3xl); page
+     titles, error page headings, amounts to pay and the sign-in page's logo 36px (4xl). Form fields
+     must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
-  /* Captions, form help text, field errors, badges, chart labels, the menu, breadcrumbs, buttons and form labels: secondary lines under names, figures and fields, page introductions. */
+  /* Captions, form help text, field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and table cells: secondary lines under names, figures and fields, page introductions. */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
@@ -224,8 +224,8 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells and column headings 16px (headings bold). */
-  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
+  /* Cells 14px under 16px column headings (bold). */
+  .table > :is(tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
   .table > thead > tr > th { @apply text-base font-semibold; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
