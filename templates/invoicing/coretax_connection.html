@@ -6,9 +6,9 @@
 <div class="grid grid-cols-12 gap-6">
   <div class="col-span-12 lg:col-span-5">
     <form method="post" class="card"><div class="card-body">{% csrf_token %}
-      <p class="text-sm text-muted">{% blocktranslate trimmed %}DJP has no public Coretax API: fakturs are sent through a licensed tax application provider (PJAP). Enter the address and access token your provider gave you; invoices can then be sent to Coretax from the app, and the Faktur Pajak numbers Coretax issues are recorded on them. Without a connection, download the XML files and import them in Coretax.{% endblocktranslate %}</p>
+      <p class="text-base text-muted">{% blocktranslate trimmed %}DJP has no public Coretax API: fakturs are sent through a licensed tax application provider (PJAP). Enter the address and access token your provider gave you; invoices can then be sent to Coretax from the app, and the Faktur Pajak numbers Coretax issues are recorded on them. Without a connection, download the XML files and import them in Coretax.{% endblocktranslate %}</p>
       {% include "partials/form_fields.html" with col="col-span-12" %}
-      {% if connection.token %}<p class="text-sm text-success mt-2 mb-0">{% icon "lock" "me-1" %}{% translate "A token is stored." %}</p>{% endif %}
+      {% if connection.token %}<p class="text-base text-success mt-2 mb-0">{% icon "lock" "me-1" %}{% translate "A token is stored." %}</p>{% endif %}
     </div>
     <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
   </div>
@@ -17,8 +17,8 @@
     <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
       <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Document" %}</th><th>{% translate "Contents" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>
       <tbody>{% for s in submissions %}<tr>
-        <td class="text-sm whitespace-nowrap">{{ s.created_at|date:"d/m/Y H:i" }}</td><td class="text-sm">{{ s.get_document_type_display }}</td><td>{{ s.label }}</td>
-        <td>{{ s.get_status_display }}{% for e in s.errors %}<div class="text-sm text-danger">{{ e.reference }}: {{ e.error }}</div>{% endfor %}</td>
+        <td class="text-base whitespace-nowrap">{{ s.created_at|date:"d/m/Y H:i" }}</td><td class="text-base">{{ s.get_document_type_display }}</td><td>{{ s.label }}</td>
+        <td>{{ s.get_status_display }}{% for e in s.errors %}<div class="text-base text-danger">{{ e.reference }}: {{ e.error }}</div>{% endfor %}</td>
         <td class="text-end">{% if s.status == s.Status.PENDING %}<form method="post" action="{% url 'invoicing:coretax_refresh' s.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline">{% translate "Check" %}</button></form>{% endif %}</td></tr>
       {% empty %}<tr><td colspan="5" class="text-center text-muted py-6">{% translate "Nothing sent yet." %}</td></tr>{% endfor %}</tbody>
     </table></div></div>

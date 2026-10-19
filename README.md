@@ -706,16 +706,15 @@ few behaviours live in `static/js/app.js`.
   it). The organization switcher is a `<details data-dropdown>`. Light or dark follows the device.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
-  still scales the whole interface. Four sizes: 14px (`text-sm`, the smallest) for captions, form help
-  text, field errors, badges, chart labels, the menu (with its group labels and the organization switcher),
-  breadcrumbs, buttons, form labels and tables; 16px (`text-base`) for everything else that isn't a heading or a
-  figure (body text, form fields); 28px (`text-3xl`) for
-  section headings, card and dialog titles (`section-heading`, `card-title`, `modal-title`),
-  dashboard figures, plan prices, the printed invoice heading, sellers' names on invoices, the brand
-  name, 2FA backup codes and the phone menu button; 36px (`text-4xl`) for page titles
-  (`page-title`), error page headings, amounts to pay and the sign-in logo. Form fields must stay at
-  least 16px: iOS zooms into a smaller field when it is tapped. No size is written by hand
-  (`text-[…]`); a test checks.
+  still scales the whole interface. Everything that isn't a heading or a figure is 14px
+  (`text-base`): body text, captions, help text and errors, badges, chart labels, the menu,
+  breadcrumbs, buttons, form labels and tables. Form fields are 16px below the `md` breakpoint
+  (`text-lg md:text-base`): iOS zooms into a smaller field when it is tapped. Section headings, card
+  and dialog titles (`section-heading`, `card-title`, `modal-title`), dashboard figures, plan
+  prices, the printed invoice heading, sellers' names on invoices, the brand name, 2FA backup codes
+  and the phone menu button are 28px (`text-3xl`); page titles (`page-title`), error page headings,
+  amounts to pay and the sign-in logo 36px (`text-4xl`). No size is written by hand (`text-[…]`); a
+  test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
   "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`

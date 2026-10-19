@@ -21,11 +21,11 @@
     <h2 class="section-heading mt-6">{% translate "Pending invitations" %}</h2>
     <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
       <tbody>{% for i in invitations %}<tr><td>{{ i.email }}</td><td>{{ i.get_role_display }}</td>
-        <td class="text-sm text-muted">{% blocktranslate trimmed with date=i.expires_at|date:"d/m/Y" %}valid until {{ date }}{% endblocktranslate %}</td>
+        <td class="text-base text-muted">{% blocktranslate trimmed with date=i.expires_at|date:"d/m/Y" %}valid until {{ date }}{% endblocktranslate %}</td>
         <td class="text-end"><form method="post" action="{% url 'tenants:revoke_invitation' i.pk %}" data-confirm="{% translate 'Revoke this invitation?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Revoke" %}</button></form></td></tr>{% endfor %}</tbody>
     </table></div></div>
     {% endif %}
-    <p class="text-sm text-muted mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
+    <p class="text-base text-muted mt-2">{% with plan=current_organization.plan %}{% if plan.max_users %}
       {% blocktranslate trimmed with name=plan.name count count=plan.max_users %}{{ name }} plan: up to {{ count }} user.{% plural %}{{ name }} plan: up to {{ count }} users.{% endblocktranslate %}
     {% else %}
       {% blocktranslate trimmed with name=plan.name %}{{ name }} plan: unlimited users.{% endblocktranslate %}
@@ -34,7 +34,7 @@
   <div class="col-span-12 lg:col-span-5">
     <div class="card"><div class="card-body">
       <h2 class="section-heading">{% translate "Add member" %}</h2>
-      <p class="text-sm text-muted">{% translate "Someone with an account is added at once; anyone else gets an invitation by email." %}</p>
+      <p class="text-base text-muted">{% translate "Someone with an account is added at once; anyone else gets an invitation by email." %}</p>
       <form method="post">{% csrf_token %}
         {% include "partials/form_fields.html" with col="col-span-12" %}
         <button class="btn btn-primary mt-4">{% translate "Add" %}</button>

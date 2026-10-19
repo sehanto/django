@@ -9,7 +9,7 @@
     <a href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}" class="btn btn-outline-primary">{% icon "plus" %} {% translate "Received in advance" %}</a>
   </div>{% endif %}
 </div>
-<p class="text-muted text-sm max-w-4xl">{% translate "Rent, insurance or subscriptions paid for several months ahead are expensed month by month over the period they cover, and rent or royalties received ahead are revenue month by month (SAK EMKM 14.13, 14.7). Until then they are an asset (paid in advance) or a liability (received in advance)." %}</p>
+<p class="text-muted text-base max-w-4xl">{% translate "Rent, insurance or subscriptions paid for several months ahead are expensed month by month over the period they cover, and rent or royalties received ahead are revenue month by month (SAK EMKM 14.13, 14.7). Until then they are an asset (paid in advance) or a liability (received in advance)." %}</p>
 {% if due_months %}
 <div class="alert {% if locked_due %}alert-danger{% else %}alert-warning{% endif %} flex flex-wrap justify-between items-center gap-2">
   <div>
@@ -27,8 +27,8 @@
     <tr class="{% if d.status == d.Status.VOID %}text-muted{% endif %}">
       <td><a href="{% url 'deferrals:detail' d.pk %}">{{ d.number }}</a></td>
       <td>{{ d.description }}</td>
-      <td class="text-sm">{{ d.get_kind_display }}</td>
-      <td class="text-sm">{{ d.starts_on|date:"m/Y" }} – {{ d.ends_on|date:"m/Y" }}</td>
+      <td class="text-base">{{ d.get_kind_display }}</td>
+      <td class="text-base">{{ d.starts_on|date:"m/Y" }} – {{ d.ends_on|date:"m/Y" }}</td>
       <td class="num">{{ d.amount|rupiah }}</td>
       <td class="num">{{ row.recognised|rupiah }}</td>
       <td class="num">{{ row.remaining|rupiah }}</td>
