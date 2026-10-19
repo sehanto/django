@@ -5,7 +5,7 @@
 <h1 class="page-title mb-4">{% translate "Stock adjustment" %}</h1>
 <form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
-  <p class="text-base text-muted mt-4 mb-0">{% translate "Use this for opening stock and for differences found when counting stock. Purchases and sales update the stock by themselves." %}</p>
+  <p class="text-sm text-muted mt-4 mb-0">{% translate "Use this for opening stock and for differences found when counting stock. Purchases and sales update the stock by themselves." %}</p>
 </div>
 <div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'inventory:list' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Post adjustment" %}</button>

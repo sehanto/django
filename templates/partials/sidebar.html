@@ -5,7 +5,7 @@
   <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
           aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-2xl" %}</button>
   <a href="{% url 'dashboard:home' %}" class="me-auto whitespace-nowrap text-2xl font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
-  <span class="max-w-[45vw] truncate text-base text-muted">{{ current_organization.name }}</span>
+  <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
 </header>
 <div class="fixed inset-0 z-30 hidden bg-black/40 data-open:block lg:hidden" data-drawer-backdrop="appSidebar"></div>
 <nav id="appSidebar" aria-labelledby="appSidebarTitle" tabindex="-1"

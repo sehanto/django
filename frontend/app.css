@@ -16,15 +16,18 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Everything that isn't a heading or a figure is 14px (base): body text, captions, help
-     text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
-     tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
-     is tapped. Page titles and error page headings are 30px (3xl, the largest). Amounts to pay,
-     section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice
-     heading, sellers' names on invoices, the brand name and its logo wherever they appear, 2FA
-     backup codes and the phone menu and close buttons are 24px (2xl). */
-  --text-xs: initial; /* not on the scale: the smallest text is 14px (text-base) */
-  --text-sm: initial; /* one name per size: 14px is text-base */
+     16px). Captions are 12px (sm, the smallest); everything else that isn't a heading or a figure
+     is 14px (base): body text, help text and field errors, badges, chart labels, the menu,
+     breadcrumbs, buttons, form labels and tables. Form fields are 16px on phones (lg, below md):
+     iOS zooms into a smaller field when it is tapped. Page titles and error page headings are 30px
+     (3xl, the largest). Amounts to pay, section headings, card and dialog titles, dashboard
+     figures, plan prices, the printed invoice heading, sellers' names on invoices, the brand name
+     and its logo wherever they appear, 2FA backup codes and the phone menu and close buttons are
+     24px (2xl). */
+  --text-xs: initial; /* not on the scale: the smallest text is 12px (text-sm) */
+  /* Captions: secondary lines under names and figures, page introductions, small print. */
+  --text-sm: 0.75rem;
+  --text-sm--line-height: 1.5;
   --text-base: 0.875rem;
   --text-base--line-height: 1.5;
   /* Form fields on phones: iOS zooms into a field smaller than 16px when it is tapped. */
