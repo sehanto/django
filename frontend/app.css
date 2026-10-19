@@ -18,10 +18,10 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu, breadcrumbs, buttons, form fields, form labels and tables 16px
      (base); captions, badges, menu group labels, chart labels, help text and field errors 14px (sm,
-     the smallest); the brand and sellers' names 20px (xl); dialog titles and the printed invoice
-     heading 24px (2xl); section headings, card titles, dashboard figures and plan prices 28px
-     (3xl); page titles, error page headings, amounts to pay and the sign-in page's logo 36px (4xl).
-     Form fields must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
+     the smallest); the brand and sellers' names 20px (xl); the printed invoice heading 24px (2xl);
+     section headings, card and dialog titles, dashboard figures and plan prices 28px (3xl); page
+     titles, error page headings, amounts to pay and the sign-in page's logo 36px (4xl). Form fields
+     must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
@@ -32,7 +32,7 @@
   --text-xl--line-height: 1.3;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.25;
-  /* Section headings, card titles, dashboard figures and plan prices: a step below the page title. */
+  /* Section headings, card and dialog titles, dashboard figures and plan prices: a step below the page title. */
   --text-3xl: 1.75rem;
   --text-3xl--line-height: 1.25;
   --text-4xl: 2.25rem;
@@ -259,7 +259,7 @@
     @apply m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-line bg-surface p-0 text-fg shadow-xl backdrop:bg-black/50;
   }
   .modal-header { @apply flex items-center justify-between gap-2 border-b border-line px-4 py-3; }
-  .modal-title { @apply mb-0 text-2xl font-medium; }
+  .modal-title { @apply mb-0 text-3xl font-medium; }
   .modal-body { @apply px-4 py-4; }
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 

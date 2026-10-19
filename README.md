@@ -709,8 +709,8 @@ few behaviours live in `static/js/app.js`.
   still scales the whole interface: body text, the menu, breadcrumbs, buttons, form fields,
   form labels and tables 16px (`text-base`),
   captions, badges, menu group labels, chart labels and form help text and errors 14px (`text-sm`, the smallest),
-  dialog titles and the printed invoice heading 24px (`modal-title`, `text-2xl`), section headings,
-  card titles, dashboard figures and plan prices 28px (`section-heading`, `card-title`, `text-3xl`), page
+  the printed invoice heading 24px (`text-2xl`), section headings, card and dialog titles, dashboard
+  figures and plan prices 28px (`section-heading`, `card-title`, `modal-title`, `text-3xl`), page
   titles, error page headings, amounts to pay and the sign-in logo 36px (`page-title`, `text-4xl`). Form fields must stay at least 16px: iOS zooms into a
   smaller field when it is tapped. No size is written by hand (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
