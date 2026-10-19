@@ -706,9 +706,9 @@ few behaviours live in `static/js/app.js`.
   it). The organization switcher is a `<details data-dropdown>`. Light or dark follows the device.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
-  still scales the whole interface: body text, the menu, breadcrumbs, buttons, form fields,
+  still scales the whole interface: body text, the menu and its group labels, breadcrumbs, buttons, form fields,
   form labels and tables 16px (`text-base`),
-  captions, badges, menu group labels, chart labels and form help text and errors 14px (`text-sm`, the smallest),
+  captions, badges, chart labels and form help text and errors 14px (`text-sm`, the smallest),
   section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice
   heading, sellers' names on invoices, the brand name wherever it appears, 2FA backup codes and the phone menu button 28px (`section-heading`, `card-title`, `modal-title`, `text-3xl`), page
   titles, error page headings, amounts to pay and the sign-in logo 36px (`page-title`, `text-4xl`). Form fields must stay at least 16px: iOS zooms into a

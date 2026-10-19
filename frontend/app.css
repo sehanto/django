@@ -16,8 +16,8 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Body text, the menu, breadcrumbs, buttons, form fields, form labels and tables 16px
-     (base); captions, badges, menu group labels, chart labels, help text and field errors 14px (sm,
+     16px). Body text, the menu and its group labels, breadcrumbs, buttons, form fields, form labels
+     and tables 16px (base); captions, badges, chart labels, help text and field errors 14px (sm,
      the smallest); section headings, card and dialog titles, dashboard figures, plan prices, the
      printed invoice heading sellers' names on invoices the brand name wherever it appears, 2FA
      backup codes and the phone menu button 28px (3xl); page titles, error page headings, amounts to
@@ -265,7 +265,7 @@
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
   .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-base tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-4xl font-medium leading-tight; }
