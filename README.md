@@ -709,11 +709,11 @@ few behaviours live in `static/js/app.js`.
   still scales the whole interface. Everything that isn't a heading or a figure is 14px
   (`text-base`): body text, captions, help text and errors, badges, chart labels, the menu,
   breadcrumbs, buttons, form labels and tables. Form fields are 16px below the `md` breakpoint
-  (`text-lg md:text-base`): iOS zooms into a smaller field when it is tapped. Section headings, card
-  and dialog titles (`section-heading`, `card-title`, `modal-title`), dashboard figures, plan prices,
+  (`text-lg md:text-base`): iOS zooms into a smaller field when it is tapped. Page titles, section
+  headings, card and dialog titles (`page-title`, `section-heading`, `card-title`, `modal-title`), dashboard figures, plan prices,
   the printed invoice heading, sellers' names on invoices, the brand name and its logo, 2FA backup
-  codes and the phone menu and close buttons are 24px (`text-2xl`); page titles (`page-title`),
-  error page headings and amounts to pay 36px (`text-4xl`). No size is written by hand
+  codes and the phone menu and close buttons are 24px (`text-2xl`); error page headings and
+  amounts to pay 36px (`text-4xl`). No size is written by hand
   (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
