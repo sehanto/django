@@ -17,15 +17,15 @@
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Captions, form help text, field errors, badges, chart labels, the menu (with its group
-     labels and the organization switcher) breadcrumbs and buttons are 14px (sm, the smallest);
-     everything else that isn't a heading or a figure is 16px (base): body text, form fields and
-     labels, and tables. Section headings, card and dialog titles, dashboard figures, plan prices,
+     labels and the organization switcher), breadcrumbs, buttons and form labels are 14px (sm, the
+     smallest); everything else that isn't a heading or a figure is 16px (base): body text, form
+     fields and tables. Section headings, card and dialog titles, dashboard figures, plan prices,
      the printed invoice heading, sellers' names on invoices, the brand name wherever it appears,
      2FA backup codes and the phone menu button are 28px (3xl); page titles, error page headings,
      amounts to pay and the sign-in page's logo 36px (4xl). Form fields must stay at least 16px: iOS
      zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
-  /* Captions, form help text, field errors, badges, chart labels, the menu, breadcrumbs and buttons: secondary lines under names, figures and fields, page introductions. */
+  /* Captions, form help text, field errors, badges, chart labels, the menu, breadcrumbs, buttons and form labels: secondary lines under names, figures and fields, page introductions. */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
@@ -189,7 +189,7 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block text-base; }
+  .form-label { @apply mb-1 inline-block text-sm; }
   .form-input, .form-select {
     @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
