@@ -6,9 +6,10 @@
 <div class="card mb-4 max-w-3xl"><div class="card-body">
 {% if new_codes %}
   <div class="alert alert-warning">{% translate "Save these codes now: they are shown only once. Each code works one time, if you can't use your phone." %}</div>
-  <ul class="mb-4 grid list-none grid-cols-2 gap-x-6 ps-0 font-mono text-xl">
+  {# Two columns where they fit (20rem and wider), one on narrow phones. #}
+  <div class="@container"><ul class="mb-4 grid list-none grid-cols-1 @xs:grid-cols-2 gap-x-6 ps-0 font-mono text-3xl">
     {% for code in new_codes %}<li class="mb-1">{{ code }}</li>{% endfor %}
-  </ul>
+  </ul></div>
   <div class="flex flex-wrap gap-2 print:hidden">
     <button type="button" data-print class="btn btn-outline">{% icon "printer" %} {% translate "Print" %}</button>
     <a href="{% url 'accounts:security' %}" class="btn btn-primary">{% translate "I have saved my codes" %}</a>
