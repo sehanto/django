@@ -16,16 +16,16 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Captions, form help text and field errors are 14px (sm, the smallest); everything else
-     that isn't a heading or a figure is 16px (base): body text, badges, the menu and its group
-     labels, breadcrumbs, buttons, form fields and labels, tables and chart labels. Section
+     16px). Captions, form help text, field errors and badges are 14px (sm, the smallest);
+     everything else that isn't a heading or a figure is 16px (base): body text, the menu and its
+     group labels, breadcrumbs, buttons, form fields and labels, tables and chart labels. Section
      headings, card and dialog titles, dashboard figures, plan prices, the printed invoice heading,
      sellers' names on invoices, the brand name wherever it appears, 2FA backup codes and the phone
      menu button are 28px (3xl); page titles, error page headings, amounts to pay and the sign-in
      page's logo 36px (4xl). Form fields must stay at least 16px: iOS zooms into a smaller field
      when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
-  /* Captions, form help text and field errors: secondary lines under names, figures and fields, page introductions. */
+  /* Captions, form help text, field errors and badges: secondary lines under names, figures and fields, page introductions. */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
   --text-base: 1rem;
@@ -240,7 +240,7 @@
   .stat-value { @apply text-3xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-base leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
