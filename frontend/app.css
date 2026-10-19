@@ -18,10 +18,10 @@
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
      16px). Body text, the menu, breadcrumbs, buttons, form fields, form labels and tables 16px
      (base); captions, badges, menu group labels, chart labels, help text and field errors 14px (sm,
-     the smallest); the brand and sellers' names 20px (xl); section headings, card and dialog
-     titles, dashboard figures, plan prices and the printed invoice heading 28px (3xl); page titles,
-     error page headings, amounts to pay and the sign-in page's logo 36px (4xl). Form fields must
-     stay at least 16px: iOS zooms into a smaller field when it is tapped. */
+     the smallest); the brand 20px (xl); section headings, card and dialog titles, dashboard
+     figures, plan prices, the printed invoice heading and sellers' names on invoices 28px (3xl);
+     page titles, error page headings, amounts to pay and the sign-in page's logo 36px (4xl). Form
+     fields must stay at least 16px: iOS zooms into a smaller field when it is tapped. */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-sm) */
   --text-sm: 0.875rem;
   --text-sm--line-height: 1.5;
