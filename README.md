@@ -711,8 +711,8 @@ few behaviours live in `static/js/app.js`.
   breadcrumbs, buttons, form labels and tables. Form fields are 16px below the `md` breakpoint
   (`text-lg md:text-base`): iOS zooms into a smaller field when it is tapped. Section headings, card and dialog
   titles, dashboard figures, plan prices and the printed invoice heading, sellers'
-  names on invoices and the brand name are 24px (`section-heading`, `card-title`, `modal-title`,
-  `text-2xl`). 2FA backup codes and the phone menu button are 28px (`text-3xl`); page titles (`page-title`), error page headings,
+  names on invoices the brand name and 2FA backup codes are 24px (`section-heading`, `card-title`,
+  `modal-title`, `text-2xl`). The phone menu and close buttons are 28px (`text-3xl`); page titles (`page-title`), error page headings,
   amounts to pay and the sign-in logo 36px (`text-4xl`). No size is written by hand (`text-[…]`); a
   test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
