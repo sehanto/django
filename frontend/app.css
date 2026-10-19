@@ -19,10 +19,10 @@
      16px). Everything that isn't a heading or a figure is 14px (base): body text, captions, help
      text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
      tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
-     is tapped. Section headings, card and dialog titles, dashboard figures, plan prices, the
-     printed invoice heading, sellers' names on invoices, the brand name wherever it appears, 2FA
-     backup codes and the phone menu button are 28px (3xl); page titles, error page headings,
-     amounts to pay and the sign-in page's logo 36px (4xl). */
+     is tapped. Section headings are 24px (2xl). Card and dialog titles, dashboard figures, plan
+     prices, the printed invoice heading, sellers' names on invoices, the brand name wherever it
+     appears, 2FA backup codes and the phone menu button are 28px (3xl); page titles, error page
+     headings, amounts to pay and the sign-in page's logo 36px (4xl). */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-base) */
   --text-sm: initial; /* one name per size: 14px is text-base */
   --text-base: 0.875rem;
@@ -31,7 +31,9 @@
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
     --text-xl: initial; /* not on the scale: after body text the next size is 28px */
-  --text-2xl: initial; /* not on the scale: headings go from 20px straight to 28px */
+  /* Section headings. */
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.25;
   /* Section headings, card and dialog titles, figures and the printed invoice's heading: a step below the page title. */
   --text-3xl: 1.75rem;
   --text-3xl--line-height: 1.25;
@@ -145,7 +147,7 @@
   *, ::before, ::after { border-color: var(--app-line); }
   body { background: var(--app-canvas); color: var(--app-fg); font-size: var(--text-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
   h1, h2, h3, h4, h5, h6 { font-weight: 500; line-height: 1.2; margin-bottom: .5rem; }
-  h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-3xl); } h3 { font-size: var(--text-base); }
+  h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-2xl); } h3 { font-size: var(--text-base); }
   h4, h5 { font-size: var(--text-base); } h6 { font-size: var(--text-base); }
   p, ul, ol, dl { margin-bottom: 1rem; }
   ul, ol { padding-inline-start: 2rem; }
@@ -271,9 +273,10 @@
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-4xl font-medium leading-tight; }
 
-  /* A heading of a section within a page (its <h2>), and the title of a card (a report, a plan, a file
-     type, the sign-in box): between the page title and body text. */
-  .section-heading, .card-title { @apply text-3xl font-medium leading-tight; }
+  /* A heading of a section within a page (its <h2>). */
+  .section-heading { @apply text-2xl font-medium leading-tight; }
+  /* The title of a card (a report, a plan, a file type, the sign-in box). */
+  .card-title { @apply text-3xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-base; }
