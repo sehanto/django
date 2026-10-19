@@ -19,9 +19,9 @@
      16px). Everything that isn't a heading or a figure is 14px (base): body text, captions, help
      text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
      tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
-     is tapped. Section headings and card titles are 24px (2xl). Dialog titles, dashboard figures,
-     plan prices, the printed invoice heading, sellers' names on invoices, the brand name wherever
-     it appears, 2FA backup codes and the phone menu button are 28px (3xl); page titles, error page
+     is tapped. Section headings, card and dialog titles are 24px (2xl). Dashboard figures, plan
+     prices, the printed invoice heading, sellers' names on invoices, the brand name wherever it
+     appears, 2FA backup codes and the phone menu button are 28px (3xl); page titles, error page
      headings, amounts to pay and the sign-in page's logo 36px (4xl). */
   --text-xs: initial; /* not on the scale: the smallest text is 14px (text-base) */
   --text-sm: initial; /* one name per size: 14px is text-base */
@@ -31,7 +31,7 @@
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
     --text-xl: initial; /* not on the scale: after body text the next size is 28px */
-  /* Section headings and card titles. */
+  /* Section headings, card and dialog titles. */
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.25;
   /* Section headings, card and dialog titles, figures and the printed invoice's heading: a step below the page title. */
@@ -261,7 +261,7 @@
     @apply m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-line bg-surface p-0 text-fg shadow-xl backdrop:bg-black/50;
   }
   .modal-header { @apply flex items-center justify-between gap-2 border-b border-line px-4 py-3; }
-  .modal-title { @apply mb-0 text-3xl font-medium; }
+  .modal-title { @apply mb-0 text-2xl font-medium; }
   .modal-body { @apply px-4 py-4; }
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 
