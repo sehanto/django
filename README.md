@@ -710,7 +710,7 @@ few behaviours live in `static/js/app.js`.
   form labels and tables 16px (`text-base`),
   captions, badges, menu group labels, chart labels and form help text and errors 14px (`text-sm`, the smallest),
   section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice
-  heading, sellers' names on invoices, the brand name, 2FA backup codes and the phone menu button 28px (`section-heading`, `card-title`, `modal-title`, `text-3xl`), page
+  heading, sellers' names on invoices, the brand name (in the phone top bar too), 2FA backup codes and the phone menu button 28px (`section-heading`, `card-title`, `modal-title`, `text-3xl`), page
   titles, error page headings, amounts to pay and the sign-in logo 36px (`page-title`, `text-4xl`). Form fields must stay at least 16px: iOS zooms into a
   smaller field when it is tapped. No size is written by hand (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
