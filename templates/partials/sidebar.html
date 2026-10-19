@@ -18,7 +18,7 @@
     {% icon "book-marked" "text-3xl text-primary" %}<span class="text-3xl font-bold">EA-System</span>
   </a>
   <details class="relative mb-2" data-dropdown>
-    <summary class="btn btn-outline btn-sm w-full list-none justify-start text-base [&::-webkit-details-marker]:hidden">
+    <summary class="btn btn-outline btn-sm w-full list-none justify-start text-sm [&::-webkit-details-marker]:hidden">
       {% icon "building" %}<span class="truncate">{{ current_organization.name }}</span>
       {% icon "chevron-down" "ms-auto" %}
     </summary>
@@ -26,15 +26,15 @@
       {% for org in user_organizations %}
         <li>
           <form method="post" action="{% url 'tenants:switch' org.pk %}">{% csrf_token %}
-            <button class="block w-full truncate rounded px-2 py-1.5 text-start text-base hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{% icon "building" "me-1" %}{{ org.name }}</button>
+            <button class="block w-full truncate rounded px-2 py-1.5 text-start text-sm hover:bg-subtle {% if org.pk == current_organization.pk %}bg-primary-subtle font-semibold text-primary-strong{% endif %}">{% icon "building" "me-1" %}{{ org.name }}</button>
           </form>
         </li>
       {% endfor %}
       <li><hr class="my-1"></li>
-      <li><a class="block rounded px-2 py-1.5 text-base text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
+      <li><a class="block rounded px-2 py-1.5 text-sm text-fg no-underline hover:bg-subtle" href="{% url 'tenants:create' %}">{% icon "plus" "me-1" %}{% translate "New organization" %}</a></li>
     </ul>
   </details>
-  <div class="text-base text-muted mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
+  <div class="text-sm text-muted mb-2">{% blocktranslate trimmed with role=current_membership.get_role_display plan=current_organization.plan.name %}
     {{ role }} · {{ plan }} plan
   {% endblocktranslate %}</div>
 
