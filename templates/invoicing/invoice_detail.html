@@ -115,7 +115,7 @@
   <div class="modal-header"><h2 class="modal-title" id="writeOffModalTitle">{% blocktranslate trimmed with number=invoice.number %}Write off {{ number }}{% endblocktranslate %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     <p>{% blocktranslate trimmed with amount=invoice.balance_due|rupiah %}The {{ amount }} still owed leaves the receivables and is booked as a bad debt expense (SAK EMKM writes off a receivable that can't be collected; it makes no allowance in advance). If the customer pays later, record it as other income.{% endblocktranslate %}</p>
-    {% include "partials/form_fields.html" with form=write_off_form col="col-span-12" %}
+    {% include "partials/form_fields.html" with form=write_off_form col="col-span-12 md:col-span-4" %}
   </div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Write off" %}</button></div>
 </form></dialog>

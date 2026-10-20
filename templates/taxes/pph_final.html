@@ -77,7 +77,7 @@
 <dialog class="modal" id="payModal" aria-labelledby="payModalTitle"><form method="post" action="{% url 'taxes:pph_final_pay' %}">{% csrf_token %}
   <input type="hidden" name="year" value="{{ year }}">
   <div class="modal-header"><h2 class="modal-title" id="payModalTitle">{% translate "Record PPh Final payment" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
-  <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-span-12" %}</div>
+  <div class="modal-body">{% include "partials/form_fields.html" with form=payment_form col="col-span-12 md:col-span-4" %}</div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save & post" %}</button></div>
 </form></dialog>
 {% endblock %}

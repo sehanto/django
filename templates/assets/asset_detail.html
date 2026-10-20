@@ -63,7 +63,7 @@
 <dialog class="modal" id="reviseModal" aria-labelledby="reviseModalTitle"><form method="post" action="{% url 'assets:revise' asset.pk %}">{% csrf_token %}
   <div class="modal-header"><h2 class="modal-title" id="reviseModalTitle">{% translate "Revise estimate" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
-    {% include "partials/form_fields.html" with form=revision_form col="col-span-12" %}
+    {% include "partials/form_fields.html" with form=revision_form col="col-span-12 md:col-span-4" %}
     <p class="text-sm text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value is depreciated over the remaining months with the chosen method, without a residual value." %}</p>
   </div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save" %}</button></div>
@@ -73,7 +73,7 @@
 <dialog class="modal" id="disposeModal" aria-labelledby="disposeModalTitle"><form method="post" action="{% url 'assets:dispose' asset.pk %}">{% csrf_token %}
   <div class="modal-header"><h2 class="modal-title" id="disposeModalTitle">{% translate "Sell or write off" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
-    {% include "partials/form_fields.html" with form=disposal_form col="col-span-12" %}
+    {% include "partials/form_fields.html" with form=disposal_form col="col-span-12 md:col-span-4" %}
     <p class="text-sm text-muted mt-4 mb-0">{% translate "Depreciation runs to the end of the month before the disposal and is posted first if it is still due. The entry removes the cost and accumulated depreciation, records the proceeds and books the difference as a gain or loss." %}</p>
   </div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Dispose & post" %}</button></div>
