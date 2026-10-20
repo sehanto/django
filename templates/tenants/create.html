@@ -2,7 +2,7 @@
 {% block title %}{% translate "New organization" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("New organization") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-xl">
+<div>
 <h1 class="page-title mb-4">{% translate "New organization" %}</h1>
 <p class="text-muted">{% translate "A standard SAK EMKM chart of accounts and PPN rates will be created automatically." %}</p>
 <form method="post" class="card"><div class="card-body">{% csrf_token %}

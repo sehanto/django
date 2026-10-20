@@ -2,7 +2,7 @@
 {% block title %}{% translate "Payslip" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll") "payroll:index" year=slip.run.year %}{% blocktranslate trimmed with period=slip.run.period asvar run_title %}Payroll {{ period }}{% endblocktranslate %}{% crumb run_title "payroll:run" slip.run_id %}{% crumb slip.employee.name %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<div class="card mt-2 max-w-3xl"><div class="card-body">
+<div class="card mt-2"><div class="card-body">
   <div class="flex justify-between"><div><div class="font-semibold">{{ current_organization.name }}</div><div class="text-base font-medium leading-tight mb-0">{% translate "Payslip" %} {{ slip.run.period }}</div></div>
     <button type="button" class="btn btn-outline print:hidden" data-print>{% icon "printer" %} {% translate "Print" %}</button></div>
   <p class="mt-4 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="text-sm text-muted">{% if slip.employee.nik %}NIK {{ slip.employee.nik }}{% else %}{% translate "Passport" %} {{ slip.employee.passport_number }} ({{ slip.employee.nationality }}){% endif %} · {{ slip.ptkp_status }}</span></p>

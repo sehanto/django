@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("My profile") "accounts:profile" %}{% crumb _("Security") "accounts:security" %}{% crumb _("Turn off two-factor authentication") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Turn off two-factor authentication" %}</h1>
-<div class="card max-w-3xl"><div class="card-body">
+<div class="card"><div class="card-body">
 {% if required_by %}
   <div class="alert alert-info">{% blocktranslate trimmed with organizations=required_by|join:", " %}You can't turn off two-factor authentication while {{ organizations }} requires it.{% endblocktranslate %}</div>
   <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% translate "Back" %}</a>

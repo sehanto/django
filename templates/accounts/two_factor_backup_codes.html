@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("My profile") "accounts:profile" %}{% crumb _("Security") "accounts:security" %}{% crumb _("Backup codes") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Backup codes" %}</h1>
-<div class="card mb-4 max-w-3xl"><div class="card-body">
+<div class="card mb-4"><div class="card-body">
 {% if new_codes %}
   <div class="alert alert-warning">{% translate "Save these codes now: they are shown only once. Each code works one time, if you can't use your phone." %}</div>
   {# Two columns where they fit (18rem and wider), one on the narrowest phones. #}

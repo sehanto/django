@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load i18n %}
 {% block title %}{% translate "Invitation" %}{% endblock %}
 {% block content %}
-<div class="card mx-auto max-w-xl"><div class="card-body">
+<div class="card"><div class="card-body">
   {% if invitation %}
     <h1 class="text-base font-medium leading-tight">{% blocktranslate trimmed with organization=invitation.organization.name %}Join {{ organization }}{% endblocktranslate %}</h1>
     <p>{% blocktranslate trimmed with role=invitation.get_role_display email=invitation.email %}You are invited as {{ role }}. The invitation is for {{ email }}.{% endblocktranslate %}</p>
