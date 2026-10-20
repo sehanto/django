@@ -23,7 +23,7 @@
     {% if asset.is_depreciable %}{% blocktranslate trimmed count months=asset.current_useful_life_months with method=asset.get_current_method_display %}{{ method }}, {{ months }} month{% plural %}{{ method }}, {{ months }} months{% endblocktranslate %}{% else %}{% translate "Not depreciated (land)" %}{% endif %}
   </div></div></div></div>
 </div>
-<dl class="grid grid-cols-12 gap-x-6 text-sm mb-6 max-w-4xl">
+<dl class="grid grid-cols-12 gap-x-6 text-sm mb-6">
   <dt class="col-span-12 sm:col-span-4">{% translate "Acquisition date" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
   <dt class="col-span-12 sm:col-span-4">{% translate "Fixed asset account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.asset_account }}</dd>
   {% if asset.is_depreciable %}
@@ -36,7 +36,7 @@
 </dl>
 {% if revisions %}
 <h2 class="section-heading">{% translate "Changes in estimate" %}</h2>
-<div class="card mb-6 max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
+<div class="card mb-6"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in revisions %}
     <tr><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
@@ -46,7 +46,7 @@
 {% endif %}
 {% if schedule %}
 <h2 class="section-heading">{% translate "Depreciation schedule" %}</h2>
-<div class="card max-w-4xl"><div class="overflow-x-auto max-h-130 overflow-y-auto"><table class="table table-sm mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto max-h-130 overflow-y-auto"><table class="table table-sm mb-0 align-middle">
   <thead class="sticky top-0 z-20"><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Depreciation" %}</th><th class="num">{% translate "Accumulated" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Journal entry" %}</th></tr></thead>
   <tbody>{% for month, posting, elsewhere in schedule %}
     <tr class="{% if asset.disposed_on and month.period_end >= asset.disposed_on %}text-muted line-through{% endif %}">
