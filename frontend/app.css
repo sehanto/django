@@ -15,26 +15,29 @@
 
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
-  /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Everything that isn't a heading or a figure is 12px (base): body text, captions, help
-     text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
-     tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
-     is tapped. Page titles and error page headings are 30px (3xl, the largest). Amounts to pay,
-     section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice
-     heading, sellers' names on invoices, the brand name and its logo wherever they appear, 2FA
-     backup codes and the phone menu and close buttons are 24px (2xl). */
-  --text-xs: initial; /* not on the scale: the smallest text is 12px (text-base) */
-  --text-sm: initial; /* one name per size: 12px is text-base */
-  --text-base: 0.75rem;
+  /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
+     Six steps, each about 1.2× the one below, so every level stays distinguishable:
+       12px (sm)   captions, form help text, field errors, badges, chart labels, menu group labels;
+                   secondary text, one step below body, and the smallest size
+       14px (base) body text, tables, buttons, form labels, the menu, breadcrumbs; nothing read at
+                   length goes below this
+       16px (lg)   form fields on phones (below md): iOS zooms into a smaller field when it is tapped
+       20px (xl)   card and dialog titles, the brand name and logo, sellers' names on invoices, 2FA
+                   backup codes, the phone menu and close buttons
+       24px (2xl)  section headings, dashboard figures, plan prices, amounts to pay, the printed
+                   invoice heading
+       30px (3xl)  page titles and error page headings, the largest */
+  --text-xs: initial; /* not on the scale: the smallest text is 12px (text-sm) */
+  --text-sm: 0.75rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 0.875rem;
   --text-base--line-height: 1.5;
-  /* Form fields on phones: iOS zooms into a field smaller than 16px when it is tapped. */
   --text-lg: 1rem;
   --text-lg--line-height: 1.5;
-  --text-xl: initial; /* not on the scale: after body text the next size is 24px */
-  /* Section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice's heading, sellers' names, the brand name, 2FA backup codes and the phone menu buttons. */
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.35;
   --text-2xl: 1.5rem;
   --text-2xl--line-height: 1.25;
-  /* Page titles and error page headings: a step above every other heading. */
   --text-3xl: 1.875rem;
   --text-3xl--line-height: 1.2;
   --text-4xl: initial; /* not on the scale: the largest text is the page title's 30px (text-3xl) */
@@ -212,8 +215,8 @@
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
   }
   .form-toggle:checked::before { @apply translate-x-4; }
-  .form-help { @apply mt-1 text-base text-muted; }
-  .form-error { @apply mt-1 text-base text-danger; }
+  .form-help { @apply mt-1 text-sm text-muted; }
+  .form-error { @apply mt-1 text-sm text-danger; }
 
   /* Cards */
   .card { @apply flex min-w-0 flex-col rounded-lg border border-line bg-surface; }
@@ -224,7 +227,7 @@
   /* Tables */
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
-  /* Cells and column headings 12px (headings bold). */
+  /* Cells and column headings 14px, like body text (headings bold). */
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
   .table > thead > tr > th { @apply font-semibold; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
@@ -240,7 +243,7 @@
   .stat-value { @apply text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-base leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
@@ -260,21 +263,22 @@
     @apply m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-line bg-surface p-0 text-fg shadow-xl backdrop:bg-black/50;
   }
   .modal-header { @apply flex items-center justify-between gap-2 border-b border-line px-4 py-3; }
-  .modal-title { @apply mb-0 text-2xl font-medium; }
+  .modal-title { @apply mb-0 text-xl font-medium; }
   .modal-body { @apply px-4 py-4; }
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
   .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-base tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-3xl font-medium leading-tight; }
 
-  /* A heading of a section within a page (its <h2>), and the title of a card (a report, a plan, a file
-     type, the sign-in box). */
-  .section-heading, .card-title { @apply text-2xl font-medium leading-tight; }
+  /* A heading of a section within a page (its <h2>). */
+  .section-heading { @apply text-2xl font-medium leading-tight; }
+  /* The title of a card (a report, a plan, a file type, the sign-in box): a step below a section heading. */
+  .card-title { @apply text-xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
   .breadcrumbs { @apply mb-2 text-base; }

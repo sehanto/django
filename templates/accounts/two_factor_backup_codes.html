@@ -7,7 +7,7 @@
 {% if new_codes %}
   <div class="alert alert-warning">{% translate "Save these codes now: they are shown only once. Each code works one time, if you can't use your phone." %}</div>
   {# Two columns where they fit (18rem and wider), one on the narrowest phones. #}
-  <div class="@container"><ul class="mb-4 grid list-none grid-cols-1 @2xs:grid-cols-2 gap-x-6 ps-0 font-mono text-2xl">
+  <div class="@container"><ul class="mb-4 grid list-none grid-cols-1 @2xs:grid-cols-2 gap-x-6 ps-0 font-mono text-xl">
     {% for code in new_codes %}<li class="mb-1">{{ code }}</li>{% endfor %}
   </ul></div>
   <div class="flex flex-wrap gap-2 print:hidden">
@@ -18,7 +18,7 @@
   <p>{% blocktranslate trimmed count count=backup_codes_left %}You have {{ count }} unused backup code.{% plural %}You have {{ count }} unused backup codes.{% endblocktranslate %}
      {% translate "For your security, codes are shown only when they are created." %}</p>
   <h2 class="section-heading mt-6">{% translate "Create new backup codes" %}</h2>
-  <p class="text-base text-muted">{% translate "Your current backup codes will stop working." %}</p>
+  <p class="text-sm text-muted">{% translate "Your current backup codes will stop working." %}</p>
   <form method="post">{% csrf_token %}
     {% include "partials/form_fields.html" with col="col-span-12 md:col-span-6" %}
     {% include "accounts/_captcha.html" %}

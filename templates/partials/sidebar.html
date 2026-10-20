@@ -3,19 +3,19 @@
 {# Below lg: a top bar whose button opens the menu as a drawer; from lg up the menu is a fixed sidebar (static/js/app.js). #}
 <header class="sticky top-0 z-20 flex items-center gap-2 border-b border-line bg-surface px-4 py-2 lg:hidden print:hidden">
   <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
-          aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-2xl" %}</button>
-  <a href="{% url 'dashboard:home' %}" class="me-auto whitespace-nowrap text-2xl font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
-  <span class="max-w-[45vw] truncate text-base text-muted">{{ current_organization.name }}</span>
+          aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-xl" %}</button>
+  <a href="{% url 'dashboard:home' %}" class="me-auto whitespace-nowrap text-xl font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
+  <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
 </header>
 <div class="fixed inset-0 z-30 hidden bg-black/40 data-open:block lg:hidden" data-drawer-backdrop="appSidebar"></div>
 <nav id="appSidebar" aria-labelledby="appSidebarTitle" tabindex="-1"
      class="fixed inset-y-0 start-0 z-40 hidden w-(--sidebar-width) flex-col overflow-y-auto border-e border-line bg-surface p-4 shadow-xl data-open:flex lg:flex lg:shadow-none print:hidden">
   <div class="mb-4 flex items-center justify-between gap-2 lg:hidden">
-    <span class="flex items-center gap-2 whitespace-nowrap">{% icon "book-marked" "text-2xl text-primary" %}<span class="text-2xl font-bold" id="appSidebarTitle">EA-System</span></span>
-    <button type="button" class="btn-icon shrink-0" data-drawer-close="appSidebar" aria-label="{% translate 'Close' %}">{% icon "x" "text-2xl" %}</button>
+    <span class="flex items-center gap-2 whitespace-nowrap">{% icon "book-marked" "text-xl text-primary" %}<span class="text-xl font-bold" id="appSidebarTitle">EA-System</span></span>
+    <button type="button" class="btn-icon shrink-0" data-drawer-close="appSidebar" aria-label="{% translate 'Close' %}">{% icon "x" "text-xl" %}</button>
   </div>
   <a href="{% url 'dashboard:home' %}" class="mb-4 hidden items-center gap-2 text-fg no-underline lg:flex" id="appSidebarBrand">
-    {% icon "book-marked" "text-2xl text-primary" %}<span class="text-2xl font-bold">EA-System</span>
+    {% icon "book-marked" "text-xl text-primary" %}<span class="text-xl font-bold">EA-System</span>
   </a>
   <details class="relative mb-2" data-dropdown>
     <summary class="btn btn-outline btn-sm w-full list-none justify-start text-base [&::-webkit-details-marker]:hidden">
@@ -74,7 +74,7 @@
   <hr>
   <div class="flex justify-between items-center text-base mb-2">
     <a href="{% url 'accounts:profile' %}" class="no-underline truncate">{% icon "circle-user" "me-1" %}{{ request.user.get_short_name }}</a>
-    <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-base">{% translate "Sign out" %}</button></form>
+    <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0">{% translate "Sign out" %}</button></form>
   </div>
   <div class="flex flex-wrap items-center justify-between gap-2">
     {% include "partials/language_switch.html" %}

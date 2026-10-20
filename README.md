@@ -676,7 +676,7 @@ few behaviours live in `static/js/app.js`.
   tokens and Tailwind's palette, so a token change that breaks one fails the tests.
 - **Sizes** come from the theme: Tailwind v4's spacing scale takes any step (`h-45` is 180 px,
   `max-h-130` 520 px), and repeated type sizes are tokens (`text-3xl` 1.875rem for page titles,
-  `text-2xl` 1.5rem for other headings and figures). Arbitrary values (`w-[16%]`) are for
+  `text-2xl` 1.5rem for section headings and figures). Arbitrary values (`w-[16%]`) are for
   one-off measures only.
 - **Checked.** `test_every_class_in_use_is_in_the_build` fails when a template, an `{% icon %}` or a
   widget uses a class the build doesn't have (a typo, a leftover of another framework, a component
@@ -706,15 +706,17 @@ few behaviours live in `static/js/app.js`.
   it). The organization switcher is a `<details data-dropdown>`. Light or dark follows the device.
   A "skip to content" link comes first for keyboard users.
 - **Type scale.** One scale in `frontend/app.css` (`@theme`), in rem so the browser's font-size setting
-  still scales the whole interface. Everything that isn't a heading or a figure is 12px
-  (`text-base`): body text, captions, help text and errors, badges, chart labels, the menu,
-  breadcrumbs, buttons, form labels and tables. Form fields are 16px below the `md` breakpoint
-  (`text-lg md:text-base`): iOS zooms into a smaller field when it is tapped. Page titles and error
-  page headings are 30px (`page-title`, `text-3xl`, the largest). The other headings and figures are
-  24px (`text-2xl`): section headings, card and dialog titles (`section-heading`, `card-title`,
-  `modal-title`), dashboard figures, plan prices, amounts to pay, the printed invoice heading,
-  sellers' names on invoices, the brand name and its logo, 2FA backup codes and the phone menu and
-  close buttons. No size is written by hand (`text-[…]`); a test checks.
+  still scales the whole interface. Six steps, each about 1.2× the one below:
+  12px (`text-sm`) captions, form help text, field errors, badges, chart labels and menu group
+  labels, the smallest; 14px (`text-base`) body text, tables, buttons, form labels, the menu and
+  breadcrumbs, the floor for anything read at length; 16px (`text-lg`) form fields on phones, below
+  the `md` breakpoint (`text-lg md:text-base`), since iOS zooms into a smaller field; 20px
+  (`text-xl`) card and dialog titles (`card-title`, `modal-title`), the brand name, sellers' names
+  on invoices and 2FA backup codes; 24px (`text-2xl`) section headings (`section-heading`),
+  dashboard figures, plan prices, amounts to pay and the printed invoice heading; 30px (`text-3xl`)
+  page titles (`page-title`) and error page headings. Secondary text is always a step below body
+  text and every heading level a step above the one below it. No size is written by hand
+  (`text-[…]`); a test checks.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
   "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`
