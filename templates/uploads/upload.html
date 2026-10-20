@@ -49,7 +49,7 @@
 
 <form method="post" enctype="multipart/form-data" class="card"><div class="card-body">{% csrf_token %}
   {% if options_form %}{% include "partials/form_fields.html" with form=options_form %}<div class="mb-4"></div>{% endif %}
-  {% include "partials/form_fields.html" with form=form col="col-span-12" %}
+  {% include "partials/form_fields.html" with form=form col="col-span-12 md:col-span-4" %}
 </div>
 <div class="card-footer flex flex-wrap gap-2 justify-end"><button class="btn btn-primary">{% icon "file-search" %} {% translate "Check the file" %}</button></div></form>
 {% endblock %}
