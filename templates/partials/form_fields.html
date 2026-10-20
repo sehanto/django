@@ -1,9 +1,9 @@
-{% load ui %}{# Pass "fields" to render only some fields (the form's errors and hidden fields come with the full form). #}
+{% load ui %}{# Pass "fields" to render only some fields (the form's errors and hidden fields come with the full form); "bare" leaves out the grid, to put two forms' fields in one. #}
 {% if not fields %}
-{% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+{% if form.non_field_errors %}<div class="alert alert-danger col-span-12" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 {% endif %}
-<div class="grid grid-cols-12 gap-4">
+{% if not bare %}<div class="grid grid-cols-12 gap-4">{% endif %}
 {% for field in fields|default:form.visible_fields %}
   <div class="{{ col|default:'col-span-12 md:col-span-4' }}">
     {% if field.field.widget.input_type == 'checkbox' %}
@@ -18,4 +18,4 @@
     {% include "partials/field_feedback.html" %}
   </div>
 {% endfor %}
-</div>
+{% if not bare %}</div>{% endif %}
