@@ -13,7 +13,7 @@
   {% for row in rows %}
     <tr class="{% if not row.item.is_active %}text-muted{% endif %}">
       <td><a href="{% url 'inventory:card' row.item.pk %}">{{ row.item }}</a></td>
-      <td class="text-sm">{{ row.item.inventory_account }}</td>
+      <td class="text-base">{{ row.item.inventory_account }}</td>
       <td class="num">{{ row.quantity|floatformat:"-3" }} {{ row.item.unit }}</td>
       <td class="num">{{ row.average_cost|rupiah }}</td>
       <td class="num">{{ row.value|rupiah }}</td>
@@ -33,6 +33,6 @@
       <td class="num {% if r.difference %}text-danger font-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
+<p class="text-base text-muted mt-2">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
 {% endif %}
 {% endblock %}

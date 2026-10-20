@@ -2,12 +2,12 @@
 {% block title %}{% translate "Two-factor authentication" %}{% endblock %}
 {% block auth_content %}
 <h2 class="card-title mb-2">{% icon "shield-check" "me-2 text-primary" %}{% translate "Two-factor authentication" %}</h2>
-<p class="text-sm text-muted">{% translate "Open your authenticator app and enter the 6-digit code for this account. Lost your phone? Enter one of your backup codes instead." %}</p>
+<p class="text-base text-muted">{% translate "Open your authenticator app and enter the 6-digit code for this account. Lost your phone? Enter one of your backup codes instead." %}</p>
 <form method="post">{% csrf_token %}
   {% include "partials/form_fields.html" with col="col-span-12" %}
   {% include "accounts/_captcha.html" %}
   <button class="btn btn-primary w-full mt-6">{% translate "Verify" %}</button>
 </form>
-<p class="text-center text-sm mt-4 mb-0"><a href="{% url 'accounts:login' %}">{% translate "Cancel and sign in again" %}</a></p>
+<p class="text-center text-base mt-4 mb-0"><a href="{% url 'accounts:login' %}">{% translate "Cancel and sign in again" %}</a></p>
 {% endblock %}
 {% block scripts %}<script src="{{ captcha.script_url }}" async defer></script>{% endblock %}

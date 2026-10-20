@@ -16,19 +16,16 @@
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays
-     16px). Captions, form help text, field errors, badges, chart labels, the menu (with its group
-     labels and the organization switcher), breadcrumbs, buttons, form labels and tables are 12px
-     (sm, the smallest); body text is 14px (base). Form fields are 16px on phones (lg, below md):
-     iOS zooms into a smaller field when it is tapped. Page titles and error page headings are 30px
-     (3xl, the largest). Amounts to pay, section headings, card and dialog titles, dashboard
-     figures, plan prices, the printed invoice heading, sellers' names on invoices, the brand name
-     and its logo wherever they appear, 2FA backup codes and the phone menu and close buttons are
-     24px (2xl). */
-  --text-xs: initial; /* not on the scale: the smallest text is 12px (text-sm) */
-  /* Captions, form help text, field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and tables: secondary lines under names, figures and fields, page introductions, small print. */
-  --text-sm: 0.75rem;
-  --text-sm--line-height: 1.5;
-  --text-base: 0.875rem;
+     16px). Everything that isn't a heading or a figure is 12px (base): body text, captions, help
+     text and field errors, badges, chart labels, the menu, breadcrumbs, buttons, form labels and
+     tables. Form fields are 16px on phones (lg, below md): iOS zooms into a smaller field when it
+     is tapped. Page titles and error page headings are 30px (3xl, the largest). Amounts to pay,
+     section headings, card and dialog titles, dashboard figures, plan prices, the printed invoice
+     heading, sellers' names on invoices, the brand name and its logo wherever they appear, 2FA
+     backup codes and the phone menu and close buttons are 24px (2xl). */
+  --text-xs: initial; /* not on the scale: the smallest text is 12px (text-base) */
+  --text-sm: initial; /* one name per size: 12px is text-base */
+  --text-base: 0.75rem;
   --text-base--line-height: 1.5;
   /* Form fields on phones: iOS zooms into a field smaller than 16px when it is tapped. */
   --text-lg: 1rem;
@@ -174,11 +171,11 @@
 
   /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-center text-sm
+    @apply inline-flex items-center justify-center gap-1 rounded-md border border-transparent px-3 py-1.5 text-center text-base
       font-normal leading-normal no-underline whitespace-nowrap transition-colors select-none
       disabled:pointer-events-none disabled:opacity-60;
   }
-  .btn-sm { @apply px-2 py-1 text-sm; }
+  .btn-sm { @apply px-2 py-1 text-base; }
   .btn-primary { @apply bg-primary-fill text-white hover:bg-primary-fill-strong hover:text-white; }
   .btn-danger { @apply bg-danger-fill text-white hover:bg-danger-fill-strong hover:text-white; }
   .btn-success { @apply bg-success-fill text-white hover:bg-success-fill-strong hover:text-white; }
@@ -192,7 +189,7 @@
 
   /* Form controls, named like Tailwind's forms plugin (form-input, form-select). A field with errors
      is aria-invalid="true" (Django sets it), which the aria-invalid: variant styles. */
-  .form-label { @apply mb-1 inline-block text-sm; }
+  .form-label { @apply mb-1 inline-block text-base; }
   .form-input, .form-select {
     @apply block w-full rounded-md border border-line-strong bg-surface px-3 py-1.5 text-lg md:text-base text-fg
       placeholder:text-muted focus:border-primary focus:outline-2 focus:outline-offset-0 focus:outline-primary/30
@@ -215,8 +212,8 @@
     content: ""; @apply absolute top-0.5 start-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform;
   }
   .form-toggle:checked::before { @apply translate-x-4; }
-  .form-help { @apply mt-1 text-sm text-muted; }
-  .form-error { @apply mt-1 text-sm text-danger; }
+  .form-help { @apply mt-1 text-base text-muted; }
+  .form-error { @apply mt-1 text-base text-danger; }
 
   /* Cards */
   .card { @apply flex min-w-0 flex-col rounded-lg border border-line bg-surface; }
@@ -228,7 +225,7 @@
   .table { @apply mb-0 w-full border-collapse text-fg; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
   /* Cells and column headings 12px (headings bold). */
-  .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply text-sm; }
+  .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
   .table > thead > tr > th { @apply font-semibold; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
@@ -243,7 +240,7 @@
   .stat-value { @apply text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
-  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
+  .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-base leading-tight font-semibold whitespace-nowrap; }
   .badge-primary { @apply bg-primary-fill text-white; }
   .badge-neutral { @apply bg-neutral-fill text-white; }
   .badge-success { @apply bg-success-fill text-white; }
@@ -268,9 +265,9 @@
   .modal-footer { @apply flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3; }
 
   /* The menu: a drawer below lg, a fixed sidebar from lg up. */
-  .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-sm text-fg no-underline hover:bg-subtle hover:text-fg; }
+  .nav-link { @apply flex items-center rounded-lg px-3 py-1.5 text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
   .nav-link.active { @apply bg-primary-subtle font-semibold text-primary-strong; }
-  .nav-heading { @apply px-3 pt-4 pb-1 text-sm tracking-wider text-muted uppercase; }
+  .nav-heading { @apply px-3 pt-4 pb-1 text-base tracking-wider text-muted uppercase; }
 
   /* A page's title (its <h1>); the margin below stays a utility on the page. */
   .page-title { @apply text-3xl font-medium leading-tight; }
@@ -280,7 +277,7 @@
   .section-heading, .card-title { @apply text-2xl font-medium leading-tight; }
 
   /* Breadcrumbs ({% breadcrumbs %}): the section down to the current page, "›" between. */
-  .breadcrumbs { @apply mb-2 text-sm; }
+  .breadcrumbs { @apply mb-2 text-base; }
   .breadcrumbs ol { @apply m-0 flex list-none flex-wrap items-center gap-x-1.5 gap-y-0.5 p-0; }
   .breadcrumbs li { @apply flex items-center gap-x-1.5; }
   .breadcrumbs li + li::before { content: "\203A"; @apply text-muted; }

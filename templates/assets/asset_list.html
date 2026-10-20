@@ -27,10 +27,10 @@
     <tr class="{% if asset.status == asset.Status.DISPOSED %}text-muted{% endif %}">
       <td><a href="{% url 'assets:detail' asset.pk %}">{{ asset.number }}</a></td>
       <td>{{ asset.name }}</td>
-      <td class="text-sm">{{ asset.asset_account }}</td>
+      <td class="text-base">{{ asset.asset_account }}</td>
       <td>{{ asset.acquisition_date|date:"d/m/Y" }}</td>
       <td class="num">{{ asset.cost|rupiah }}</td>
-      <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span class="text-sm">{% translate "not depreciated" %}</span>{% endif %}</td>
+      <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span class="text-base">{% translate "not depreciated" %}</span>{% endif %}</td>
       <td class="num">{{ row.book_value|rupiah }}</td>
       <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-neutral">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
     </tr>
@@ -49,6 +49,6 @@
       <td class="num {% if r.difference %}text-danger font-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "Registering an asset doesn't post its purchase: record that with a purchase bill or a journal entry. A difference means an asset in the books that isn't in the register, or the other way round." %}</p>
+<p class="text-base text-muted mt-2">{% translate "Registering an asset doesn't post its purchase: record that with a purchase bill or a journal entry. A difference means an asset in the books that isn't in the register, or the other way round." %}</p>
 {% endif %}
 {% endblock %}

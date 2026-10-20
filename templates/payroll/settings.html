@@ -4,6 +4,6 @@
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Payroll settings" %}</h1>
 <form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}
-  <p class="text-sm text-muted mt-4 mb-0">{% translate "Contribution rates: JKM 0.3% and JHT 3.7% (employer) + 2% (employee) on the wage; JP 2% + 1% and BPJS Kesehatan 4% + 1% on the wage up to their caps." %}</p></div>
+  <p class="text-base text-muted mt-4 mb-0">{% translate "Contribution rates: JKM 0.3% and JHT 3.7% (employer) + 2% (employee) on the wage; JP 2% + 1% and BPJS Kesehatan 4% + 1% on the wage up to their caps." %}</p></div>
 <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
 {% endblock %}
