@@ -4,11 +4,11 @@
 {% block content %}
 <div class="card mt-2 max-w-4xl"><div class="card-body">
   <div class="flex justify-between">
-    <div><div class="text-base text-muted">{% translate "Bukti pemotongan PPh Pasal 21 bagi pegawai tetap" %}</div><div class="text-base font-medium leading-tight mb-0">1721-A1 · {{ st.year }}</div>
-      {% if st.final_slip.withholding_slip %}<div class="text-base">{% translate "Number" %}: {{ st.final_slip.withholding_slip }}</div>{% endif %}</div>
+    <div><div class="text-sm text-muted">{% translate "Bukti pemotongan PPh Pasal 21 bagi pegawai tetap" %}</div><div class="text-base font-medium leading-tight mb-0">1721-A1 · {{ st.year }}</div>
+      {% if st.final_slip.withholding_slip %}<div class="text-sm">{% translate "Number" %}: {{ st.final_slip.withholding_slip }}</div>{% endif %}</div>
     <button type="button" class="btn btn-outline print:hidden" data-print>{% icon "printer" %} {% translate "Print" %}</button>
   </div>
-  <div class="grid grid-cols-12 gap-x-6 mt-4 text-base">
+  <div class="grid grid-cols-12 gap-x-6 mt-4 text-sm">
     <div class="col-span-12 sm:col-span-6"><div class="font-semibold">{% translate "Employer" %}</div>{{ current_organization.name }}<br>NPWP {{ current_organization.npwp|default:"—" }}</div>
     <div class="col-span-12 sm:col-span-6"><div class="font-semibold">{% translate "Employee" %}</div>{{ st.employee.name }}{% if st.employee.position %} · {{ st.employee.position }}{% endif %}<br>
       {% if st.employee.tin %}NPWP/NIK {{ st.employee.tin }}{% else %}{% translate "Passport" %} {{ st.employee.passport_number }}{% endif %} · {{ st.employee.nationality }}{% if st.employee.gender %} · {{ st.employee.get_gender_display }}{% endif %}<br>
@@ -33,11 +33,11 @@
     <tr><td>15</td><td>{% if st.annual.annualized %}{% translate "Net income annualised" %}{% else %}{% translate "Net income for the year" %}{% endif %}</td><td class="num">{{ st.annual.annual_net|rupiah }}</td></tr>
     <tr><td>16</td><td>{% translate "Non-taxable income (PTKP)" %}</td><td class="num">{{ st.annual.ptkp|rupiah }}</td></tr>
     <tr><td>17</td><td>{% translate "Taxable income (PKP)" %}</td><td class="num">{{ st.annual.taxable|rupiah }}</td></tr>
-    <tr><td>18</td><td>{% translate "PPh 21 on the taxable income" %}{% if st.annual.annualized %} <span class="text-base text-muted">({% blocktranslate trimmed with tax=st.annual.annual_tax|rupiah months=st.annual.months %}{{ tax }} × {{ months }}/12{% endblocktranslate %})</span>{% endif %}{% if st.surcharged %} <span class="text-base text-muted">({% translate "20% higher without an NPWP" %})</span>{% endif %}</td><td class="num">{{ st.tax|rupiah }}</td></tr>
+    <tr><td>18</td><td>{% translate "PPh 21 on the taxable income" %}{% if st.annual.annualized %} <span class="text-sm text-muted">({% blocktranslate trimmed with tax=st.annual.annual_tax|rupiah months=st.annual.months %}{{ tax }} × {{ months }}/12{% endblocktranslate %})</span>{% endif %}{% if st.surcharged %} <span class="text-sm text-muted">({% translate "20% higher without an NPWP" %})</span>{% endif %}</td><td class="num">{{ st.tax|rupiah }}</td></tr>
     <tr><td>19</td><td>{% translate "PPh 21 withheld in earlier periods" %}</td><td class="num">{{ st.prior_tax|rupiah }}</td></tr>
     <tr class="font-semibold"><td>20</td><td>{% translate "PPh 21 due" %}</td><td class="num">{{ st.due|rupiah }}</td></tr>
     <tr class="font-bold"><td>21</td><td>{% translate "PPh 21 withheld and paid" %}</td><td class="num">{{ st.withheld|rupiah }}</td></tr>
   </table></div>
-  {% for prior in st.employee.prior_incomes.all %}{% if prior.year == st.year %}<p class="text-base text-muted mt-4 mb-0">{% blocktranslate trimmed with name=prior.employer_name number=prior.slip_number|default:"—" first=prior.first_month|stringformat:"02d" last=prior.last_month|stringformat:"02d" %}Lines 14 and 19: {{ name }}, 1721-A1 no. {{ number }}, period {{ first }}–{{ last }}.{% endblocktranslate %}</p>{% endif %}{% endfor %}
+  {% for prior in st.employee.prior_incomes.all %}{% if prior.year == st.year %}<p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with name=prior.employer_name number=prior.slip_number|default:"—" first=prior.first_month|stringformat:"02d" last=prior.last_month|stringformat:"02d" %}Lines 14 and 19: {{ name }}, 1721-A1 no. {{ number }}, period {{ first }}–{{ last }}.{% endblocktranslate %}</p>{% endif %}{% endfor %}
 </div></div>
 {% endblock %}

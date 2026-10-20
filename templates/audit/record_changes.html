@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Activity log") "audit:organization" %}{% crumb _("Change history") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-1">{% translate "Change history" %}</h1>
-<p class="text-muted text-base mb-4">{% translate "Every record created, changed or deleted in this organization, as recorded by the database: by whom, when and what changed. The history cannot be edited or deleted, and each change is chained to the one before it, so a removed or altered change is detected." %}</p>
+<p class="text-muted text-sm mb-4">{% translate "Every record created, changed or deleted in this organization, as recorded by the database: by whom, when and what changed. The history cannot be edited or deleted, and each change is chained to the one before it, so a removed or altered change is detected." %}</p>
 {% include "audit/_tabs.html" with url_name="changes" %}
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
   <div class="col-span-12 md:col-span-5"><select name="table" class="form-select" data-autosubmit data-autosubmit-clear="record" aria-label="{% translate 'Records' %}">
@@ -11,18 +11,18 @@
     {% for value, label in tables.items %}<option value="{{ value }}" {% if value == table %}selected{% endif %}>{{ label }}</option>{% endfor %}
   </select></div>
   <input type="hidden" name="record" value="{{ record }}">
-  {% if record %}<div class="col-span-12 md:col-span-5 flex items-center gap-2 text-base"><span>{% blocktranslate trimmed %}Record {{ record }} only{% endblocktranslate %}</span><a href="?table={{ table }}">{% translate "show all" %}</a></div>{% endif %}
+  {% if record %}<div class="col-span-12 md:col-span-5 flex items-center gap-2 text-sm"><span>{% blocktranslate trimmed %}Record {{ record }} only{% endblocktranslate %}</span><a href="?table={{ table }}">{% translate "show all" %}</a></div>{% endif %}
 </form>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-top">
   <thead><tr><th>{% translate "Time" %}</th><th>{% translate "User" %}</th><th>{% translate "Record" %}</th><th>{% translate "Change" %}</th></tr></thead>
   <tbody>
   {% for change, table_label, fields in rows %}
     <tr>
-      <td class="whitespace-nowrap text-base">{{ change.changed_at|date:"d M Y H:i:s" }}<div class="text-muted">#{{ change.sequence }}</div></td>
-      <td class="text-base">{{ change.actor_label|default:_("System") }}<div class="text-muted">{{ change.db_role }}</div></td>
-      <td class="text-base"><a href="?table={{ change.table_name }}&amp;record={{ change.record_id }}">{{ table_label }} {{ change.record_id }}</a>
+      <td class="whitespace-nowrap text-sm">{{ change.changed_at|date:"d M Y H:i:s" }}<div class="text-muted">#{{ change.sequence }}</div></td>
+      <td class="text-sm">{{ change.actor_label|default:_("System") }}<div class="text-muted">{{ change.db_role }}</div></td>
+      <td class="text-sm"><a href="?table={{ change.table_name }}&amp;record={{ change.record_id }}">{{ table_label }} {{ change.record_id }}</a>
         <div><span class="badge {% if change.operation == change.Operation.DELETE %}badge-danger{% elif change.operation == change.Operation.INSERT %}badge-success{% else %}badge-neutral{% endif %}">{{ change.get_operation_display }}</span></div></td>
-      <td class="text-base"><dl class="grid grid-cols-12 gap-x-6 mb-0">{% for f in fields %}
+      <td class="text-sm"><dl class="grid grid-cols-12 gap-x-6 mb-0">{% for f in fields %}
         <dt class="col-span-12 sm:col-span-4 font-normal text-muted">{{ f.label }}</dt>
         <dd class="col-span-12 sm:col-span-8 mb-1 break-words">{% if change.operation == change.Operation.UPDATE %}<del class="text-muted">{{ f.old|default:"—" }}</del> → {{ f.new|default:"—" }}{% elif change.operation == change.Operation.DELETE %}{{ f.old }}{% else %}{{ f.new }}{% endif %}</dd>
       {% endfor %}</dl></td>
@@ -33,5 +33,5 @@
   </tbody>
 </table></div></div>
 {% include "partials/pagination.html" %}
-{% if head %}<p class="text-base text-muted mt-2 break-words">{% blocktranslate trimmed with sequence=head.0 hash=head.1 %}Latest change: #{{ sequence }}, hash {{ hash }}. Note it down to detect a rewritten history later (manage.py verify_audit_trail --expect-head).{% endblocktranslate %}</p>{% endif %}
+{% if head %}<p class="text-sm text-muted mt-2 break-words">{% blocktranslate trimmed with sequence=head.0 hash=head.1 %}Latest change: #{{ sequence }}, hash {{ hash }}. Note it down to detect a rewritten history later (manage.py verify_audit_trail --expect-head).{% endblocktranslate %}</p>{% endif %}
 {% endblock %}

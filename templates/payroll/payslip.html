@@ -5,7 +5,7 @@
 <div class="card mt-2 max-w-3xl"><div class="card-body">
   <div class="flex justify-between"><div><div class="font-semibold">{{ current_organization.name }}</div><div class="text-base font-medium leading-tight mb-0">{% translate "Payslip" %} {{ slip.run.period }}</div></div>
     <button type="button" class="btn btn-outline print:hidden" data-print>{% icon "printer" %} {% translate "Print" %}</button></div>
-  <p class="mt-4 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="text-base text-muted">{% if slip.employee.nik %}NIK {{ slip.employee.nik }}{% else %}{% translate "Passport" %} {{ slip.employee.passport_number }} ({{ slip.employee.nationality }}){% endif %} · {{ slip.ptkp_status }}</span></p>
+  <p class="mt-4 mb-2"><strong>{{ slip.employee.name }}</strong>{% if slip.employee.position %} · {{ slip.employee.position }}{% endif %}<br><span class="text-sm text-muted">{% if slip.employee.nik %}NIK {{ slip.employee.nik }}{% else %}{% translate "Passport" %} {{ slip.employee.passport_number }} ({{ slip.employee.nationality }}){% endif %} · {{ slip.ptkp_status }}</span></p>
   <div class="overflow-x-auto"><table class="table table-sm mb-0">
     <tr><td>{% translate "Base salary" %}</td><td class="num">{{ slip.base_salary|rupiah }}</td></tr>
     <tr><td>{% translate "Allowances" %}</td><td class="num">{{ slip.allowances|rupiah }}</td></tr>
@@ -21,7 +21,7 @@
     {% if slip.zakat %}<tr><td>{% translate "Zakat" %}</td><td class="num">−{{ slip.zakat|rupiah }}</td></tr>{% endif %}
     <tr class="font-bold"><td>{% translate "Net pay" %}</td><td class="num">{{ slip.net_pay|rupiah }}</td></tr>
   </table></div>
-  {% if slip.benefits_in_kind %}<p class="text-base text-muted mt-4 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
-  <p class="text-base text-muted mt-4 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
+  {% if slip.benefits_in_kind %}<p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
+  <p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
 </div></div>
 {% endblock %}

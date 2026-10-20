@@ -1,14 +1,14 @@
 {% load i18n money %}
 <div class="grid grid-cols-12 gap-x-6 mb-6">
   <div class="col-span-12 sm:col-span-6">
-    <div class="text-base text-muted">{% if invoice.is_sales %}{% translate "Bill to" %}{% else %}{% translate "From supplier" %}{% endif %}</div>
+    <div class="text-sm text-muted">{% if invoice.is_sales %}{% translate "Bill to" %}{% else %}{% translate "From supplier" %}{% endif %}</div>
     {# Issued invoices show the parties as they were when issued (snapshot); drafts the current details. #}
     <div class="font-semibold">{{ invoice.party_name }}</div>
-    {% if invoice.party_address %}<div class="text-base">{{ invoice.party_address|linebreaksbr }}{% if invoice.party_city %}, {{ invoice.party_city }}{% endif %}</div>{% endif %}
-    {% if invoice.party_npwp %}<div class="text-base">{% translate "NPWP" %}: {{ invoice.party_npwp }}</div>
-    {% elif invoice.party_id_number %}<div class="text-base">{{ invoice.party_id_label }}: {{ invoice.party_id_number }}</div>{% endif %}
+    {% if invoice.party_address %}<div class="text-sm">{{ invoice.party_address|linebreaksbr }}{% if invoice.party_city %}, {{ invoice.party_city }}{% endif %}</div>{% endif %}
+    {% if invoice.party_npwp %}<div class="text-sm">{% translate "NPWP" %}: {{ invoice.party_npwp }}</div>
+    {% elif invoice.party_id_number %}<div class="text-sm">{{ invoice.party_id_label }}: {{ invoice.party_id_number }}</div>{% endif %}
   </div>
-  <div class="col-span-12 sm:col-span-6 sm:text-end text-base">
+  <div class="col-span-12 sm:col-span-6 sm:text-end text-sm">
     <div>{% translate "Date" %}: <strong>{{ invoice.date|date:"d F Y" }}</strong></div>
     <div>{% translate "Due date" %}: <strong>{{ invoice.due_date|date:"d F Y" }}</strong></div>
     {% if invoice.reference %}<div>{% translate "Reference" %}: {{ invoice.reference }}</div>{% endif %}
@@ -19,10 +19,10 @@
 <div class="overflow-x-auto"><table class="table">
   <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Qty" %}</th><th class="num">{% translate "Price" %}</th><th class="num">{% translate "Disc." %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
   <tbody>{% for line in invoice.lines.all %}
-    <tr><td>{% if line.item_label %}<span class="text-base text-muted font-mono me-1">{{ line.item_label }}</span>{% endif %}{{ line.description }}<div class="text-base text-muted print:hidden">{{ line.account_label }}</div></td>
+    <tr><td>{% if line.item_label %}<span class="text-sm text-muted font-mono me-1">{{ line.item_label }}</span>{% endif %}{{ line.description }}<div class="text-sm text-muted print:hidden">{{ line.account_label }}</div></td>
       <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}</td>
       <td class="num">{% if line.discount_percent %}{{ line.discount_percent|floatformat:"-2" }}%{% endif %}</td>
-      <td class="text-base">{{ line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
+      <td class="text-sm">{{ line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
   {% endfor %}</tbody>
   <tfoot>
     <tr><td colspan="5" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
@@ -37,6 +37,6 @@
     {% endif %}
   </tfoot>
 </table></div>
-{% if invoice.vat_facility %}{% if invoice.facility_stamp_text %}<p class="text-base font-semibold uppercase mb-1">{{ invoice.facility_stamp_text }}</p>{% endif %}
-<p class="text-base text-muted">{{ invoice.facility_info_label }}{% if invoice.supporting_document %} · {% translate "Supporting document" %}: {{ invoice.supporting_document }}{% if invoice.supporting_document_date %} ({{ invoice.supporting_document_date|date:"d/m/Y" }}){% endif %}{% endif %}</p>{% endif %}
-{% if invoice.notes %}<p class="text-base"><strong>{% translate "Notes" %}:</strong> {{ invoice.notes|linebreaksbr }}</p>{% endif %}
+{% if invoice.vat_facility %}{% if invoice.facility_stamp_text %}<p class="text-sm font-semibold uppercase mb-1">{{ invoice.facility_stamp_text }}</p>{% endif %}
+<p class="text-sm text-muted">{{ invoice.facility_info_label }}{% if invoice.supporting_document %} · {% translate "Supporting document" %}: {{ invoice.supporting_document }}{% if invoice.supporting_document_date %} ({{ invoice.supporting_document_date|date:"d/m/Y" }}){% endif %}{% endif %}</p>{% endif %}
+{% if invoice.notes %}<p class="text-sm"><strong>{% translate "Notes" %}:</strong> {{ invoice.notes|linebreaksbr }}</p>{% endif %}

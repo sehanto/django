@@ -1,3 +1,3 @@
 {% load i18n money %}
-{% if summary.overdue_count %}<div class="text-base text-danger">{% icon "circle-alert" %} {% blocktranslate trimmed with amount=summary.overdue|rupiah count=summary.overdue_count %}{{ amount }} overdue ({{ count }}){% endblocktranslate %}</div>
-{% else %}<div class="text-base text-muted">{% translate "Nothing overdue" %}</div>{% endif %}
+{% if summary.overdue_count %}<div class="text-sm text-danger">{% icon "circle-alert" %} {% blocktranslate trimmed with amount=summary.overdue|rupiah count=summary.overdue_count %}{{ amount }} overdue ({{ count }}){% endblocktranslate %}</div>
+{% else %}<div class="text-sm text-muted">{% translate "Nothing overdue" %}</div>{% endif %}

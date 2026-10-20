@@ -10,12 +10,12 @@
   <thead><tr><th class="w-28">{% translate "Code" %}</th><th>{% translate "Account name" %}</th><th>{% translate "System role" %}</th><th class="num">{% translate "Balance" %}</th><th></th></tr></thead>
   {% for title, rows in groups %}
     <tbody>
-      <tr class="bg-subtle"><td colspan="5" class="font-semibold text-base uppercase">{{ title }}</td></tr>
+      <tr class="bg-subtle"><td colspan="5" class="font-semibold text-sm uppercase">{{ title }}</td></tr>
       {% for account, balance in rows %}
       <tr class="{% if not account.is_active %}text-muted{% endif %}">
         <td><code>{{ account.code }}</code></td>
         <td>{{ account.name }}{% if account.is_contra %} <span class="badge badge-subtle border">{% translate "contra" %}</span>{% endif %}{% if not account.is_active %} <span class="badge badge-neutral">{% translate "inactive" %}</span>{% endif %}</td>
-        <td class="text-base text-muted">{{ account.get_system_role_display|default:"" }}</td>
+        <td class="text-sm text-muted">{{ account.get_system_role_display|default:"" }}</td>
         <td class="num"><a href="{% url 'reports:general_ledger' %}?account={{ account.pk }}" class="no-underline">{{ balance|default_if_none:0|rupiah }}</a></td>
         <td class="text-end whitespace-nowrap">{% if can_write %}
           <a href="{% url 'ledger:account_update' account.pk %}" class="btn btn-sm btn-outline" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>

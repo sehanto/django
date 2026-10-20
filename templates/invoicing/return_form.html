@@ -8,8 +8,8 @@
   <div class="overflow-x-auto mb-4"><table class="table align-middle mb-0">
     <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Invoiced" %}</th><th class="num">{% translate "Unit price" %}</th><th class="w-45">{% translate "Quantity returned" %}</th></tr></thead>
     <tbody>{% for line, field, available in form.line_fields %}
-      <tr><td>{{ line.description }}<div class="text-base text-muted">{{ line.tax_label }}</div></td>
-        <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}{% if line.discount_percent %} <span class="text-base text-muted">-{{ line.discount_percent|floatformat:"-2" }}%</span>{% endif %}</td>
+      <tr><td>{{ line.description }}<div class="text-sm text-muted">{{ line.tax_label }}</div></td>
+        <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}{% if line.discount_percent %} <span class="text-sm text-muted">-{{ line.discount_percent|floatformat:"-2" }}%</span>{% endif %}</td>
         <td>{{ field|add_class:'form-input' }}{% include "partials/field_feedback.html" %}</td></tr>
     {% empty %}<tr><td colspan="4" class="text-muted">{% translate "Everything on this invoice has already been returned." %}</td></tr>{% endfor %}</tbody>
   </table></div>
@@ -20,7 +20,7 @@
         {% include "partials/field_feedback.html" %}</div>
     {% endif %}{% endfor %}
   </div>
-  <p class="text-base text-muted mt-4 mb-0">{% blocktranslate trimmed with balance=invoice.balance_due|rupiah %}
+  <p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with balance=invoice.balance_due|rupiah %}
     Lines are returned at their invoiced price, discount and PPN rate. The return first reduces what is still owed ({{ balance }}); anything more is refunded. The PPN is corrected in the month of the return.
   {% endblocktranslate %}{% if invoice.vat_withheld %} {% blocktranslate trimmed with amount=invoice.vat_withheld|rupiah %}
     The buyer withheld {{ amount }} of PPN and deposited it: up to that amount, the return's PPN is neither credited nor refunded. The buyer recovers it from the tax office with the nota retur.

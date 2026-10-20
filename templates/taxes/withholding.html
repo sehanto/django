@@ -12,17 +12,17 @@
     <tr><td>{{ row.month.label }} {{ year }}</td><td>{{ row.kind.label }}</td><td class="num font-semibold">{{ row.due|rupiah }}</td>
       <td>{% if row.deposit %}
           <span class="badge badge-success">{% blocktranslate trimmed with date=row.deposit.paid_on|date:"d/m/Y" %}Paid {{ date }}{% endblocktranslate %}</span>
-          <a href="{% url 'ledger:journal_detail' row.deposit.journal_entry_id %}" class="text-base ms-1">{{ row.deposit.journal_entry.number }}</a>
-          {% if row.deposit.ntpn %}<div class="text-base text-muted">NTPN {{ row.deposit.ntpn }}</div>{% endif %}
+          <a href="{% url 'ledger:journal_detail' row.deposit.journal_entry_id %}" class="text-sm ms-1">{{ row.deposit.journal_entry.number }}</a>
+          {% if row.deposit.ntpn %}<div class="text-sm text-muted">NTPN {{ row.deposit.ntpn }}</div>{% endif %}
           {% if can_write %}<form method="post" action="{% url 'taxes:withholding_deposit_cancel' row.deposit.pk %}" class="inline" data-confirm="{% translate 'Cancel this deposit?' %}">{% csrf_token %}<button class="btn btn-link btn-sm text-danger p-0 ms-2">{% translate "cancel" %}</button></form>{% endif %}
         {% elif row.due > 0 and can_write %}
           <button class="btn btn-sm btn-outline-primary" type="button" data-dialog-open="depositModal" data-fill-month="{{ row.month.value }}" data-fill-kind="{{ row.kind.value }}">{% translate "Record deposit" %}</button>
         {% endif %}
-        {% if row.due > 0 and not row.deposit %}<div class="text-base {% if row.overdue %}text-danger{% else %}text-muted{% endif %}">{% if row.overdue %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Overdue: due {{ date }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Due {{ date }}{% endblocktranslate %}{% endif %}</div>{% endif %}</td>
-      <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="text-base">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
+        {% if row.due > 0 and not row.deposit %}<div class="text-sm {% if row.overdue %}text-danger{% else %}text-muted{% endif %}">{% if row.overdue %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Overdue: due {{ date }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with date=row.due_on|date:"d/m/Y" %}Due {{ date }}{% endblocktranslate %}{% endif %}</div>{% endif %}</td>
+      <td class="text-end">{% if row.detail_url %}<a href="{{ row.detail_url }}" class="text-sm">{% translate "Bukti potong" %}</a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="5" class="text-center text-muted py-6">{% translate "No income tax was withheld this year. Record it when paying a bill or running payroll." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
-<p class="text-base text-muted mt-2">{% translate "When you pay a supplier for services (PPh 23), rent of land or buildings (PPh 4(2)) or an individual's fee (PPh 21), and when you pay salaries (PPh 21, or PPh 26 for non-residents), you withhold the tax, deposit it by the 15th of the next month (the next working day when that is a weekend or public holiday) and give a bukti potong from Coretax eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first." %}</p>
+<p class="text-sm text-muted mt-2">{% translate "When you pay a supplier for services (PPh 23), rent of land or buildings (PPh 4(2)) or an individual's fee (PPh 21), and when you pay salaries (PPh 21, or PPh 26 for non-residents), you withhold the tax, deposit it by the 15th of the next month (the next working day when that is a weekend or public holiday) and give a bukti potong from Coretax eBupot. Withholding in a month that is already deposited is refused: cancel the deposit first." %}</p>
 
 <dialog class="modal" id="depositModal" aria-labelledby="depositModalTitle"><form method="post" action="{% url 'taxes:withholding_deposit' %}">{% csrf_token %}
   <input type="hidden" name="year" value="{{ year }}">

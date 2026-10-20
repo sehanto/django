@@ -2,7 +2,7 @@
 {% block title %}{% translate "Two-factor authentication" %}{% endblock %}
 {% block auth_content %}
 <h2 class="card-title mb-2">{% icon "shield-check" "me-2 text-primary" %}{% translate "Confirm it's you" %}</h2>
-<p class="text-base text-muted">{% blocktranslate trimmed with organization=current_organization.name %}{{ organization }} requires two-factor authentication. Enter the code from your authenticator app, or a backup code, to continue.{% endblocktranslate %}</p>
+<p class="text-sm text-muted">{% blocktranslate trimmed with organization=current_organization.name %}{{ organization }} requires two-factor authentication. Enter the code from your authenticator app, or a backup code, to continue.{% endblocktranslate %}</p>
 <form method="post">{% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
   {% include "partials/form_fields.html" with col="col-span-12" %}
