@@ -9,9 +9,9 @@
     {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=slug what=template_label button="btn btn-outline" %}
   </div>
 </div>
-<p class="text-muted text-sm max-w-4xl">{{ importer.description }}</p>
-<details class="mb-4 max-w-4xl"><summary class="text-sm cursor-pointer">{% translate "Columns" %}</summary>
-  <ul class="text-sm mt-2 grid grid-cols-12 gap-x-4">{% for column in importer.columns %}
+<p class="text-muted text-base max-w-4xl">{{ importer.description }}</p>
+<details class="mb-4 max-w-4xl"><summary class="text-base cursor-pointer">{% translate "Columns" %}</summary>
+  <ul class="text-base mt-2 grid grid-cols-12 gap-x-4">{% for column in importer.columns %}
     <li class="col-span-12 md:col-span-6"><code>{{ column.label }}</code>{% if column.required %} <span class="text-danger">*</span>{% endif %}{% if column.aliases %} <span class="text-muted">({{ column.aliases|join:", " }})</span>{% endif %}</li>
   {% endfor %}</ul>
 </details>
@@ -30,19 +30,19 @@
     <tbody>{% for r in shown %}
       <tr class="{% if r.outcome == outcomes.SKIPPED %}text-muted{% endif %}"><td class="num">{{ r.number }}</td>
         <td><span class="badge {% if r.outcome == outcomes.ERROR %}badge-danger{% elif r.outcome == outcomes.SKIPPED %}badge-neutral{% else %}badge-success{% endif %}">{{ r.outcome_label }}</span></td>
-        <td class="text-sm">{{ r.label }}</td><td class="text-sm{% if r.outcome == outcomes.ERROR %} text-danger{% endif %}">{{ r.message }}</td></tr>
+        <td class="text-base">{{ r.label }}</td><td class="text-base{% if r.outcome == outcomes.ERROR %} text-danger{% endif %}">{{ r.message }}</td></tr>
     {% endfor %}</tbody>
   </table></div>
-  {% if report.results|length > shown|length %}<p class="text-sm text-muted">{% blocktranslate trimmed count rows=report.results|length with shown=shown|length %}Showing {{ shown }} of {{ rows }} row.{% plural %}Showing {{ shown }} of {{ rows }} rows.{% endblocktranslate %}</p>{% endif %}
+  {% if report.results|length > shown|length %}<p class="text-base text-muted">{% blocktranslate trimmed count rows=report.results|length with shown=shown|length %}Showing {{ shown }} of {{ rows }} row.{% plural %}Showing {{ shown }} of {{ rows }} rows.{% endblocktranslate %}</p>{% endif %}
   {% endif %}
   {% if token %}
   <form method="post" action="{% url 'uploads:apply' slug %}" class="flex flex-wrap items-center gap-2">{% csrf_token %}
     <input type="hidden" name="token" value="{{ token }}">
     <button class="btn btn-primary">{% icon "check" %} {% translate "Apply this file" %}</button>
-    <span class="text-sm text-muted">{% translate "Every row is recorded as shown, or none if the books changed in the meantime." %}</span>
+    <span class="text-base text-muted">{% translate "Every row is recorded as shown, or none if the books changed in the meantime." %}</span>
   </form>
   {% elif not report.ok %}
-  <p class="text-sm text-danger mb-0">{% translate "Nothing was recorded. Correct the file and upload it again." %}</p>
+  <p class="text-base text-danger mb-0">{% translate "Nothing was recorded. Correct the file and upload it again." %}</p>
   {% endif %}
 </div></div>
 {% endif %}

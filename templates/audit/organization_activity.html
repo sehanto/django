@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Activity log") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-1">{% translate "Activity log" %}</h1>
-<p class="text-muted text-sm mb-4">{% translate "Sensitive changes in this organization: settings, members, exports and the subscription. Entries cannot be edited or deleted." %}</p>
+<p class="text-muted text-base mb-4">{% translate "Sensitive changes in this organization: settings, members, exports and the subscription. Entries cannot be edited or deleted." %}</p>
 {% include "audit/_tabs.html" with url_name="organization" %}
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
   <div class="col-span-12 md:col-span-4"><select name="category" class="form-select" data-autosubmit aria-label="{% translate 'Category' %}">
@@ -19,8 +19,8 @@
       <td class="whitespace-nowrap">{{ event.created_at|date:"d M Y H:i" }}</td>
       <td>{{ event.actor_email|default:_("System") }}</td>
       <td>{{ event.get_action_display }}</td>
-      <td class="text-sm">{{ event|audit_summary }}</td>
-      <td class="text-sm text-muted">{{ event.ip_address|default:"-" }}</td>
+      <td class="text-base">{{ event|audit_summary }}</td>
+      <td class="text-base text-muted">{{ event.ip_address|default:"-" }}</td>
     </tr>
   {% empty %}
     <tr><td colspan="5" class="text-center text-muted py-6">{% translate "No activity recorded yet." %}</td></tr>

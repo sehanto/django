@@ -2,7 +2,7 @@
 {% block title %}{% translate "Dashboard" %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-6">
-  <div><h1 class="page-title mb-0">{% translate "Dashboard" %}</h1><div class="text-muted text-sm">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
+  <div><h1 class="page-title mb-0">{% translate "Dashboard" %}</h1><div class="text-muted text-base">{{ current_organization.name }} · {{ today|date:"l, d F Y" }}</div></div>
   {% if can_write %}<div class="flex flex-wrap gap-2">
     <a href="{% url 'invoicing:create' invoice_kinds.SALES %}" class="btn btn-primary">{% icon "receipt" %} {% translate "Sales invoice" %}</a>
     <a href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}" class="btn btn-outline-primary">{% icon "shopping-bag" %} {% translate "Record purchase" %}</a>
@@ -11,20 +11,20 @@
 
 <div class="grid grid-cols-12 gap-4 mb-6">
   <div class="col-span-12 sm:col-span-6 xl:col-span-3"><div class="card h-full"><div class="card-body">
-    <div class="text-sm text-muted">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
-    <div class="text-sm text-muted">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+    <div class="text-base text-muted">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
+    <div class="text-base text-muted">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
   </div></div></div>
   <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.SALES %}" class="card h-full no-underline"><div class="card-body">
-    <div class="text-sm text-muted">{% translate "Accounts receivable" %}</div><div class="stat-value text-fg">{{ receivables.outstanding|rupiah }}</div>
+    <div class="text-base text-muted">{% translate "Accounts receivable" %}</div><div class="stat-value text-fg">{{ receivables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=receivables %}
   </div></a></div>
   <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}" class="card h-full no-underline"><div class="card-body">
-    <div class="text-sm text-muted">{% translate "Accounts payable" %}</div><div class="stat-value text-fg">{{ payables.outstanding|rupiah }}</div>
+    <div class="text-base text-muted">{% translate "Accounts payable" %}</div><div class="stat-value text-fg">{{ payables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=payables %}
   </div></a></div>
   <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'reports:income_statement' %}" class="card h-full no-underline"><div class="card-body">
-    <div class="text-sm text-muted">{% translate "Profit this month" %}</div><div class="stat-value text-fg">{{ this_month.profit|rupiah }}</div>
-    <div class="text-sm text-muted">{% blocktranslate trimmed with revenue=this_month.revenue|rupiah expense=this_month.expense|rupiah %}Revenue {{ revenue }} · Expenses {{ expense }}{% endblocktranslate %}</div>
+    <div class="text-base text-muted">{% translate "Profit this month" %}</div><div class="stat-value text-fg">{{ this_month.profit|rupiah }}</div>
+    <div class="text-base text-muted">{% blocktranslate trimmed with revenue=this_month.revenue|rupiah expense=this_month.expense|rupiah %}Revenue {{ revenue }} · Expenses {{ expense }}{% endblocktranslate %}</div>
   </div></a></div>
 </div>
 
@@ -32,7 +32,7 @@
   <div class="col-span-12 xl:col-span-7"><div class="card h-full"><div class="card-body">
     <div class="flex flex-wrap justify-between items-center mb-2">
       <h2 class="section-heading mb-0">{% translate "Revenue vs expenses · last 6 months" %}</h2>
-      <div class="text-sm text-muted">
+      <div class="text-base text-muted">
         <span class="me-4"><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-1"></span>{% translate "Revenue" %}</span>
         <span><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-2"></span>{% translate "Expenses" %}</span>
       </div>
@@ -46,7 +46,7 @@
       {% endfor %}
     </div>
     {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, on one line. In a row narrower than 16rem the year is left out. #}
-    <div class="@container -mx-2.5 mt-1 text-sm text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @3xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
+    <div class="@container -mx-2.5 mt-1 text-base text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @3xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
     <div class="overflow-x-auto"><table class="table table-sm mt-4 mb-0">
       <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
       <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>

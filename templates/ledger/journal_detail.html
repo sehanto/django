@@ -20,8 +20,8 @@
   </div>{% endif %}
 </div>
 <p>{{ entry.description }}</p>
-{% if entry.restates_year %}<div class="alert alert-info text-sm">{% blocktranslate trimmed with year=entry.restates_year %}A correction of an error in {{ year }}'s books (SAK EMKM 7.16): the financial statements show it in {{ year }}, so the comparative figures are restated and this year's profit is not affected. The general ledger and trial balance show it on its own date.{% endblocktranslate %}</div>{% endif %}
-{% if entry.is_posted %}<p class="text-sm text-muted">
+{% if entry.restates_year %}<div class="alert alert-info text-base">{% blocktranslate trimmed with year=entry.restates_year %}A correction of an error in {{ year }}'s books (SAK EMKM 7.16): the financial statements show it in {{ year }}, so the comparative figures are restated and this year's profit is not affected. The general ledger and trial balance show it on its own date.{% endblocktranslate %}</div>{% endif %}
+{% if entry.is_posted %}<p class="text-base text-muted">
   {% if entry.posted_by %}{% blocktranslate trimmed with user=entry.posted_by.full_name when=entry.posted_at|date:"d M Y H:i" %}Posted by {{ user }} on {{ when }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with when=entry.posted_at|date:"d M Y H:i" %}Posted on {{ when }}{% endblocktranslate %}{% endif %}
   · {% blocktranslate trimmed with sequence=entry.posting_sequence %}ledger entry #{{ sequence }}{% endblocktranslate %}
   · <span title="{% translate 'SHA-256 of this entry and the previous one: any later change breaks the chain.' %}">{% translate "hash" %} <code>{{ entry.entry_hash|slice:":12" }}</code></span>
@@ -40,5 +40,5 @@
   {% endfor %}</tbody>
   <tfoot><tr class="font-semibold"><td colspan="2">{% translate "Total" %}</td><td class="num">{{ entry.total|rupiah }}</td><td class="num">{{ entry.total|rupiah }}</td></tr></tfoot>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "system" as system_user %}{% blocktranslate trimmed with user=entry.created_by|default:system_user when=entry.created_at|date:"d M Y H:i" %}Created by {{ user }} · {{ when }}{% endblocktranslate %}</p>
+<p class="text-base text-muted mt-2">{% translate "system" as system_user %}{% blocktranslate trimmed with user=entry.created_by|default:system_user when=entry.created_at|date:"d M Y H:i" %}Created by {{ user }} · {{ when }}{% endblocktranslate %}</p>
 {% endblock %}

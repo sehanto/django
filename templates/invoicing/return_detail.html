@@ -15,20 +15,20 @@
     <div><h1 class="page-title mb-0">{% if note.is_sales %}{% translate "Sales return" %}{% else %}{% translate "Purchase return" %}{% endif %} {{ note.number }}
       {% if note.status == note.Status.VOID %}<span class="badge align-middle badge-inactive">{{ note.get_status_display }}</span>{% endif %}</h1>
       <div class="text-muted">{% translate "Nota retur" %} · {{ note.date|date:"d F Y" }}</div></div>
-    <div class="text-end text-sm">
+    <div class="text-end text-base">
       <div class="font-semibold">{{ invoice.seller.name }}</div>{% if invoice.seller.npwp %}<div>NPWP {{ invoice.seller.npwp|npwp }}</div>{% endif %}
     </div>
   </div>
-  <dl class="grid grid-cols-12 gap-x-6 text-sm mb-4">
+  <dl class="grid grid-cols-12 gap-x-6 text-base mb-4">
     <dt class="col-span-12 sm:col-span-3">{% if note.is_sales %}{% translate "Customer" %}{% else %}{% translate "Supplier" %}{% endif %}</dt><dd class="col-span-12 sm:col-span-9">{{ invoice.party_name }}{% if invoice.party_npwp %} · NPWP {{ invoice.party_npwp|npwp }}{% endif %}</dd>
     <dt class="col-span-12 sm:col-span-3">{% translate "Invoice" %}</dt><dd class="col-span-12 sm:col-span-9">{{ invoice.number }} ({{ invoice.date|date:"d/m/Y" }}){% if invoice.tax_invoice_number %} · {% translate "tax invoice no." %} {{ invoice.tax_invoice_number }}{% endif %}</dd>
     <dt class="col-span-12 sm:col-span-3">{% translate "Reason" %}</dt><dd class="col-span-12 sm:col-span-9">{{ note.reason }}</dd>
   </dl>
   <div class="overflow-x-auto"><table class="table mb-0">
-    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Quantity" %}</th><th class="num">{% translate "Unit price" %}</th><th class="text-sm">{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
+    <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Quantity" %}</th><th class="num">{% translate "Unit price" %}</th><th class="text-base">{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
     <tbody>{% for line in note.lines.all %}
       <tr><td>{{ line.invoice_line.description }}</td><td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.invoice_line.unit_price|rupiah }}</td>
-        <td class="text-sm">{{ line.invoice_line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
+        <td class="text-base">{{ line.invoice_line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
     {% endfor %}</tbody>
     <tfoot>
       <tr><td colspan="4" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ note.subtotal|rupiah }}</td></tr>
@@ -42,8 +42,8 @@
       {% if note.vat_not_collected %}<tr><td colspan="4" class="text-end">{% translate "PPN not collected (facility)" %}</td><td class="num">{{ note.vat_not_collected|rupiah }}</td></tr>{% endif %}
     </tfoot>
   </table></div>
-  {% if note.status == note.Status.POSTED %}<p class="text-sm text-muted mt-4 mb-0 print:hidden">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
-  <p class="text-sm text-muted mt-4 mb-0 print:hidden">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
+  {% if note.status == note.Status.POSTED %}<p class="text-base text-muted mt-4 mb-0 print:hidden">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% else %}{% translate "Import the Coretax XML under e-Faktur > Retur Pajak Masukan > Impor Data, then issue the nota retur there. Check that the item names, units and prices match the supplier's Faktur Pajak: Coretax refuses rows that differ." %}{% endif %}</p>{% endif %}
+  <p class="text-base text-muted mt-4 mb-0 print:hidden">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' note.journal_entry_id %}">{{ note.journal_entry.number }}</a></p>
 </div></div>
 {% if can_write and note.status == note.Status.POSTED %}
 <dialog class="modal" id="voidModal" aria-labelledby="voidModalTitle"><form method="post" action="{% url 'invoicing:return_void' note.pk %}">{% csrf_token %}

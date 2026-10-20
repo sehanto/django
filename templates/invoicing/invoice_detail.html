@@ -28,7 +28,7 @@
 <div class="grid grid-cols-12 gap-6">
   <div class="col-span-12 xl:col-span-8">
     <div class="card"><div class="card-body">{% include "invoicing/_invoice_body.html" %}</div></div>
-    {% if show_coretax %}<p class="text-sm text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
+    {% if show_coretax %}<p class="text-base text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
       {% if can_write and not coretax_problem and not invoice.tax_invoice_number %}
       <form method="post" action="{% url 'invoicing:tax_invoice_number' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
         <div class="min-w-0 flex-1"><label class="form-label" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-input form-input-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
@@ -37,7 +37,7 @@
       {% endif %}
     {% endif %}
     {% if invoice.special_document and invoice.status != invoice.Status.DRAFT %}
-      <p class="text-sm text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
+      <p class="text-base text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
       {% if can_write and not invoice.special_document_number and invoice.status != invoice.Status.VOID %}
       <form method="post" action="{% url 'invoicing:special_document' kind invoice.pk %}" class="mt-1 flex max-w-xl flex-wrap items-end gap-2">{% csrf_token %}
         <div class="min-w-0 flex-1"><label class="form-label" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-input form-input-sm" maxlength="100" required></div>
@@ -46,7 +46,7 @@
       </form>
       {% endif %}
     {% endif %}
-    {% if invoice.journal_entry %}<p class="text-sm text-muted mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
+    {% if invoice.journal_entry %}<p class="text-base text-muted mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
   </div>
   <div class="col-span-12 xl:col-span-4">
     {% if invoice.is_open and can_write %}
@@ -55,7 +55,7 @@
       <form method="post" action="{% url 'invoicing:pay' kind invoice.pk %}">{% csrf_token %}
         {% if payment_form.income_tax_fields %}
           {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-span-12" %}
-          <details class="mt-4"{% if payment_form.errors %} open{% endif %}><summary class="text-sm">{% if invoice.is_sales %}{% translate "The buyer withheld income tax" %}{% else %}{% translate "Withhold income tax (PPh 23 or 4(2))" %}{% endif %}</summary>
+          <details class="mt-4"{% if payment_form.errors %} open{% endif %}><summary class="text-base">{% if invoice.is_sales %}{% translate "The buyer withheld income tax" %}{% else %}{% translate "Withhold income tax (PPh 23 or 4(2))" %}{% endif %}</summary>
             <div class="mt-2">{% include "partials/form_fields.html" with form=payment_form fields=payment_form.income_tax_fields col="col-span-12" %}</div>
           </details>
         {% else %}{% include "partials/form_fields.html" with form=payment_form col="col-span-12" %}{% endif %}
@@ -67,7 +67,7 @@
       <h2 class="section-heading">{% translate "Payment history" %}</h2>
       {% for p in invoice.payments.all %}
         <div class="flex justify-between items-start border-t py-2 {% if p.status == p.Status.VOID %}line-through text-muted{% endif %}">
-          <div><div class="text-sm font-semibold">{{ p.number }}</div><div class="text-sm text-muted">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="text-sm text-muted">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}{% if p.income_tax_kind %}<div class="text-sm text-muted">{% if p.income_tax_withheld %}{% blocktranslate trimmed with amount=p.income_tax_withheld|rupiah tax=p.get_income_tax_kind_display %}incl. {{ amount }} withheld as {{ tax }}{% endblocktranslate %}{% else %}{% translate "PPh 26 at the treaty's 0% rate: nothing withheld" %}{% endif %}{% if p.withholding_slip %} · {{ p.withholding_slip }}{% endif %}</div>
+          <div><div class="text-base font-semibold">{{ p.number }}</div><div class="text-base text-muted">{{ p.date|date:"d M Y" }} · {{ p.get_method_display }} · {{ p.cash_account.name }}</div>{% if p.vat_withheld %}<div class="text-base text-muted">{% blocktranslate trimmed with amount=p.vat_withheld|rupiah %}incl. {{ amount }} PPN withheld by the buyer{% endblocktranslate %}</div>{% endif %}{% if p.income_tax_kind %}<div class="text-base text-muted">{% if p.income_tax_withheld %}{% blocktranslate trimmed with amount=p.income_tax_withheld|rupiah tax=p.get_income_tax_kind_display %}incl. {{ amount }} withheld as {{ tax }}{% endblocktranslate %}{% else %}{% translate "PPh 26 at the treaty's 0% rate: nothing withheld" %}{% endif %}{% if p.withholding_slip %} · {{ p.withholding_slip }}{% endif %}</div>
             {% if can_write and not invoice.is_sales and not p.withholding_slip and p.status == p.Status.POSTED %}
             <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="flex gap-1 mt-1">{% csrf_token %}
               <input name="number" class="form-input form-input-sm" maxlength="50" placeholder="{% translate 'Bukti potong no.' %}" aria-label="{% translate 'Bukti potong no.' %}" required>
@@ -76,14 +76,14 @@
             {% if p.status == p.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:payment_void' p.pk %}" data-confirm="{% translate 'Void this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}
           </div>
         </div>
-      {% empty %}<p class="text-sm text-muted mb-0">{% translate "No payments yet." %}</p>{% endfor %}
+      {% empty %}<p class="text-base text-muted mb-0">{% translate "No payments yet." %}</p>{% endfor %}
     </div></div>
     {% if write_offs %}
     <div class="card mt-4"><div class="card-body">
       <h2 class="section-heading">{% translate "Written off as uncollectible" %}</h2>
       {% for w in write_offs %}
         <div class="flex justify-between items-start border-t py-2 {% if w.status == w.Status.VOID %}line-through text-muted{% endif %}">
-          <div><div class="text-sm">{{ w.date|date:"d M Y" }} · {{ w.reason }}</div><a href="{% url 'ledger:journal_detail' w.journal_entry_id %}" class="text-sm">{{ w.journal_entry.number }}</a></div>
+          <div><div class="text-base">{{ w.date|date:"d M Y" }} · {{ w.reason }}</div><a href="{% url 'ledger:journal_detail' w.journal_entry_id %}" class="text-base">{{ w.journal_entry.number }}</a></div>
           <div class="text-end"><div class="num">{{ w.amount|rupiah }}</div>
             {% if w.status == w.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:write_off_void' w.pk %}" data-confirm="{% translate 'Void this write-off? The invoice will be open again.' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}</div>
         </div>
@@ -95,8 +95,8 @@
       <h2 class="section-heading">{% translate "Returns" %}</h2>
       {% for r in returns %}
         <div class="flex justify-between items-start border-t py-2 {% if r.status == r.Status.VOID %}line-through text-muted{% endif %}">
-          <div><a href="{% url 'invoicing:return_detail' r.pk %}" class="text-sm font-semibold">{{ r.number }}</a><div class="text-sm text-muted">{{ r.date|date:"d M Y" }} · {{ r.reason }}</div></div>
-          <div class="text-end"><div class="num">{{ r.total|rupiah }}</div>{% if r.refunded %}<div class="text-sm text-muted">{% blocktranslate trimmed with amount=r.refunded|rupiah %}{{ amount }} refunded{% endblocktranslate %}</div>{% endif %}</div>
+          <div><a href="{% url 'invoicing:return_detail' r.pk %}" class="text-base font-semibold">{{ r.number }}</a><div class="text-base text-muted">{{ r.date|date:"d M Y" }} · {{ r.reason }}</div></div>
+          <div class="text-end"><div class="num">{{ r.total|rupiah }}</div>{% if r.refunded %}<div class="text-base text-muted">{% blocktranslate trimmed with amount=r.refunded|rupiah %}{{ amount }} refunded{% endblocktranslate %}</div>{% endif %}</div>
         </div>
       {% endfor %}
     </div></div>

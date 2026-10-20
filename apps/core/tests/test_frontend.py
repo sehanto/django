@@ -248,12 +248,12 @@ def test_section_headings_share_one_style():
 
 
 def test_the_type_scale_and_phone_form_fields():
-    """Body text 14px from one scale in rem (the browser's font size still scales it); form fields are
+    """Body text 12px from one scale in rem (the browser's font size still scales it); form fields are
     16px on phones, where iOS zooms into anything smaller; no font size is written by hand."""
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    for token in ("--text-sm:.75rem", "--text-base:.875rem", "--text-lg:1rem", "--text-2xl:1.5rem", "--text-3xl:1.875rem"):
+    for token in ("--text-base:.75rem", "--text-lg:1rem", "--text-2xl:1.5rem", "--text-3xl:1.875rem"):
         assert token in css, token
     source = (Path(settings.BASE_DIR) / "frontend" / "app.css").read_text()
     assert re.search(r"--text-lg:\s*1rem;", source) and source.count("text-lg md:text-base") >= 2  # .form-input/-select and their -sm

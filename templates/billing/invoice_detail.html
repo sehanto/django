@@ -29,26 +29,26 @@
   <div class="flex justify-between mb-6">
     <div>
       <div class="font-bold text-2xl">{{ seller.name }}</div>
-      {% if seller.address %}<div class="text-sm">{{ seller.address }}</div>{% endif %}
-      {% if seller.npwp %}<div class="text-sm">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
+      {% if seller.address %}<div class="text-base">{{ seller.address }}</div>{% endif %}
+      {% if seller.npwp %}<div class="text-base">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
     </div>
     <div class="text-end">
       <div class="text-base font-medium leading-tight uppercase mb-1">{% if invoice.status == invoice.Status.PAID %}{% translate "Receipt" %}{% else %}{% translate "Invoice" %}{% endif %}</div>
       <div class="font-semibold">{{ invoice.number }}</div>
-      <div class="text-sm">{{ invoice.created_at|date:"d F Y" }}</div>
+      <div class="text-base">{{ invoice.created_at|date:"d F Y" }}</div>
     </div>
   </div>
   <div class="mb-6">
-    <div class="text-sm text-muted">{% translate "Bill to" %}</div>
+    <div class="text-base text-muted">{% translate "Bill to" %}</div>
     <div class="font-semibold">{{ invoice.buyer_name }}</div>
-    {% if invoice.buyer_address %}<div class="text-sm">{{ invoice.buyer_address }}</div>{% endif %}
-    {% if invoice.buyer_npwp %}<div class="text-sm">{% translate "NPWP" %}: {{ invoice.buyer_npwp|npwp }}</div>{% endif %}
+    {% if invoice.buyer_address %}<div class="text-base">{{ invoice.buyer_address }}</div>{% endif %}
+    {% if invoice.buyer_npwp %}<div class="text-base">{% translate "NPWP" %}: {{ invoice.buyer_npwp|npwp }}</div>{% endif %}
   </div>
   <div class="overflow-x-auto"><table class="table">
     <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
     <tbody><tr>
       <td>{% blocktranslate trimmed with seller=seller.name plan=invoice.plan.name period=invoice.get_billing_period_display %}{{ seller }} {{ plan }} plan, {{ period }}{% endblocktranslate %}
-        {% if invoice.coverage_start %}<div class="text-sm text-muted">{% blocktranslate trimmed with start=invoice.coverage_start|date:"d M Y" end=invoice.coverage_end|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% if invoice.extension_days %} · {% blocktranslate trimmed count days=invoice.extension_days %}includes {{ days }} extra day from credit{% plural %}includes {{ days }} extra days from credit{% endblocktranslate %}{% endif %}</div>{% endif %}</td>
+        {% if invoice.coverage_start %}<div class="text-base text-muted">{% blocktranslate trimmed with start=invoice.coverage_start|date:"d M Y" end=invoice.coverage_end|date:"d M Y" %}{{ start }} to {{ end }}{% endblocktranslate %}{% if invoice.extension_days %} · {% blocktranslate trimmed count days=invoice.extension_days %}includes {{ days }} extra day from credit{% plural %}includes {{ days }} extra days from credit{% endblocktranslate %}{% endif %}</div>{% endif %}</td>
       <td class="num">{{ invoice.subtotal|rupiah }}</td>
     </tr></tbody>
     <tfoot>
@@ -57,14 +57,14 @@
           <td class="num">-{{ invoice.credit_amount|rupiah }}</td></tr>
       {% endif %}
       <tr><td class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.net_subtotal|rupiah }}</td></tr>
-      <tr><td class="text-end text-sm text-muted">{% translate "Tax base (DPP 11/12)" %}</td><td class="num text-sm text-muted">{{ invoice.tax_base|rupiah }}</td></tr>
+      <tr><td class="text-end text-base text-muted">{% translate "Tax base (DPP 11/12)" %}</td><td class="num text-base text-muted">{{ invoice.tax_base|rupiah }}</td></tr>
       <tr><td class="text-end">{% translate "PPN 12%" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>
       <tr class="font-bold"><td class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
     </tfoot>
   </table></div>
   {% if invoice.status == invoice.Status.PAID %}
-    <p class="text-sm mb-1">{% blocktranslate trimmed with date=invoice.paid_at|date:"d F Y H:i" %}Paid on {{ date }}.{% endblocktranslate %}{% if invoice.gateway_payment_id %} {% translate "Payment reference" %}: {{ invoice.gateway_payment_id }}{% endif %}</p>
+    <p class="text-base mb-1">{% blocktranslate trimmed with date=invoice.paid_at|date:"d F Y H:i" %}Paid on {{ date }}.{% endblocktranslate %}{% if invoice.gateway_payment_id %} {% translate "Payment reference" %}: {{ invoice.gateway_payment_id }}{% endif %}</p>
   {% endif %}
-  <p class="text-sm text-muted mb-0">{% translate "The official tax invoice (Faktur Pajak) is issued separately through Coretax." %}</p>
+  <p class="text-base text-muted mb-0">{% translate "The official tax invoice (Faktur Pajak) is issued separately through Coretax." %}</p>
 </div></div>
 {% endblock %}

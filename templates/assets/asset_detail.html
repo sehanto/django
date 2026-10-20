@@ -16,14 +16,14 @@
   </div>
 </div>
 <div class="grid grid-cols-12 gap-4 mb-4">
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Cost" %}</div><div class="stat-value">{{ asset.cost|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Accumulated depreciation" %}</div><div class="stat-value">{{ accumulated|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Book value" %}</div><div class="stat-value">{{ book_value|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Depreciation" %}</div><div class="stat-value text-base pt-2">
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "Cost" %}</div><div class="stat-value">{{ asset.cost|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "Accumulated depreciation" %}</div><div class="stat-value">{{ accumulated|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "Book value" %}</div><div class="stat-value">{{ book_value|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-3"><div class="card"><div class="card-body"><div class="text-base text-muted">{% translate "Depreciation" %}</div><div class="stat-value text-base pt-2">
     {% if asset.is_depreciable %}{% blocktranslate trimmed count months=asset.current_useful_life_months with method=asset.get_current_method_display %}{{ method }}, {{ months }} month{% plural %}{{ method }}, {{ months }} months{% endblocktranslate %}{% else %}{% translate "Not depreciated (land)" %}{% endif %}
   </div></div></div></div>
 </div>
-<dl class="grid grid-cols-12 gap-x-6 text-sm mb-6 max-w-4xl">
+<dl class="grid grid-cols-12 gap-x-6 text-base mb-6 max-w-4xl">
   <dt class="col-span-12 sm:col-span-4">{% translate "Acquisition date" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.acquisition_date|date:"d F Y" }}</dd>
   <dt class="col-span-12 sm:col-span-4">{% translate "Fixed asset account" %}</dt><dd class="col-span-12 sm:col-span-8">{{ asset.asset_account }}</dd>
   {% if asset.is_depreciable %}
@@ -40,7 +40,7 @@
   <thead><tr><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in revisions %}
     <tr><td>{{ r.effective_from|date:"F Y" }}</td><td>{{ r.previous_useful_life_months }} → {{ r.useful_life_months }}</td>
-      <td>{% if r.method == r.previous_method %}{{ r.get_method_display }}{% else %}{{ r.get_previous_method_display }} → {{ r.get_method_display }}{% endif %}</td><td class="text-sm">{{ r.reason }}</td></tr>
+      <td>{% if r.method == r.previous_method %}{{ r.get_method_display }}{% else %}{{ r.get_previous_method_display }} → {{ r.get_method_display }}{% endif %}</td><td class="text-base">{{ r.reason }}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
 {% endif %}
@@ -51,7 +51,7 @@
   <tbody>{% for month, posting, elsewhere in schedule %}
     <tr class="{% if asset.disposed_on and month.period_end >= asset.disposed_on %}text-muted line-through{% endif %}">
       <td>{{ month.period_end|date:"F Y" }}</td><td class="num">{{ month.amount|rupiah }}</td><td class="num">{{ month.accumulated|rupiah }}</td><td class="num">{{ month.book_value|rupiah }}</td>
-      <td class="text-sm">{% if posting %}<a href="{% url 'ledger:journal_detail' posting.journal_entry_id %}">{{ posting.journal_entry.number }}</a>
+      <td class="text-base">{% if posting %}<a href="{% url 'ledger:journal_detail' posting.journal_entry_id %}">{{ posting.journal_entry.number }}</a>
         {% elif elsewhere %}<span class="text-muted">{% translate "In opening balances" %}</span>
         {% elif month.period_end <= today and asset.status == asset.Status.ACTIVE %}<span class="badge badge-warning">{% translate "Not posted yet" %}</span>
         {% else %}<span class="text-muted">{% translate "Scheduled" %}</span>{% endif %}</td>
@@ -64,7 +64,7 @@
   <div class="modal-header"><h2 class="modal-title" id="reviseModalTitle">{% translate "Revise estimate" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     {% include "partials/form_fields.html" with form=revision_form col="col-span-12" %}
-    <p class="text-sm text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value is depreciated over the remaining months with the chosen method, without a residual value." %}</p>
+    <p class="text-base text-muted mt-4 mb-0">{% translate "A change in estimate applies from then on (SAK EMKM): depreciation already posted stays, and the remaining book value is depreciated over the remaining months with the chosen method, without a residual value." %}</p>
   </div>
   <div class="modal-footer"><button class="btn btn-primary">{% translate "Save" %}</button></div>
 </form></dialog>
@@ -74,7 +74,7 @@
   <div class="modal-header"><h2 class="modal-title" id="disposeModalTitle">{% translate "Sell or write off" %}</h2><button type="button" class="btn-icon" data-dialog-close aria-label="{% translate 'Close' %}">{% icon "x" %}</button></div>
   <div class="modal-body">
     {% include "partials/form_fields.html" with form=disposal_form col="col-span-12" %}
-    <p class="text-sm text-muted mt-4 mb-0">{% translate "Depreciation runs to the end of the month before the disposal and is posted first if it is still due. The entry removes the cost and accumulated depreciation, records the proceeds and books the difference as a gain or loss." %}</p>
+    <p class="text-base text-muted mt-4 mb-0">{% translate "Depreciation runs to the end of the month before the disposal and is posted first if it is still due. The entry removes the cost and accumulated depreciation, records the proceeds and books the difference as a gain or loss." %}</p>
   </div>
   <div class="modal-footer"><button class="btn btn-danger">{% translate "Dispose & post" %}</button></div>
 </form></dialog>
