@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") "inventory:list" %}{% crumb _("Stock adjustment") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Stock adjustment" %}</h1>
-<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
+<form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <p class="text-sm text-muted mt-4 mb-0">{% translate "Use this for opening stock and for differences found when counting stock. Purchases and sales update the stock by themselves." %}</p>
 </div>

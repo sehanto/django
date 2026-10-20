@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% if invoice.is_sales %}{% crumb _("Sales") "invoicing:list" invoice.kind %}{% else %}{% crumb _("Purchases") "invoicing:list" invoice.kind %}{% endif %}{% crumb invoice.number "invoicing:detail" invoice.kind invoice.pk %}{% if invoice.is_sales %}{% crumb _("Sales return") %}{% else %}{% crumb _("Purchase return") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% if invoice.is_sales %}{% blocktranslate trimmed with number=invoice.number %}Sales return of {{ number }}{% endblocktranslate %}{% else %}{% blocktranslate trimmed with number=invoice.number %}Purchase return of {{ number }}{% endblocktranslate %}{% endif %}</h1>
-<form method="post" class="card max-w-5xl"><div class="card-body">{% csrf_token %}
+<form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   <div class="overflow-x-auto mb-4"><table class="table align-middle mb-0">
     <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Invoiced" %}</th><th class="num">{% translate "Unit price" %}</th><th class="w-45">{% translate "Quantity returned" %}</th></tr></thead>

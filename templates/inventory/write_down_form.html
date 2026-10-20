@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") "inventory:list" %}{% crumb _("Write down stock") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Write down stock" %}</h1>
-<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
+<form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <p class="text-sm text-muted mt-4 mb-0">{% translate "When goods can no longer be sold for what they cost (damaged, expired, obsolete), their stock is carried at the lower net realisable value. The difference is a loss of the period; quantities don't change, and later sales take their cost from the lower value." %}</p>
 </div>

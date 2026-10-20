@@ -47,7 +47,7 @@
 </div></div>
 {% endif %}
 
-<form method="post" enctype="multipart/form-data" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
+<form method="post" enctype="multipart/form-data" class="card"><div class="card-body">{% csrf_token %}
   {% if options_form %}{% include "partials/form_fields.html" with form=options_form %}<div class="mb-4"></div>{% endif %}
   {% include "partials/form_fields.html" with form=form col="col-span-12" %}
 </div>
