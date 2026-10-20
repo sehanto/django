@@ -5,9 +5,9 @@
 <p class="text-sm text-muted">{% blocktranslate trimmed with organization=current_organization.name %}{{ organization }} requires two-factor authentication. Enter the code from your authenticator app, or a backup code, to continue.{% endblocktranslate %}</p>
 <form method="post">{% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
-  {% include "partials/form_fields.html" with col="col-span-12" %}
+  {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
   {% include "accounts/_captcha.html" %}
-  <button class="btn btn-primary w-full mt-6">{% translate "Verify" %}</button>
+  <button class="btn btn-primary mt-6">{% translate "Verify" %}</button>
 </form>
 <form method="post" action="{% url 'accounts:logout' %}" class="text-center mt-2">{% csrf_token %}<button class="btn btn-link btn-sm">{% translate "Sign out" %}</button></form>
 {% endblock %}

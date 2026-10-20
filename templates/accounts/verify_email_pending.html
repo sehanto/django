@@ -7,15 +7,15 @@
 
 <form method="post" action="{% url 'accounts:verify_email_resend' %}" class="mb-4">{% csrf_token %}
   {% include "accounts/_captcha.html" %}
-  <button class="btn btn-primary w-full mt-4">{% translate "Send the link again" %}</button>
+  <button class="btn btn-primary mt-4">{% translate "Send the link again" %}</button>
 </form>
 
 <details class="mb-4" {% if change_form.is_bound %}open{% endif %}>
   <summary class="text-sm">{% translate "Wrong email address?" %}</summary>
   <form method="post" action="{% url 'accounts:verify_email_change' %}" class="mt-2">{% csrf_token %}
-    {% include "partials/form_fields.html" with form=change_form col="col-span-12" %}
+    {% include "partials/form_fields.html" with form=change_form col="col-span-12 md:col-span-4" %}
     {% include "accounts/_captcha.html" with captcha=change_captcha %}
-    <button class="btn btn-outline-primary w-full mt-4">{% translate "Update and send link" %}</button>
+    <button class="btn btn-outline-primary mt-4">{% translate "Update and send link" %}</button>
   </form>
 </details>
 
