@@ -26,7 +26,7 @@
 </table></div></div>
 {% if reconciliation %}
 <h2 class="section-heading">{% translate "Stock and ledger" %}</h2>
-<div class="card max-w-4xl"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Stock value" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.stock|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>
