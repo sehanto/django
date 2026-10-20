@@ -4,15 +4,15 @@
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Coretax connection" %}</h1>
 <div class="grid grid-cols-12 gap-6">
-  <div class="col-span-12 lg:col-span-5">
+  <div class="col-span-12">
     <form method="post" class="card"><div class="card-body">{% csrf_token %}
       <p class="text-sm text-muted">{% blocktranslate trimmed %}DJP has no public Coretax API: fakturs are sent through a licensed tax application provider (PJAP). Enter the address and access token your provider gave you; invoices can then be sent to Coretax from the app, and the Faktur Pajak numbers Coretax issues are recorded on them. Without a connection, download the XML files and import them in Coretax.{% endblocktranslate %}</p>
-      {% include "partials/form_fields.html" with col="col-span-12" %}
+      {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
       {% if connection.token %}<p class="text-sm text-success mt-2 mb-0">{% icon "lock" "me-1" %}{% translate "A token is stored." %}</p>{% endif %}
     </div>
     <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
   </div>
-  <div class="col-span-12 lg:col-span-7">
+  <div class="col-span-12">
     <h2 class="section-heading">{% translate "Sent to Coretax" %}</h2>
     <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
       <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Document" %}</th><th>{% translate "Contents" %}</th><th>{% translate "Status" %}</th><th></th></tr></thead>

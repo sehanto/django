@@ -26,7 +26,7 @@
   </div>
 </div>
 <div class="grid grid-cols-12 gap-6">
-  <div class="col-span-12 xl:col-span-8">
+  <div class="col-span-12">
     <div class="card"><div class="card-body">{% include "invoicing/_invoice_body.html" %}</div></div>
     {% if show_coretax %}<p class="text-sm text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
       {% if can_write and not coretax_problem and not invoice.tax_invoice_number %}
@@ -48,18 +48,18 @@
     {% endif %}
     {% if invoice.journal_entry %}<p class="text-sm text-muted mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
   </div>
-  <div class="col-span-12 xl:col-span-4">
+  <div class="col-span-12">
     {% if invoice.is_open and can_write %}
     <div class="card mb-4"><div class="card-body">
       <h2 class="section-heading">{% if invoice.is_sales %}{% translate "Receive payment" %}{% else %}{% translate "Pay bill" %}{% endif %}</h2>
       <form method="post" action="{% url 'invoicing:pay' kind invoice.pk %}">{% csrf_token %}
         {% if payment_form.income_tax_fields %}
-          {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-span-12" %}
+          {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-span-12 md:col-span-4" %}
           <details class="mt-4"{% if payment_form.errors %} open{% endif %}><summary class="text-sm">{% if invoice.is_sales %}{% translate "The buyer withheld income tax" %}{% else %}{% translate "Withhold income tax (PPh 23 or 4(2))" %}{% endif %}</summary>
-            <div class="mt-2">{% include "partials/form_fields.html" with form=payment_form fields=payment_form.income_tax_fields col="col-span-12" %}</div>
+            <div class="mt-2">{% include "partials/form_fields.html" with form=payment_form fields=payment_form.income_tax_fields col="col-span-12 md:col-span-4" %}</div>
           </details>
-        {% else %}{% include "partials/form_fields.html" with form=payment_form col="col-span-12" %}{% endif %}
-        <button class="btn btn-success w-full mt-4">{% translate "Record payment" %}</button>
+        {% else %}{% include "partials/form_fields.html" with form=payment_form col="col-span-12 md:col-span-4" %}{% endif %}
+        <button class="btn btn-success mt-4">{% translate "Record payment" %}</button>
       </form>
     </div></div>
     {% endif %}

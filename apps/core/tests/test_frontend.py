@@ -72,7 +72,7 @@ def test_the_build_has_what_pages_use_and_nothing_else():
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
     for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-toggle", ".nav-link.active", ".icon",
-                 ".grid-cols-12", ".xl\\:col-span-8", ".print\\:hidden", ".data-open\\:flex"):
+                 ".grid-cols-12", ".md\\:col-span-4", ".print\\:hidden", ".data-open\\:flex"):
         assert kept in css, kept
     for dropped in (".carousel", ".offcanvas", ".grid-cols-7", "@font-face"):
         assert dropped not in css, dropped
