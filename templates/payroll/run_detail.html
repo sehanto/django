@@ -23,15 +23,15 @@
 <p class="text-sm text-muted">{% blocktranslate trimmed with employer=run.employer_contributions|rupiah %}The employer's BPJS contributions ({{ employer }}) are an expense of the period.{% endblocktranslate %} {% if run.zakat %}{% blocktranslate trimmed with amount=run.zakat|rupiah %}Zakat of {{ amount }} was deducted from pay; pass it on to the zakat body and record that payment as a journal entry.{% endblocktranslate %} {% endif %}{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' run.journal_entry_id %}">{{ run.journal_entry.number }}</a></p>
 {% if run.status == run.Status.POSTED %}
 <div class="grid grid-cols-12 gap-4">
-  <div class="col-span-12 md:col-span-6"><div class="card"><div class="card-body">
+  <div class="col-span-12"><div class="card"><div class="card-body">
     <h2 class="section-heading">{% translate "Salaries" %}</h2>
     {% if run.paid_on %}<p class="mb-0">{% blocktranslate trimmed with date=run.paid_on|date:"d/m/Y" %}Paid on {{ date }}.{% endblocktranslate %} <a href="{% url 'ledger:journal_detail' run.payment_entry_id %}">{{ run.payment_entry.number }}</a></p>
-    {% elif can_write %}<form method="post" action="{% url 'payroll:run_action' run.pk 'pay' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-span-12 md:col-span-6" %}<button class="btn btn-success mt-4">{% blocktranslate trimmed with amount=run.net_pay|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
+    {% elif can_write %}<form method="post" action="{% url 'payroll:run_action' run.pk 'pay' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-span-12 md:col-span-4" %}<button class="btn btn-success mt-4">{% blocktranslate trimmed with amount=run.net_pay|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
   </div></div></div>
-  <div class="col-span-12 md:col-span-6"><div class="card"><div class="card-body">
+  <div class="col-span-12"><div class="card"><div class="card-body">
     <h2 class="section-heading">{% translate "BPJS contributions" %}</h2>
     {% if run.bpjs_paid_on %}<p class="mb-0">{% blocktranslate trimmed with date=run.bpjs_paid_on|date:"d/m/Y" %}Paid on {{ date }}.{% endblocktranslate %} <a href="{% url 'ledger:journal_detail' run.bpjs_entry_id %}">{{ run.bpjs_entry.number }}</a></p>
-    {% elif can_write and run.employer_contributions %}<form method="post" action="{% url 'payroll:run_action' run.pk 'bpjs' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-span-12 md:col-span-6" %}<button class="btn btn-success mt-4">{% blocktranslate trimmed with amount=run.employer_contributions|add:run.employee_contributions|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
+    {% elif can_write and run.employer_contributions %}<form method="post" action="{% url 'payroll:run_action' run.pk 'bpjs' %}">{% csrf_token %}{% include "partials/form_fields.html" with form=pay_form col="col-span-12 md:col-span-4" %}<button class="btn btn-success mt-4">{% blocktranslate trimmed with amount=run.employer_contributions|add:run.employee_contributions|rupiah %}Pay {{ amount }}{% endblocktranslate %}</button></form>{% endif %}
   </div></div></div>
 </div>
 {% endif %}
