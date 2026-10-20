@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("File uploads") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-2">{% translate "File uploads" %}</h1>
-<p class="text-muted text-sm max-w-4xl mb-6">{% translate "Bring data in from a spreadsheet, the earlier books, Coretax or internet banking. Each file is checked first: you see what every row will do, and nothing is recorded until you apply it. A file is applied in full or not at all, and never twice." %}</p>
+<p class="text-muted text-sm mb-6">{% translate "Bring data in from a spreadsheet, the earlier books, Coretax or internet banking. Each file is checked first: you see what every row will do, and nothing is recorded until you apply it. A file is applied in full or not at all, and never twice." %}</p>
 {% for group in groups %}
 <h2 class="section-heading">{{ group.title }}</h2>
 <p class="text-muted text-sm mb-2">{{ group.intro }}</p>

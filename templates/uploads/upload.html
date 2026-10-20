@@ -9,15 +9,15 @@
     {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=slug what=template_label button="btn btn-outline" %}
   </div>
 </div>
-<p class="text-muted text-sm max-w-4xl">{{ importer.description }}</p>
-<details class="mb-4 max-w-4xl"><summary class="text-sm cursor-pointer">{% translate "Columns" %}</summary>
+<p class="text-muted text-sm">{{ importer.description }}</p>
+<details class="mb-4"><summary class="text-sm cursor-pointer">{% translate "Columns" %}</summary>
   <ul class="text-sm mt-2 grid grid-cols-12 gap-x-4">{% for column in importer.columns %}
     <li class="col-span-12 md:col-span-6"><code>{{ column.label }}</code>{% if column.required %} <span class="text-danger">*</span>{% endif %}{% if column.aliases %} <span class="text-muted">({{ column.aliases|join:", " }})</span>{% endif %}</li>
   {% endfor %}</ul>
 </details>
 
 {% if report %}
-<div class="card mb-6 max-w-5xl"><div class="card-body">
+<div class="card mb-6"><div class="card-body">
   <h2 class="section-heading">{% blocktranslate trimmed with name=file_name %}Check of {{ name }}{% endblocktranslate %}</h2>
   {% for problem in report.problems %}<div class="alert alert-danger" role="alert">{{ problem }}</div>{% endfor %}
   <div class="flex flex-wrap gap-2 mb-4">

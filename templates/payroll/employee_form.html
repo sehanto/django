@@ -7,7 +7,7 @@
 <form method="post" class="card"><div class="card-body">{% csrf_token %}{% include "partials/form_fields.html" %}</div>
 <div class="card-footer flex flex-wrap gap-2 justify-end"><a href="{% url 'payroll:employees' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button></div></form>
 {% if object %}
-<div class="card mt-4 max-w-5xl"><div class="card-body">
+<div class="card mt-4"><div class="card-body">
   <h2 class="section-heading">{% translate "Income from previous employers" %}</h2>
   <p class="text-sm text-muted">{% translate "If they worked elsewhere earlier in the same year and hand in that employer's 1721-A1, its net income and PPh 21 count in this year's last-period calculation (lines 14 and 19). Record it before that payroll." %}</p>
   {% if prior_incomes %}<div class="overflow-x-auto"><table class="table table-sm align-middle">
