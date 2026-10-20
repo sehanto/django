@@ -4,7 +4,9 @@
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Subscription plan" %}</h1>
 
-<div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
+{# Current plan and automatic renewal side by side (each half) when both show; stacked on phones. #}
+<div class="grid grid-cols-12 gap-4 mb-6">
+<div class="col-span-12{% if current_organization.plan_paid_until and state != states.TRIAL and state != states.LAPSED %} lg:col-span-6{% endif %}"><div class="card h-full"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div>
     <div class="text-sm text-muted">{% translate "Current plan" %}</div>
     <div class="text-2xl font-semibold">{{ current_organization.plan.name }}
@@ -20,10 +22,10 @@
       {% blocktranslate trimmed with date=current_organization.plan_paid_until|date:"d F Y" %}Paid until {{ date }}{% endblocktranslate %}
     {% else %}{% translate "No payment needed" %}{% endif %}
   </div>
-</div></div>
+</div></div></div>
 
 {% if current_organization.plan_paid_until and state != states.TRIAL and state != states.LAPSED %}
-<div class="card mb-6"><div class="card-body flex flex-wrap justify-between items-center gap-4">
+<div class="col-span-12 lg:col-span-6"><div class="card h-full"><div class="card-body flex flex-wrap justify-between items-center gap-4">
   <div>
     <h2 class="section-heading mb-1">{% translate "Automatic renewal" %}</h2>
     {% if renewal and renewal.status == renewal_statuses.ACTIVE %}
@@ -42,8 +44,9 @@
       <select name="period" class="form-select" aria-label="{% translate 'Billing period' %}">{% for value, label in periods.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
       <button class="btn btn-primary whitespace-nowrap">{% translate "Turn on" %}</button></form>
   {% endif %}
-</div></div>
+</div></div></div>
 {% endif %}
+</div>
 
 <div class="grid grid-cols-12 gap-4">
 {% for offer in offers %}{% with plan=offer.plan %}
