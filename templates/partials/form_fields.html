@@ -5,7 +5,7 @@
 {% endif %}
 <div class="grid grid-cols-12 gap-4">
 {% for field in fields|default:form.visible_fields %}
-  <div class="{{ col|default:'col-span-12 md:col-span-6' }}">
+  <div class="{{ col|default:'col-span-12 md:col-span-4' }}">
     {% if field.field.widget.input_type == 'checkbox' %}
       <div class="flex items-center gap-2 md:mt-8">
         {{ field|add_class:'form-toggle' }}

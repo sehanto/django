@@ -12,7 +12,7 @@
   <p class="text-sm text-muted text-center">{% translate "Can't scan it? Enter this key in the app instead:" %}<br><code class="text-base select-all">{{ manual_key }}</code></p>
   <ol start="3"><li>{% translate "Enter the 6-digit code shown in the app, and your password to confirm." %}</li></ol>
   <form method="post">{% csrf_token %}
-    {% include "partials/form_fields.html" with col="col-span-12 md:col-span-6" %}
+    {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
     {% include "accounts/_captcha.html" %}
     <div class="flex flex-wrap gap-2 justify-end mt-6">
       <a href="{% url 'accounts:security' %}" class="btn btn-outline">{% translate "Cancel" %}</a>

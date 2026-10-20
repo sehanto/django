@@ -16,7 +16,7 @@
       <td>{{ prior.first_month|stringformat:"02d" }}–{{ prior.last_month|stringformat:"02d" }}</td><td class="num">{{ prior.net_income|rupiah }}</td><td class="num">{{ prior.pph21|rupiah }}</td>
       <td class="text-end">{% if can_write %}<form method="post" action="{% url 'payroll:prior_income_delete' prior.pk %}" data-confirm="{% translate 'Remove this income?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Remove' %}">{% icon "trash-2" %}</button></form>{% endif %}</td></tr>{% endfor %}</tbody>
   </table></div>{% endif %}
-  {% if can_write %}<form method="post" action="{% url 'payroll:prior_income_create' object.pk %}">{% csrf_token %}{% include "partials/form_fields.html" with form=prior_form col="col-span-12 md:col-span-3" %}<button class="btn btn-outline-primary mt-4">{% translate "Add" %}</button></form>{% endif %}
+  {% if can_write %}<form method="post" action="{% url 'payroll:prior_income_create' object.pk %}">{% csrf_token %}{% include "partials/form_fields.html" with form=prior_form col="col-span-12 md:col-span-4" %}<button class="btn btn-outline-primary mt-4">{% translate "Add" %}</button></form>{% endif %}
 </div></div>
 {% endif %}
 {% endblock %}
