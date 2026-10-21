@@ -713,7 +713,7 @@ few behaviours live in `static/js/app.js`.
   the `md` breakpoint (`text-lg md:text-base`), since iOS zooms into a smaller field; 20px
   (`text-xl`) card and dialog titles (`card-title`, `modal-title`), the brand name, sellers' names
   on invoices and 2FA backup codes; 24px (`text-2xl`) section headings (`section-heading`),
-  dashboard figures (20px while four share a row on 768–1279px screens), plan prices, amounts to pay and the printed invoice heading; 30px (`text-3xl`)
+  dashboard figures (by their card's width: 16px in a narrow card, 20px from 8.5rem, 24px from 11rem), plan prices, amounts to pay and the printed invoice heading; 30px (`text-3xl`)
   page titles (`page-title`) and error page headings. Secondary text is always a step below body
   text and every heading level a step above the one below it. No size is written by hand
   (`text-[…]`); a test checks.
