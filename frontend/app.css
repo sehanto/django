@@ -240,8 +240,8 @@
 
   /* Amounts: right-aligned, figures lined up. */
   .num { @apply text-end whitespace-nowrap tabular-nums; }
-  /* Dashboard figures: 24px, but 20px while four cards share a row on 1024–1279px screens. */
-  .stat-value { @apply text-2xl lg:text-xl xl:text-2xl font-semibold tabular-nums; }
+  /* Dashboard figures: 24px, but 20px while four cards share a row on 768–1279px screens. */
+  .stat-value { @apply text-2xl md:text-xl xl:text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
   .badge { @apply inline-block rounded-md px-2 py-0.5 align-middle text-sm leading-tight font-semibold whitespace-nowrap; }
