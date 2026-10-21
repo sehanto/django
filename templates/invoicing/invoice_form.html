@@ -16,14 +16,14 @@
   {{ formset.management_form }}
   {% if formset.non_form_errors %}<div class="alert alert-danger" role="alert">{% for e in formset.non_form_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
   <div class="card"><div class="overflow-x-auto">
-    <table class="table formset-table mb-0">
+    <table class="table table-stack formset-table mb-0">
       <thead><tr><th>{% translate "Item" %}</th><th class="min-w-48">{% translate "Item description" %}</th><th>{% translate "Account" %}</th><th class="w-23">{% translate "Qty" %}</th><th class="w-36">{% translate "Price" %}</th><th class="w-20">{% translate "Disc. %" %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th><th></th></tr></thead>
       <tbody data-formset-body>
         {% for f in formset %}{% include "invoicing/_line_row.html" %}{% endfor %}
       </tbody>
       <tfoot><tr>
         <td colspan="6"><button type="button" class="btn btn-sm btn-outline-primary" data-formset-add>{% icon "plus" %} {% translate "Add line" %}</button></td>
-        <td class="text-end font-semibold">{% translate "Subtotal" %}</td><td class="num font-semibold" data-subtotal></td><td></td>
+        <td class="text-end font-semibold stack-hidden">{% translate "Subtotal" %}</td><td class="num font-semibold" data-label="{% translate 'Subtotal' %}" data-subtotal></td><td></td>
       </tr></tfoot>
     </table>
     <template data-formset-empty>{% include "invoicing/_line_row.html" with f=formset.empty_form %}</template>

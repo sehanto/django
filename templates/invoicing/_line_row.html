@@ -1,12 +1,12 @@
 {% load i18n ui %}
 <tr data-formset-row>
-  <td>{{ f.item|add_class:'form-select form-select-sm' }}</td>
-  <td>{{ f.description|add_class:'form-input form-input-sm' }}{% include "partials/field_feedback.html" with field=f.description hide_help=True %}</td>
-  <td>{{ f.account|add_class:'form-select form-select-sm' }}</td>
-  <td>{{ f.quantity|add_class:'form-input form-input-sm text-end' }}</td>
-  <td>{{ f.unit_price|add_class:'form-input form-input-sm text-end' }}{% include "partials/field_feedback.html" with field=f.unit_price hide_help=True %}</td>
-  <td>{{ f.discount_percent|add_class:'form-input form-input-sm text-end' }}</td>
-  <td>{{ f.tax_rate|add_class:'form-select form-select-sm' }}</td>
-  <td class="num pt-2" data-line-amount></td>
-  <td><span class="hidden">{{ f.DELETE }}</span><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
+  <td data-label="{% translate 'Item' %}">{{ f.item|add_class:'form-select form-select-sm' }}</td>
+  <td data-label="{% translate 'Item description' %}">{{ f.description|add_class:'form-input form-input-sm' }}{% include "partials/field_feedback.html" with field=f.description hide_help=True %}</td>
+  <td data-label="{% translate 'Account' %}">{{ f.account|add_class:'form-select form-select-sm' }}</td>
+  <td data-label="{% translate 'Qty' %}">{{ f.quantity|add_class:'form-input form-input-sm text-end' }}</td>
+  <td data-label="{% translate 'Price' %}">{{ f.unit_price|add_class:'form-input form-input-sm text-end' }}{% include "partials/field_feedback.html" with field=f.unit_price hide_help=True %}</td>
+  <td data-label="{% translate 'Disc. %' %}">{{ f.discount_percent|add_class:'form-input form-input-sm text-end' }}</td>
+  <td data-label="{% translate 'Tax' %}">{{ f.tax_rate|add_class:'form-select form-select-sm' }}</td>
+  <td class="num pt-2" data-label="{% translate 'Amount' %}" data-line-amount></td>
+  <td class="stack-corner"><span class="hidden">{{ f.DELETE }}</span><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
 </tr>

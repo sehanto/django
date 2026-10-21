@@ -11,9 +11,9 @@
   </div>
 </div>
 <div class="grid grid-cols-12 gap-4 mb-6">
-  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Amount" %}</div><div class="stat-value">{{ deferral.amount|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Recognised" %}</div><div class="stat-value">{{ recognised|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Remaining" %}</div><div class="stat-value">{{ remaining|rupiah }}</div></div></div></div>
+  <div class="col-span-6 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "Amount" %}</div><div class="stat-value">{{ deferral.amount|rupiah }}</div></div></div></div>
+  <div class="col-span-6 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "Recognised" %}</div><div class="stat-value">{{ recognised|rupiah }}</div></div></div></div>
+  <div class="col-span-12 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "Remaining" %}</div><div class="stat-value">{{ remaining|rupiah }}</div></div></div></div>
 </div>
 <dl class="grid grid-cols-12 gap-x-6 mb-6">
   <dt class="col-span-12 sm:col-span-4">{% translate "Recorded on" %}</dt><dd class="col-span-12 sm:col-span-8">{{ deferral.recorded_on|date:"d F Y" }}{% if deferral.opening_entry %} · <a href="{% url 'ledger:journal_detail' deferral.opening_entry_id %}">{{ deferral.opening_entry.number }}</a>{% endif %}</dd>

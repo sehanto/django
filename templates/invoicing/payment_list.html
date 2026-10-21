@@ -11,16 +11,16 @@
   <div class="col-span-12 md:col-span-4"><select name="kind" class="form-select"><option value="">{% translate "Receipts & disbursements" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Contact" %}</th><th>{% translate "Invoice" %}</th><th>{% translate "Account" %}</th><th>{% translate "Method" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for p in object_list %}
     <tr class="{% if p.status == p.Status.VOID %}text-muted{% endif %}">
-      <td>{{ p.number }}</td><td class="whitespace-nowrap">{{ p.date|date:"d M Y" }}</td><td>{{ p.invoice.party_name }}</td>
-      <td><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></td>
-      <td>{{ p.cash_account.name }}</td><td>{{ p.get_method_display }}</td>
-      <td class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>
-      <td><span class="badge badge-{% if p.status == p.Status.VOID %}inactive{% else %}success{% endif %}">{{ p.get_status_display }}</span></td>
+      <td>{{ p.number }}</td><td class="whitespace-nowrap" data-label="{% translate 'Date' %}">{{ p.date|date:"d M Y" }}</td><td data-label="{% translate 'Contact' %}">{{ p.invoice.party_name }}</td>
+      <td data-label="{% translate 'Invoice' %}"><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></td>
+      <td data-label="{% translate 'Account' %}">{{ p.cash_account.name }}</td><td data-label="{% translate 'Method' %}">{{ p.get_method_display }}</td>
+      <td data-label="{% translate 'Amount' %}" class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>
+      <td class="stack-corner" data-label="{% translate 'Status' %}"><span class="badge badge-{% if p.status == p.Status.VOID %}inactive{% else %}success{% endif %}">{{ p.get_status_display }}</span></td>
     </tr>
   {% empty %}<tr><td colspan="8" class="text-center text-muted py-6">{% translate "No payments yet." %}</td></tr>
   {% endfor %}

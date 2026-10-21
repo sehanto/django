@@ -724,6 +724,13 @@ few behaviours live in `static/js/app.js`.
   form fields and inside cards; 24px (`gap-6`, `mb-6`, `py-6`) between the sections of a page, so
   a grid of cards ends with `mb-6` and a page whose main content and panel share a grid uses
   `gap-6`. The page gutter is 16px on phones and 24px from `lg`.
+- **Tables on phones.** List tables and invoice lines carry `table-stack`: below `md` (on screen, never
+  in print) each row becomes a block whose cells show their column name (`data-label`) beside the value,
+  so amounts are never hidden behind a sideways scroll. A cell without `data-label` is the row's title;
+  `stack-corner` puts a status badge or row actions beside it; `stack-hidden` hides a cell on phones
+  only (e.g. a totals label the amount already carries). Summary cards pair up on phones
+  (`col-span-6`) with `stat-value` figures, as on the dashboard. `|rupiah` keeps "Rp" and its figure
+  together with a no-break space.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
   "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`

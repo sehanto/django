@@ -12,17 +12,17 @@
   <div class="col-span-12 md:col-span-3"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Number" %}</th><th>{% translate "Description" %}</th><th>{% translate "Source" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr></thead>
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+  <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{% translate "Description" %}</th><th>{% translate "Source" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for entry in object_list %}
     <tr>
-      <td class="whitespace-nowrap">{{ entry.date|date:"d M Y" }}</td>
       <td><a href="{% url 'ledger:journal_detail' entry.pk %}">{{ entry.number }}</a></td>
-      <td>{{ entry.description }}</td>
-      <td>{{ entry.get_source_display }}</td>
-      <td class="num">{{ entry.total|rupiah }}</td>
-      <td><span class="badge badge-{{ entry.status|status_badge }}">{{ entry.get_status_display }}</span></td>
+      <td class="whitespace-nowrap" data-label="{% translate 'Date' %}">{{ entry.date|date:"d M Y" }}</td>
+      <td data-label="{% translate 'Description' %}">{{ entry.description }}</td>
+      <td data-label="{% translate 'Source' %}">{{ entry.get_source_display }}</td>
+      <td class="num" data-label="{% translate 'Amount' %}">{{ entry.total|rupiah }}</td>
+      <td class="stack-corner" data-label="{% translate 'Status' %}"><span class="badge badge-{{ entry.status|status_badge }}">{{ entry.get_status_display }}</span></td>
     </tr>
   {% empty %}<tr><td colspan="6" class="text-center text-muted py-6">{% translate "No journal entries yet." %}</td></tr>
   {% endfor %}

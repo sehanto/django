@@ -16,24 +16,24 @@
     {% if invoice.delivery_kind %}<div>{{ invoice.get_delivery_kind_display }}</div>{% endif %}
   </div>
 </div>
-<div class="overflow-x-auto"><table class="table">
+<div class="overflow-x-auto"><table class="table table-stack">
   <thead><tr><th>{% translate "Item description" %}</th><th class="num">{% translate "Qty" %}</th><th class="num">{% translate "Price" %}</th><th class="num">{% translate "Disc." %}</th><th>{% translate "Tax" %}</th><th class="num">{% translate "Amount" %}</th></tr></thead>
   <tbody>{% for line in invoice.lines.all %}
     <tr><td>{% if line.item_label %}<span class="text-sm text-muted font-mono me-1">{{ line.item_label }}</span>{% endif %}{{ line.description }}<div class="text-sm text-muted print:hidden">{{ line.account_label }}</div></td>
-      <td class="num">{{ line.quantity|floatformat:"-3" }}</td><td class="num">{{ line.unit_price|rupiah }}</td>
-      <td class="num">{% if line.discount_percent %}{{ line.discount_percent|floatformat:"-2" }}%{% endif %}</td>
-      <td>{{ line.tax_label }}</td><td class="num">{{ line.amount|rupiah }}</td></tr>
+      <td class="num" data-label="{% translate 'Qty' %}">{{ line.quantity|floatformat:"-3" }}</td><td class="num" data-label="{% translate 'Price' %}">{{ line.unit_price|rupiah }}</td>
+      <td class="num" data-label="{% translate 'Disc.' %}">{% if line.discount_percent %}{{ line.discount_percent|floatformat:"-2" }}%{% endif %}</td>
+      <td data-label="{% translate 'Tax' %}">{{ line.tax_label }}</td><td class="num" data-label="{% translate 'Amount' %}">{{ line.amount|rupiah }}</td></tr>
   {% endfor %}</tbody>
   <tfoot>
-    <tr><td colspan="5" class="text-end">{% translate "Subtotal" %}</td><td class="num">{{ invoice.subtotal|rupiah }}</td></tr>
-    {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPN" %}</td><td class="num">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
-    {% if invoice.luxury_tax_amount %}<tr><td colspan="5" class="text-end">{% translate "PPnBM" %}</td><td class="num">{{ invoice.luxury_tax_amount|rupiah }}</td></tr>{% endif %}
-    {% if invoice.vat_facility %}<tr class="text-muted"><td colspan="5" class="text-end">{{ invoice.get_vat_facility_display }}</td><td class="num">{{ invoice.vat_not_collected|rupiah }}</td></tr>{% endif %}
-    <tr class="font-bold"><td colspan="5" class="text-end">{% translate "Total" %}</td><td class="num">{{ invoice.total|rupiah }}</td></tr>
-    {% if invoice.amount_paid %}<tr><td colspan="5" class="text-end">{% translate "Amount paid" %}</td><td class="num">{{ invoice.amount_paid|rupiah }}</td></tr>{% endif %}
-    {% if invoice.amount_credited %}<tr><td colspan="5" class="text-end">{% translate "Returns credited" %}</td><td class="num">{{ invoice.amount_credited|rupiah }}</td></tr>{% endif %}
+    <tr><td colspan="5" class="text-end stack-hidden">{% translate "Subtotal" %}</td><td class="num" data-label="{% translate 'Subtotal' %}">{{ invoice.subtotal|rupiah }}</td></tr>
+    {% if invoice.tax_amount %}<tr><td colspan="5" class="text-end stack-hidden">{% translate "PPN" %}</td><td class="num" data-label="{% translate 'PPN' %}">{{ invoice.tax_amount|rupiah }}</td></tr>{% endif %}
+    {% if invoice.luxury_tax_amount %}<tr><td colspan="5" class="text-end stack-hidden">{% translate "PPnBM" %}</td><td class="num" data-label="{% translate 'PPnBM' %}">{{ invoice.luxury_tax_amount|rupiah }}</td></tr>{% endif %}
+    {% if invoice.vat_facility %}<tr class="text-muted"><td colspan="5" class="text-end stack-hidden">{{ invoice.get_vat_facility_display }}</td><td class="num" data-label="{{ invoice.get_vat_facility_display }}">{{ invoice.vat_not_collected|rupiah }}</td></tr>{% endif %}
+    <tr class="font-bold"><td colspan="5" class="text-end stack-hidden">{% translate "Total" %}</td><td class="num" data-label="{% translate 'Total' %}">{{ invoice.total|rupiah }}</td></tr>
+    {% if invoice.amount_paid %}<tr><td colspan="5" class="text-end stack-hidden">{% translate "Amount paid" %}</td><td class="num" data-label="{% translate 'Amount paid' %}">{{ invoice.amount_paid|rupiah }}</td></tr>{% endif %}
+    {% if invoice.amount_credited %}<tr><td colspan="5" class="text-end stack-hidden">{% translate "Returns credited" %}</td><td class="num" data-label="{% translate 'Returns credited' %}">{{ invoice.amount_credited|rupiah }}</td></tr>{% endif %}
     {% if invoice.amount_paid or invoice.amount_credited %}
-      <tr class="font-semibold"><td colspan="5" class="text-end">{% translate "Balance due" %}</td><td class="num">{{ invoice.balance_due|rupiah }}</td></tr>
+      <tr class="font-semibold"><td colspan="5" class="text-end stack-hidden">{% translate "Balance due" %}</td><td class="num" data-label="{% translate 'Balance due' %}">{{ invoice.balance_due|rupiah }}</td></tr>
     {% endif %}
   </tfoot>
 </table></div>

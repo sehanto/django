@@ -167,7 +167,7 @@ def test_reports_render_with_data_and_export_csv(auth_client, organization, cust
     invoicing.issue_invoice(invoice=invoice)
     response = auth_client.get(reverse("reports:balance_sheet"), {"as_of": "2026-12-31"})
     assert response.context["report"].is_balanced
-    assert "Rp 750.000" in response.content.decode()
+    assert "Rp\xa0750.000" in response.content.decode()
 
     csv = auth_client.get(reverse("reports:income_statement"), {"date_from": "2026-01-01", "date_to": "2026-12-31", "download": "csv"})
     assert csv["Content-Type"].startswith("text/csv")
@@ -190,14 +190,14 @@ def test_printed_invoice_uses_contacts_document_language(auth_client, user, orga
     print_url = reverse("invoicing:print", kwargs={"kind": "sales", "pk": invoice.pk})
 
     html = auth_client.get(print_url).content.decode()  # ...customer document defaults to Indonesian
-    assert '<html lang="id" ' in html and "Ditagihkan kepada" in html and "Rp 1.250.000" in html
+    assert '<html lang="id" ' in html and "Ditagihkan kepada" in html and "Rp\xa01.250.000" in html
 
     customer.document_language = "en"
     customer.save(update_fields=["document_language"])
     response = auth_client.get(print_url)
     html = response.content.decode()
     assert response["Content-Language"] == "en"
-    assert "Bill to" in html and "Rp 1,250,000" in html
+    assert "Bill to" in html and "Rp\xa01,250,000" in html
 
     detail = auth_client.get(reverse("invoicing:detail", kwargs={"kind": "sales", "pk": invoice.pk})).content.decode()
     assert "Receive payment" in detail  # on-screen pages still follow the viewer

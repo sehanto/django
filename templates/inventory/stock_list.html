@@ -7,22 +7,22 @@
   {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary">{% icon "diff" %} {% translate "Stock adjustment" %}</a>{% endif %}
 </div>
 <p class="text-muted">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>
-<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Inventory account" %}</th><th class="num">{% translate "On hand" %}</th><th class="num">{% translate "Average cost" %}</th><th class="num">{% translate "Value" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}
     <tr class="{% if not row.item.is_active %}text-muted{% endif %}">
       <td><a href="{% url 'inventory:card' row.item.pk %}">{{ row.item }}</a></td>
-      <td>{{ row.item.inventory_account }}</td>
-      <td class="num">{{ row.quantity|floatformat:"-3" }} {{ row.item.unit }}</td>
-      <td class="num">{{ row.average_cost|rupiah }}</td>
-      <td class="num">{{ row.value|rupiah }}</td>
+      <td data-label="{% translate 'Inventory account' %}">{{ row.item.inventory_account }}</td>
+      <td class="num" data-label="{% translate 'On hand' %}">{{ row.quantity|floatformat:"-3" }} {{ row.item.unit }}</td>
+      <td class="num" data-label="{% translate 'Average cost' %}">{{ row.average_cost|rupiah }}</td>
+      <td class="num" data-label="{% translate 'Value' %}">{{ row.value|rupiah }}</td>
     </tr>
   {% empty %}
     <tr><td colspan="5" class="text-center text-muted py-6">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4">{% translate "Total" %}</td><td class="num">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
+  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4" class="stack-hidden">{% translate "Total" %}</td><td class="num" data-label="{% translate 'Total' %}">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
 <h2 class="section-heading">{% translate "Stock and ledger" %}</h2>

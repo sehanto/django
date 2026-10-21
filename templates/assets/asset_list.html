@@ -20,25 +20,24 @@
   {% if can_write and not locked_due %}<form method="post" action="{% url 'assets:post_depreciation' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">{% translate "Post depreciation" %}</button></form>{% endif %}
 </div>
 {% endif %}
-<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Name" %}</th><th>{% translate "Account" %}</th><th>{% translate "Acquired" %}</th><th class="num">{% translate "Cost" %}</th><th class="num">{% translate "Accumulated depreciation" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Status" %}</th></tr></thead>
+<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+  <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Account" %}</th><th>{% translate "Acquired" %}</th><th class="num">{% translate "Cost" %}</th><th class="num">{% translate "Accumulated depreciation" %}</th><th class="num">{% translate "Book value" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}{% with asset=row.asset %}
     <tr class="{% if asset.status == asset.Status.DISPOSED %}text-muted{% endif %}">
-      <td><a href="{% url 'assets:detail' asset.pk %}">{{ asset.number }}</a></td>
-      <td>{{ asset.name }}</td>
-      <td>{{ asset.asset_account }}</td>
-      <td>{{ asset.acquisition_date|date:"d/m/Y" }}</td>
-      <td class="num">{{ asset.cost|rupiah }}</td>
-      <td class="num">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span>{% translate "not depreciated" %}</span>{% endif %}</td>
-      <td class="num">{{ row.book_value|rupiah }}</td>
-      <td>{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-neutral">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
+      <td><a href="{% url 'assets:detail' asset.pk %}">{{ asset.number }}</a> {{ asset.name }}</td>
+      <td data-label="{% translate 'Account' %}">{{ asset.asset_account }}</td>
+      <td data-label="{% translate 'Acquired' %}">{{ asset.acquisition_date|date:"d/m/Y" }}</td>
+      <td class="num" data-label="{% translate 'Cost' %}">{{ asset.cost|rupiah }}</td>
+      <td class="num" data-label="{% translate 'Accumulated depreciation' %}">{% if asset.is_depreciable %}{{ row.accumulated|rupiah }}{% else %}<span>{% translate "not depreciated" %}</span>{% endif %}</td>
+      <td class="num" data-label="{% translate 'Book value' %}">{{ row.book_value|rupiah }}</td>
+      <td class="stack-corner" data-label="{% translate 'Status' %}">{% if asset.status == asset.Status.DISPOSED %}<span class="badge badge-neutral">{{ asset.get_status_display }} {{ asset.disposed_on|date:"d/m/Y" }}</span>{% else %}<span class="badge badge-success">{{ asset.get_status_display }}</span>{% endif %}</td>
     </tr>
   {% endwith %}{% empty %}
-    <tr><td colspan="8" class="text-center text-muted py-6">{% translate "No fixed assets yet. Register equipment, vehicles, buildings and land you bought so their depreciation is posted every month." %}</td></tr>
+    <tr><td colspan="7" class="text-center text-muted py-6">{% translate "No fixed assets yet. Register equipment, vehicles, buildings and land you bought so their depreciation is posted every month." %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4">{% translate "Total in use" %}</td><td class="num">{{ total_cost|rupiah }}</td><td class="num">{{ total_accumulated|rupiah }}</td><td class="num">{{ total_book_value|rupiah }}</td><td></td></tr></tfoot>{% endif %}
+  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="3">{% translate "Total in use" %}</td><td class="num" data-label="{% translate 'Cost' %}">{{ total_cost|rupiah }}</td><td class="num" data-label="{% translate 'Accumulated depreciation' %}">{{ total_accumulated|rupiah }}</td><td class="num" data-label="{% translate 'Book value' %}">{{ total_book_value|rupiah }}</td><td></td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
 <h2 class="section-heading">{% translate "Register and ledger" %}</h2>

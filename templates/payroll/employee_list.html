@@ -6,13 +6,13 @@
   <div><h1 class="page-title mb-0">{% translate "Employees" %}</h1></div>
   {% if can_write %}<a href="{% url 'payroll:employee_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New employee" %}</a>{% endif %}
 </div>
-<div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack mb-0 align-middle">
   <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Position" %}</th><th>{% translate "Notes" %}</th><th>{% translate "PTKP status" %}</th><th class="num">{% translate "Base salary" %}</th><th class="num">{% translate "Fixed allowances" %}</th><th></th></tr></thead>
   <tbody>{% for e in object_list %}<tr class="{% if not e.is_active %}text-muted{% endif %}">
-    <td>{{ e.name }}<div class="text-sm text-muted">{% if e.nik %}NIK {{ e.nik }}{% else %}{% translate "Passport" %} {{ e.passport_number }}{% endif %} · {{ e.get_kind_display }}{% if e.is_daily %} ({% translate "daily" %}){% endif %}{% if not e.is_resident %} · PPh 26{% endif %}</div></td><td>{{ e.position }}</td>
-    <td{% if e.notes|length > 80 %} title="{{ e.notes }}"{% endif %}>{{ e.notes|truncatechars:80 }}</td><td>{{ e.ptkp_status }}</td>
-    <td class="num">{{ e.base_salary|rupiah }}</td><td class="num">{{ e.fixed_allowance|rupiah }}</td>
-    <td class="text-end">{% if can_write %}<a href="{% url 'payroll:employee_update' e.pk %}" class="btn btn-sm btn-outline" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
+    <td>{{ e.name }}<div class="text-sm text-muted">{% if e.nik %}NIK {{ e.nik }}{% else %}{% translate "Passport" %} {{ e.passport_number }}{% endif %} · {{ e.get_kind_display }}{% if e.is_daily %} ({% translate "daily" %}){% endif %}{% if not e.is_resident %} · PPh 26{% endif %}</div></td><td data-label="{% translate 'Position' %}">{{ e.position }}</td>
+    <td data-label="{% translate 'Notes' %}"{% if e.notes|length > 80 %} title="{{ e.notes }}"{% endif %}>{{ e.notes|truncatechars:80 }}</td><td data-label="{% translate 'PTKP status' %}">{{ e.ptkp_status }}</td>
+    <td class="num" data-label="{% translate 'Base salary' %}">{{ e.base_salary|rupiah }}</td><td class="num" data-label="{% translate 'Fixed allowances' %}">{{ e.fixed_allowance|rupiah }}</td>
+    <td class="stack-corner text-end">{% if can_write %}<a href="{% url 'payroll:employee_update' e.pk %}" class="btn btn-sm btn-outline" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No employees yet." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% endblock %}

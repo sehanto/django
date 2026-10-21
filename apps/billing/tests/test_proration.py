@@ -146,7 +146,7 @@ def test_plan_cards_and_receipt_show_the_credit(auth_client, organization, plans
         subscribe(organization, plans["starter"])
     with mock.patch("django.utils.timezone.localdate", return_value=TODAY):
         html = auth_client.get(reverse("billing:overview")).content.decode()
-        assert "Rp 60.677" in html and "Rp 209.038" in html  # credit and the net amount due
+        assert "Rp\xa060.677" in html and "Rp\xa0209.038" in html  # credit and the net amount due
         invoice = services.start_checkout(organization=organization, plan=plans["growth"], period="monthly")
         receipt = auth_client.get(reverse("billing:invoice", args=[invoice.pk])).content.decode()
-    assert "-Rp 60.677" in receipt and "19 hari" in receipt and "Rp 188.323" in receipt
+    assert "-Rp\xa060.677" in receipt and "19 hari" in receipt and "Rp\xa0188.323" in receipt

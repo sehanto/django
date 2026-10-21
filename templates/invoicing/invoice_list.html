@@ -8,8 +8,8 @@
   {% if can_write %}<a href="{% url 'invoicing:create' kind %}" class="btn btn-primary">{% icon "plus" %} {{ labels.create }}</a>{% endif %}</div>
 </div>
 <div class="grid grid-cols-12 gap-4 mb-6">
-  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
-  <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% icon "triangle-alert" "text-danger me-1" %}{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
+  <div class="col-span-6 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
+  <div class="col-span-6 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% icon "triangle-alert" "text-danger me-1" %}{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline">{{ labels.aging }} &rarr;</a></div>
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get">
@@ -17,18 +17,18 @@
   <div class="col-span-12 md:col-span-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{{ labels.contact }}</th><th>{% translate "Due date" %}</th><th class="num">{% translate "Total" %}</th><th class="num">{% translate "Balance due" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for inv in object_list %}
     <tr>
       <td><a href="{% url 'invoicing:detail' kind inv.pk %}">{{ inv.display_number }}</a></td>
-      <td class="whitespace-nowrap">{{ inv.date|date:"d M Y" }}</td>
-      <td>{{ inv.party_name }}</td>
-      <td class="whitespace-nowrap {% if inv.is_overdue %}text-danger font-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
-      <td class="num">{{ inv.total|rupiah }}</td>
-      <td class="num">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
-      <td><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span>{% if inv.opening_balance %} <span class="badge badge-subtle">{% translate "Opening balance" %}</span>{% endif %}</td>
+      <td class="whitespace-nowrap" data-label="{% translate 'Date' %}">{{ inv.date|date:"d M Y" }}</td>
+      <td data-label="{{ labels.contact }}">{{ inv.party_name }}</td>
+      <td data-label="{% translate 'Due date' %}" class="whitespace-nowrap {% if inv.is_overdue %}text-danger font-semibold{% endif %}">{{ inv.due_date|date:"d M Y" }}</td>
+      <td class="num" data-label="{% translate 'Total' %}">{{ inv.total|rupiah }}</td>
+      <td class="num{% if not inv.is_open %} stack-hidden{% endif %}" data-label="{% translate 'Balance due' %}">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
+      <td class="stack-corner" data-label="{% translate 'Status' %}"><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span>{% if inv.opening_balance %} <span class="badge badge-subtle">{% translate "Opening balance" %}</span>{% endif %}</td>
     </tr>
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No documents yet." %}</td></tr>
   {% endfor %}

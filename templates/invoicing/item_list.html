@@ -9,13 +9,13 @@
   <a href="{% url 'invoicing:item_create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New item" %}</a>{% endif %}</div>
 </div>
 <form class="grid grid-cols-12 gap-2 mb-4" method="get"><div class="col-span-12 md:col-span-10"><input name="q" value="{{ request.GET.q }}" class="form-input" placeholder="{% translate 'Search name or code' %}"></div><div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Search" %}</button></div></form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>{% translate "Code" %}</th><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "Unit" %}</th><th class="num">{% translate "Sale price" %}</th><th class="num">{% translate "Purchase price" %}</th><th>{% translate "Tax" %}</th><th></th></tr></thead>
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+  <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Type" %}</th><th>{% translate "Unit" %}</th><th class="num">{% translate "Sale price" %}</th><th class="num">{% translate "Purchase price" %}</th><th>{% translate "Tax" %}</th><th></th></tr></thead>
   <tbody>{% for item in object_list %}
-    <tr class="{% if not item.is_active %}text-muted{% endif %}"><td><code>{{ item.code }}</code></td><td>{{ item.name }}</td><td>{{ item.get_type_display }}</td><td>{{ item.unit }}</td>
-      <td class="num">{{ item.sale_price|rupiah }}</td><td class="num">{{ item.purchase_price|rupiah }}</td><td>{{ item.tax_rate|default:"" }}</td>
-      <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:item_update' item.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="8" class="text-center text-muted py-6">{% translate "No items yet." %}</td></tr>{% endfor %}</tbody>
+    <tr class="{% if not item.is_active %}text-muted{% endif %}"><td><code>{{ item.code }}</code> {{ item.name }}</td><td data-label="{% translate 'Type' %}">{{ item.get_type_display }}</td><td data-label="{% translate 'Unit' %}">{{ item.unit }}</td>
+      <td class="num" data-label="{% translate 'Sale price' %}">{{ item.sale_price|rupiah }}</td><td class="num" data-label="{% translate 'Purchase price' %}">{{ item.purchase_price|rupiah }}</td><td data-label="{% translate 'Tax' %}">{{ item.tax_rate|default:"" }}</td>
+      <td class="stack-corner text-end">{% if can_write %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:item_update' item.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No items yet." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% include "partials/pagination.html" %}
 {% endblock %}

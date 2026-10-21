@@ -16,7 +16,7 @@ CHECKOUT = reverse("billing:checkout")
 
 def test_overview_shows_prices_and_is_for_billing_managers(auth_client, client, make_member, plans):
     html = auth_client.get(reverse("billing:overview")).content.decode()
-    assert "Rp 99.000" in html and "Rp 109.890" in html  # price excl. PPN and amount incl. PPN
+    assert "Rp\xa099.000" in html and "Rp\xa0109.890" in html  # price excl. PPN and amount incl. PPN
     client.force_login(make_member(Role.ACCOUNTANT))
     assert client.get(reverse("billing:overview")).status_code == 403
     assert client.post(CHECKOUT, {"plan": plans["growth"].pk, "period": "monthly"}).status_code == 403
@@ -28,7 +28,7 @@ def test_full_checkout_flow_with_fake_gateway(auth_client, free_org, plans):
     assert response["Location"] == invoice.payment_url  # sent to the (fake) hosted payment page
 
     page = auth_client.get(invoice.payment_url)
-    assert "Rp 2.763.900" in page.content.decode()  # 2.490.000 + PPN 273.900
+    assert "Rp\xa02.763.900" in page.content.decode()  # 2.490.000 + PPN 273.900
     done = auth_client.post(invoice.payment_url, {"outcome": "paid"}, follow=True)
     assert "Pembayaran diterima" in done.content.decode()
     free_org.refresh_from_db()

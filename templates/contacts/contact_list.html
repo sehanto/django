@@ -14,14 +14,14 @@
   <div class="col-span-12 md:col-span-3"><select name="kind" class="form-select"><option value="">{% translate "All types" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
   <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
 </form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
+<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "NPWP" %}</th><th>{% translate "Phone" %}</th><th>{% translate "Regency/city" %}</th><th></th></tr></thead>
   <tbody>
   {% for c in object_list %}
     <tr class="{% if not c.is_active %}text-muted{% endif %}">
       <td>{{ c.name }}{% if not c.is_active %} <span class="badge badge-neutral">{% translate "inactive" %}</span>{% endif %}</td>
-      <td>{{ c.get_kind_display }}</td><td><code>{{ c.formatted_npwp }}</code></td><td>{{ c.phone }}</td><td>{{ c.regency_name }}</td>
-      <td class="text-end whitespace-nowrap">
+      <td data-label="{% translate 'Type' %}">{{ c.get_kind_display }}</td><td data-label="{% translate 'NPWP' %}">{% if c.formatted_npwp %}<code>{{ c.formatted_npwp }}</code>{% endif %}</td><td data-label="{% translate 'Phone' %}">{{ c.phone }}</td><td data-label="{% translate 'Regency/city' %}">{{ c.regency_name }}</td>
+      <td class="stack-corner text-end whitespace-nowrap">
         {% if c.is_customer %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}">{% icon "receipt" %}</a>{% endif %}
         {% if c.is_supplier %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}">{% icon "shopping-bag" %}</a>{% endif %}
         {% if can_write %}<a class="btn btn-sm btn-outline" href="{% url 'contacts:update' c.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>
