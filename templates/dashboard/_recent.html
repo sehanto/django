@@ -1,4 +1,4 @@
-{% load i18n money ui %}{# Two lists share a row from 360px: in a list narrower than 13rem each row stacks (number and name, then amount and status). #}
+{% load i18n money ui %}{# Two lists share a row from 640px (each takes the full width on phones); in a list narrower than 13rem each row stacks (number and name, then amount and status). #}
 <div class="card h-full"><div class="card-body @container">
   <div class="flex flex-wrap justify-between items-baseline gap-x-2 mb-1"><h2 class="section-heading mb-0 min-w-0 hyphens-auto wrap-anywhere">{{ title }}</h2><a class="text-sm" href="{% url 'invoicing:list' kind %}">{% translate "All" %}</a></div>
   {% for inv in invoices %}

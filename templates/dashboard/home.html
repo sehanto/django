@@ -68,10 +68,10 @@
     </div>
     </div>
   </div></div></div>
-  <div class="col-span-12 xs:col-span-6">
+  <div class="col-span-12 sm:col-span-6">
     {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind=invoice_kinds.SALES empty=_("No sales invoices yet.") %}
   </div>
-  <div class="col-span-12 xs:col-span-6">
+  <div class="col-span-12 sm:col-span-6">
     {% include "dashboard/_recent.html" with title=_("Recent purchases") invoices=recent_purchases kind=invoice_kinds.PURCHASE empty=_("No purchase bills yet.") %}
   </div>
 </div>
