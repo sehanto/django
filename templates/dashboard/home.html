@@ -10,19 +10,19 @@
 </div>
 
 <div class="grid grid-cols-12 gap-4 mb-6">
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3"><div class="card h-full"><div class="card-body">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3"><div class="card h-full"><div class="card-body">
     <div class="text-sm text-muted">{% translate "Cash & bank" %}</div><div class="stat-value">{{ cash_total|rupiah }}</div>
     <div class="text-sm text-muted">{% for account, balance in cash %}{{ account.name }}: {{ balance|rupiah }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
   </div></div></div>
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.SALES %}" class="card h-full no-underline"><div class="card-body">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.SALES %}" class="card h-full no-underline"><div class="card-body">
     <div class="text-sm text-muted">{% translate "Accounts receivable" %}</div><div class="stat-value text-fg">{{ receivables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=receivables %}
   </div></a></div>
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}" class="card h-full no-underline"><div class="card-body">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3"><a href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}" class="card h-full no-underline"><div class="card-body">
     <div class="text-sm text-muted">{% translate "Accounts payable" %}</div><div class="stat-value text-fg">{{ payables.outstanding|rupiah }}</div>
     {% include "dashboard/_overdue.html" with summary=payables %}
   </div></a></div>
-  <div class="col-span-12 sm:col-span-6 xl:col-span-3"><a href="{% url 'reports:income_statement' %}" class="card h-full no-underline"><div class="card-body">
+  <div class="col-span-12 sm:col-span-6 lg:col-span-3"><a href="{% url 'reports:income_statement' %}" class="card h-full no-underline"><div class="card-body">
     <div class="text-sm text-muted">{% translate "Profit this month" %}</div><div class="stat-value text-fg">{{ this_month.profit|rupiah }}</div>
     <div class="text-sm text-muted">{% blocktranslate trimmed with revenue=this_month.revenue|rupiah expense=this_month.expense|rupiah %}Revenue {{ revenue }} · Expenses {{ expense }}{% endblocktranslate %}</div>
   </div></a></div>
