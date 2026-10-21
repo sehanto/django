@@ -245,8 +245,7 @@
 
   /* Amounts: right-aligned, figures lined up. */
   .num { @apply text-end whitespace-nowrap tabular-nums; }
-  /* Dashboard figures, sized by the card's width (its card-body is an @container): 16px, 20px, 24px as room allows;
-     in the narrowest cards (phones under 360px) "Rp" and the number may take two lines. */
+  /* Dashboard figures, sized by the card's width (its card-body is an @container): 16px, 20px, 24px as room allows. */
   .stat-value { @apply text-lg @figure-md:text-xl @figure-lg:text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
