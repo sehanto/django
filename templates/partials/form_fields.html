@@ -1,13 +1,14 @@
-{% load ui %}{# Pass "fields" to render only some fields (the form's errors and hidden fields come with the full form); "bare" leaves out the grid, to put two forms' fields in one. #}
+{% load ui %}{# Fields go two to a row from sm (one alone takes the row); pass "col" for another layout. Pass "fields" to render only some fields (the form's errors and hidden fields come with the full form); "bare" leaves out the grid, to put two forms' fields in one. #}
 {% if not fields %}
 {% if form.non_field_errors %}<div class="alert alert-danger col-span-12" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
 {% endif %}
 {% if not bare %}<div class="grid grid-cols-12 gap-4">{% endif %}
-{% for field in fields|default:form.visible_fields %}
-  <div class="{{ col|default:'col-span-12 md:col-span-4' }}">
+{% with visible=fields|default:form.visible_fields %}
+{% for field in visible %}
+  <div class="{% if col %}{{ col }}{% elif visible|length == 1 %}col-span-12{% else %}col-span-12 sm:col-span-6{% endif %}">
     {% if field.field.widget.input_type == 'checkbox' %}
-      <div class="flex items-center gap-2 md:mt-8">
+      <div class="flex items-center gap-2 sm:mt-8">
         {{ field|add_class:'form-toggle' }}
         <label class="text-base" for="{{ field.id_for_label }}">{{ field.label }}</label>
       </div>
@@ -18,4 +19,5 @@
     {% include "partials/field_feedback.html" %}
   </div>
 {% endfor %}
+{% endwith %}
 {% if not bare %}</div>{% endif %}

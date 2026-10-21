@@ -4,6 +4,8 @@
   templates, scripts and Python code use are generated, plus the project's components and base styles.
   Lightning CSS then adds the fallback for ``light-dark()`` (``frontend/light-dark.cjs``), so the colour
   tokens work in browsers from before 2024 too.
+* ``static/fonts/``: Inter (``@fontsource-variable/inter``, OFL), the interface typeface: one variable
+  file for the Latin script Indonesian and English use, with tabular figures for columns of amounts.
 * ``templates/icons/<name>.svg``: the Lucide icons (``lucide-static``, ISC) that templates use
   through ``{% icon "name" %}`` (``apps/core/templatetags/icons.py``), as small SVG templates.
 
@@ -24,9 +26,11 @@ APP_CSS = ROOT / "frontend" / "app.css"
 TAILWIND = ROOT / "node_modules" / ".bin" / "tailwindcss"
 LIGHT_DARK = ROOT / "frontend" / "light-dark.cjs"
 LUCIDE = ROOT / "node_modules" / "lucide-static"
+INTER = ROOT / "node_modules" / "@fontsource-variable" / "inter"
 
 OUT_CSS = ROOT / "static" / "build" / "app.min.css"
 OUT_ICONS = ROOT / "templates" / "icons"
+OUT_FONTS = ROOT / "static" / "fonts"
 
 # {% icon "receipt" … %}, or {% icon name … %} with the values templates assign to name (icon="bank").
 ICON_LITERAL = re.compile(r"""\{%\s*icon\s+["']([a-z0-9-]+)["']""")
@@ -88,14 +92,23 @@ def with_light_dark_fallback(css: str) -> str:
     return result.stdout.strip() + "\n"
 
 
+def fonts() -> dict[str, bytes]:
+    _installed(INTER)
+    return {
+        "inter-latin-wght-normal.woff2": (INTER / "files" / "inter-latin-wght-normal.woff2").read_bytes(),
+        "LICENSE-inter.txt": (INTER / "LICENSE").read_bytes(),
+    }
+
+
 @dataclass(frozen=True)
 class Build:
     css: str
     icons: dict[str, str]
+    fonts: dict[str, bytes]
 
 
 def build() -> Build:
-    return Build(css=with_light_dark_fallback(tailwind()), icons=icons())
+    return Build(css=with_light_dark_fallback(tailwind()), icons=icons(), fonts=fonts())
 
 
 def write(result: Build) -> dict[Path, int]:
@@ -107,6 +120,9 @@ def write(result: Build) -> dict[Path, int]:
             stale.unlink()
     for name, svg in result.icons.items():
         (OUT_ICONS / name).write_text(svg, encoding="utf-8")
+    OUT_FONTS.mkdir(parents=True, exist_ok=True)
+    for name, data in result.fonts.items():
+        (OUT_FONTS / name).write_bytes(data)
     sizes = {OUT_CSS: OUT_CSS.stat().st_size}
     sizes[OUT_ICONS] = sum(p.stat().st_size for p in OUT_ICONS.glob("*.svg"))
     return sizes

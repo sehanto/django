@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts import two_factor
@@ -14,7 +15,7 @@ from .roles import Role
 
 
 class OrganizationSettingsForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
-    npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator],
+    npwp = DigitsField(label=capfirst(_("tax ID (NPWP)")), max_length=16, required=False, validators=[npwp_format_validator],
                        help_text=_("15 or 16 digits; dots and dashes are removed."))
     nib = DigitsField(label=_("business ID (NIB)"), max_length=13, required=False, validators=[nib_validator])
 

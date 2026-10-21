@@ -4,7 +4,7 @@
   {% for inv in invoices %}
     <div class="flex flex-col gap-1 border-t border-line py-2 text-sm @list-row:flex-row @list-row:items-start @list-row:justify-between @list-row:gap-3">
       <div class="min-w-0">
-        <a href="{% url 'invoicing:detail' kind inv.pk %}" class="block truncate font-medium" title="{{ inv.display_number }}">{{ inv.display_number }}</a>
+        <a href="{% url 'invoicing:detail' kind inv.pk %}" class="block truncate font-medium no-underline hover:underline" title="{{ inv.display_number }}">{{ inv.display_number }}</a>
         <div class="truncate text-muted" title="{{ inv.party_name }}">{{ inv.party_name }}</div>
       </div>
       <div class="flex shrink-0 flex-col items-start gap-1 @list-row:items-end">

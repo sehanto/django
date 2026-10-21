@@ -642,7 +642,9 @@ few behaviours live in `static/js/app.js`.
 
 - **Source.** `frontend/app.css` is the whole stylesheet: `@import "tailwindcss"`, where class names
   come from (`@source`: templates, scripts and Python code, not tests or migrations), the theme
-  (Tailwind's own breakpoints, 640, 768, 1024, 1280 and 1536 px, and font stack), base typography for content
+  (Tailwind's own breakpoints, 640, 768, 1024, 1280 and 1536 px; the Inter typeface, OFL, copied from the pinned
+  `@fontsource-variable/inter` into `static/fonts` by `build_css`, chosen for clarity at 12-14px and its
+  tabular figures), base typography for content
   that Tailwind's reset leaves unstyled, and a small `@layer components`.
 - **Utilities first.** Templates use Tailwind utilities for layout, spacing, grid (`grid
   grid-cols-12`, `md:col-span-6`), typography and colour. Only primitives that every page repeats
@@ -723,7 +725,15 @@ few behaviours live in `static/js/app.js`.
   controls (a filter bar, buttons in a row); 16px (`gap-4`, `mb-4`, `card-body`) between cards and
   form fields and inside cards; 24px (`gap-6`, `mb-6`, `py-6`) between the sections of a page, so
   a grid of cards ends with `mb-6` and a page whose main content and panel share a grid uses
-  `gap-6`. The page gutter is 16px on phones and 24px from `lg`.
+  `gap-6`. The page gutter is 16px on phones and 32px from `lg`.
+- **Page widths.** The content column stops at 1440px (`max-w-page`) and is centred on wider screens;
+  lists, reports and documents use all of it. A form page's card is `max-w-4xl` (two columns of
+  fields, so a label and its field stay together); short account forms (password, 2FA, profile, new
+  organization) are `max-w-xl` with one column; the invoice and journal forms keep the full width
+  their line tables need (`col="col-span-12 sm:col-span-6 lg:col-span-4"` for the header). A side
+  panel (adding a member, a new API key) sits beside its table from `xl` (8/4; the invoice's payment
+  column from `2xl`) and below it before. Dialogs are `max-w-2xl` (the confirmation `max-w-md`).
+  Paragraphs stop at 75 characters. Sign-in pages are one centred 28rem column.
 - **Tables on phones.** List tables and invoice lines carry `table-stack`: below `md` (on screen, never
   in print) each row becomes a block whose cells show their column name (`data-label`) beside the value,
   so amounts are never hidden behind a sideways scroll. A cell without `data-label` is the row's title;
@@ -749,8 +759,8 @@ few behaviours live in `static/js/app.js`.
   submits its form, `data-print` prints, `data-height` sizes a chart bar. `print:hidden` leaves
   the menu and buttons off paper.
 - **Forms** render through `partials/form_fields.html` (labels, `form-input`/`form-select`, a
-  checkbox as `form-toggle`, `aria-invalid` on errors, in a 12-column grid: pass `col="col-span-12
-  md:col-span-4"` to change the width). Help text and errors carry the ids Django's
+  checkbox as `form-toggle`, `aria-invalid` on errors, in a 12-column grid, two fields to a row from
+  `sm` and a lone field across the row: pass `col="…"` to change the width). Help text and errors carry the ids Django's
   `aria-describedby` points at (`partials/field_feedback.html`); table-row forms name their inputs
   with `aria-label` (`core.forms.GridFormMixin`).
 - **Accessibility.** Icons are decorative (`aria-hidden="true"`); icon-only buttons have an

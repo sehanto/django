@@ -8,7 +8,7 @@
     {% blocktranslate trimmed with organizations=required_by|join:", " %}{{ organizations }} requires two-factor authentication. Turn it on to continue.{% endblocktranslate %}
   </div>
 {% endif %}
-<div class="card mb-4"><div class="card-body">
+<div class="card mb-4 max-w-3xl"><div class="card-body">
   <div class="flex justify-between items-start gap-4">
     <div>
       <h2 class="section-heading mb-1">{% translate "Two-factor authentication" %}
@@ -27,7 +27,7 @@
   {% if two_factor_enabled and backup_codes_left < 3 %}<div class="alert alert-warning mt-4 mb-0">{% translate "You are running out of backup codes. Create new ones and keep them somewhere safe." %}</div>{% endif %}
 </div></div>
 {% if two_factor_enabled %}
-<div class="card mb-4"><div class="card-body">
+<div class="card mb-4 max-w-3xl"><div class="card-body">
   <h2 class="section-heading">{% translate "Remembered devices" %}</h2>
   <p class="text-muted">{% translate "These devices don't ask for a code when you sign in. Changing your password forgets all of them." %}</p>
   {% if trusted_devices %}
@@ -46,11 +46,11 @@
   {% endif %}
 </div></div>
 {% endif %}
-<div class="card"><div class="card-body">
+<div class="card max-w-3xl"><div class="card-body">
   <h2 class="section-heading">{% translate "Password" %}</h2>
   <a href="{% url 'accounts:password_change' %}" class="btn btn-outline">{% translate "Change password" %}</a>
 </div></div>
-<div class="card mt-6"><div class="card-body">
+<div class="card mt-6 max-w-3xl"><div class="card-body">
   <h2 class="section-heading">{% translate "Recent security activity" %}</h2>
   <p class="text-muted">{% translate "Sign-ins and security changes on your account. If you don't recognize something, change your password and turn on two-factor authentication." %}</p>
   {% if recent_activity %}

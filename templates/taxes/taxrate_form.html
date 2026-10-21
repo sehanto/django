@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("PPN rates") "taxes:rates" %}{% if object %}{% crumb _("Edit rate") %}{% else %}{% crumb _("New rate") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% if object %}{% translate "Edit rate" %}{% else %}{% translate "New rate" %}{% endif %}</h1>
-<form method="post" class="card"><div class="card-body">{% csrf_token %}
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
 </div>
 <div class="card-footer flex flex-wrap gap-2 justify-end">

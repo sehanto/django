@@ -63,6 +63,7 @@ def test_the_built_assets_are_up_to_date():
     except assets.ToolMissing as exc:
         pytest.skip(str(exc))
     assert assets.OUT_CSS.read_text(encoding="utf-8") == result.css, "run manage.py build_css"
+    assert {name: (assets.OUT_FONTS / name).read_bytes() for name in result.fonts} == result.fonts, "run manage.py build_css"
     built = {path.name: path.read_text(encoding="utf-8") for path in assets.OUT_ICONS.iterdir()}
     assert built == result.icons, "run manage.py build_css"
 
@@ -74,8 +75,9 @@ def test_the_build_has_what_pages_use_and_nothing_else():
     for kept in (".btn-primary", ".modal-header", ".badge-success", ".alert-danger", ".form-toggle", ".nav-link.active", ".icon",
                  ".grid-cols-12", ".md\\:col-span-4", ".print\\:hidden", ".data-open\\:flex"):
         assert kept in css, kept
-    for dropped in (".carousel", ".offcanvas", ".grid-cols-7", "@font-face"):
+    for dropped in (".carousel", ".offcanvas", ".grid-cols-7"):
         assert dropped not in css, dropped
+    assert css.count("@font-face") == 1 and "font-family:Inter Variable" in css  # the one typeface, no icon font
     assert "prefers-color-scheme:dark" in css  # light and dark follow the device
 
 
@@ -102,7 +104,12 @@ def test_every_class_in_use_is_in_the_build():
     from apps.core import assets
 
     css = assets.OUT_CSS.read_text(encoding="utf-8")
-    defined = {re.sub(r"\\(.)", r"\1", name) for name in re.findall(r"\.((?:\\.|[A-Za-z0-9_-])+)", css)}
+    # Class names as written in the CSS: "\:" escapes a character, "\32 " a code point (a leading digit, as in 2xl:).
+    hex_escape = re.compile(r"\\([0-9a-fA-F]{1,6}) ?")
+    defined = {
+        re.sub(r"\\(.)", r"\1", hex_escape.sub(lambda m: chr(int(m[1], 16)), name))
+        for name in re.findall(r"\.((?:\\[0-9a-fA-F]{1,6} ?|\\.|[A-Za-z0-9_-])+)", css)
+    }
     sources = [*TEMPLATES.rglob("*.html"), *(Path(settings.BASE_DIR) / "apps").rglob("*.py")]
     missing = set()
     for path in sources:
@@ -170,7 +177,7 @@ def test_pages_carry_the_content_security_policy(auth_client):
     assert "script-src 'self' https://challenges.cloudflare.com" in policy and "style-src 'self'" in policy
     assert "frame-ancestors 'none'" in policy and "'unsafe-inline'" not in policy
     content = response.content.decode()
-    assert '<dialog class="modal" id="confirmModal"' in content and 'data-drawer-open="appSidebar"' in content
+    assert '<dialog class="modal max-w-md" id="confirmModal"' in content and 'data-drawer-open="appSidebar"' in content
 
 
 def test_breadcrumbs_link_each_level_and_mark_the_current_page():

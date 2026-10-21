@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Organization settings") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% translate "Organization settings" %}</h1>
-<form method="post" class="card"><div class="card-body">{% csrf_token %}
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <div class="alert alert-neutral border mt-6 mb-0">
     {% icon "info" "me-1" %}
@@ -15,7 +15,7 @@
 </div>
 <div class="card-footer text-end"><button class="btn btn-primary">{% translate "Save settings" %}</button></div>
 </form>
-<div class="card mt-6"><div class="card-body">
+<div class="card mt-6 max-w-4xl"><div class="card-body">
   <div class="flex flex-wrap justify-between items-center gap-2">
     <div><h2 class="section-heading mb-1">{% translate "Places of business" %}</h2>
       <p class="text-muted mb-0">{% translate "Branches registered in Coretax with their own NITKU. A sales invoice made from one carries its NITKU and address; others come from the head office (the NPWP followed by 000000)." %}</p></div>
@@ -30,13 +30,13 @@
   </table></div>{% endif %}
 </div></div>
 {% if current_organization.is_pkp %}
-<div class="card mt-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
+<div class="card mt-6 max-w-4xl"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div><h2 class="section-heading mb-1">{% translate "Coretax connection" %}</h2>
     <p class="text-muted mb-0">{% translate "Send fakturs to Coretax through your tax application provider (PJAP) instead of importing files." %}</p></div>
   <a href="{% url 'invoicing:coretax_connection' %}" class="btn btn-outline-primary">{% translate "Set up" %}</a>
 </div></div>
 {% endif %}
-<div class="card mt-6"><div class="card-body flex flex-wrap justify-between items-center gap-2">
+<div class="card mt-6 max-w-4xl"><div class="card-body flex flex-wrap justify-between items-center gap-2">
   <div><h2 class="section-heading mb-1">{% translate "Export books" %}</h2>
     <p class="text-muted mb-0">{% translate "Download all journals, invoices, payments and contacts as a ZIP of CSV files." %}</p></div>
   <a href="{% url 'reports:export_books' %}" class="btn btn-outline-primary">{% icon "download" "me-1" %}{% translate "Export books" %}</a>

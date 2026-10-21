@@ -1,5 +1,5 @@
 from django import forms
-
+from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import BaseModelForm, DigitsField, OrganizationFormMixin
@@ -11,7 +11,7 @@ from .validators import nitku_validator, npwp_format_validator
 
 
 class ContactForm(RegionFieldsMixin, OrganizationFormMixin, BaseModelForm):
-    npwp = DigitsField(label=_("tax ID (NPWP)"), max_length=16, required=False, validators=[npwp_format_validator],
+    npwp = DigitsField(label=capfirst(_("tax ID (NPWP)")), max_length=16, required=False, validators=[npwp_format_validator],
                        help_text=_("15 or 16 digits; dots and dashes are removed."))
     nitku = DigitsField(label=_("NITKU (place of business)"), max_length=22, required=False, validators=[nitku_validator],
                         help_text=Contact._meta.get_field("nitku").help_text)

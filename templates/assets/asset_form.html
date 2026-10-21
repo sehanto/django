@@ -3,7 +3,7 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Fixed assets") "assets:list" %}{% if object %}{% crumb object.name "assets:detail" object.pk %}{% crumb _("Edit") %}{% else %}{% crumb _("New fixed asset") %}{% endif %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-4">{% if object %}{% blocktranslate trimmed with number=object.number %}Edit {{ number }}{% endblocktranslate %}{% else %}{% translate "New fixed asset" %}{% endif %}</h1>
-<form method="post" class="card"><div class="card-body">{% csrf_token %}
+<form method="post" class="card max-w-4xl"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
   <p class="text-muted mt-4 mb-0">{% blocktranslate trimmed with method=current_organization.get_depreciation_method_display %}
     Depreciation uses the organization's method ({{ method }}) and starts in the month of acquisition. Registering the asset doesn't post its purchase.
