@@ -28,7 +28,7 @@
 <div class="grid grid-cols-12 gap-6">
   <div class="col-span-12">
     <div class="card"><div class="card-body">{% include "invoicing/_invoice_body.html" %}</div></div>
-    {% if show_coretax %}<p class="text-sm text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
+    {% if show_coretax %}<p class="text-muted mt-2 mb-0">{% icon "info" "me-1" %}{% if coretax_problem %}{{ coretax_problem }}{% elif invoice.tax_invoice_number %}{% blocktranslate trimmed with number=invoice.tax_invoice_number %}Faktur Pajak {{ number }}.{% endblocktranslate %}{% elif coretax_submission %}{% blocktranslate trimmed with status=coretax_submission.get_status_display %}Sent to Coretax: {{ status }}.{% endblocktranslate %}{% else %}{% translate "Import the Coretax XML under e-Faktur > Pajak Keluaran > Impor Data, issue the faktur there, then record its number below." %}{% endif %}</p>
       {% if can_write and not coretax_problem and not invoice.tax_invoice_number %}
       <form method="post" action="{% url 'invoicing:tax_invoice_number' kind invoice.pk %}" class="mt-1 flex flex-wrap items-end gap-2">{% csrf_token %}
         <div class="min-w-0 flex-1"><label class="form-label" for="faktur-number">{% translate "Faktur Pajak number" %}</label><input id="faktur-number" name="number" class="form-input form-input-sm" maxlength="30" inputmode="numeric" placeholder="04002600000012345" required></div>
@@ -37,7 +37,7 @@
       {% endif %}
     {% endif %}
     {% if invoice.special_document and invoice.status != invoice.Status.DRAFT %}
-      <p class="text-sm text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
+      <p class="text-muted mt-2 mb-0">{% icon "file-text" "me-1" %}{{ invoice.get_special_document_display }}{% if invoice.special_document_number %}: {{ invoice.special_document_number }}, {{ invoice.special_document_date|date:"d/m/Y" }}{% else %}. {% translate "Record its document (the PEB, or the bill's own number) for the Dokumen Lain file." %}{% endif %}</p>
       {% if can_write and not invoice.special_document_number and invoice.status != invoice.Status.VOID %}
       <form method="post" action="{% url 'invoicing:special_document' kind invoice.pk %}" class="mt-1 flex flex-wrap items-end gap-2">{% csrf_token %}
         <div class="min-w-0 flex-1"><label class="form-label" for="special-number">{% translate "Document no." %}</label><input id="special-number" name="number" class="form-input form-input-sm" maxlength="100" required></div>
@@ -46,7 +46,7 @@
       </form>
       {% endif %}
     {% endif %}
-    {% if invoice.journal_entry %}<p class="text-sm text-muted mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
+    {% if invoice.journal_entry %}<p class="text-muted mt-2">{% translate "Journal entry" %}: <a href="{% url 'ledger:journal_detail' invoice.journal_entry_id %}">{{ invoice.journal_entry.number }}</a></p>{% endif %}
   </div>
   <div class="col-span-12">
     {% if invoice.is_open and can_write %}
@@ -55,7 +55,7 @@
       <form method="post" action="{% url 'invoicing:pay' kind invoice.pk %}">{% csrf_token %}
         {% if payment_form.income_tax_fields %}
           {% include "partials/form_fields.html" with form=payment_form fields=payment_form.main_fields col="col-span-12 md:col-span-4" %}
-          <details class="mt-4"{% if payment_form.errors %} open{% endif %}><summary class="text-sm">{% if invoice.is_sales %}{% translate "The buyer withheld income tax" %}{% else %}{% translate "Withhold income tax (PPh 23 or 4(2))" %}{% endif %}</summary>
+          <details class="mt-4"{% if payment_form.errors %} open{% endif %}><summary>{% if invoice.is_sales %}{% translate "The buyer withheld income tax" %}{% else %}{% translate "Withhold income tax (PPh 23 or 4(2))" %}{% endif %}</summary>
             <div class="mt-2">{% include "partials/form_fields.html" with form=payment_form fields=payment_form.income_tax_fields col="col-span-12 md:col-span-4" %}</div>
           </details>
         {% else %}{% include "partials/form_fields.html" with form=payment_form col="col-span-12 md:col-span-4" %}{% endif %}
@@ -76,7 +76,7 @@
             {% if p.status == p.Status.POSTED and can_write %}<form method="post" action="{% url 'invoicing:payment_void' p.pk %}" data-confirm="{% translate 'Void this payment?' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger">{% translate "void" %}</button></form>{% endif %}
           </div>
         </div>
-      {% empty %}<p class="text-sm text-muted mb-0">{% translate "No payments yet." %}</p>{% endfor %}
+      {% empty %}<p class="text-muted mb-0">{% translate "No payments yet." %}</p>{% endfor %}
     </div></div>
     {% if write_offs %}
     <div class="card mt-4"><div class="card-body">

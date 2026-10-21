@@ -8,7 +8,7 @@
     {% if form.facility_fields %}
       {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
       {% include "partials/form_fields.html" with fields=form.main_fields col="col-span-12 md:col-span-4" %}
-      <details class="mt-4"{% if form.shows_facility %} open{% endif %}><summary class="text-sm">{{ form.tax_section_label }}</summary>
+      <details class="mt-4"{% if form.shows_facility %} open{% endif %}><summary>{{ form.tax_section_label }}</summary>
         <div class="mt-2">{% include "partials/form_fields.html" with fields=form.facility_fields col="col-span-12 md:col-span-6" %}</div>
       </details>
     {% else %}{% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}{% endif %}
@@ -29,7 +29,7 @@
     <template data-formset-empty>{% include "invoicing/_line_row.html" with f=formset.empty_form %}</template>
   </div>
   <div class="card-footer flex flex-wrap gap-2 justify-between items-center">
-    <span class="text-sm text-muted">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
+    <span class="text-muted">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
     <div class="flex flex-wrap gap-2">
       <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline">{% translate "Cancel" %}</a>
       <button name="draft" class="btn btn-outline-primary">{% translate "Save draft" %}</button>

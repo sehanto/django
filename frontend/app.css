@@ -31,7 +31,11 @@
                    backup codes, the phone menu and close buttons
        24px (2xl)  section headings, dashboard figures, plan prices, amounts to pay, the printed
                    invoice heading
-       30px (3xl)  page titles and error page headings, the largest */
+       30px (3xl)  page titles and error page headings, the largest
+     Paragraphs, facts, addresses, notes, alerts and table cells are body text; 12px only labels or
+     annotates another line.
+     Spacing uses three of Tailwind's 4px steps: 8px (gap-2) inside a group of controls, 16px (gap-4,
+     card-body) between cards and fields, 24px (gap-6, mb-6) between a page's sections. */
   --text-xs: initial; /* not on the scale: the smallest text is 12px (text-sm) */
   --text-sm: 0.75rem;
   --text-sm--line-height: 1.5;

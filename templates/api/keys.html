@@ -14,12 +14,12 @@
     <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
       <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Key" %}</th><th>{% translate "Created by" %}</th><th>{% translate "Last used" %}</th><th></th></tr></thead>
       <tbody>{% for key in keys %}<tr class="{% if not key.is_active %}text-muted line-through{% endif %}">
-        <td>{{ key.name }}</td><td class="font-mono text-sm">{{ key.prefix }}…</td><td class="text-sm">{{ key.user.email }}</td>
-        <td class="text-sm">{{ key.last_used_at|date:"d/m/Y H:i"|default:"—" }}</td>
+        <td>{{ key.name }}</td><td class="font-mono">{{ key.prefix }}…</td><td>{{ key.user.email }}</td>
+        <td>{{ key.last_used_at|date:"d/m/Y H:i"|default:"—" }}</td>
         <td class="text-end">{% if key.is_active %}<form method="post" action="{% url 'api_keys:revoke' key.pk %}" data-confirm="{% translate 'Revoke this key? Programs using it stop working.' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Revoke" %}</button></form>{% endif %}</td></tr>
       {% empty %}<tr><td colspan="5" class="text-center text-muted py-6">{% translate "No API keys yet." %}</td></tr>{% endfor %}</tbody>
     </table></div></div>
-    <p class="text-sm text-muted mt-2">{% blocktranslate trimmed %}The REST API lives at /api/v1/ (accounts, contacts, items, tax-rates, invoices, journal-entries, reports/trial-balance). Send the key as <code>Authorization: Bearer &lt;key&gt;</code>. A key acts with the role of the member who created it, and stops working when that member leaves the organization.{% endblocktranslate %}</p>
+    <p class="text-muted mt-2">{% blocktranslate trimmed %}The REST API lives at /api/v1/ (accounts, contacts, items, tax-rates, invoices, journal-entries, reports/trial-balance). Send the key as <code>Authorization: Bearer &lt;key&gt;</code>. A key acts with the role of the member who created it, and stops working when that member leaves the organization.{% endblocktranslate %}</p>
   </div>
   <div class="col-span-12">
     <div class="card"><div class="card-body">

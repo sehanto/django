@@ -24,6 +24,6 @@
   {% translate "NET PROFIT (LOSS)" as label %}{% include "reports/_total.html" with current=report.net_profit previous=report.previous_net_profit negative_red=True %}
 </table></div></div>
 {% endwith %}
-<p class="text-sm text-muted mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
+<p class="text-muted mt-2">{% url 'reports:notes' as notes_url %}{% blocktranslate trimmed with url=notes_url %}Prepared under SAK EMKM. The <a href="{{ url }}">notes to the financial statements</a> are an integral part of these statements.{% endblocktranslate %}</p>
 {% endif %}
 {% endblock %}

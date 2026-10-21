@@ -15,5 +15,5 @@
     <td class="text-end">{% if st.is_final %}<a href="{% url 'payroll:a1' year st.employee.pk %}" class="text-sm">{% translate "Open" %}</a>{% else %}<span class="badge badge-neutral">{% translate "Year not closed" %}</span>{% endif %}</td></tr>
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No permanent employee was paid this year." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "Permanent employees get their 1721-A1 for the year by the end of January, or within a month of leaving. It is the bukti potong of their last period (December or the month they left), created in Coretax eBupot; record its number on that payroll." %}</p>
+<p class="text-muted mt-2">{% translate "Permanent employees get their 1721-A1 for the year by the end of January, or within a month of leaving. It is the bukti potong of their last period (December or the month they left), created in Coretax eBupot; record its number on that payroll." %}</p>
 {% endblock %}

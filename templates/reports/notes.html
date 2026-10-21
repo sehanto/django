@@ -9,7 +9,7 @@
 <div class="card"><div class="card-body">
 
 <h2 class="section-heading font-bold">1. {% translate "General" %}</h2>
-<dl class="grid grid-cols-12 gap-x-6 text-sm mb-6">
+<dl class="grid grid-cols-12 gap-x-6 mb-6">
   <dt class="col-span-12 sm:col-span-3">{% translate "Business name" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.name }}</dd>
   <dt class="col-span-12 sm:col-span-3">{% translate "Legal form" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.get_legal_form_display }}</dd>
   {% if org.npwp %}<dt class="col-span-12 sm:col-span-3">{% translate "Tax ID (NPWP)" %}</dt><dd class="col-span-12 sm:col-span-9">{{ org.npwp }}</dd>{% endif %}
@@ -19,7 +19,7 @@
 </dl>
 
 <h2 class="section-heading font-bold">2. {% translate "Significant accounting policies" %}</h2>
-<ol type="a" class="text-sm mb-6">
+<ol type="a" class="mb-6">
   <li class="mb-2"><strong>{% translate "Statement of compliance" %}.</strong>
     {% translate "These financial statements have been prepared in accordance with the Financial Accounting Standards for Micro, Small and Medium Entities (SAK EMKM)." %}</li>
   <li class="mb-2"><strong>{% translate "Basis of preparation" %}.</strong>
@@ -70,7 +70,7 @@
   <tr class="subtotal"><td></td><td>{% translate "Total" %}</td><td class="num">{{ section.total|rupiah }}</td><td class="num text-muted">{{ section.previous_total|rupiah }}</td></tr>
 </table></div>
 {% if section is bs.equity and bs.equity_movement %}{% with movement=bs.equity_movement %}
-<h3 class="text-sm font-bold mb-1">{% translate "Movements in equity" %}</h3>
+<h3 class="font-semibold mb-1">{% translate "Movements in equity" %}</h3>
 <div class="overflow-x-auto mb-6"><table class="table table-sm table-statement mb-0">
   <tr><td class="w-28"></td><td>{% blocktranslate trimmed with date=bs.previous_as_of|date:"d/m/Y" %}Equity at {{ date }}{% endblocktranslate %}</td><td class="num">{{ movement.opening|rupiah }}</td></tr>
   {% for row in movement.changes %}<tr><td class="text-muted w-28">{{ row.code }}</td><td>{{ row.name }}</td><td class="num">{{ row.amount|rupiah }}</td></tr>{% endfor %}
@@ -82,7 +82,7 @@
 
 {% if report.estimate_changes %}
 <h2 class="section-heading font-bold" id="note-{{ report.estimates_note }}">{{ report.estimates_note }}. {% translate "Changes in accounting estimates" %}</h2>
-<p class="text-sm">{% translate "The useful life or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
+<p>{% translate "The useful life or depreciation method of these fixed assets was revised. The change applies from the month shown; depreciation recorded earlier is not restated." %}</p>
 <div class="overflow-x-auto mb-6"><table class="table table-sm mb-0">
   <thead><tr><th>{% translate "Fixed asset" %}</th><th>{% translate "Applies from" %}</th><th>{% translate "Useful life (months)" %}</th><th>{% translate "Depreciation method" %}</th><th>{% translate "Reason" %}</th></tr></thead>
   <tbody>{% for r in report.estimate_changes %}
@@ -94,7 +94,7 @@
 
 {% if report.corrections %}
 <h2 class="section-heading font-bold" id="note-{{ report.corrections_note }}">{{ report.corrections_note }}. {% translate "Corrections of prior period errors" %}</h2>
-<p class="text-sm">{% translate "These errors in earlier years' books were found and corrected in this period. As SAK EMKM requires (7.16), they are corrected retrospectively: the statements show each correction in the year it concerns, so the comparative figures are restated and the effect on earlier years reaches this year's opening retained earnings, not this year's profit." %}</p>
+<p>{% translate "These errors in earlier years' books were found and corrected in this period. As SAK EMKM requires (7.16), they are corrected retrospectively: the statements show each correction in the year it concerns, so the comparative figures are restated and the effect on earlier years reaches this year's opening retained earnings, not this year's profit." %}</p>
 <div class="overflow-x-auto mb-6"><table class="table table-sm mb-0">
   <thead><tr><th>{% translate "Journal entry" %}</th><th>{% translate "Recorded on" %}</th><th>{% translate "Year corrected" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Effect on that year's profit" %}</th></tr></thead>
   <tbody>{% for c in report.corrections %}
@@ -105,7 +105,7 @@
 {% endif %}
 
 <h2 class="section-heading font-bold" id="note-{{ report.additional_note }}">{{ report.additional_note }}. {% translate "Additional information" %}</h2>
-<p class="text-sm mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-muted">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
+<p class="mb-0">{% if org.additional_notes %}{{ org.additional_notes|linebreaksbr }}{% else %}{% url 'tenants:settings' as settings_url %}<span class="text-muted">{% blocktranslate trimmed with url=settings_url %}None. Add commitments, guarantees, events after the reporting date or other material matters in the <a href="{{ url }}">organization settings</a>.{% endblocktranslate %}</span>{% endif %}</p>
 </div></div>
 {% endwith %}{% endif %}
 {% endblock %}

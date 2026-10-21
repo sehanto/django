@@ -13,7 +13,7 @@
     <div>
       <h2 class="section-heading mb-1">{% translate "Two-factor authentication" %}
         {% if two_factor_enabled %}<span class="badge badge-success ms-1">{% translate "On" %}</span>{% else %}<span class="badge badge-neutral ms-1">{% translate "Off" %}</span>{% endif %}</h2>
-      <p class="text-sm text-muted mb-0">{% translate "Besides your password, signing in asks for a code from an authenticator app on your phone (such as Google Authenticator, Microsoft Authenticator or 1Password). Someone who learns your password still can't get in." %}</p>
+      <p class="text-muted mb-0">{% translate "Besides your password, signing in asks for a code from an authenticator app on your phone (such as Google Authenticator, Microsoft Authenticator or 1Password). Someone who learns your password still can't get in." %}</p>
     </div>
   </div>
   <div class="mt-4 flex flex-wrap gap-2">
@@ -24,12 +24,12 @@
       <a href="{% url 'accounts:two_factor_setup' %}" class="btn btn-primary">{% translate "Turn on two-factor authentication" %}</a>
     {% endif %}
   </div>
-  {% if two_factor_enabled and backup_codes_left < 3 %}<div class="alert alert-warning text-sm mt-4 mb-0">{% translate "You are running out of backup codes. Create new ones and keep them somewhere safe." %}</div>{% endif %}
+  {% if two_factor_enabled and backup_codes_left < 3 %}<div class="alert alert-warning mt-4 mb-0">{% translate "You are running out of backup codes. Create new ones and keep them somewhere safe." %}</div>{% endif %}
 </div></div>
 {% if two_factor_enabled %}
 <div class="card mb-4"><div class="card-body">
   <h2 class="section-heading">{% translate "Remembered devices" %}</h2>
-  <p class="text-sm text-muted">{% translate "These devices don't ask for a code when you sign in. Changing your password forgets all of them." %}</p>
+  <p class="text-muted">{% translate "These devices don't ask for a code when you sign in. Changing your password forgets all of them." %}</p>
   {% if trusted_devices %}
     <ul class="mb-4 list-none divide-y divide-line rounded-lg border border-line ps-0">
     {% for device in trusted_devices %}
@@ -42,7 +42,7 @@
     </ul>
     <form method="post" action="{% url 'accounts:forget_trusted_device' %}" data-confirm="{% translate 'Forget all remembered devices?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">{% translate "Forget all devices" %}</button></form>
   {% else %}
-    <p class="text-sm mb-0">{% translate "No remembered devices." %}</p>
+    <p class="mb-0">{% translate "No remembered devices." %}</p>
   {% endif %}
 </div></div>
 {% endif %}
@@ -52,9 +52,9 @@
 </div></div>
 <div class="card mt-6"><div class="card-body">
   <h2 class="section-heading">{% translate "Recent security activity" %}</h2>
-  <p class="text-sm text-muted">{% translate "Sign-ins and security changes on your account. If you don't recognize something, change your password and turn on two-factor authentication." %}</p>
+  <p class="text-muted">{% translate "Sign-ins and security changes on your account. If you don't recognize something, change your password and turn on two-factor authentication." %}</p>
   {% if recent_activity %}
-  <ul class="mb-0 list-none divide-y divide-line ps-0 text-sm">
+  <ul class="mb-0 list-none divide-y divide-line ps-0">
     {% for event in recent_activity %}
       <li class="flex justify-between gap-2 py-2">
         <span>{{ event.get_action_display }}{% with summary=event|audit_summary %}{% if summary and summary != request.user.email %} <span class="text-muted">· {{ summary }}</span>{% endif %}{% endwith %}</span>
@@ -62,6 +62,6 @@
       </li>
     {% endfor %}
   </ul>
-  {% else %}<p class="text-sm mb-0">{% translate "No activity recorded yet." %}</p>{% endif %}
+  {% else %}<p class="mb-0">{% translate "No activity recorded yet." %}</p>{% endif %}
 </div></div>
 {% endblock %}

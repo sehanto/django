@@ -715,8 +715,15 @@ few behaviours live in `static/js/app.js`.
   on invoices and 2FA backup codes; 24px (`text-2xl`) section headings (`section-heading`),
   dashboard figures (by their card's width: 16px in a narrow card, 20px from 8.5rem, 24px from 11rem), plan prices, amounts to pay and the printed invoice heading; 30px (`text-3xl`)
   page titles (`page-title`) and error page headings. Secondary text is always a step below body
-  text and every heading level a step above the one below it. No size is written by hand
-  (`text-[…]`); a test checks.
+  text and every heading level a step above the one below it. Paragraphs, facts on detail pages,
+  addresses, notes, alerts, disclosure summaries and every table cell are body text; 12px is only
+  for a line that labels or annotates another (a figure's label, a document number under a date, a
+  status note, an error). No size is written by hand (`text-[…]`); a test checks.
+- **Spacing.** Tailwind's 4px steps, three of them for layout: 8px (`gap-2`) inside a group of
+  controls (a filter bar, buttons in a row); 16px (`gap-4`, `mb-4`, `card-body`) between cards and
+  form fields and inside cards; 24px (`gap-6`, `mb-6`, `py-6`) between the sections of a page, so
+  a grid of cards ends with `mb-6` and a page whose main content and panel share a grid uses
+  `gap-6`. The page gutter is 16px on phones and 24px from `lg`.
 - **Breadcrumbs.** Every page of the app starts with its trail from the dashboard, e.g. Dashboard ›
   Payroll › Payroll 12/2026 › (employee); a section's own page is Dashboard › Payroll: `{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Payroll")
   "payroll:index" year=run.year %}{% crumb run_title %}{% endbreadcrumbs %}{% endblock %}`

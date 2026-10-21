@@ -6,10 +6,10 @@
     <div>
       {% with seller=invoice.seller %}
       <h2 class="text-xl leading-tight font-bold mb-1">{{ seller.name }}</h2>
-      <div class="text-sm">{{ seller.address|linebreaksbr }}{% if seller.city %}, {{ seller.city }}{% endif %}</div>
-      {% if seller.npwp %}<div class="text-sm">{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
+      <div>{{ seller.address|linebreaksbr }}{% if seller.city %}, {{ seller.city }}{% endif %}</div>
+      {% if seller.npwp %}<div>{% translate "NPWP" %}: {{ seller.npwp|npwp }}</div>{% endif %}
       {% endwith %}
-      {% if invoice.organization.phone %}<div class="text-sm">{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
+      {% if invoice.organization.phone %}<div>{% translate "Phone" %}: {{ invoice.organization.phone }}</div>{% endif %}
     </div>
     <div class="text-end">
       <h1 class="text-2xl font-medium leading-tight uppercase mb-1">{% if invoice.is_sales %}{% translate "Invoice" %}{% else %}{% translate "Bill" %}{% endif %}</h1>

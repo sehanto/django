@@ -18,7 +18,7 @@
     <tr class="{% if p.status == p.Status.VOID %}text-muted{% endif %}">
       <td>{{ p.number }}</td><td class="whitespace-nowrap">{{ p.date|date:"d M Y" }}</td><td>{{ p.invoice.party_name }}</td>
       <td><a href="{% url 'invoicing:detail' p.invoice.kind p.invoice_id %}">{{ p.invoice.number }}</a></td>
-      <td class="text-sm">{{ p.cash_account.name }}</td><td class="text-sm">{{ p.get_method_display }}</td>
+      <td>{{ p.cash_account.name }}</td><td>{{ p.get_method_display }}</td>
       <td class="num {% if p.is_receipt %}text-success{% else %}text-danger{% endif %}">{% if not p.is_receipt %}-{% endif %}{{ p.amount|rupiah }}</td>
       <td><span class="badge badge-{% if p.status == p.Status.VOID %}inactive{% else %}success{% endif %}">{{ p.get_status_display }}</span></td>
     </tr>

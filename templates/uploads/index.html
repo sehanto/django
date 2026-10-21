@@ -3,15 +3,15 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("File uploads") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <h1 class="page-title mb-2">{% translate "File uploads" %}</h1>
-<p class="text-muted text-sm mb-6">{% translate "Bring data in from a spreadsheet, the earlier books, Coretax or internet banking. Each file is checked first: you see what every row will do, and nothing is recorded until you apply it. A file is applied in full or not at all, and never twice." %}</p>
+<p class="text-muted mb-6">{% translate "Bring data in from a spreadsheet, the earlier books, Coretax or internet banking. Each file is checked first: you see what every row will do, and nothing is recorded until you apply it. A file is applied in full or not at all, and never twice." %}</p>
 {% for group in groups %}
 <h2 class="section-heading">{{ group.title }}</h2>
-<p class="text-muted text-sm mb-2">{{ group.intro }}</p>
+<p class="text-muted mb-2">{{ group.intro }}</p>
 <div class="grid grid-cols-12 gap-4 mb-6">
   {% for entry in group.importers %}
   <div class="col-span-12 md:col-span-6 lg:col-span-4"><div class="card h-full"><div class="card-body flex grow flex-col gap-2">
     <h3 class="card-title mb-0">{{ entry.importer.title }}{% if entry.locked %} {% icon "lock" "text-muted" %}{% endif %}</h3>
-    <p class="text-sm text-muted mb-0 grow">{{ entry.importer.description }}</p>
+    <p class="text-muted mb-0 grow">{{ entry.importer.description }}</p>
     <div class="flex flex-wrap gap-2">
       {% if can_write %}<a class="btn btn-sm btn-primary" href="{% url 'uploads:upload' entry.slug %}">{% icon "upload" %} {% translate "Upload" %}</a>{% endif %}
       {% translate "Template" as template_label %}{% include "partials/export_links.html" with url_name="uploads:template" arg1=entry.slug what=template_label %}
@@ -25,8 +25,8 @@
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Type" %}</th><th>{% translate "File" %}</th><th class="num">{% translate "Rows" %}</th><th>{% translate "Result" %}</th><th>{% translate "By" %}</th></tr></thead>
   <tbody>
   {% for upload in uploads %}
-    <tr><td class="whitespace-nowrap">{{ upload.created_at|date:"d/m/Y H:i" }}</td><td>{{ upload.get_kind_display }}</td><td class="text-sm">{{ upload.file_name }}</td>
-      <td class="num">{{ upload.rows }}</td><td class="text-sm">{{ upload.summary }}</td><td class="text-sm">{{ upload.created_by.email|default:"—" }}</td></tr>
+    <tr><td class="whitespace-nowrap">{{ upload.created_at|date:"d/m/Y H:i" }}</td><td>{{ upload.get_kind_display }}</td><td>{{ upload.file_name }}</td>
+      <td class="num">{{ upload.rows }}</td><td>{{ upload.summary }}</td><td>{{ upload.created_by.email|default:"—" }}</td></tr>
   {% empty %}<tr><td colspan="6" class="text-center text-muted py-6">{% translate "No files applied yet." %}</td></tr>
   {% endfor %}
   </tbody>

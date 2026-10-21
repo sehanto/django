@@ -7,7 +7,7 @@
   <div class="flex flex-wrap items-center gap-2">{% include "partials/export_links.html" %}
   {% if can_write %}<a href="{% url 'invoicing:create' kind %}" class="btn btn-primary">{% icon "plus" %} {{ labels.create }}</a>{% endif %}</div>
 </div>
-<div class="grid grid-cols-12 gap-4 mb-4">
+<div class="grid grid-cols-12 gap-4 mb-6">
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{{ labels.outstanding }}</div><div class="stat-value">{{ summary.outstanding|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% icon "triangle-alert" "text-danger me-1" %}{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline">{{ labels.aging }} &rarr;</a></div>

@@ -10,7 +10,7 @@
 {% if cooloff_timedelta %}
   <p>{% blocktranslate trimmed with wait=cooloff_timedelta|timeuntil_delta %}Please try again in {{ wait }}.{% endblocktranslate %}</p>
 {% endif %}
-<p class="text-sm text-muted mb-4">{% translate "Forgotten your password? Reset it by email: the pause is lifted as soon as you choose a new password. Every new failed attempt restarts the waiting time." %}</p>
+<p class="text-muted mb-4">{% translate "Forgotten your password? Reset it by email: the pause is lifted as soon as you choose a new password. Every new failed attempt restarts the waiting time." %}</p>
 <div class="grid gap-2">
   <a href="{% url 'accounts:password_reset' %}" class="btn btn-primary">{% translate "Reset password" %}</a>
   <a href="{% url 'accounts:login' %}" class="btn btn-outline">{% translate "Back to sign in" %}</a>

@@ -21,7 +21,7 @@
     {% if slip.zakat %}<tr><td>{% translate "Zakat" %}</td><td class="num">−{{ slip.zakat|rupiah }}</td></tr>{% endif %}
     <tr class="font-bold"><td>{% translate "Net pay" %}</td><td class="num">{{ slip.net_pay|rupiah }}</td></tr>
   </table></div>
-  {% if slip.benefits_in_kind %}<p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
-  <p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
+  {% if slip.benefits_in_kind %}<p class="text-muted mt-4 mb-0">{% blocktranslate trimmed with amount=slip.benefits_in_kind|rupiah %}Benefits in kind of {{ amount }} are included in the gross income for PPh 21.{% endblocktranslate %}</p>{% endif %}
+  <p class="text-muted mt-4 mb-0">{% blocktranslate trimmed with jkk=slip.jkk|rupiah jkm=slip.jkm|rupiah jht=slip.jht_employer|rupiah jp=slip.jp_employer|rupiah health=slip.health_employer|rupiah %}Paid by the employer on top: JKK {{ jkk }}, JKM {{ jkm }}, JHT {{ jht }}, JP {{ jp }}, BPJS Kesehatan {{ health }}.{% endblocktranslate %}</p>
 </div></div>
 {% endblock %}

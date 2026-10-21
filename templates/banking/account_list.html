@@ -6,7 +6,7 @@
   <h1 class="page-title mb-0">{% translate "Bank reconciliation" %}</h1>
   {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
 </div>
-<p class="text-muted text-sm">{% translate "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)." %}</p>
+<p class="text-muted">{% translate "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)." %}</p>
 <div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Lines to reconcile" %}</th></tr></thead>
   <tbody>{% for account, count in accounts %}

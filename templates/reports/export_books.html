@@ -8,13 +8,13 @@
     Download the complete books of {{ organization }} as a ZIP file of spreadsheets (CSV) you can open in Excel or
     import into another accounting system.
   {% endblocktranslate %}</p>
-  <ul class="text-sm">
+  <ul>
     <li>{% translate "General journal (every line of every entry) and chart of accounts" %}</li>
     <li>{% translate "Sales invoices, purchase bills, their lines and payments" %}</li>
     <li>{% translate "Contacts, items, PPN rates and PPh Final deposits" %}</li>
     <li>{% translate "Business profile and today's trial balance" %}</li>
   </ul>
-  <p class="text-sm text-muted">{% translate "Indonesian taxpayers must keep their books and records for 10 years (UU KUP Art. 28(11)). Keep a copy somewhere safe." %}</p>
+  <p class="text-muted">{% translate "Indonesian taxpayers must keep their books and records for 10 years (UU KUP Art. 28(11)). Keep a copy somewhere safe." %}</p>
   <form method="post">{% csrf_token %}
     <button class="btn btn-primary">{% icon "download" "me-1" %}{% translate "Download ZIP" %}</button>
   </form>

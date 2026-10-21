@@ -7,6 +7,6 @@
   <td>{{ f.unit_price|add_class:'form-input form-input-sm text-end' }}{% include "partials/field_feedback.html" with field=f.unit_price hide_help=True %}</td>
   <td>{{ f.discount_percent|add_class:'form-input form-input-sm text-end' }}</td>
   <td>{{ f.tax_rate|add_class:'form-select form-select-sm' }}</td>
-  <td class="num text-sm pt-2" data-line-amount></td>
+  <td class="num pt-2" data-line-amount></td>
   <td><span class="hidden">{{ f.DELETE }}</span><button type="button" class="btn btn-sm btn-link text-danger" data-formset-remove aria-label="{% translate 'Remove line' %}">{% icon "x" %}</button></td>
 </tr>

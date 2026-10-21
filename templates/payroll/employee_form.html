@@ -9,7 +9,7 @@
 {% if object %}
 <div class="card mt-4"><div class="card-body">
   <h2 class="section-heading">{% translate "Income from previous employers" %}</h2>
-  <p class="text-sm text-muted">{% translate "If they worked elsewhere earlier in the same year and hand in that employer's 1721-A1, its net income and PPh 21 count in this year's last-period calculation (lines 14 and 19). Record it before that payroll." %}</p>
+  <p class="text-muted">{% translate "If they worked elsewhere earlier in the same year and hand in that employer's 1721-A1, its net income and PPh 21 count in this year's last-period calculation (lines 14 and 19). Record it before that payroll." %}</p>
   {% if prior_incomes %}<div class="overflow-x-auto"><table class="table table-sm align-middle">
     <thead><tr><th>{% translate "Year" %}</th><th>{% translate "Previous employer" %}</th><th>{% translate "Months" %}</th><th class="num">{% translate "Net income" %}</th><th class="num">{% translate "PPh 21 withheld" %}</th><th></th></tr></thead>
     <tbody>{% for prior in prior_incomes %}<tr><td>{{ prior.year }}</td><td>{{ prior.employer_name }}{% if prior.slip_number %}<div class="text-sm text-muted">{{ prior.slip_number }}</div>{% endif %}</td>

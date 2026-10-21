@@ -18,6 +18,6 @@
       <td class="text-end">{% if can_write %}<a class="btn btn-sm btn-outline" href="{% url 'taxes:rate_update' r.pk %}" aria-label="{% translate 'Edit' %}">{% icon "pencil" %}</a>{% endif %}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "Since 1 January 2025 (PMK 131/2024) the PPN rate is 12%; for non-luxury goods and services the tax base (DPP) is 11/12 of the price, so the effective rate is 11%." %}
+<p class="text-muted mt-2">{% translate "Since 1 January 2025 (PMK 131/2024) the PPN rate is 12%; for non-luxury goods and services the tax base (DPP) is 11/12 of the price, so the effective rate is 11%." %}
   {% translate "PPnBM on luxury goods is charged on the same tax base, posted to PPnBM Keluaran on sales and to the cost on purchases (it can't be credited)." %}</p>
 {% endblock %}

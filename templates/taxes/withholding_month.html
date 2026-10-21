@@ -15,7 +15,7 @@
       <td>{% if p.income_tax_object %}{{ p.income_tax_object }}{% elif can_write %}
         <form method="post" action="{% url 'taxes:payment_tax_object' p.pk %}" class="flex gap-1 min-w-56">{% csrf_token %}{{ object_form.code }}<button class="btn btn-sm btn-outline-primary">{% translate "Record" %}</button></form>
         {% else %}<span class="text-muted">—</span>{% endif %}</td>
-      <td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span class="text-sm">{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
+      <td class="num">{{ p.income_tax_base|rupiah }}</td><td class="num">{% if p.income_tax_rate is None %}<span>{% translate "50% × Art. 17" %}</span>{% else %}{{ p.income_tax_rate|floatformat:"-2" }}%{% endif %}</td>
       <td class="num font-semibold">{{ p.income_tax_withheld|rupiah }}</td>
       <td>{% if p.withholding_slip %}{{ p.withholding_slip }}{% elif can_write %}
         <form method="post" action="{% url 'invoicing:payment_slip' p.pk %}" class="flex gap-1">{% csrf_token %}<input type="hidden" name="next" value="withholding">
@@ -23,7 +23,7 @@
   {% empty %}<tr><td colspan="8" class="text-center text-muted py-6">{% translate "No income tax was withheld from suppliers this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
 {% if run %}<p class="mt-4 mb-0">{% url 'payroll:run' run.pk as url %}{% blocktranslate trimmed with period=run.period %}PPh 21 and PPh 26 withheld from salaries: <a href="{{ url }}">payroll {{ period }}</a>.{% endblocktranslate %}</p>{% endif %}
-<p class="text-sm text-muted mt-2">{% translate "Create each bukti potong in Coretax (eBupot) from this list, then record its number here." %}</p>
+<p class="text-muted mt-2">{% translate "Create each bukti potong in Coretax (eBupot) from this list, then record its number here." %}</p>
 
 <h2 class="section-heading mt-6">{% translate "Coretax eBupot files" %}</h2>
 <div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-middle">
@@ -37,6 +37,6 @@
     {% endif %}</td></tr>
   {% empty %}<tr><td colspan="3" class="text-center text-muted py-6">{% translate "No bukti potong are waiting for a number this month." %}</td></tr>{% endfor %}</tbody>
 </table></div></div>
-{% if batches and not can_send %}<p class="text-sm mt-2 mb-0">{% url 'invoicing:coretax_connection' as url %}{% blocktranslate trimmed %}To send them from here, <a href="{{ url }}">connect to Coretax</a>.{% endblocktranslate %}</p>{% endif %}
-<p class="text-sm text-muted mt-2">{% translate "Files in DJP's eBupot import format: upload them in Coretax (eBupot → Impor Data), or send them through your Coretax connection, which records the numbers Coretax gives back. Bukti potong that already have a number are left out. Daily workers get one bukti potong per day worked." %}</p>
+{% if batches and not can_send %}<p class="mt-2 mb-0">{% url 'invoicing:coretax_connection' as url %}{% blocktranslate trimmed %}To send them from here, <a href="{{ url }}">connect to Coretax</a>.{% endblocktranslate %}</p>{% endif %}
+<p class="text-muted mt-2">{% translate "Files in DJP's eBupot import format: upload them in Coretax (eBupot → Impor Data), or send them through your Coretax connection, which records the numbers Coretax gives back. Bukti potong that already have a number are left out. Daily workers get one bukti potong per day worked." %}</p>
 {% endblock %}

@@ -30,7 +30,7 @@
       <td class="whitespace-nowrap">{{ line.date|date:"d/m/Y" }}</td>
       <td class="text-sm">{{ line.description }}{% if line.reference %}<div class="text-muted">{{ line.reference }}</div>{% endif %}</td>
       <td class="num whitespace-nowrap {% if line.amount < 0 %}text-danger{% endif %}">{{ line.amount|rupiah }}</td>
-      <td class="text-sm">
+      <td>
         {% if line.status == statuses.MATCHED %}
           <a href="{% url 'ledger:journal_detail' line.journal_line.entry_id %}">{{ line.journal_line.entry.number }}</a> · {{ line.journal_line.entry.description }}
           {% if can_write %}<form method="post" action="{% url 'banking:line_action' line.pk actions.UNDO %}" class="inline">{% csrf_token %}<button class="btn btn-sm btn-link">{% translate "Undo" %}</button></form>{% endif %}

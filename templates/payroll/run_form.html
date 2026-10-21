@@ -15,7 +15,7 @@
   {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No employee works here in this month." %}</td></tr>{% endfor %}</tbody>
 </table></div>
 <div class="card-footer flex flex-wrap justify-between items-center gap-2">
-  <span class="text-sm text-muted">{% translate "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances, PPh 21 on everything paid. For daily workers enter the days worked; leave their base salary empty to pay the days at their daily wage. Benefits in kind are the taxable value of goods or facilities given (not paid out here); severance bears final PPh 21 within two calendar years of its first payment, and the Art. 17 rates from the third year on. Former employees who are still active are listed for severance paid in instalments." %}</span>
+  <span class="text-muted">{% translate "Leave an employee's amounts at 0 to leave them out. BPJS is computed on the salary and allowances, PPh 21 on everything paid. For daily workers enter the days worked; leave their base salary empty to pay the days at their daily wage. Benefits in kind are the taxable value of goods or facilities given (not paid out here); severance bears final PPh 21 within two calendar years of its first payment, and the Art. 17 rates from the third year on. Former employees who are still active are listed for severance paid in instalments." %}</span>
   <button class="btn btn-primary whitespace-nowrap">{% translate "Calculate & post" %}</button></div></div>
 </form>
 {% endblock %}

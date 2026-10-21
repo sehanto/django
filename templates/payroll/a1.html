@@ -8,7 +8,7 @@
       {% if st.final_slip.withholding_slip %}<div class="text-sm">{% translate "Number" %}: {{ st.final_slip.withholding_slip }}</div>{% endif %}</div>
     <button type="button" class="btn btn-outline print:hidden" data-print>{% icon "printer" %} {% translate "Print" %}</button>
   </div>
-  <div class="grid grid-cols-12 gap-x-6 mt-4 text-sm">
+  <div class="grid grid-cols-12 gap-x-6 mt-4">
     <div class="col-span-12 sm:col-span-6"><div class="font-semibold">{% translate "Employer" %}</div>{{ current_organization.name }}<br>NPWP {{ current_organization.npwp|default:"—" }}</div>
     <div class="col-span-12 sm:col-span-6"><div class="font-semibold">{% translate "Employee" %}</div>{{ st.employee.name }}{% if st.employee.position %} · {{ st.employee.position }}{% endif %}<br>
       {% if st.employee.tin %}NPWP/NIK {{ st.employee.tin }}{% else %}{% translate "Passport" %} {{ st.employee.passport_number }}{% endif %} · {{ st.employee.nationality }}{% if st.employee.gender %} · {{ st.employee.get_gender_display }}{% endif %}<br>
@@ -38,6 +38,6 @@
     <tr class="font-semibold"><td>20</td><td>{% translate "PPh 21 due" %}</td><td class="num">{{ st.due|rupiah }}</td></tr>
     <tr class="font-bold"><td>21</td><td>{% translate "PPh 21 withheld and paid" %}</td><td class="num">{{ st.withheld|rupiah }}</td></tr>
   </table></div>
-  {% for prior in st.employee.prior_incomes.all %}{% if prior.year == st.year %}<p class="text-sm text-muted mt-4 mb-0">{% blocktranslate trimmed with name=prior.employer_name number=prior.slip_number|default:"—" first=prior.first_month|stringformat:"02d" last=prior.last_month|stringformat:"02d" %}Lines 14 and 19: {{ name }}, 1721-A1 no. {{ number }}, period {{ first }}–{{ last }}.{% endblocktranslate %}</p>{% endif %}{% endfor %}
+  {% for prior in st.employee.prior_incomes.all %}{% if prior.year == st.year %}<p class="text-muted mt-4 mb-0">{% blocktranslate trimmed with name=prior.employer_name number=prior.slip_number|default:"—" first=prior.first_month|stringformat:"02d" last=prior.last_month|stringformat:"02d" %}Lines 14 and 19: {{ name }}, 1721-A1 no. {{ number }}, period {{ first }}–{{ last }}.{% endblocktranslate %}</p>{% endif %}{% endfor %}
 </div></div>
 {% endblock %}

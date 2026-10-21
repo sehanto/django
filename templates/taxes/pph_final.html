@@ -25,7 +25,7 @@
 {% endwith %}{% elif current_organization.uses_pph_final %}{% url 'tenants:settings' as settings_url %}
   <div class="alert alert-info">{% blocktranslate trimmed with url=settings_url %}PP 55/2022 allows the scheme for a limited number of tax years. Enter the year you started using it in the <a href="{{ url }}">settings</a> to be warned when the term ends.{% endblocktranslate %}</div>
 {% endif %}
-<div class="grid grid-cols-12 gap-4 mb-4">
+<div class="grid grid-cols-12 gap-4 mb-6">
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% blocktranslate trimmed %}Gross turnover {{ year }}{% endblocktranslate %}</div><div class="stat-value">{{ total_turnover|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "PPh Final due" %} ({{ rate_percent|floatformat:1 }}%)</div><div class="stat-value">{{ total_tax|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4"><div class="card"><div class="card-body"><div class="text-sm text-muted">{% translate "Taxpayer type" %}</div><div class="stat-value text-base pt-2">{% if current_organization.is_individual_taxpayer %}{% translate "Individual: exempt up to Rp500 million/year" %}{% else %}{% blocktranslate trimmed with form=current_organization.get_legal_form_display %}Entity: {{ form }}{% endblocktranslate %}{% endif %}</div></div></div></div>
@@ -70,7 +70,7 @@
   {% endwith %}{% endfor %}
   </tbody>
 </table></div></div>
-<p class="text-sm text-muted mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month (PMK 81/2024), or the next working day when that is a weekend or public holiday. Gross turnover is calculated from posted operating revenue accounts." %}
+<p class="text-muted mt-2">{% translate "Legal basis: PP 55/2022. Payment is due by the 15th of the following month (PMK 81/2024), or the next working day when that is a weekend or public holiday. Gross turnover is calculated from posted operating revenue accounts." %}
   {% translate "Under SAK EMKM's accrual basis, each month's PPh Final is an expense of that month: record it after the month ends (it is posted on the last day of the month as a liability), and the payment settles the liability. Recording a payment also records a missing expense." %}
   {% translate "PPh Final that buyers withheld from your receipts (with your Surat Keterangan PP 55) is deposited by them: it counts towards the month of the receipt, and you deposit only the rest." %}</p>
 

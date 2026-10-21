@@ -5,7 +5,7 @@
 <h1 class="page-title mb-4">{{ kind.label }}</h1>
 <form method="post" class="card"><div class="card-body">{% csrf_token %}
   {% include "partials/form_fields.html" %}
-  <p class="text-sm text-muted mt-4 mb-0">{% translate "The amount is spread evenly over the term, from the first month; each month is posted on its last day once it has ended." %}</p>
+  <p class="text-muted mt-4 mb-0">{% translate "The amount is spread evenly over the term, from the first month; each month is posted on its last day once it has ended." %}</p>
 </div>
 <div class="card-footer flex flex-wrap gap-2 justify-end">
   <a href="{% url 'deferrals:list' %}" class="btn btn-outline">{% translate "Cancel" %}</a><button class="btn btn-primary">{% translate "Save" %}</button>
