@@ -15,9 +15,13 @@
 
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
+  /* xs: from 360px; below it (small phones) the dashboard's recent sales and purchases take a row each. */
+  --breakpoint-xs: 22.5rem;
   /* Dashboard figures size by their card's width (container queries): 16px, 20px from 8.5rem, 24px from 11rem. */
   --container-figure-md: 8.5rem;
   --container-figure-lg: 11rem;
+  /* A recent-invoice row (number and name beside amount and status) needs about 13rem. */
+  --container-list-row: 13rem;
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
      Six steps, each about 1.2× the one below, so every level stays distinguishable:
        12px (sm)   captions, form help text, field errors, badges, chart labels, menu group labels;
