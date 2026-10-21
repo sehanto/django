@@ -1,15 +1,15 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Sign in" %}{% endblock %}
 {% block auth_content %}
-<h2 class="card-title mb-4">{% translate "Sign in" %}</h2>
+<h1 class="card-title mb-4">{% translate "Sign in" %}</h1>
 <form method="post">{% csrf_token %}
-  {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
+  {% include "partials/form_fields.html" with col="col-span-12" %}
   {% if captcha %}
     <p class="text-muted mt-4 mb-2">{% translate "Several sign-in attempts failed. Please confirm you are not a robot." %}</p>
     {% include "accounts/_captcha.html" %}
   {% endif %}
   <div class="text-end text-sm mt-2"><a href="{% url 'accounts:password_reset' %}">{% translate "Forgot password?" %}</a></div>
-  <button class="btn btn-primary mt-4">{% translate "Sign in" %}</button>
+  <button class="btn btn-primary w-full mt-4">{% translate "Sign in" %}</button>
 </form>
 <p class="text-center mt-4 mb-0">{% translate "Don't have an account?" %} <a href="{% url 'accounts:signup' %}">{% translate "Start a free trial" %}</a></p>
 {% endblock %}

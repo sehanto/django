@@ -1,11 +1,11 @@
 {% extends "accounts/_auth_layout.html" %}{% load i18n %}
 {% block title %}{% translate "Sign up" %}{% endblock %}
 {% block auth_content %}
-<h2 class="card-title mb-4">{% translate "Sign up and create your business" %}</h2>
+<h1 class="card-title mb-4">{% translate "Sign up and create your business" %}</h1>
 <form method="post">{% csrf_token %}
-  {% include "partials/form_fields.html" with col="col-span-12 md:col-span-4" %}
+  {% include "partials/form_fields.html" with col="col-span-12" %}
   {% include "accounts/_captcha.html" %}
-  <button class="btn btn-primary mt-6">{% translate "Sign up" %}</button>
+  <button class="btn btn-primary w-full mt-6">{% translate "Sign up" %}</button>
 </form>
 <p class="text-center mt-4 mb-0">{% translate "Already have an account?" %} <a href="{% url 'accounts:login' %}">{% translate "Sign in" %}</a></p>
 {% endblock %}
