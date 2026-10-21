@@ -37,20 +37,27 @@
         <span><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-2"></span>{% translate "Expenses" %}</span>
       </div>
     </div>
-    <div class="flex h-45 items-end gap-5 border-b border-line pt-2" role="img" aria-label="{% translate 'Monthly revenue and expenses chart; the table below has the full data.' %}">
-      {% for m in months %}
-        <div class="flex h-full flex-1 items-end justify-center gap-0.5">
-          <div class="w-full max-w-6 rounded-t bg-series-1 hover:brightness-110" data-height="{% bar_height m.revenue chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.revenue|rupiah %}{{ month }} · Revenue {{ amount }}{% endblocktranslate %}"></div>
-          <div class="w-full max-w-6 rounded-t bg-series-2 hover:brightness-110" data-height="{% bar_height m.expense chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.expense|rupiah %}{{ month }} · Expenses {{ amount }}{% endblocktranslate %}"></div>
-        </div>
-      {% endfor %}
+    {# The bars and the monthly table side by side from xl (below that the table would scroll sideways); stacked below. #}
+    <div class="grid grid-cols-12 gap-6 items-start">
+    <div class="col-span-12 xl:col-span-7">
+      <div class="flex h-45 items-end gap-5 border-b border-line pt-2" role="img" aria-label="{% translate 'Monthly revenue and expenses chart; the table below has the full data.' %}">
+        {% for m in months %}
+          <div class="flex h-full flex-1 items-end justify-center gap-0.5">
+            <div class="w-full max-w-6 rounded-t bg-series-1 hover:brightness-110" data-height="{% bar_height m.revenue chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.revenue|rupiah %}{{ month }} · Revenue {{ amount }}{% endblocktranslate %}"></div>
+            <div class="w-full max-w-6 rounded-t bg-series-2 hover:brightness-110" data-height="{% bar_height m.expense chart_peak %}" title="{% blocktranslate trimmed with month=m.month|date:'F Y' amount=m.expense|rupiah %}{{ month }} · Expenses {{ amount }}{% endblocktranslate %}"></div>
+          </div>
+        {% endfor %}
+      </div>
+      {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, on one line. In a row narrower than 16rem the year is left out. #}
+      <div class="@container -mx-2.5 mt-1 text-sm text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @3xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
     </div>
-    {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, on one line. In a row narrower than 16rem the year is left out. #}
-    <div class="@container -mx-2.5 mt-1 text-sm text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @3xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
-    <div class="overflow-x-auto"><table class="table table-sm mt-4 mb-0">
-      <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
-      <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
-    </table></div>
+    <div class="col-span-12 xl:col-span-5">
+      <div class="overflow-x-auto"><table class="table table-sm mb-0">
+        <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
+        <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    </div>
   </div></div></div>
   <div class="col-span-12 lg:col-span-6">
     {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind=invoice_kinds.SALES empty=_("No sales invoices yet.") %}
