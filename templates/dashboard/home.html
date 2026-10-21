@@ -30,11 +30,12 @@
 
 <div class="grid grid-cols-12 gap-4">
   <div class="col-span-12"><div class="card h-full"><div class="card-body">
-    <div class="flex flex-wrap justify-between items-center mb-2">
-      <h2 class="section-heading mb-0">{% translate "Revenue vs expenses · last 6 months" %}</h2>
-      <div class="text-sm text-muted">
-        <span class="me-4"><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-1"></span>{% translate "Revenue" %}</span>
-        <span><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-2"></span>{% translate "Expenses" %}</span>
+    {# The legend stays beside the heading; on phones its two entries stack so the heading keeps room. #}
+    <div class="flex justify-between items-start gap-3 mb-2">
+      <h2 class="section-heading mb-0 min-w-0">{% translate "Revenue vs expenses · last 6 months" %}</h2>
+      <div class="flex shrink-0 flex-col gap-0.5 pt-1.5 text-sm text-muted sm:flex-row sm:gap-4">
+        <span class="whitespace-nowrap"><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-1"></span>{% translate "Revenue" %}</span>
+        <span class="whitespace-nowrap"><span class="me-1.5 inline-block size-2.5 rounded-xs bg-series-2"></span>{% translate "Expenses" %}</span>
       </div>
     </div>
     {# The bars and the monthly table side by side from md (the table takes more of the width on tablets and laptops, so its four amounts fit); stacked on phones. #}
