@@ -15,8 +15,6 @@
 
 /* Tailwind's own breakpoints (sm 640px, md 768, lg 1024, xl 1280, 2xl 1536) and font stack. */
 @theme {
-  /* xs: from 360px, most phones, two dashboard cards fit side by side. */
-  --breakpoint-xs: 22.5rem;
   /* Dashboard figures size by their card's width (container queries): 16px, 20px from 8.5rem, 24px from 11rem. */
   --container-figure-md: 8.5rem;
   --container-figure-lg: 11rem;
@@ -245,7 +243,8 @@
 
   /* Amounts: right-aligned, figures lined up. */
   .num { @apply text-end whitespace-nowrap tabular-nums; }
-  /* Dashboard figures, sized by the card's width (its card-body is an @container): 16px, 20px, 24px as room allows. */
+  /* Dashboard figures, sized by the card's width (its card-body is an @container): 16px, 20px, 24px as room allows;
+     in the narrowest cards (phones under 360px) "Rp" and the number may take two lines. */
   .stat-value { @apply text-lg @figure-md:text-xl @figure-lg:text-2xl font-semibold tabular-nums; }
 
   /* Badges and alerts; the colour class comes from the status (core/templatetags/ui.py). */
