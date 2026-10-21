@@ -29,7 +29,7 @@
 </div>
 
 <div class="grid grid-cols-12 gap-4">
-  <div class="col-span-12 xl:col-span-7"><div class="card h-full"><div class="card-body">
+  <div class="col-span-12"><div class="card h-full"><div class="card-body">
     <div class="flex flex-wrap justify-between items-center mb-2">
       <h2 class="section-heading mb-0">{% translate "Revenue vs expenses · last 6 months" %}</h2>
       <div class="text-sm text-muted">
@@ -52,8 +52,10 @@
       <tbody>{% for m in months %}<tr><td>{{ m.month|date:"F Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
     </table></div>
   </div></div></div>
-  <div class="col-span-12 xl:col-span-5">
+  <div class="col-span-12 lg:col-span-6">
     {% include "dashboard/_recent.html" with title=_("Recent sales") invoices=recent_sales kind=invoice_kinds.SALES empty=_("No sales invoices yet.") %}
+  </div>
+  <div class="col-span-12 lg:col-span-6">
     {% include "dashboard/_recent.html" with title=_("Recent purchases") invoices=recent_purchases kind=invoice_kinds.PURCHASE empty=_("No purchase bills yet.") %}
   </div>
 </div>
