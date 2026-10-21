@@ -51,11 +51,20 @@
       {# Each label also takes half the gap (gap-5) on either side of its bars: centred under them, on one line. In a row narrower than 16rem the year is left out. #}
       <div class="@container -mx-2.5 mt-1 text-sm text-muted"><div class="flex">{% for m in months %}<span class="flex-1 text-center">{{ m.month|date:"M" }}<span class="hidden @3xs:inline"> {{ m.month|date:"y" }}</span></span>{% endfor %}</div></div>
     </div>
-    <div class="col-span-12 md:col-span-7 xl:col-span-5">
-      <div class="overflow-x-auto"><table class="table table-sm mb-0">
+    <div class="col-span-12 md:col-span-7 xl:col-span-5 @container">
+      {# The table needs about 23rem for its four amounts; in a narrower box (phones) each month is a short list instead. #}
+      <div class="hidden overflow-x-auto @sm:block"><table class="table table-sm mb-0">
         <thead><tr><th>{% translate "Month" %}</th><th class="num">{% translate "Revenue" %}</th><th class="num">{% translate "Expenses" %}</th><th class="num">{% translate "Profit" %}</th></tr></thead>
         <tbody>{% for m in months %}<tr><td class="whitespace-nowrap">{{ m.month|date:"M Y" }}</td><td class="num">{{ m.revenue|rupiah }}</td><td class="num">{{ m.expense|rupiah }}</td><td class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</td></tr>{% endfor %}</tbody>
       </table></div>
+      <div class="@sm:hidden">{% for m in months %}
+        <dl class="m-0 border-b border-line py-2">
+          <dt class="font-semibold">{{ m.month|date:"F Y" }}</dt>
+          <dd class="m-0 flex justify-between gap-2"><span class="text-muted">{% translate "Revenue" %}</span><span class="num">{{ m.revenue|rupiah }}</span></dd>
+          <dd class="m-0 flex justify-between gap-2"><span class="text-muted">{% translate "Expenses" %}</span><span class="num">{{ m.expense|rupiah }}</span></dd>
+          <dd class="m-0 flex justify-between gap-2"><span class="text-muted">{% translate "Profit" %}</span><span class="num {% if m.profit < 0 %}text-danger{% endif %}">{{ m.profit|rupiah }}</span></dd>
+        </dl>{% endfor %}
+      </div>
     </div>
     </div>
   </div></div></div>
