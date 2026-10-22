@@ -9,7 +9,7 @@ from django.views.generic import DetailView, FormView, TemplateView
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
-from apps.core.params import choice_param
+from apps.core.params import choice_param, text_param
 from apps.core.tabs import tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
@@ -28,9 +28,16 @@ class DeferralListView(OrganizationMixin, TemplateView):
         due = due_recognition(self.organization, timezone.localdate())
         lock_date = self.organization.lock_date
         status = choice_param(self.request.GET, "status", DeferralStatus.values)
+        query = text_param(self.request.GET, "q").casefold()
         counts = {"": len(rows)} | {value: sum(r.deferral.status == value for r in rows) for value in DeferralStatus.values}
         return super().get_context_data(
-            rows=[r for r in rows if not status or r.deferral.status == status], kinds=DeferralKind,
+            rows=[
+                r for r in rows if (not status or r.deferral.status == status)
+                and (not query or query in r.deferral.number.casefold() or query in r.deferral.description.casefold())
+            ],
+            kinds=DeferralKind,
+            prepaid_remaining=sum((r.remaining for r in rows if r.deferral.kind == DeferralKind.PREPAID_EXPENSE), ZERO),
+            deferred_remaining=sum((r.remaining for r in rows if r.deferral.kind == DeferralKind.DEFERRED_REVENUE), ZERO),
             tabset=tabs(self.request, "status", DeferralStatus.choices, counts, optional=(DeferralStatus.VOID,)),
             due_months=len(due),
             locked_due=bool(lock_date) and any(m.period_end <= lock_date for items in due.values() for _deferral, m in items),

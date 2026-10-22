@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 09:47+0700\n"
+"POT-Creation-Date: 2026-10-22 10:12+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -843,37 +843,37 @@ msgstr[0] ""
 msgid "Change the useful life or the depreciation method."
 msgstr "Ubah umur manfaat atau metode penyusutan."
 
-#: apps/assets/views.py:57
+#: apps/assets/views.py:63
 #, python-format
 msgid "Depreciation posted for %(count)d month."
 msgid_plural "Depreciation posted for %(count)d months."
 msgstr[0] "Penyusutan dijurnal untuk %(count)d bulan."
 
-#: apps/assets/views.py:60
+#: apps/assets/views.py:66
 msgid "No depreciation is due."
 msgstr "Tidak ada penyusutan yang perlu dijurnal."
 
-#: apps/assets/views.py:77
+#: apps/assets/views.py:83
 msgid "Fixed asset saved."
 msgstr "Aset tetap disimpan."
 
-#: apps/assets/views.py:102
+#: apps/assets/views.py:108
 msgid "Fixed asset deleted."
 msgstr "Aset tetap dihapus."
 
-#: apps/assets/views.py:142
+#: apps/assets/views.py:148
 msgid "The disposal details are incomplete."
 msgstr "Data pelepasan belum lengkap."
 
-#: apps/assets/views.py:146
+#: apps/assets/views.py:152
 msgid "Fixed asset disposed and posted to the ledger."
 msgstr "Aset tetap dilepas dan dijurnal."
 
-#: apps/assets/views.py:157
+#: apps/assets/views.py:163
 msgid "The new estimate is incomplete."
 msgstr "Estimasi baru belum lengkap."
 
-#: apps/assets/views.py:161
+#: apps/assets/views.py:167
 msgid ""
 "Estimate revised. Depreciation from that month on follows the new schedule."
 msgstr ""
@@ -1188,8 +1188,8 @@ msgstr ""
 #: templates/banking/reconciliation.html:36
 #: templates/banking/reconciliation.html:40
 #: templates/banking/reconciliation.html:62
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:30
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:37
 #: templates/ledger/journal_detail.html:36
 #: templates/ledger/journal_form.html:14 templates/ledger/journal_list.html:11
 #: templates/ledger/journal_list.html:17
@@ -2179,21 +2179,21 @@ msgstr ""
 "Sebagian bulan dari pos ini sudah diakui, sehingga pos ini tetap ada dalam "
 "daftar."
 
-#: apps/deferrals/views.py:50
+#: apps/deferrals/views.py:57
 #, python-format
 msgid "Prepayments recognised for %(count)d month."
 msgid_plural "Prepayments recognised for %(count)d months."
 msgstr[0] "Pos dibayar/diterima di muka diakui untuk %(count)d bulan."
 
-#: apps/deferrals/views.py:53
+#: apps/deferrals/views.py:60
 msgid "Nothing is due."
 msgstr "Tidak ada yang jatuh waktu."
 
-#: apps/deferrals/views.py:78
+#: apps/deferrals/views.py:85
 msgid "Prepayment registered. Each month is recognised after it ends."
 msgstr "Pos dicatat. Setiap bulan diakui setelah bulan itu berakhir."
 
-#: apps/deferrals/views.py:108
+#: apps/deferrals/views.py:115
 msgid "Prepayment voided."
 msgstr "Pos dibatalkan."
 
@@ -2256,7 +2256,7 @@ msgstr "Penurunan ke nilai realisasi neto"
 
 #: apps/inventory/forms.py:13 apps/inventory/forms.py:36
 #: apps/invoicing/forms.py:175 apps/reports/exports.py:157
-#: templates/inventory/stock_list.html:11 templates/invoicing/_line_row.html:3
+#: templates/inventory/stock_list.html:17 templates/invoicing/_line_row.html:3
 #: templates/invoicing/invoice_form.html:20
 #: templates/invoicing/item_list.html:13
 #: templates/partials/quick_create.html:11
@@ -2452,11 +2452,11 @@ msgstr ""
 "Masukkan nilai realisasi neto di bawah harga perolehan stok (%(value)s); "
 "persediaan tidak pernah dinaikkan di atas harga perolehan."
 
-#: apps/inventory/views.py:56
+#: apps/inventory/views.py:60
 msgid "Stock adjusted and posted to the ledger."
 msgstr "Stok disesuaikan dan dijurnal."
 
-#: apps/inventory/views.py:76
+#: apps/inventory/views.py:80
 msgid ""
 "Stock written down to its net realisable value and posted to the ledger."
 msgstr "Nilai stok diturunkan ke nilai realisasi neto dan dijurnal."
@@ -2875,9 +2875,9 @@ msgid "Item description"
 msgstr "Deskripsi"
 
 #: apps/invoicing/forms.py:177 apps/ledger/forms.py:53 apps/reports/forms.py:51
-#: apps/reports/statements.py:388 templates/assets/asset_list.html:25
-#: templates/assets/asset_list.html:30 templates/assets/asset_list.html:46
-#: templates/inventory/stock_list.html:30 templates/invoicing/_line_row.html:5
+#: apps/reports/statements.py:388 templates/assets/asset_list.html:31
+#: templates/assets/asset_list.html:36 templates/assets/asset_list.html:52
+#: templates/inventory/stock_list.html:36 templates/invoicing/_line_row.html:5
 #: templates/invoicing/invoice_form.html:20
 #: templates/invoicing/payment_list.html:11
 #: templates/invoicing/payment_list.html:17
@@ -4196,7 +4196,7 @@ msgstr "Lihat laporan umur utang"
 
 #: apps/invoicing/views.py:84 apps/invoicing/views.py:329
 #: templates/billing/overview.html:102
-#: templates/deferrals/deferral_list.html:25
+#: templates/deferrals/deferral_list.html:32
 #: templates/invoicing/invoice_list.html:18
 #: templates/invoicing/payment_list.html:11
 #: templates/ledger/journal_list.html:11 templates/payroll/a1.html:8
@@ -4241,7 +4241,7 @@ msgid "Subtotal"
 msgstr "Subtotal"
 
 #: apps/invoicing/views.py:85 templates/billing/invoice_detail.html:62
-#: templates/billing/overview.html:102 templates/inventory/stock_list.html:25
+#: templates/billing/overview.html:102
 #: templates/invoicing/_invoice_body.html:32
 #: templates/invoicing/invoice_list.html:18
 #: templates/invoicing/invoice_list.html:26
@@ -4264,10 +4264,10 @@ msgid "Balance due"
 msgstr "Sisa tagihan"
 
 #: apps/invoicing/views.py:85 apps/invoicing/views.py:330
-#: templates/assets/asset_list.html:25 templates/assets/asset_list.html:35
+#: templates/assets/asset_list.html:31 templates/assets/asset_list.html:41
 #: templates/billing/overview.html:102
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:36
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:43
 #: templates/invoicing/coretax_connection.html:18
 #: templates/invoicing/invoice_list.html:18
 #: templates/invoicing/invoice_list.html:28
@@ -4336,8 +4336,8 @@ msgstr "Pembayaran %(number)s dicatat."
 
 #: apps/invoicing/views.py:329 templates/contacts/contact_list.html:13
 #: templates/contacts/contact_list.html:18
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:31
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:38
 #: templates/inventory/stock_card.html:15 templates/invoicing/item_list.html:13
 #: templates/invoicing/item_list.html:15 templates/uploads/index.html:25
 msgid "Type"
@@ -4366,8 +4366,8 @@ msgstr "Metode"
 #: templates/billing/invoice_detail.html:48
 #: templates/deferrals/deferral_detail.html:14
 #: templates/deferrals/deferral_detail.html:26
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:33
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:40
 #: templates/invoicing/_invoice_body.html:20
 #: templates/invoicing/_invoice_body.html:25
 #: templates/invoicing/_line_row.html:10
@@ -4657,7 +4657,7 @@ msgstr "Pembayaran"
 
 #: apps/ledger/domain.py:124 apps/reports/exports.py:254
 #: apps/reports/exports.py:262 templates/assets/asset_form.html:2
-#: templates/assets/asset_list.html:25 templates/reports/notes.html:87
+#: templates/assets/asset_list.html:31 templates/reports/notes.html:87
 msgid "Fixed asset"
 msgstr "Aset tetap"
 
@@ -6213,8 +6213,8 @@ msgid "Field"
 msgstr "Kolom"
 
 #: apps/reports/exports.py:400 templates/inventory/stock_card.html:15
-#: templates/inventory/stock_list.html:11
-#: templates/inventory/stock_list.html:19
+#: templates/inventory/stock_list.html:17
+#: templates/inventory/stock_list.html:25
 msgid "Value"
 msgstr "Nilai"
 
@@ -8858,19 +8858,19 @@ msgstr "Hapus aset ini dari daftar?"
 msgid "Delete"
 msgstr "Hapus"
 
-#: templates/assets/asset_detail.html:19 templates/assets/asset_list.html:25
-#: templates/assets/asset_list.html:32 templates/assets/asset_list.html:41
+#: templates/assets/asset_detail.html:19 templates/assets/asset_list.html:31
+#: templates/assets/asset_list.html:38
 msgid "Cost"
 msgstr "Biaya perolehan"
 
 #: templates/assets/asset_detail.html:20 templates/assets/asset_list.html:25
-#: templates/assets/asset_list.html:33 templates/assets/asset_list.html:41
+#: templates/assets/asset_list.html:31 templates/assets/asset_list.html:39
 msgid "Accumulated depreciation"
 msgstr "Akumulasi penyusutan"
 
 #: templates/assets/asset_detail.html:21 templates/assets/asset_detail.html:50
-#: templates/assets/asset_list.html:25 templates/assets/asset_list.html:34
-#: templates/assets/asset_list.html:41
+#: templates/assets/asset_list.html:26 templates/assets/asset_list.html:31
+#: templates/assets/asset_list.html:40
 msgid "Book value"
 msgstr "Nilai buku"
 
@@ -8973,7 +8973,7 @@ msgid "Dispose & post"
 msgstr "Lepas & jurnal"
 
 #: templates/assets/asset_form.html:3 templates/assets/asset_form.html:5
-#: templates/assets/asset_list.html:7 templates/assets/asset_list.html:38
+#: templates/assets/asset_list.html:7 templates/assets/asset_list.html:44
 msgid "New fixed asset"
 msgstr "Aset tetap baru"
 
@@ -8999,7 +8999,7 @@ msgid_plural ""
 msgstr[0] "Penyusutan %(amount)s untuk %(months)s bulan belum dijurnal."
 
 #: templates/assets/asset_list.html:17
-#: templates/deferrals/deferral_list.html:17
+#: templates/deferrals/deferral_list.html:20
 #, python-format
 msgid ""
 "Some of it falls in the period locked up to %(date)s: move the lock date "
@@ -9016,24 +9016,32 @@ msgstr "Penyusutan dijurnal otomatis setiap malam, atau sekarang:"
 msgid "Post depreciation"
 msgstr "Jurnal penyusutan"
 
-#: templates/assets/asset_list.html:25 templates/assets/asset_list.html:31
+#: templates/assets/asset_list.html:24
+msgid "Cost of assets in use"
+msgstr "Harga perolehan aset yang dipakai"
+
+#: templates/assets/asset_list.html:29
+msgid "Search number or name"
+msgstr "Cari nomor atau nama"
+
+#: templates/assets/asset_list.html:31 templates/assets/asset_list.html:37
 msgid "Acquired"
 msgstr "Diperoleh"
 
-#: templates/assets/asset_list.html:33
+#: templates/assets/asset_list.html:39
 msgid "not depreciated"
 msgstr "tidak disusutkan"
 
-#: templates/assets/asset_list.html:38 templates/contacts/contact_list.html:26
-#: templates/deferrals/deferral_list.html:39
-#: templates/invoicing/item_list.html:18
+#: templates/assets/asset_list.html:44 templates/contacts/contact_list.html:26
+#: templates/deferrals/deferral_list.html:46
+#: templates/inventory/stock_list.html:28 templates/invoicing/item_list.html:18
 #: templates/invoicing/payment_list.html:21
 #: templates/ledger/journal_list.html:22
 #: templates/payroll/employee_list.html:17
 msgid "Nothing matches."
 msgstr "Tidak ada yang cocok."
 
-#: templates/assets/asset_list.html:38
+#: templates/assets/asset_list.html:44
 msgid ""
 "No fixed assets yet. Register equipment, vehicles, buildings and land you "
 "bought so their depreciation is posted every month."
@@ -9041,28 +9049,24 @@ msgstr ""
 "Belum ada aset tetap. Daftarkan peralatan, kendaraan, bangunan, dan tanah "
 "yang dibeli agar penyusutannya dijurnal setiap bulan."
 
-#: templates/assets/asset_list.html:41
-msgid "Total in use"
-msgstr "Total yang digunakan"
-
-#: templates/assets/asset_list.html:44
+#: templates/assets/asset_list.html:50
 msgid "Register and ledger"
 msgstr "Daftar aset dan buku besar"
 
-#: templates/assets/asset_list.html:46
+#: templates/assets/asset_list.html:52
 msgid "In the register"
 msgstr "Di daftar aset"
 
-#: templates/assets/asset_list.html:46 templates/inventory/stock_list.html:30
+#: templates/assets/asset_list.html:52 templates/inventory/stock_list.html:36
 msgid "In the ledger"
 msgstr "Di buku besar"
 
-#: templates/assets/asset_list.html:46 templates/inventory/stock_list.html:30
+#: templates/assets/asset_list.html:52 templates/inventory/stock_list.html:36
 #: templates/ledger/journal_form.html:6
 msgid "Difference"
 msgstr "Selisih"
 
-#: templates/assets/asset_list.html:52
+#: templates/assets/asset_list.html:58
 msgid ""
 "Registering an asset doesn't post its purchase: record that with a purchase "
 "bill or a journal entry. A difference means an asset in the books that isn't "
@@ -9726,14 +9730,14 @@ msgstr "Batalkan"
 
 #: templates/deferrals/deferral_detail.html:15
 #: templates/deferrals/deferral_detail.html:26
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:34
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:41
 msgid "Recognised"
 msgstr "Diakui"
 
 #: templates/deferrals/deferral_detail.html:16
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:35
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:42
 msgid "Remaining"
 msgstr "Sisa"
 
@@ -9742,8 +9746,8 @@ msgid "Recorded on"
 msgstr "Dicatat pada"
 
 #: templates/deferrals/deferral_detail.html:20
-#: templates/deferrals/deferral_list.html:25
-#: templates/deferrals/deferral_list.html:32 templates/payroll/index.html:16
+#: templates/deferrals/deferral_list.html:32
+#: templates/deferrals/deferral_list.html:39 templates/payroll/index.html:16
 #: templates/reports/vat.html:13 templates/reports/vat.html:27
 #: templates/reports/vat.html:37 templates/taxes/pph_final.html:34
 #: templates/taxes/self_deposits.html:10 templates/taxes/withholding.html:10
@@ -9777,14 +9781,18 @@ msgstr ""
 "dijurnal pada hari terakhirnya setelah bulan itu berakhir."
 
 #: templates/deferrals/deferral_list.html:8
+msgid "New prepayment"
+msgstr "Pos dibayar/diterima di muka baru"
+
+#: templates/deferrals/deferral_list.html:10
 msgid "Paid in advance"
 msgstr "Dibayar di muka"
 
-#: templates/deferrals/deferral_list.html:9
+#: templates/deferrals/deferral_list.html:11
 msgid "Received in advance"
 msgstr "Diterima di muka"
 
-#: templates/deferrals/deferral_list.html:12
+#: templates/deferrals/deferral_list.html:15
 msgid ""
 "Rent, insurance or subscriptions paid for several months ahead are expensed "
 "month by month over the period they cover, and rent or royalties received "
@@ -9797,22 +9805,34 @@ msgstr ""
 "14.7). Sampai saat itu, jumlahnya merupakan aset (dibayar di muka) atau "
 "liabilitas (diterima di muka)."
 
-#: templates/deferrals/deferral_list.html:16
+#: templates/deferrals/deferral_list.html:19
 #, python-format
 msgid "%(months)s month is not recognised yet."
 msgid_plural "%(months)s months are not recognised yet."
 msgstr[0] "%(months)s bulan belum diakui."
 
-#: templates/deferrals/deferral_list.html:18
+#: templates/deferrals/deferral_list.html:21
 msgid ""
 "Months that have ended are recognised automatically every night, or now:"
 msgstr "Bulan yang telah berakhir diakui otomatis setiap malam, atau sekarang:"
 
-#: templates/deferrals/deferral_list.html:20
+#: templates/deferrals/deferral_list.html:23
 msgid "Recognise now"
 msgstr "Akui sekarang"
 
-#: templates/deferrals/deferral_list.html:39
+#: templates/deferrals/deferral_list.html:27
+msgid "Paid in advance, still to expense"
+msgstr "Dibayar di muka, belum dibebankan"
+
+#: templates/deferrals/deferral_list.html:28
+msgid "Received in advance, still to earn"
+msgstr "Diterima di muka, belum diakui"
+
+#: templates/deferrals/deferral_list.html:30
+msgid "Search number or description"
+msgstr "Cari nomor atau keterangan"
+
+#: templates/deferrals/deferral_list.html:46
 msgid "Nothing paid or received in advance yet."
 msgstr "Belum ada yang dibayar atau diterima di muka."
 
@@ -9851,13 +9871,14 @@ msgid "Document"
 msgstr "Dokumen"
 
 #: templates/inventory/stock_card.html:15
-#: templates/inventory/stock_list.html:11
 #: templates/inventory/stock_list.html:17
+#: templates/inventory/stock_list.html:23
 msgid "On hand"
 msgstr "Tersedia"
 
 #: templates/inventory/stock_card.html:15
-#: templates/inventory/stock_list.html:30
+#: templates/inventory/stock_list.html:10
+#: templates/inventory/stock_list.html:36
 msgid "Stock value"
 msgstr "Nilai stok"
 
@@ -9869,22 +9890,33 @@ msgstr ""
 "Belum ada mutasi stok. Pembelian, penjualan, dan penyesuaian stok barang ini "
 "akan tampil di sini."
 
-#: templates/inventory/stock_list.html:9
-#, python-format
-msgid "Valued at cost, %(formula)s."
-msgstr "Dinilai sebesar biaya perolehan, %(formula)s."
-
 #: templates/inventory/stock_list.html:11
-#: templates/inventory/stock_list.html:16
+msgid "Items with tracked stock"
+msgstr "Barang dengan stok tercatat"
+
+#: templates/inventory/stock_list.html:12
+msgid "Valuation"
+msgstr "Penilaian"
+
+#: templates/inventory/stock_list.html:12
+msgid "at cost"
+msgstr "pada harga perolehan"
+
+#: templates/inventory/stock_list.html:15
+msgid "Search item"
+msgstr "Cari barang"
+
+#: templates/inventory/stock_list.html:17
+#: templates/inventory/stock_list.html:22
 msgid "Inventory account"
 msgstr "Akun persediaan"
 
-#: templates/inventory/stock_list.html:11
-#: templates/inventory/stock_list.html:18
+#: templates/inventory/stock_list.html:17
+#: templates/inventory/stock_list.html:24
 msgid "Average cost"
 msgstr "Biaya rata-rata"
 
-#: templates/inventory/stock_list.html:22
+#: templates/inventory/stock_list.html:28
 #, python-format
 msgid ""
 "No item's stock is tracked yet. Turn on \"Track stock\" for goods in <a "
@@ -9895,11 +9927,11 @@ msgstr ""
 "di <a href=\"%(url)s\">Barang &amp; Jasa</a>, lalu catat stok awalnya dengan "
 "penyesuaian stok."
 
-#: templates/inventory/stock_list.html:28
+#: templates/inventory/stock_list.html:34
 msgid "Stock and ledger"
 msgstr "Stok dan buku besar"
 
-#: templates/inventory/stock_list.html:36
+#: templates/inventory/stock_list.html:42
 msgid ""
 "A difference means inventory posted outside the stock card, e.g. by a "
 "journal entry or a purchase of an item whose stock isn't tracked, or an "
@@ -10558,6 +10590,18 @@ msgstr "%(what)s (%(format)s)"
 #: templates/partials/language_switch.html:2
 msgid "Interface language"
 msgstr "Bahasa antarmuka"
+
+#: templates/partials/ledger_check_card.html:3
+msgid "Ledger check"
+msgstr "Cek buku besar"
+
+#: templates/partials/ledger_check_card.html:4
+msgid "Difference: see by account"
+msgstr "Selisih: lihat per akun"
+
+#: templates/partials/ledger_check_card.html:5
+msgid "Agrees with the ledger"
+msgstr "Sesuai dengan buku besar"
 
 #: templates/partials/list_toolbar.html:2
 msgid "Filter"
@@ -12698,6 +12742,13 @@ msgstr "Tidak ada yang dicatat. Perbaiki berkas lalu unggah lagi."
 #: templates/uploads/upload.html:56
 msgid "Check the file"
 msgstr "Periksa berkas"
+
+#~ msgid "Total in use"
+#~ msgstr "Total yang digunakan"
+
+#, python-format
+#~ msgid "Valued at cost, %(formula)s."
+#~ msgstr "Dinilai sebesar biaya perolehan, %(formula)s."
 
 #~ msgid "All types"
 #~ msgstr "Semua jenis"

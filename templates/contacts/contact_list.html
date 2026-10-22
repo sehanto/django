@@ -14,8 +14,8 @@
   <tbody>
   {% for c in object_list %}
     <tr class="{% if not c.is_active %}text-muted{% endif %}">
-      <td>{{ c.name }}{% if not c.is_active %} <span class="badge badge-neutral">{% translate "inactive" %}</span>{% endif %}</td>
-      <td data-label="{% translate 'Type' %}">{{ c.get_kind_display }}</td><td data-label="{% translate 'NPWP' %}">{% if c.formatted_npwp %}<code>{{ c.formatted_npwp }}</code>{% endif %}</td><td data-label="{% translate 'Phone' %}">{{ c.phone }}</td><td data-label="{% translate 'Regency/city' %}">{{ c.regency_name }}</td>
+      <td>{% if can_write %}<a href="{% url 'contacts:update' c.pk %}">{{ c.name }}</a>{% else %}{{ c.name }}{% endif %}{% if not c.is_active %} <span class="badge badge-neutral">{% translate "inactive" %}</span>{% endif %}</td>
+      <td data-label="{% translate 'Type' %}">{{ c.get_kind_display }}</td><td data-label="{% translate 'NPWP' %}">{% if c.formatted_npwp %}<span class="font-mono">{{ c.formatted_npwp }}</span>{% endif %}</td><td data-label="{% translate 'Phone' %}">{{ c.phone }}</td><td data-label="{% translate 'Regency/city' %}">{{ c.regency_name }}</td>
       <td class="stack-corner text-end whitespace-nowrap">
         {% if c.is_customer %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:list' invoice_kinds.SALES %}?q={{ c.name|urlencode }}" title="{% translate 'Sales invoices' %}">{% icon "receipt" %}</a>{% endif %}
         {% if c.is_supplier %}<a class="btn btn-sm btn-outline" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}?q={{ c.name|urlencode }}" title="{% translate 'Purchase bills' %}">{% icon "shopping-bag" %}</a>{% endif %}

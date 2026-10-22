@@ -4,10 +4,13 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="page-title mb-0">{% translate "Prepayments" %}</h1>
-  {% if can_write %}<div class="flex flex-wrap gap-2">
-    <a href="{% url 'deferrals:create' kinds.PREPAID_EXPENSE %}" class="btn btn-primary">{% icon "plus" %} {% translate "Paid in advance" %}</a>
-    <a href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}" class="btn btn-outline-primary">{% icon "plus" %} {% translate "Received in advance" %}</a>
-  </div>{% endif %}
+  {% if can_write %}<details class="relative" data-dropdown>
+    <summary class="btn btn-primary list-none [&::-webkit-details-marker]:hidden">{% icon "plus" %} {% translate "New prepayment" %}{% icon "chevron-down" %}</summary>
+    <ul class="menu-list end-0 w-64">
+      <li><a class="menu-item" href="{% url 'deferrals:create' kinds.PREPAID_EXPENSE %}">{% translate "Paid in advance" %}</a></li>
+      <li><a class="menu-item" href="{% url 'deferrals:create' kinds.DEFERRED_REVENUE %}">{% translate "Received in advance" %}</a></li>
+    </ul>
+  </details>{% endif %}
 </div>
 <p class="text-muted">{% translate "Rent, insurance or subscriptions paid for several months ahead are expensed month by month over the period they cover, and rent or royalties received ahead are revenue month by month (SAK EMKM 14.13, 14.7). Until then they are an asset (paid in advance) or a liability (received in advance)." %}</p>
 {% if due_months %}
@@ -20,7 +23,11 @@
   {% if can_write and not locked_due %}<form method="post" action="{% url 'deferrals:post' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">{% translate "Recognise now" %}</button></form>{% endif %}
 </div>
 {% endif %}
-<div class="card">{% include "partials/list_toolbar.html" %}
+<div class="grid grid-cols-12 gap-4 mb-6">
+  {% translate "Paid in advance, still to expense" as label %}{% include "partials/stat_card.html" with value=prepaid_remaining|rupiah col="col-span-6 md:col-span-4" %}
+  {% translate "Received in advance, still to earn" as label %}{% include "partials/stat_card.html" with value=deferred_remaining|rupiah col="col-span-6 md:col-span-4" %}
+</div>
+<div class="card">{% translate "Search number or description" as placeholder %}{% include "partials/list_toolbar.html" %}
 <div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Description" %}</th><th>{% translate "Type" %}</th><th>{% translate "Period" %}</th><th class="num">{% translate "Amount" %}</th><th class="num">{% translate "Recognised" %}</th><th class="num">{% translate "Remaining" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
@@ -36,7 +43,7 @@
       <td class="stack-corner" data-label="{% translate 'Status' %}"><span class="badge {% if d.status == d.Status.VOID %}badge-neutral{% else %}badge-success{% endif %}">{{ d.get_status_display }}</span></td>
     </tr>
   {% endwith %}{% empty %}
-    <tr><td colspan="8">{% if tabset.current %}{% translate "Nothing matches." as message %}{% include "partials/empty_state.html" with icon="search" %}{% else %}{% translate "Nothing paid or received in advance yet." as message %}{% include "partials/empty_state.html" with icon="calendar-range" %}{% endif %}</td></tr>
+    <tr><td colspan="8">{% if request.GET.q or tabset.current %}{% translate "Nothing matches." as message %}{% include "partials/empty_state.html" with icon="search" %}{% else %}{% translate "Nothing paid or received in advance yet." as message %}{% include "partials/empty_state.html" with icon="calendar-range" %}{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

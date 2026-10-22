@@ -1,0 +1,6 @@
+{% load i18n money ui %}{# Whether a register agrees with the ledger; the accounts are in the "ledger-check" details under the list. #}
+<div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container">
+  <div class="text-sm text-muted">{% translate "Ledger check" %}</div>
+  {% if difference %}<div class="stat-value text-danger">{{ difference|rupiah }}</div><a class="text-sm" href="#ledger-check">{% translate "Difference: see by account" %}</a>
+  {% else %}<div class="stat-value text-success">{% icon "circle-check" %}</div><a class="text-sm text-muted" href="#ledger-check">{% translate "Agrees with the ledger" %}</a>{% endif %}
+</div></div></div>

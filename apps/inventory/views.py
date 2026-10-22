@@ -6,7 +6,7 @@ from django.views.generic import FormView, TemplateView
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
-from apps.core.params import int_param
+from apps.core.params import int_param, text_param
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
@@ -19,10 +19,14 @@ class StockListView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         rows = stock_summary(self.organization)
+        query = text_param(self.request.GET, "q").casefold()
+        reconciliation = reconcile(self.organization, rows, timezone.localdate())
         return super().get_context_data(
-            rows=rows,
+            rows=[r for r in rows if not query or query in str(r.item).casefold()],
+            tracked=len(rows),
             total_value=sum((r.value for r in rows), ZERO),
-            reconciliation=reconcile(self.organization, rows, timezone.localdate()),
+            reconciliation=reconciliation,
+            ledger_difference=sum((abs(r.difference) for r in reconciliation), ZERO),
             **kwargs,
         )
 

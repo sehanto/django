@@ -9,7 +9,7 @@ from django.views.generic import CreateView, DetailView, TemplateView, UpdateVie
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
-from apps.core.params import choice_param
+from apps.core.params import choice_param, text_param
 from apps.core.tabs import tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
@@ -30,9 +30,14 @@ class AssetListView(OrganizationMixin, TemplateView):
         lock_date = self.organization.lock_date
         active = [r for r in rows if r.asset.status == r.asset.Status.ACTIVE]
         status = choice_param(self.request.GET, "status", AssetStatus.values)
+        query = text_param(self.request.GET, "q").casefold()
         counts = {"": len(rows)} | {value: sum(r.asset.status == value for r in rows) for value in AssetStatus.values}
+        reconciliation = reconcile(self.organization, rows, today)
         return super().get_context_data(
-            rows=[r for r in rows if not status or r.asset.status == status],
+            rows=[
+                r for r in rows if (not status or r.asset.status == status)
+                and (not query or query in r.asset.number.casefold() or query in r.asset.name.casefold())
+            ],
             tabset=tabs(self.request, "status", AssetStatus.choices, counts),
             total_cost=sum((r.asset.cost for r in active), ZERO),
             total_accumulated=sum((r.accumulated for r in active), ZERO),
@@ -40,7 +45,8 @@ class AssetListView(OrganizationMixin, TemplateView):
             due_months=len(due),
             due_amount=sum((m.amount for items in due.values() for _a, m in items), ZERO),
             locked_due=bool(lock_date) and any(m.period_end <= lock_date for items in due.values() for _a, m in items),
-            reconciliation=reconcile(self.organization, rows, today),
+            reconciliation=reconciliation,
+            ledger_difference=sum((abs(r.difference) for r in reconciliation), ZERO),
             **kwargs,
         )
 

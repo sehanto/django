@@ -1,0 +1,4 @@
+{# A summary card over a list (label, figure, optional note), in the page's grid row like the dashboard's. #}
+<div class="{{ col|default:'col-span-6 md:col-span-3' }}"><div class="card h-full"><div class="card-body @container">
+  <div class="text-sm text-muted">{{ label }}</div><div class="stat-value">{{ value }}</div>{% if note %}<div class="text-sm text-muted">{{ note }}</div>{% endif %}
+</div></div></div>

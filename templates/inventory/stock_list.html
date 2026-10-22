@@ -2,12 +2,18 @@
 {% block title %}{% translate "Inventory" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Inventory") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<div class="flex flex-wrap justify-between items-center gap-2 mb-1">
+<div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="page-title mb-0">{% translate "Inventory" %}</h1>
-  {% if can_write and rows %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary">{% icon "diff" %} {% translate "Stock adjustment" %}</a>{% endif %}
+  {% if can_write and tracked %}<a href="{% url 'inventory:adjust' %}" class="btn btn-primary">{% icon "diff" %} {% translate "Stock adjustment" %}</a>{% endif %}
 </div>
-<p class="text-muted">{% blocktranslate trimmed with formula=current_organization.get_inventory_cost_formula_display %}Valued at cost, {{ formula }}.{% endblocktranslate %}</p>
-<div class="card mb-4"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+<div class="grid grid-cols-12 gap-4 mb-6">
+  {% translate "Stock value" as label %}{% include "partials/stat_card.html" with value=total_value|rupiah %}
+  {% translate "Items with tracked stock" as label %}{% include "partials/stat_card.html" with value=tracked %}
+  {% translate "Valuation" as label %}{% translate "at cost" as note %}{% include "partials/stat_card.html" with value=current_organization.get_inventory_cost_formula_display %}
+  {% include "partials/ledger_check_card.html" with difference=ledger_difference %}
+</div>
+<div class="card">{% translate "Search item" as placeholder %}{% include "partials/list_toolbar.html" %}
+<div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Item" %}</th><th>{% translate "Inventory account" %}</th><th class="num">{% translate "On hand" %}</th><th class="num">{% translate "Average cost" %}</th><th class="num">{% translate "Value" %}</th></tr></thead>
   <tbody>
   {% for row in rows %}
@@ -19,20 +25,21 @@
       <td class="num" data-label="{% translate 'Value' %}">{{ row.value|rupiah }}</td>
     </tr>
   {% empty %}
-    <tr><td colspan="5"><div class="empty-state"><span class="flex size-12 items-center justify-center rounded-full bg-subtle text-2xl">{% icon "boxes" %}</span><p class="mb-0 max-w-md">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</p></div></td></tr>
+    <tr><td colspan="5">{% if request.GET.q %}{% translate "Nothing matches." as message %}{% include "partials/empty_state.html" with icon="search" %}{% else %}<div class="empty-state"><span class="flex size-12 items-center justify-center rounded-full bg-subtle text-2xl">{% icon "boxes" %}</span><p class="mb-0 max-w-md">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</p></div>{% endif %}</td></tr>
   {% endfor %}
   </tbody>
-  {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4" class="stack-hidden">{% translate "Total" %}</td><td class="num" data-label="{% translate 'Total' %}">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}
 </table></div></div>
 {% if reconciliation %}
-<h2 class="section-heading">{% translate "Stock and ledger" %}</h2>
-<div class="card"><div class="overflow-x-auto"><table class="table table-sm mb-0 align-middle">
+<details id="ledger-check" class="card mt-6"{% if ledger_difference %} open{% endif %}>
+<summary class="px-4 py-3 font-semibold">{% translate "Stock and ledger" %}</summary>
+<div class="overflow-x-auto border-t border-line"><table class="table table-sm mb-0 align-middle">
   <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Stock value" %}</th><th class="num">{% translate "In the ledger" %}</th><th class="num">{% translate "Difference" %}</th></tr></thead>
   <tbody>{% for r in reconciliation %}
     <tr><td>{{ r.account }}</td><td class="num">{{ r.stock|rupiah }}</td><td class="num">{{ r.ledger|rupiah }}</td>
       <td class="num {% if r.difference %}text-danger font-semibold{% endif %}">{{ r.difference|rupiah }}</td></tr>
   {% endfor %}</tbody>
-</table></div></div>
-<p class="text-muted mt-2">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
+</table></div>
+<p class="text-muted m-0 px-4 py-3">{% translate "A difference means inventory posted outside the stock card, e.g. by a journal entry or a purchase of an item whose stock isn't tracked, or an opening balance not yet recorded as a stock adjustment." %}</p>
+</details>
 {% endif %}
 {% endblock %}
