@@ -14,6 +14,7 @@ from apps.core.exceptions import DomainError, ValidationFailed
 from apps.core.formatting import localized_rupiah
 from apps.core.money import ZERO
 from apps.core.params import choice_param, int_param, text_param
+from apps.core.tabs import counts_by, tabs
 from apps.core.views import ExportMixin, flash_domain_error
 from apps.audit import services as audit
 from apps.audit.domain import AuditAction
@@ -25,7 +26,7 @@ from .forms import (
     CoretaxConnectionForm, InvoiceForm, InvoiceLineFormSet, ItemForm, PaymentForm, ReturnForm, SpecialDocumentForm, TaxInvoiceNumberForm, VoidForm,
     WriteOffForm, line_inputs,
 )
-from .models import CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
+from .models import CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, Item, ReceivableWriteOff
 from .selectors import (
     coretax_connected, coretax_connection, coretax_submissions, invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for,
     status_counts,
@@ -100,18 +101,13 @@ class InvoiceListView(InvoiceKindMixin, ExportMixin, OrganizationMixin, ListView
         )
 
     def get_context_data(self, **kwargs):
-        counts = status_counts(self.organization, self.kind)
-        # Tabs as in other accounting apps: all, the working states, then the closed ones only when there are any.
-        tabs = [("", _("All"))] + [
-            (value, label) for value, label in InvoiceStatusFilter.choices
-            if value not in (InvoiceStatusFilter.WRITTEN_OFF, InvoiceStatusFilter.VOID) or counts.get(value)
-        ]
         order = [InvoiceStatusFilter.DRAFT, InvoiceStatusFilter.ISSUED, InvoiceStatusFilter.PARTIAL, InvoiceStatusFilter.OVERDUE,
                  InvoiceStatusFilter.PAID, InvoiceStatusFilter.WRITTEN_OFF, InvoiceStatusFilter.VOID]
-        tabs.sort(key=lambda tab: -1 if not tab[0] else order.index(tab[0]))
         return super().get_context_data(
-            status_tabs=[(value, label, counts.get(value, 0)) for value, label in tabs],
-            current_status=choice_param(self.request.GET, "status", InvoiceStatusFilter.values),
+            tabset=tabs(
+                self.request, "status", [(value, InvoiceStatusFilter(value).label) for value in order],
+                status_counts(self.organization, self.kind), optional=(InvoiceStatusFilter.WRITTEN_OFF, InvoiceStatusFilter.VOID),
+            ),
             summary=outstanding_summary(self.organization, self.kind), **kwargs
         )
 
@@ -347,7 +343,10 @@ class PaymentListView(ExportMixin, OrganizationMixin, ListView):
         )
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(kinds=[(kind, kind.payment_label) for kind in InvoiceKind], **kwargs)
+        kinds = [(kind.value, kind.payment_label) for kind in InvoiceKind]
+        return super().get_context_data(
+            tabset=tabs(self.request, "kind", kinds, counts_by(payments_for(self.organization), "invoice__kind")), **kwargs
+        )
 
 
 class PaymentVoidView(WriteMixin, View):
@@ -388,7 +387,15 @@ class ItemListView(ExportMixin, OrganizationMixin, ListView):
         return item_rows(queryset)  # the upload template's columns: edit and upload again
 
     def get_queryset(self):
-        return items_for(self.organization, query=text_param(self.request.GET, "q")).select_related("tax_rate")
+        params = self.request.GET
+        return items_for(
+            self.organization, query=text_param(params, "q"), item_type=choice_param(params, "type", Item.Type.values)
+        ).select_related("tax_rate")
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            tabset=tabs(self.request, "type", Item.Type.choices, counts_by(items_for(self.organization), "type")), **kwargs
+        )
 
 
 class ItemFormMixin(WriteMixin):

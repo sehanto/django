@@ -65,6 +65,13 @@ class EmployeeKind(models.TextChoices):
     NON_PERMANENT = "non_permanent", _("Non-permanent / casual worker (pegawai tidak tetap)")
 
 
+class EmploymentStatus(models.TextChoices):
+    """The employee list's tabs: still paid (Employee.is_active) or no longer."""
+
+    ACTIVE = "active", _("Active")
+    INACTIVE = "inactive", _("Inactive")
+
+
 class PayBasis(models.TextChoices):
     MONTHLY = "monthly", _("Monthly")
     DAILY = "daily", _("Daily")

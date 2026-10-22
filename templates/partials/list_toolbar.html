@@ -1,0 +1,11 @@
+{% load i18n ui %}{# The top of a list's card: status tabs (core.tabs, "tabset") over a search row. "placeholder" says what the search looks in; "filters" names a template with more selects (named form-select controls). #}
+{% if tabset %}<nav class="tabs" aria-label="{% translate 'Filter' %}">
+  {% for tab in tabset.tabs %}<a class="tab" href="{{ tab.url }}"{% if tab.current %} aria-current="page"{% endif %}>{{ tab.label }} <span class="tab-count">{{ tab.count }}</span></a>{% endfor %}
+</nav>{% endif %}
+{% if placeholder %}<form class="flex flex-wrap gap-2 border-b border-line p-3" method="get" role="search">
+  {% if tabset.current %}<input type="hidden" name="{{ tabset.param }}" value="{{ tabset.current }}">{% endif %}
+  <div class="relative min-w-0 flex-1 basis-56 sm:max-w-sm">{% icon "search" "pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" %}
+    <input name="q" value="{{ request.GET.q }}" class="form-input ps-9" placeholder="{{ placeholder }}" aria-label="{{ placeholder }}"></div>
+  {% if filters %}{% include filters %}{% endif %}
+  <button class="btn btn-outline">{% translate "Search" %}</button>
+</form>{% endif %}

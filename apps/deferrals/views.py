@@ -9,11 +9,13 @@ from django.views.generic import DetailView, FormView, TemplateView
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
+from apps.core.params import choice_param
+from apps.core.tabs import tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
-from .domain import DeferralKind
+from .domain import DeferralKind, DeferralStatus
 from .forms import DeferralForm
 from .selectors import deferrals_for, due_recognition, postings_of, register
 
@@ -25,8 +27,11 @@ class DeferralListView(OrganizationMixin, TemplateView):
         rows = register(self.organization)
         due = due_recognition(self.organization, timezone.localdate())
         lock_date = self.organization.lock_date
+        status = choice_param(self.request.GET, "status", DeferralStatus.values)
+        counts = {"": len(rows)} | {value: sum(r.deferral.status == value for r in rows) for value in DeferralStatus.values}
         return super().get_context_data(
-            rows=rows, kinds=DeferralKind,
+            rows=[r for r in rows if not status or r.deferral.status == status], kinds=DeferralKind,
+            tabset=tabs(self.request, "status", DeferralStatus.choices, counts, optional=(DeferralStatus.VOID,)),
             due_months=len(due),
             locked_due=bool(lock_date) and any(m.period_end <= lock_date for items in due.values() for _deferral, m in items),
             **kwargs,

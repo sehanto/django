@@ -10,14 +10,15 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from apps.core.exceptions import DomainError
-from apps.core.params import text_param, year_choices, year_param
+from apps.core.params import choice_param, text_param, year_choices, year_param
+from apps.core.tabs import tabs
 from apps.core.tables import download
 from apps.core.views import flash_domain_error
 from apps.taxes.domain import Month
 from apps.tenants.mixins import ManageMixin, OrganizationMixin, WriteMixin
 
 from . import selectors, services
-from .domain import TaxScheme
+from .domain import EmploymentStatus, TaxScheme
 from .forms import EmployeeForm, PayForm, PayrollRunForm, PayrollSettingsForm, PriorIncomeForm
 from .models import Employee, PayrollRun, PayrollSettings, Payslip, PriorIncome
 
@@ -26,7 +27,12 @@ class EmployeeListView(OrganizationMixin, ListView):
     template_name = "payroll/employee_list.html"
 
     def get_queryset(self):
-        return Employee.objects.for_organization(self.organization)
+        return selectors.employees_for(self.organization, status=choice_param(self.request.GET, "status", EmploymentStatus.values))
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            tabset=tabs(self.request, "status", EmploymentStatus.choices, selectors.employee_counts(self.organization)), **kwargs
+        )
 
 
 class EmployeeFormMixin(WriteMixin):

@@ -59,8 +59,10 @@ def last_cash_account(organization):
     return payment.cash_account if payment is not None else None
 
 
-def items_for(organization, *, active_only: bool = False, query: str = "") -> QuerySet[Item]:
+def items_for(organization, *, active_only: bool = False, query: str = "", item_type: str = "") -> QuerySet[Item]:
     qs = Item.objects.for_organization(organization)
+    if item_type:
+        qs = qs.filter(type=item_type)
     if active_only:
         qs = qs.filter(is_active=True)
     if query:

@@ -48,5 +48,5 @@ def test_overdue_filter_lists_open_invoices_past_due(auth_client, organization, 
 
 def test_payment_list_offers_each_invoice_kind(auth_client):
     html = auth_client.get(reverse("invoicing:payments"), {"kind": InvoiceKind.PURCHASE}).content.decode()
-    assert f'<option value="{InvoiceKind.SALES}" >' in html
-    assert f'<option value="{InvoiceKind.PURCHASE}" selected>' in html
+    assert f'href="?kind={InvoiceKind.SALES}">' in html
+    assert f'href="?kind={InvoiceKind.PURCHASE}" aria-current="page"' in html

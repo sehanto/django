@@ -8,13 +8,8 @@
   {% if can_write %}<a href="{% url 'uploads:upload' 'contacts' %}" class="btn btn-outline">{% icon "upload" %} {% translate "Upload" %}</a>
   <a href="{% url 'contacts:create' %}" class="btn btn-primary">{% icon "plus" %} {% translate "New contact" %}</a>{% endif %}</div>
 </div>
-<form class="grid grid-cols-12 gap-2 mb-4" method="get">
-  <div class="col-span-12 md:col-span-4"><input name="q" value="{{ request.GET.q }}" class="form-input" placeholder="{% translate 'Search name, email, NPWP' %}"></div>
-  <div class="col-span-12 md:col-span-3"><select name="province" class="form-select" aria-label="{% translate 'Province' %}"><option value="">{% translate "All provinces" %}</option>{% for p in provinces %}<option value="{{ p.code }}" {% if request.GET.province == p.code %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
-  <div class="col-span-12 md:col-span-3"><select name="kind" class="form-select"><option value="">{% translate "All types" %}</option>{% for v, l in kinds %}<option value="{{ v }}" {% if request.GET.kind == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
-</form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+<div class="card">{% translate "Search name, email, NPWP" as placeholder %}{% include "partials/list_toolbar.html" with filters="contacts/_filters.html" %}
+<div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Name" %}</th><th>{% translate "Type" %}</th><th>{% translate "NPWP" %}</th><th>{% translate "Phone" %}</th><th>{% translate "Regency/city" %}</th><th></th></tr></thead>
   <tbody>
   {% for c in object_list %}
@@ -28,7 +23,7 @@
         <form method="post" action="{% url 'contacts:delete' c.pk %}" class="inline" data-confirm="{% translate 'Delete this contact?' %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" aria-label="{% translate 'Delete' %}">{% icon "trash-2" %}</button></form>{% endif %}
       </td>
     </tr>
-  {% empty %}<tr><td colspan="6" class="text-center text-muted py-6">{% translate "No contacts yet." %}</td></tr>
+  {% empty %}<tr><td colspan="6">{% if request.GET.q or tabset.current %}{% translate "Nothing matches." as message %}{% include "partials/empty_state.html" with icon="search" %}{% else %}{% translate "No contacts yet." as message %}{% if can_write %}{% url 'contacts:create' as create_url %}{% endif %}{% include "partials/empty_state.html" with icon="users" url=create_url action=_("New contact") %}{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

@@ -7,6 +7,7 @@ from django.views.generic import CreateView, ListView, UpdateView
 
 from apps.core.exceptions import DomainError
 from apps.core.params import choice_param, text_param
+from apps.core.tabs import counts_by, tabs
 from apps.core.views import ExportMixin, flash_domain_error
 from apps.uploads.exports import contact_rows
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
@@ -37,7 +38,10 @@ class ContactListView(ExportMixin, OrganizationMixin, ListView):
         return contacts.filter(village__district__regency__province_id=province) if province else contacts
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(kinds=Contact.Kind.choices, provinces=self.provinces, **kwargs)
+        return super().get_context_data(
+            tabset=tabs(self.request, "kind", Contact.Kind.choices, counts_by(contacts_for(self.organization), "kind")),
+            provinces=self.provinces, **kwargs
+        )
 
 
 class ContactFormMixin(WriteMixin):

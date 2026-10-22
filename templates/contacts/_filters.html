@@ -1,0 +1,1 @@
+{% load i18n %}<select name="province" class="form-select w-auto min-w-0 grow sm:grow-0" aria-label="{% translate 'Province' %}"><option value="">{% translate "All provinces" %}</option>{% for p in provinces %}<option value="{{ p.code }}" {% if request.GET.province == p.code %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>

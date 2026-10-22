@@ -6,8 +6,19 @@ from decimal import Decimal
 from apps.core.money import ZERO
 from apps.core.periods import month_end, month_start
 
-from .domain import AnnualTax, EmployeeKind, TaxScheme, annual_pph21, with_surcharge
+from .domain import AnnualTax, EmployeeKind, EmploymentStatus, TaxScheme, annual_pph21, with_surcharge
 from .models import Employee, PayrollRun, Payslip, PriorIncome
+
+
+def employees_for(organization, *, status: str = ""):
+    qs = Employee.objects.for_organization(organization)
+    return qs.filter(is_active=status == EmploymentStatus.ACTIVE) if status else qs
+
+
+def employee_counts(organization) -> dict[str, int]:
+    qs = Employee.objects.for_organization(organization)
+    total, active = qs.count(), qs.filter(is_active=True).count()
+    return {"": total, EmploymentStatus.ACTIVE: active, EmploymentStatus.INACTIVE: total - active}
 
 
 @dataclass(frozen=True)

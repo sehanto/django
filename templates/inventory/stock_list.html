@@ -19,7 +19,7 @@
       <td class="num" data-label="{% translate 'Value' %}">{{ row.value|rupiah }}</td>
     </tr>
   {% empty %}
-    <tr><td colspan="5" class="text-center text-muted py-6">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</td></tr>
+    <tr><td colspan="5"><div class="empty-state"><span class="flex size-12 items-center justify-center rounded-full bg-subtle text-2xl">{% icon "boxes" %}</span><p class="mb-0 max-w-md">{% url 'invoicing:items' as items_url %}{% blocktranslate trimmed with url=items_url %}No item's stock is tracked yet. Turn on "Track stock" for goods in <a href="{{ url }}">Items</a>, then record their opening stock with a stock adjustment.{% endblocktranslate %}</p></div></td></tr>
   {% endfor %}
   </tbody>
   {% if rows %}<tfoot><tr class="font-semibold"><td colspan="4" class="stack-hidden">{% translate "Total" %}</td><td class="num" data-label="{% translate 'Total' %}">{{ total_value|rupiah }}</td></tr></tfoot>{% endif %}

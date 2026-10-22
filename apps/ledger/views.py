@@ -10,6 +10,7 @@ from apps.audit import services as audit
 from apps.audit.domain import AuditAction
 from apps.core.exceptions import DomainError
 from apps.core.params import choice_param, text_param
+from apps.core.tabs import counts_by, tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -110,7 +111,8 @@ class JournalListView(OrganizationMixin, ListView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            statuses=JournalEntry.Status.choices, sources=JournalEntry.Source.choices, **kwargs
+            tabset=tabs(self.request, "status", JournalEntry.Status.choices, counts_by(search_journal_entries(self.organization), "status")),
+            sources=JournalEntry.Source.choices, **kwargs
         )
 
 

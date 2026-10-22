@@ -9,10 +9,13 @@ from django.views.generic import CreateView, DetailView, TemplateView, UpdateVie
 
 from apps.core.exceptions import DomainError
 from apps.core.money import ZERO
+from apps.core.params import choice_param
+from apps.core.tabs import tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
 from . import services
+from .domain import AssetStatus
 from .forms import DisposalForm, FixedAssetForm, RevisionForm
 from .selectors import accumulated_depreciation, assets_for, due_depreciation, posted_amounts, reconcile, register
 
@@ -26,8 +29,11 @@ class AssetListView(OrganizationMixin, TemplateView):
         due = due_depreciation(self.organization, today)
         lock_date = self.organization.lock_date
         active = [r for r in rows if r.asset.status == r.asset.Status.ACTIVE]
+        status = choice_param(self.request.GET, "status", AssetStatus.values)
+        counts = {"": len(rows)} | {value: sum(r.asset.status == value for r in rows) for value in AssetStatus.values}
         return super().get_context_data(
-            rows=rows,
+            rows=[r for r in rows if not status or r.asset.status == status],
+            tabset=tabs(self.request, "status", AssetStatus.choices, counts),
             total_cost=sum((r.asset.cost for r in active), ZERO),
             total_accumulated=sum((r.accumulated for r in active), ZERO),
             total_book_value=sum((r.book_value for r in active), ZERO),
