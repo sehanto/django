@@ -734,6 +734,15 @@ few behaviours live in `static/js/app.js`.
   panel (adding a member, a new API key) sits beside its table from `xl` (8/4; the invoice's payment
   column from `2xl`) and below it before. Dialogs are `max-w-2xl` (the confirmation `max-w-md`).
   Paragraphs stop at 75 characters. Sign-in pages are one centred 28rem column.
+- **Shell and lists, benchmarked on Xero, QuickBooks Online, Zoho Books and Mekari Jurnal.** From `lg` a
+  top bar (`partials/topbar.html`) carries "+ New" (`partials/quick_create.html`: sales invoice,
+  purchase bill, journal entry, contact, item; also in the phone header) and the user's menu
+  (profile, security, sign out). Sales and purchase lists open on status tabs with counts (`tabs`,
+  `tab`, `tab-count`; All, Draft, Unpaid, Partially paid, Overdue, Paid, and Written off/Void when
+  there are any; `invoicing.selectors.status_counts`) above a search row. Column headings are
+  12px uppercase muted labels on a tinted band. Empty lists show `partials/empty_state.html` (icon,
+  message, the action that adds the first record). Long document forms keep their actions in a
+  `sticky-actions` bar. Menus use `menu-list`/`menu-item`.
 - **Tables on phones.** List tables and invoice lines carry `table-stack`: below `md` (on screen, never
   in print) each row becomes a block whose cells show their column name (`data-label`) beside the value,
   so amounts are never hidden behind a sideways scroll. A cell without `data-label` is the row's title;

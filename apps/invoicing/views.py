@@ -28,6 +28,7 @@ from .forms import (
 from .models import CoretaxSubmission, Invoice, InvoiceKind, InvoiceStatusFilter, ReceivableWriteOff
 from .selectors import (
     coretax_connected, coretax_connection, coretax_submissions, invoice_detail, invoices_for, items_for, outstanding_summary, payments_for, returns_for,
+    status_counts,
 )
 
 # Complete phrases rather than fragments, so each language can word them naturally.
@@ -99,8 +100,19 @@ class InvoiceListView(InvoiceKindMixin, ExportMixin, OrganizationMixin, ListView
         )
 
     def get_context_data(self, **kwargs):
+        counts = status_counts(self.organization, self.kind)
+        # Tabs as in other accounting apps: all, the working states, then the closed ones only when there are any.
+        tabs = [("", _("All"))] + [
+            (value, label) for value, label in InvoiceStatusFilter.choices
+            if value not in (InvoiceStatusFilter.WRITTEN_OFF, InvoiceStatusFilter.VOID) or counts.get(value)
+        ]
+        order = [InvoiceStatusFilter.DRAFT, InvoiceStatusFilter.ISSUED, InvoiceStatusFilter.PARTIAL, InvoiceStatusFilter.OVERDUE,
+                 InvoiceStatusFilter.PAID, InvoiceStatusFilter.WRITTEN_OFF, InvoiceStatusFilter.VOID]
+        tabs.sort(key=lambda tab: -1 if not tab[0] else order.index(tab[0]))
         return super().get_context_data(
-            statuses=InvoiceStatusFilter.choices, summary=outstanding_summary(self.organization, self.kind), **kwargs
+            status_tabs=[(value, label, counts.get(value, 0)) for value, label in tabs],
+            current_status=choice_param(self.request.GET, "status", InvoiceStatusFilter.values),
+            summary=outstanding_summary(self.organization, self.kind), **kwargs
         )
 
 

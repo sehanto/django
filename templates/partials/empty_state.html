@@ -1,0 +1,6 @@
+{% load ui %}{# An empty list: icon, message and, when given, the action that adds the first record (url + action label). #}
+<div class="empty-state">
+  <span class="flex size-12 items-center justify-center rounded-full bg-subtle text-2xl">{% icon icon %}</span>
+  <p class="mb-0 max-w-md">{{ message }}</p>
+  {% if url %}<a href="{{ url }}" class="btn btn-primary">{% icon "plus" %} {{ action }}</a>{% endif %}
+</div>

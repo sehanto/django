@@ -12,12 +12,17 @@
   <div class="col-span-6 md:col-span-4"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% icon "triangle-alert" "text-danger me-1" %}{% blocktranslate trimmed count count=summary.overdue_count %}Overdue ({{ count }} document){% plural %}Overdue ({{ count }} documents){% endblocktranslate %}</div><div class="stat-value">{{ summary.overdue|rupiah }}</div></div></div></div>
   <div class="col-span-12 md:col-span-4 flex items-center"><a href="{% url 'reports:aging' kind %}" class="btn btn-outline">{{ labels.aging }} &rarr;</a></div>
 </div>
-<form class="grid grid-cols-12 gap-2 mb-4" method="get">
-  <div class="col-span-12 md:col-span-6"><input name="q" value="{{ request.GET.q }}" class="form-input" placeholder="{% translate 'Search number, contact, reference' %}"></div>
-  <div class="col-span-12 md:col-span-4"><select name="status" class="form-select"><option value="">{% translate "All statuses" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-  <div class="col-span-12 md:col-span-2"><button class="btn btn-outline w-full">{% translate "Filter" %}</button></div>
+<div class="card">
+<nav class="tabs" aria-label="{% translate 'Status' %}">
+  {% for value, label, count in status_tabs %}<a class="tab" href="?{% if value %}status={{ value }}{% endif %}{% if request.GET.q %}{% if value %}&amp;{% endif %}q={{ request.GET.q|urlencode }}{% endif %}"{% if value == current_status %} aria-current="page"{% endif %}>{{ label }} <span class="tab-count">{{ count }}</span></a>{% endfor %}
+</nav>
+<form class="flex gap-2 border-b border-line p-3" method="get" role="search">
+  {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+  <div class="relative min-w-0 grow sm:max-w-sm">{% icon "search" "pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted" %}
+    <input name="q" value="{{ request.GET.q }}" class="form-input ps-9" placeholder="{% translate 'Search number, contact, reference' %}" aria-label="{% translate 'Search number, contact, reference' %}"></div>
+  <button class="btn btn-outline">{% translate "Search" %}</button>
 </form>
-<div class="card"><div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
+<div class="overflow-x-auto"><table class="table table-stack table-hover mb-0 align-middle">
   <thead><tr><th>{% translate "Number" %}</th><th>{% translate "Date" %}</th><th>{{ labels.contact }}</th><th>{% translate "Due date" %}</th><th class="num">{% translate "Total" %}</th><th class="num">{% translate "Balance due" %}</th><th>{% translate "Status" %}</th></tr></thead>
   <tbody>
   {% for inv in object_list %}
@@ -30,7 +35,7 @@
       <td class="num{% if not inv.is_open %} stack-hidden{% endif %}" data-label="{% translate 'Balance due' %}">{% if inv.is_open %}{{ inv.balance_due|rupiah }}{% else %}-{% endif %}</td>
       <td class="stack-corner" data-label="{% translate 'Status' %}"><span class="badge badge-{% if inv.is_overdue %}danger{% else %}{{ inv.status|status_badge }}{% endif %}">{% if inv.is_overdue %}{% translate "Overdue" %}{% else %}{{ inv.status_label }}{% endif %}</span>{% if inv.opening_balance %} <span class="badge badge-subtle">{% translate "Opening balance" %}</span>{% endif %}</td>
     </tr>
-  {% empty %}<tr><td colspan="7" class="text-center text-muted py-6">{% translate "No documents yet." %}</td></tr>
+  {% empty %}<tr><td colspan="7">{% if request.GET.q or current_status %}{% translate "No documents match." as message %}{% include "partials/empty_state.html" with icon="search" %}{% else %}{% translate "No documents yet." as message %}{% if can_write %}{% url 'invoicing:create' kind as create_url %}{% endif %}{% include "partials/empty_state.html" with icon="file-text" url=create_url action=labels.create %}{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table></div></div>

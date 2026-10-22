@@ -123,6 +123,15 @@ def outstanding_summary(organization, kind: str) -> dict:
     }
 
 
+def status_counts(organization, kind: str) -> dict[str, int]:
+    """How many documents of the kind are in each status (keys: InvoiceStatusFilter values; "" = all)."""
+    qs = Invoice.objects.for_organization(organization).filter(kind=kind)
+    counts = {row["status"]: row["n"] for row in qs.values("status").annotate(n=Count("id")).order_by()}
+    counts[""] = sum(counts.values())
+    counts[InvoiceStatusFilter.OVERDUE] = qs.filter(status__in=Invoice.OPEN_STATUSES, due_date__lt=timezone.localdate()).count()
+    return counts
+
+
 def vat_summary(organization, year: int) -> list[dict]:
     """Monthly PPN Keluaran vs PPN Masukan from non-void invoices, less returns (nota retur)
     in the month of the return. Sales under a PPN facility count in the sales value with

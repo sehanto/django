@@ -5,7 +5,8 @@
   <button type="button" class="btn-icon" data-drawer-open="appSidebar" aria-controls="appSidebar" aria-expanded="false"
           aria-label="{% translate 'Open the menu' %}">{% icon "menu" "text-xl" %}</button>
   <a href="{% url 'dashboard:home' %}" class="me-auto whitespace-nowrap text-xl font-bold text-fg no-underline">{% icon "book-marked" "text-primary me-1" %}EA-System</a>
-  <span class="max-w-[45vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
+  <span class="max-w-[35vw] truncate text-sm text-muted">{{ current_organization.name }}</span>
+  {% include "partials/quick_create.html" with size="btn-sm" label_class="sr-only" %}
 </header>
 <div class="fixed inset-0 z-30 hidden bg-black/40 data-open:block lg:hidden" data-drawer-backdrop="appSidebar"></div>
 <nav id="appSidebar" aria-labelledby="appSidebarTitle" tabindex="-1"
@@ -71,8 +72,8 @@
     <li><a class="nav-link {% if url.namespace == 'billing' %}active{% endif %}" href="{% url 'billing:overview' %}">{% icon "sparkles" "me-2" %}{% translate "Subscription plan" %}</a></li>
     {% endif %}
   </ul>
-  <hr>
-  <div class="flex justify-between items-center text-base mb-2">
+  <hr class="mt-auto">
+  <div class="flex justify-between items-center text-base mb-2 lg:hidden">
     <a href="{% url 'accounts:profile' %}" class="no-underline truncate">{% icon "circle-user" "me-1" %}{{ request.user.get_short_name }}</a>
     <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-link btn-sm p-0">{% translate "Sign out" %}</button></form>
   </div>

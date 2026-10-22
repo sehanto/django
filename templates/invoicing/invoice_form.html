@@ -28,7 +28,7 @@
     </table>
     <template data-formset-empty>{% include "invoicing/_line_row.html" with f=formset.empty_form %}</template>
   </div>
-  <div class="card-footer flex flex-wrap gap-2 justify-between items-center">
+  <div class="sticky-actions flex flex-wrap gap-2 justify-between items-center">
     <span class="text-muted">{% translate "PPN is calculated per rate on the total tax base and rounded down to whole rupiah." %}</span>
     <div class="flex flex-wrap gap-2">
       <a href="{% url 'invoicing:list' kind %}" class="btn btn-outline">{% translate "Cancel" %}</a>

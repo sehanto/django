@@ -1,0 +1,18 @@
+{% load i18n ui %}{# From lg: a bar over every page, as in other accounting apps: quick create and the user's menu on the right. #}
+<header class="sticky top-0 z-20 hidden h-14 items-center justify-end gap-3 border-b border-line bg-surface/95 px-8 backdrop-blur lg:flex print:hidden">
+  {% include "partials/quick_create.html" with label_class="ms-1" %}
+  <details class="relative" data-dropdown>
+    <summary class="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1.5 hover:bg-subtle [&::-webkit-details-marker]:hidden">
+      <span class="flex size-8 items-center justify-center rounded-full bg-primary-subtle font-semibold text-primary-strong" aria-hidden="true">{{ request.user.get_short_name|slice:":1"|upper }}</span>
+      <span class="max-w-48 truncate">{{ request.user.get_short_name }}</span>{% icon "chevron-down" "text-muted" %}
+    </summary>
+    <ul class="menu-list end-0 w-64">
+      <li class="px-3 py-2"><div class="truncate font-semibold">{{ request.user.get_full_name|default:request.user.get_short_name }}</div><div class="truncate text-sm text-muted">{{ request.user.email }}</div></li>
+      <li><hr class="my-1"></li>
+      <li><a class="menu-item" href="{% url 'accounts:profile' %}">{% icon "circle-user" "text-muted" %}{% translate "Profile" %}</a></li>
+      <li><a class="menu-item" href="{% url 'accounts:security' %}">{% icon "shield-check" "text-muted" %}{% translate "Security" %}</a></li>
+      <li><hr class="my-1"></li>
+      <li><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="menu-item w-full">{% icon "log-out" "text-muted" %}{% translate "Sign out" %}</button></form></li>
+    </ul>
+  </details>
+</header>

@@ -259,7 +259,9 @@
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply border-b border-line px-2 py-2 text-start align-top; }
   /* Cells and column headings 14px, like body text (headings bold). */
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply text-base; }
-  .table > thead > tr > th { @apply font-semibold; }
+  /* Column headings as in Xero, QuickBooks, Zoho Books and Jurnal: a small muted label row on a tinted band, so the
+     figures, not the headings, carry the weight (12px, the label size; uppercase reads as a label in both languages). */
+  .table > thead > tr > th { @apply bg-subtle/60 py-2.5 text-sm font-semibold tracking-wide text-muted uppercase; }
   .table-sm > :is(thead, tbody, tfoot) > tr > :is(th, td) { @apply px-1 py-1; }
   .table-hover > tbody > tr:hover > * { @apply bg-subtle/70; }
   .table > :is(thead, tbody, tfoot) > tr > :is(th, td).num { @apply text-end; }
@@ -288,6 +290,20 @@
     .table-stack.formset-table > tbody > tr > td.stack-corner { @apply static text-end; }
     .table-stack.formset-table > tbody > tr > td[data-label] > :is(.form-input, .form-select) { @apply w-3/5 min-w-0; }
   }
+
+  /* Status tabs over a list (All · Draft · Unpaid · Overdue …), each with its count; the current one underlined. */
+  .tabs { @apply flex overflow-x-auto border-b border-line px-2; }
+  .tab { @apply -mb-px flex shrink-0 items-center gap-2 border-b-2 border-transparent px-3 py-3 text-base whitespace-nowrap text-muted no-underline hover:text-fg; }
+  .tab[aria-current] { @apply border-primary font-semibold text-primary-strong; }
+  .tab-count { @apply rounded-full bg-subtle px-2 text-sm leading-5 font-semibold text-muted tabular-nums; }
+  .tab[aria-current] .tab-count { @apply bg-primary-subtle text-primary-strong; }
+  /* Menus that drop from a details[data-dropdown] summary (quick create, the user's menu). */
+  .menu-list { @apply absolute z-50 mt-1 list-none rounded-lg border border-line bg-surface p-1 shadow-lg; }
+  .menu-item { @apply flex items-center gap-2 rounded-md px-3 py-2 text-start text-base text-fg no-underline hover:bg-subtle hover:text-fg; }
+  /* A long form's actions stay in view at the bottom of the screen while it scrolls. */
+  .sticky-actions { @apply sticky bottom-0 z-10 rounded-b-lg border-t border-line bg-surface/95 px-4 py-3 backdrop-blur print:static; }
+  /* An empty list: an icon, what goes here, and the action that adds the first one. */
+  .empty-state { @apply flex flex-col items-center gap-3 px-4 py-12 text-center text-muted; }
 
   /* Amounts: right-aligned, figures lined up. */
   .num { @apply text-end whitespace-nowrap tabular-nums; }

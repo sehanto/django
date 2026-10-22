@@ -1,0 +1,14 @@
+{% load i18n ui %}{# "+ New": the documents and records people add most, from any page (like QuickBooks' and Zoho Books' quick create). #}
+{% if can_write %}
+<details class="relative" data-dropdown>
+  <summary class="btn btn-primary {{ size }} list-none [&::-webkit-details-marker]:hidden">{% icon "plus" %}<span class="{{ label_class }}">{% translate "New" context "create a record" %}</span></summary>
+  <ul class="menu-list end-0 w-56">
+    <li><a class="menu-item" href="{% url 'invoicing:create' invoice_kinds.SALES %}">{% icon "receipt" "text-muted" %}{% translate "Sales invoice" %}</a></li>
+    <li><a class="menu-item" href="{% url 'invoicing:create' invoice_kinds.PURCHASE %}">{% icon "shopping-bag" "text-muted" %}{% translate "Purchase bill" %}</a></li>
+    <li><a class="menu-item" href="{% url 'ledger:journal_create' %}">{% icon "notebook-text" "text-muted" %}{% translate "Journal entry" %}</a></li>
+    <li><hr class="my-1"></li>
+    <li><a class="menu-item" href="{% url 'contacts:create' %}">{% icon "users" "text-muted" %}{% translate "Contact" %}</a></li>
+    <li><a class="menu-item" href="{% url 'invoicing:item_create' %}">{% icon "package" "text-muted" %}{% translate "Item" %}</a></li>
+  </ul>
+</details>
+{% endif %}

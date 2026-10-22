@@ -42,7 +42,7 @@ def test_overdue_filter_lists_open_invoices_past_due(auth_client, organization, 
 
     overdue = auth_client.get(url, {"status": InvoiceStatusFilter.OVERDUE})
     assert list(overdue.context["object_list"]) == [invoice]
-    assert f'value="{InvoiceStatusFilter.OVERDUE}" selected' in overdue.content.decode()
+    assert f'href="?status={InvoiceStatusFilter.OVERDUE}" aria-current="page"' in overdue.content.decode()
     assert list(auth_client.get(url, {"status": InvoiceStatusFilter.PAID}).context["object_list"]) == []
 
 
