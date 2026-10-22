@@ -743,7 +743,11 @@ few behaviours live in `static/js/app.js`.
   through `apps.core.tabs` (`tabs(request, param, choices, counts)`, `counts_by`) and
   `partials/list_toolbar.html` (tabs, search, an optional `filters` template): payments by kind,
   contacts by type, items by type, journals by status, employees active/inactive, fixed assets and
-  prepayments by status. Column headings are
+  prepayments by status. Every list page reads the same: header with one primary action (several
+  kinds of record share one "New …" menu), summary cards (`partials/stat_card.html`; registers add
+  `partials/ledger_check_card.html`, whose per-account table is a collapsible `#ledger-check`
+  section under the list, open when there is a difference), then the card with tabs, search and
+  table. A list's first column links to the record. Column headings are
   12px uppercase muted labels on a tinted band. Empty lists show `partials/empty_state.html` (icon,
   message, the action that adds the first record). Long document forms keep their actions in a
   `sticky-actions` bar. Menus use `menu-list`/`menu-item`.
