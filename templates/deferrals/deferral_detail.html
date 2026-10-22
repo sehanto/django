@@ -3,10 +3,8 @@
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Prepayments") "deferrals:list" %}{% crumb deferral.description %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <div><h1 class="page-title mb-0">{{ deferral.description }}</h1><div class="text-muted">{{ deferral.number }} · {{ deferral.get_kind_display }} · {{ deferral.get_status_display }}</div></div>
-{% history_link deferral %}
+  <div><h1 class="page-title mb-0">{{ deferral.description }}</h1><div class="text-muted">{{ deferral.number }} · {{ deferral.get_kind_display }} · {{ deferral.get_status_display }}</div>{% history_link deferral %}</div>
   <div class="flex flex-wrap gap-2">
-    <a href="{% url 'deferrals:list' %}" class="btn btn-outline">{% translate "Back" %}</a>
     {% if can_write and can_void %}<form method="post" action="{% url 'deferrals:void' deferral.pk %}" data-confirm="{% translate 'Void this prepayment? Its reclassification entry, if any, is reversed.' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Void" context "button" %}</button></form>{% endif %}
   </div>
 </div>

@@ -1,0 +1,6 @@
+{% load i18n %}<select name="table" class="form-select w-auto min-w-0 grow sm:grow-0" data-autosubmit data-autosubmit-clear="record" aria-label="{% translate 'Records' %}">
+  <option value="">{% translate "All records" %}</option>
+  {% for value, label in tables.items %}<option value="{{ value }}" {% if value == table %}selected{% endif %}>{{ label }}</option>{% endfor %}
+</select>
+<input type="hidden" name="record" value="{{ record }}">
+{% if record %}<span class="flex items-center gap-2">{% blocktranslate trimmed %}Record {{ record }} only{% endblocktranslate %} <a href="?table={{ table }}">{% translate "show all" %}</a></span>{% endif %}

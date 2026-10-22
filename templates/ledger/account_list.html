@@ -13,7 +13,7 @@
       <tr class="bg-subtle"><td colspan="5" class="font-semibold text-sm uppercase">{{ title }}</td></tr>
       {% for account, balance in rows %}
       <tr class="{% if not account.is_active %}text-muted{% endif %}">
-        <td><code>{{ account.code }}</code></td>
+        <td class="font-mono text-muted">{{ account.code }}</td>
         <td>{{ account.name }}{% if account.is_contra %} <span class="badge badge-subtle border">{% translate "contra" %}</span>{% endif %}{% if not account.is_active %} <span class="badge badge-neutral">{% translate "inactive" %}</span>{% endif %}</td>
         <td class="text-sm text-muted">{{ account.get_system_role_display|default:"" }}</td>
         <td class="num"><a href="{% url 'reports:general_ledger' %}?account={{ account.pk }}" class="no-underline">{{ balance|default_if_none:0|rupiah }}</a></td>

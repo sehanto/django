@@ -1,0 +1,4 @@
+{% load i18n %}<select name="category" class="form-select w-auto min-w-0 grow sm:grow-0" data-autosubmit aria-label="{% translate 'Category' %}">
+  <option value="">{% translate "All activity" %}</option>
+  {% for v, l in categories %}<option value="{{ v }}" {% if request.GET.category == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+</select>

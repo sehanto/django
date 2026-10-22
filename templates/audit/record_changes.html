@@ -5,15 +5,8 @@
 <h1 class="page-title mb-1">{% translate "Change history" %}</h1>
 <p class="text-muted mb-4">{% translate "Every record created, changed or deleted in this organization, as recorded by the database: by whom, when and what changed. The history cannot be edited or deleted, and each change is chained to the one before it, so a removed or altered change is detected." %}</p>
 {% include "audit/_tabs.html" with url_name="changes" %}
-<form class="grid grid-cols-12 gap-2 mb-4" method="get">
-  <div class="col-span-12 md:col-span-5"><select name="table" class="form-select" data-autosubmit data-autosubmit-clear="record" aria-label="{% translate 'Records' %}">
-    <option value="">{% translate "All records" %}</option>
-    {% for value, label in tables.items %}<option value="{{ value }}" {% if value == table %}selected{% endif %}>{{ label }}</option>{% endfor %}
-  </select></div>
-  <input type="hidden" name="record" value="{{ record }}">
-  {% if record %}<div class="col-span-12 md:col-span-5 flex items-center gap-2"><span>{% blocktranslate trimmed %}Record {{ record }} only{% endblocktranslate %}</span><a href="?table={{ table }}">{% translate "show all" %}</a></div>{% endif %}
-</form>
-<div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-top">
+<div class="card">{% include "partials/list_toolbar.html" with filters="audit/_table_filter.html" %}
+<div class="overflow-x-auto"><table class="table mb-0 align-top">
   <thead><tr><th>{% translate "Time" %}</th><th>{% translate "User" %}</th><th>{% translate "Record" %}</th><th>{% translate "Change" %}</th></tr></thead>
   <tbody>
   {% for change, table_label, fields in rows %}
