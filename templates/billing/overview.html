@@ -25,24 +25,25 @@
 </div></div></div>
 
 {% if current_organization.plan_paid_until and state != states.TRIAL and state != states.LAPSED %}
-<div class="col-span-12 lg:col-span-6"><div class="card h-full"><div class="card-body flex flex-wrap justify-between items-center gap-4">
-  <div>
-    <h2 class="section-heading mb-1">{% translate "Automatic renewal" %}</h2>
-    {% if renewal and renewal.status == renewal_statuses.ACTIVE %}
-      <p class="mb-0">{% blocktranslate trimmed with period=renewal.get_billing_period_display|lower date=current_organization.plan_paid_until|date:"d F Y" %}On: the plan is renewed {{ period }} with your saved payment method, shortly before {{ date }}.{% endblocktranslate %}</p>
-      {% if renewal.last_error %}<p class="text-danger mb-0">{% blocktranslate trimmed with error=renewal.last_error_label %}The last attempt failed ({{ error }}).{% endblocktranslate %}</p>{% endif %}
-    {% elif renewal and renewal.status == renewal_statuses.SETUP %}
-      <p class="mb-0">{% translate "Waiting for your payment method to be saved." %} <a href="{{ renewal.setup_url }}">{% translate "Open the page again" %}</a> · <a href="{% url 'billing:auto_renewal_return' %}">{% translate "Check again" %}</a></p>
-    {% else %}
-      <p class="text-muted mb-0">{% translate "Save a card or e-wallet with our payment partner and your plan renews by itself; you can turn it off any time." %}</p>
+<div class="col-span-12 lg:col-span-6"><div class="card h-full"><div class="card-body">
+  {# The heading and its action on one row (the action wraps under the heading when there is no room); the state below. #}
+  <div class="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+    <h2 class="section-heading mb-0">{% translate "Automatic renewal" %}</h2>
+    {% if renewal and renewal.status != renewal_statuses.CANCELED %}
+      <form method="post" action="{% url 'billing:auto_renewal_cancel' %}" data-confirm="{% translate 'Turn off automatic renewal?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Turn off" %}</button></form>
+    {% elif current_organization.plan.monthly_price %}
+      <form method="post" action="{% url 'billing:auto_renewal_start' %}" class="flex gap-2">{% csrf_token %}
+        <select name="period" class="form-select w-auto" aria-label="{% translate 'Billing period' %}">{% for value, label in periods.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+        <button class="btn btn-primary whitespace-nowrap">{% translate "Turn on" %}</button></form>
     {% endif %}
   </div>
-  {% if renewal and renewal.status != renewal_statuses.CANCELED %}
-    <form method="post" action="{% url 'billing:auto_renewal_cancel' %}" data-confirm="{% translate 'Turn off automatic renewal?' %}">{% csrf_token %}<button class="btn btn-outline-danger">{% translate "Turn off" %}</button></form>
-  {% elif current_organization.plan.monthly_price %}
-    <form method="post" action="{% url 'billing:auto_renewal_start' %}" class="flex gap-2">{% csrf_token %}
-      <select name="period" class="form-select" aria-label="{% translate 'Billing period' %}">{% for value, label in periods.choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
-      <button class="btn btn-primary whitespace-nowrap">{% translate "Turn on" %}</button></form>
+  {% if renewal and renewal.status == renewal_statuses.ACTIVE %}
+    <p class="mb-0">{% blocktranslate trimmed with period=renewal.get_billing_period_display|lower date=current_organization.plan_paid_until|date:"d F Y" %}On: the plan is renewed {{ period }} with your saved payment method, shortly before {{ date }}.{% endblocktranslate %}</p>
+    {% if renewal.last_error %}<p class="text-danger mb-0">{% blocktranslate trimmed with error=renewal.last_error_label %}The last attempt failed ({{ error }}).{% endblocktranslate %}</p>{% endif %}
+  {% elif renewal and renewal.status == renewal_statuses.SETUP %}
+    <p class="mb-0">{% translate "Waiting for your payment method to be saved." %} <a href="{{ renewal.setup_url }}">{% translate "Open the page again" %}</a> · <a href="{% url 'billing:auto_renewal_return' %}">{% translate "Check again" %}</a></p>
+  {% else %}
+    <p class="text-muted mb-0">{% translate "Save a card or e-wallet with our payment partner and your plan renews by itself; you can turn it off any time." %}</p>
   {% endif %}
 </div></div></div>
 {% endif %}
