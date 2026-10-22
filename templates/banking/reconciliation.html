@@ -4,26 +4,23 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
   <h1 class="page-title mb-0">{{ account }}</h1>
-  <div class="flex flex-wrap gap-2">
-    <a href="{% url 'banking:accounts' %}" class="btn btn-outline">{% translate "Back" %}</a>
+  <div class="flex flex-wrap items-center gap-2">
+    <form method="get" class="flex items-center gap-2">
+      <input type="hidden" name="status" value="{{ tabset.current }}">
+      <label class="whitespace-nowrap" for="{{ as_of_form.as_of.id_for_label }}">{{ as_of_form.as_of.label }}</label>{{ as_of_form.as_of|add_class:"form-input w-auto" }}
+      <button class="btn btn-outline">{% translate "Show" %}</button>
+    </form>
     {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
   </div>
 </div>
-<form method="get" class="flex flex-wrap items-end gap-2 mb-4">
-  <input type="hidden" name="status" value="{{ status }}">
-  <div><label class="form-label" for="{{ as_of_form.as_of.id_for_label }}">{{ as_of_form.as_of.label }}</label>{{ as_of_form.as_of|add_class:"form-input" }}</div>
-  <button class="btn btn-outline">{% translate "Show" %}</button>
-</form>
 <div class="grid grid-cols-12 gap-4 mb-6">
-  <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% blocktranslate trimmed with date=summary.statement_date|date:"d/m/Y" %}Bank balance ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{% if summary.statement is None %}—{% else %}{{ summary.statement|rupiah }}{% endif %}</div></div></div></div>
+  <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% if summary.statement_date %}{% blocktranslate trimmed with date=summary.statement_date|date:"d/m/Y" %}Bank balance ({{ date }}){% endblocktranslate %}{% else %}{% translate "Bank balance" %}{% endif %}</div><div class="stat-value">{% if summary.statement is None %}—{% else %}{{ summary.statement|rupiah }}{% endif %}</div></div></div></div>
   <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% blocktranslate trimmed with date=as_of|date:"d/m/Y" %}Balance in the books ({{ date }}){% endblocktranslate %}</div><div class="stat-value">{{ summary.books|rupiah }}</div></div></div></div>
   <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "On the statement, not in the books" %}</div><div class="stat-value">{{ summary.unrecorded|rupiah }}</div></div></div></div>
   <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "In the books, not on the statement" %}</div><div class="stat-value">{{ summary.in_transit|rupiah }}</div></div></div></div>
 </div>
-<div class="flex flex-wrap gap-2 mb-2">
-  {% for value, label in statuses.choices %}<a href="?status={{ value }}" class="btn btn-sm {% if value == status %}btn-primary{% else %}btn-outline{% endif %}">{{ label }}</a>{% endfor %}
-</div>
-<div class="card"><div class="overflow-x-auto"><table class="table mb-0 align-top">
+<div class="card">{% include "partials/list_toolbar.html" %}
+<div class="overflow-x-auto"><table class="table mb-0 align-top">
   <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Reconciliation" %}</th></tr></thead>
   <tbody>{% for line, suggestions in rows %}
     <tr>
@@ -58,7 +55,7 @@
         {% else %}<span class="badge badge-warning">{{ line.get_status_display }}</span>{% endif %}
       </td>
     </tr>
-  {% empty %}<tr><td colspan="4" class="text-center text-muted py-6">{% translate "No statement lines here." %}</td></tr>
+  {% empty %}<tr><td colspan="4">{% translate "No statement lines here." as message %}{% include "partials/empty_state.html" with icon="scale" %}</td></tr>
   {% endfor %}</tbody>
 </table></div></div>
 {% endblock %}

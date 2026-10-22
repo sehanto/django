@@ -24,3 +24,8 @@ def test_an_optional_tab_shows_only_with_rows_or_when_chosen():
 def test_an_unknown_value_selects_all():
     tabset = tabs(RequestFactory().get("/", {"status": "nope"}), "status", CHOICES, {})
     assert tabset.current == "" and tabset.tabs[0].current
+
+
+def test_a_list_that_opens_on_one_status_has_no_all_tab():
+    tabset = tabs(RequestFactory().get("/"), "status", CHOICES, {"draft": 2}, default="draft")
+    assert tabset.current == "draft" and [(t.value, t.current) for t in tabset.tabs] == [("draft", True), ("void", False)]

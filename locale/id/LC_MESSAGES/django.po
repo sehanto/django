@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: EA-System\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:38+0700\n"
+"POT-Creation-Date: 2026-10-22 09:27+0700\n"
 "PO-Revision-Date: 2026-10-12 20:19\n"
 "Last-Translator: EA-System <noreply@ea-system.id>\n"
 "Language-Team: Indonesian\n"
@@ -1169,7 +1169,7 @@ msgstr "Sudah direkonsiliasi"
 msgid "Ignored"
 msgstr "Disisihkan"
 
-#: apps/banking/forms.py:9 templates/banking/reconciliation.html:50
+#: apps/banking/forms.py:9 templates/banking/reconciliation.html:47
 msgid "Other account"
 msgstr "Akun lawan"
 
@@ -1183,8 +1183,8 @@ msgstr ""
 
 #: apps/banking/forms.py:11 apps/ledger/forms.py:54
 #: templates/assets/asset_detail.html:35
-#: templates/banking/reconciliation.html:27
-#: templates/banking/reconciliation.html:53
+#: templates/banking/reconciliation.html:24
+#: templates/banking/reconciliation.html:50
 #: templates/deferrals/deferral_list.html:25
 #: templates/deferrals/deferral_list.html:30
 #: templates/ledger/journal_detail.html:36
@@ -1279,23 +1279,23 @@ msgstr "Pilih akun untuk sisi lain jurnal."
 msgid "This statement line isn't reconciled."
 msgstr "Baris rekening koran ini belum direkonsiliasi."
 
-#: apps/banking/views.py:82
+#: apps/banking/views.py:87
 msgid "Statement line reconciled."
 msgstr "Baris rekening koran direkonsiliasi."
 
-#: apps/banking/views.py:86
+#: apps/banking/views.py:91
 msgid "Choose the other account of the entry."
 msgstr "Pilih akun lawan jurnal."
 
-#: apps/banking/views.py:90
+#: apps/banking/views.py:95
 msgid "Entry posted and reconciled."
 msgstr "Jurnal diposting dan direkonsiliasi."
 
-#: apps/banking/views.py:93
+#: apps/banking/views.py:98
 msgid "Statement line set aside."
 msgstr "Baris rekening koran disisihkan."
 
-#: apps/banking/views.py:96
+#: apps/banking/views.py:101
 msgid "Reconciliation undone."
 msgstr "Rekonsiliasi dibatalkan."
 
@@ -1944,7 +1944,7 @@ msgstr "CSV"
 msgid "Excel"
 msgstr "Excel"
 
-#: apps/core/tabs.py:47 templates/dashboard/_recent.html:3
+#: apps/core/tabs.py:51 templates/dashboard/_recent.html:3
 msgid "All"
 msgstr "Semua"
 
@@ -2263,7 +2263,7 @@ msgstr "Barang/Jasa"
 #: apps/inventory/forms.py:14 apps/inventory/forms.py:37
 #: apps/invoicing/forms.py:352 apps/invoicing/views.py:84
 #: apps/invoicing/views.py:329 apps/taxes/views.py:255
-#: templates/banking/reconciliation.html:27 templates/billing/overview.html:102
+#: templates/banking/reconciliation.html:24 templates/billing/overview.html:102
 #: templates/inventory/stock_card.html:15
 #: templates/invoicing/_invoice_body.html:12
 #: templates/invoicing/coretax_connection.html:18
@@ -4359,7 +4359,7 @@ msgstr "Akun kas/bank"
 msgid "Method"
 msgstr "Metode"
 
-#: apps/invoicing/views.py:330 templates/banking/reconciliation.html:27
+#: apps/invoicing/views.py:330 templates/banking/reconciliation.html:24
 #: templates/billing/invoice_detail.html:48
 #: templates/deferrals/deferral_detail.html:14
 #: templates/deferrals/deferral_detail.html:26
@@ -8659,7 +8659,7 @@ msgid "Turn off two-factor authentication"
 msgstr "Matikan autentikasi dua faktor"
 
 #: templates/accounts/two_factor_disable.html:9
-#: templates/assets/asset_detail.html:9 templates/banking/reconciliation.html:8
+#: templates/assets/asset_detail.html:9
 #: templates/deferrals/deferral_detail.html:9
 #: templates/inventory/stock_card.html:9 templates/uploads/upload.html:8
 msgid "Back"
@@ -9179,7 +9179,7 @@ msgstr ""
 "expect-head)."
 
 #: templates/banking/account_list.html:7
-#: templates/banking/reconciliation.html:9
+#: templates/banking/reconciliation.html:13
 msgid "Upload a statement"
 msgstr "Unggah rekening koran"
 
@@ -9201,56 +9201,60 @@ msgstr "Baris yang perlu direkonsiliasi"
 msgid "No cash or bank accounts."
 msgstr "Tidak ada akun kas atau bank."
 
-#: templates/banking/reconciliation.html:15 templates/reports/_filter.html:7
+#: templates/banking/reconciliation.html:11 templates/reports/_filter.html:7
 msgid "Show"
 msgstr "Tampilkan"
 
-#: templates/banking/reconciliation.html:18
+#: templates/banking/reconciliation.html:17
 #, python-format
 msgid "Bank balance (%(date)s)"
 msgstr "Saldo bank (%(date)s)"
 
-#: templates/banking/reconciliation.html:19
+#: templates/banking/reconciliation.html:17
+msgid "Bank balance"
+msgstr "Saldo bank"
+
+#: templates/banking/reconciliation.html:18
 #, python-format
 msgid "Balance in the books (%(date)s)"
 msgstr "Saldo di pembukuan (%(date)s)"
 
-#: templates/banking/reconciliation.html:20
+#: templates/banking/reconciliation.html:19
 msgid "On the statement, not in the books"
 msgstr "Di rekening koran, belum di pembukuan"
 
-#: templates/banking/reconciliation.html:21
+#: templates/banking/reconciliation.html:20
 msgid "In the books, not on the statement"
 msgstr "Di pembukuan, belum di rekening koran"
 
-#: templates/banking/reconciliation.html:27
+#: templates/banking/reconciliation.html:24
 msgid "Reconciliation"
 msgstr "Rekonsiliasi"
 
+#: templates/banking/reconciliation.html:33
 #: templates/banking/reconciliation.html:36
-#: templates/banking/reconciliation.html:39
 msgid "Undo"
 msgstr "Batalkan"
 
-#: templates/banking/reconciliation.html:38
-#: templates/banking/reconciliation.html:56
+#: templates/banking/reconciliation.html:35
+#: templates/banking/reconciliation.html:53
 msgid "Set aside"
 msgstr "Sisihkan"
 
-#: templates/banking/reconciliation.html:45
+#: templates/banking/reconciliation.html:42
 msgid "Match"
 msgstr "Cocokkan"
 
-#: templates/banking/reconciliation.html:51
+#: templates/banking/reconciliation.html:48
 msgid "Post to…"
 msgstr "Posting ke…"
 
-#: templates/banking/reconciliation.html:54
+#: templates/banking/reconciliation.html:51
 #: templates/ledger/journal_detail.html:15
 msgid "Post"
 msgstr "Posting"
 
-#: templates/banking/reconciliation.html:56
+#: templates/banking/reconciliation.html:53
 msgid ""
 "Set this line aside? It stays on the statement but needs nothing in the "
 "books."
@@ -9258,7 +9262,7 @@ msgstr ""
 "Sisihkan baris ini? Baris tetap ada di rekening koran tetapi tidak perlu "
 "dicatat di pembukuan."
 
-#: templates/banking/reconciliation.html:61
+#: templates/banking/reconciliation.html:58
 msgid "No statement lines here."
 msgstr "Tidak ada baris rekening koran di sini."
 

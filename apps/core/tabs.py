@@ -36,15 +36,19 @@ def counts_by(queryset: QuerySet, field: str) -> dict[str, int]:
     return counts
 
 
-def tabs(request, param: str, choices: Iterable[tuple[str, str]], counts: Mapping[str, int], *, optional: Iterable[str] = ()) -> TabSet:
+def tabs(
+    request, param: str, choices: Iterable[tuple[str, str]], counts: Mapping[str, int], *,
+    optional: Iterable[str] = (), default: str = "",
+) -> TabSet:
     """All, then a tab per choice; an ``optional`` value (e.g. void) only shows while it has rows or is chosen.
+    With a ``default`` value (a list that opens on one status) there is no All tab.
 
     Each tab's link keeps the page's other parameters (search, filters) and starts again at page 1."""
     choices = list(choices)
-    current = choice_param(request.GET, param, [value for value, _label in choices])
+    current = choice_param(request.GET, param, [value for value, _label in choices], default=default)
     optional = set(optional)
     out = []
-    for value, label in [("", _("All")), *choices]:
+    for value, label in choices if default else [("", _("All")), *choices]:
         if value in optional and not counts.get(value) and value != current:
             continue
         query = request.GET.copy()

@@ -44,29 +44,29 @@
     <li class="nav-heading">{% translate "Transactions" %}</li>
     <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.SALES %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.SALES %}">{% icon "receipt" "me-2" %}{% translate "Sales" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'invoicing' and url.kwargs.kind == invoice_kinds.PURCHASE %}active{% endif %}" href="{% url 'invoicing:list' invoice_kinds.PURCHASE %}">{% icon "shopping-bag" "me-2" %}{% translate "Purchases" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'payments' %}active{% endif %}" href="{% url 'invoicing:payments' %}">{% icon "banknote" "me-2" %}{% translate "Payments" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'invoicing:payments' %}active{% endif %}" href="{% url 'invoicing:payments' %}">{% icon "banknote" "me-2" %}{% translate "Payments" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'banking' %}active{% endif %}" href="{% url 'banking:accounts' %}">{% icon "scale" "me-2" %}{% translate "Bank reconciliation" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'payroll' %}active{% endif %}" href="{% url 'payroll:index' %}">{% icon "id-card" "me-2" %}{% translate "Payroll" %}{% if not current_organization|includes:plan_features.PAYROLL %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'journals' or url.url_name == 'journal_detail' or url.url_name == 'journal_create' %}active{% endif %}" href="{% url 'ledger:journals' %}">{% icon "notebook-text" "me-2" %}{% translate "General journal" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'ledger:journals' or url.view_name == 'ledger:journal_detail' or url.view_name == 'ledger:journal_create' %}active{% endif %}" href="{% url 'ledger:journals' %}">{% icon "notebook-text" "me-2" %}{% translate "General journal" %}</a></li>
     <li class="nav-heading">{% translate "Master data" %}</li>
     <li><a class="nav-link {% if url.namespace == 'contacts' %}active{% endif %}" href="{% url 'contacts:list' %}">{% icon "users" "me-2" %}{% translate "Contacts" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'items' %}active{% endif %}" href="{% url 'invoicing:items' %}">{% icon "package" "me-2" %}{% translate "Items" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'invoicing:items' %}active{% endif %}" href="{% url 'invoicing:items' %}">{% icon "package" "me-2" %}{% translate "Items" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'inventory' %}active{% endif %}" href="{% url 'inventory:list' %}">{% icon "boxes" "me-2" %}{% translate "Inventory" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'assets' %}active{% endif %}" href="{% url 'assets:list' %}">{% icon "monitor" "me-2" %}{% translate "Fixed assets" %}{% if not current_organization|includes:plan_features.FIXED_ASSETS %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'deferrals' %}active{% endif %}" href="{% url 'deferrals:list' %}">{% icon "calendar-range" "me-2" %}{% translate "Prepayments" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}">{% icon "network" "me-2" %}{% translate "Chart of accounts" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'ledger:accounts' %}active{% endif %}" href="{% url 'ledger:accounts' %}">{% icon "network" "me-2" %}{% translate "Chart of accounts" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'uploads' %}active{% endif %}" href="{% url 'uploads:index' %}">{% icon "upload" "me-2" %}{% translate "File uploads" %}</a></li>
     <li class="nav-heading">{% translate "Taxes & reports" %}</li>
-    <li><a class="nav-link {% if url.url_name == 'pph_final' %}active{% endif %}" href="{% url 'taxes:pph_final' %}">{% icon "percent" "me-2" %}{% translate "MSME PPh Final" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'withholding' or url.url_name == 'withholding_month' %}active{% endif %}" href="{% url 'taxes:withholding' %}">{% icon "receipt-text" "me-2" %}{% translate "Withheld income tax" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'imports' %}active{% endif %}" href="{% url 'taxes:imports' %}">{% icon "globe" "me-2" %}{% translate "Imports (PIB)" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'self_deposits' %}active{% endif %}" href="{% url 'taxes:self_deposits' %}">{% icon "landmark" "me-2" %}{% translate "Self-deposited PPh" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'rates' %}active{% endif %}" href="{% url 'taxes:rates' %}">{% icon "sliders-horizontal" "me-2" %}{% translate "PPN rates" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'taxes:pph_final' %}active{% endif %}" href="{% url 'taxes:pph_final' %}">{% icon "percent" "me-2" %}{% translate "MSME PPh Final" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'taxes:withholding' or url.view_name == 'taxes:withholding_month' %}active{% endif %}" href="{% url 'taxes:withholding' %}">{% icon "receipt-text" "me-2" %}{% translate "Withheld income tax" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'taxes:imports' %}active{% endif %}" href="{% url 'taxes:imports' %}">{% icon "globe" "me-2" %}{% translate "Imports (PIB)" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'taxes:self_deposits' %}active{% endif %}" href="{% url 'taxes:self_deposits' %}">{% icon "landmark" "me-2" %}{% translate "Self-deposited PPh" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'taxes:rates' %}active{% endif %}" href="{% url 'taxes:rates' %}">{% icon "sliders-horizontal" "me-2" %}{% translate "PPN rates" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'reports' %}active{% endif %}" href="{% url 'reports:index' %}">{% icon "chart-column" "me-2" %}{% translate "Financial reports" %}</a></li>
     {% if can_manage %}
     <li class="nav-heading">{% translate "Settings" %}</li>
-    <li><a class="nav-link {% if url.url_name == 'settings' %}active{% endif %}" href="{% url 'tenants:settings' %}">{% icon "settings" "me-2" %}{% translate "Organization" %}</a></li>
-    <li><a class="nav-link {% if url.url_name == 'members' %}active{% endif %}" href="{% url 'tenants:members' %}">{% icon "user-cog" "me-2" %}{% translate "Team members" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'tenants:settings' %}active{% endif %}" href="{% url 'tenants:settings' %}">{% icon "settings" "me-2" %}{% translate "Organization" %}</a></li>
+    <li><a class="nav-link {% if url.view_name == 'tenants:members' %}active{% endif %}" href="{% url 'tenants:members' %}">{% icon "user-cog" "me-2" %}{% translate "Team members" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'api_keys' %}active{% endif %}" href="{% url 'api_keys:list' %}">{% icon "key-round" "me-2" %}{% translate "API keys" %}{% if not current_organization|includes:plan_features.API %}{% icon "lock" "ms-auto text-muted" %}{% endif %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'audit' %}active{% endif %}" href="{% url 'audit:organization' %}">{% icon "history" "me-2" %}{% translate "Activity log" %}</a></li>
     <li><a class="nav-link {% if url.namespace == 'billing' %}active{% endif %}" href="{% url 'billing:overview' %}">{% icon "sparkles" "me-2" %}{% translate "Subscription plan" %}</a></li>

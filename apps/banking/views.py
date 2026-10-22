@@ -10,7 +10,8 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from apps.core.exceptions import DomainError
-from apps.core.params import choice_param, int_param
+from apps.core.params import int_param
+from apps.core.tabs import counts_by, tabs
 from apps.core.views import flash_domain_error
 from apps.tenants.mixins import OrganizationMixin, WriteMixin
 
@@ -55,13 +56,17 @@ class ReconciliationView(OrganizationMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         account = get_object_or_404(bank_accounts(self.organization), pk=self.kwargs["pk"])
-        status = choice_param(self.request.GET, "status", StatementLineStatus.values, default=StatementLineStatus.UNMATCHED)
+        tabset = tabs(
+            self.request, "status", StatementLineStatus.choices, counts_by(statement_lines(self.organization, account), "status"),
+            default=StatementLineStatus.UNMATCHED,
+        )
+        status = tabset.current
         form = AsOfForm(self.request.GET or None)
         as_of = (form.cleaned_data.get("as_of") if form.is_valid() else None) or timezone.localdate()
         lines = list(statement_lines(self.organization, account, status=status).order_by("-date", "-id")[: self.paginate_by])
         rows = [(line, list(candidates(line)[:SUGGESTIONS]) if line.status == StatementLineStatus.UNMATCHED else []) for line in lines]
         return super().get_context_data(
-            account=account, rows=rows, status=status, statuses=StatementLineStatus, as_of_form=form, as_of=as_of,
+            account=account, rows=rows, tabset=tabset, statuses=StatementLineStatus, as_of_form=form, as_of=as_of,
             summary=reconciliation(self.organization, account, as_of), post_form=PostLineForm(organization=self.organization),
             actions=LineAction, **kwargs,
         )
