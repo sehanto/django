@@ -20,14 +20,14 @@
   <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% translate "In the books, not on the statement" %}</div><div class="stat-value">{{ summary.in_transit|rupiah }}</div></div></div></div>
 </div>
 <div class="card">{% include "partials/list_toolbar.html" %}
-<div class="overflow-x-auto"><table class="table mb-0 align-top">
-  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Amount" %}</th><th>{% translate "Reconciliation" %}</th></tr></thead>
+<div class="overflow-x-auto"><table class="table table-stack mb-0 align-top">
+  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Description" %}</th><th class="num">{% translate "Amount" %}</th><th class="w-2/5">{% translate "Reconciliation" %}</th></tr></thead>
   <tbody>{% for line, suggestions in rows %}
     <tr>
       <td class="whitespace-nowrap">{{ line.date|date:"d/m/Y" }}</td>
-      <td class="text-sm">{{ line.description }}{% if line.reference %}<div class="text-muted">{{ line.reference }}</div>{% endif %}</td>
-      <td class="num whitespace-nowrap {% if line.amount < 0 %}text-danger{% endif %}">{{ line.amount|rupiah }}</td>
-      <td>
+      <td data-label="{% translate 'Description' %}">{{ line.description }}{% if line.reference %}<div class="text-muted">{{ line.reference }}</div>{% endif %}</td>
+      <td data-label="{% translate 'Amount' %}" class="num whitespace-nowrap {% if line.amount < 0 %}text-danger{% endif %}">{{ line.amount|rupiah }}</td>
+      <td class="max-md:pt-2">
         {% if line.status == statuses.MATCHED %}
           <a href="{% url 'ledger:journal_detail' line.journal_line.entry_id %}">{{ line.journal_line.entry.number }}</a> · {{ line.journal_line.entry.description }}
           {% if can_write %}<form method="post" action="{% url 'banking:line_action' line.pk actions.UNDO %}" class="inline">{% csrf_token %}<button class="btn btn-sm btn-link">{% translate "Undo" %}</button></form>{% endif %}
@@ -35,19 +35,19 @@
           <span class="text-muted">{% translate "Set aside" %}</span>
           {% if can_write %}<form method="post" action="{% url 'banking:line_action' line.pk actions.UNDO %}" class="inline">{% csrf_token %}<button class="btn btn-sm btn-link">{% translate "Undo" %}</button></form>{% endif %}
         {% elif can_write %}
-          <div class="flex flex-col gap-2">
+          <div class="flex min-w-0 flex-col gap-2">
           {% for suggestion in suggestions %}
-            <form method="post" action="{% url 'banking:line_action' line.pk actions.MATCH %}" class="flex items-center gap-2">{% csrf_token %}
+            <form method="post" action="{% url 'banking:line_action' line.pk actions.MATCH %}" class="flex items-start gap-2">{% csrf_token %}
               <input type="hidden" name="journal_line" value="{{ suggestion.pk }}">
               <button class="btn btn-sm btn-outline-primary">{% translate "Match" %}</button>
-              <span>{{ suggestion.entry.date|date:"d/m/Y" }} · <a href="{% url 'ledger:journal_detail' suggestion.entry_id %}">{{ suggestion.entry.number }}</a> · {{ suggestion.entry.description }}</span>
+              <span class="min-w-0 pt-1">{{ suggestion.entry.date|date:"d/m/Y" }} · <a href="{% url 'ledger:journal_detail' suggestion.entry_id %}">{{ suggestion.entry.number }}</a> · {{ suggestion.entry.description }}</span>
             </form>
           {% endfor %}
             <form method="post" action="{% url 'banking:line_action' line.pk actions.POST %}" class="flex flex-wrap items-center gap-2">{% csrf_token %}
-              <select name="counter_account" class="form-select form-select-sm w-auto" aria-label="{% translate 'Other account' %}" required>
+              <select name="counter_account" class="form-select form-select-sm w-full min-w-0 sm:w-56" aria-label="{% translate 'Other account' %}" required>
                 <option value="">{% translate "Post to…" %}</option>{% for a in post_form.fields.counter_account.queryset %}<option value="{{ a.pk }}">{{ a }}</option>{% endfor %}
               </select>
-              <input name="description" class="form-input form-input-sm w-auto" maxlength="255" value="{{ line.description }}" aria-label="{% translate 'Description' %}">
+              <input name="description" class="form-input form-input-sm min-w-0 flex-1 basis-32" maxlength="255" value="{{ line.description }}" aria-label="{% translate 'Description' %}">
               <button class="btn btn-sm btn-outline">{% translate "Post" %}</button>
             </form>
             <form method="post" action="{% url 'banking:line_action' line.pk actions.IGNORE %}" data-confirm="{% translate 'Set this line aside? It stays on the statement but needs nothing in the books.' %}">{% csrf_token %}<button class="btn btn-sm btn-link">{% translate "Set aside" %}</button></form>

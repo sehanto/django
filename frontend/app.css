@@ -31,9 +31,10 @@
   /* The content column stops at 90rem (1440px) and is centred on wider screens; forms are narrower still
      (max-w-4xl, two columns of fields; account forms max-w-xl, one column), so fields stay near their labels. */
   --container-page: 90rem;
-  /* Dashboard figures size by their card's width (container queries): 16px, 20px from 8.5rem, 24px from 11rem. */
-  --container-figure-md: 8.5rem;
-  --container-figure-lg: 11rem;
+  /* Summary figures size by their card's width (container queries): 16px, 20px from 10rem, 24px from 12.25rem, the room
+     "Rp 101,489,495" (hundreds of millions) takes in Inter at each size (9.8rem at 20px, 12.1rem at 24px). */
+  --container-figure-md: 10rem;
+  --container-figure-lg: 12.25rem;
   /* A recent-invoice row (number and name beside amount and status) needs about 13rem. */
   --container-list-row: 13rem;
   /* The type scale, in rem so the browser's font-size setting still scales it (the root stays 16px).
