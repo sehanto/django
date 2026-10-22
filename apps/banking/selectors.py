@@ -77,3 +77,8 @@ def unreconciled_counts(organization) -> dict[int, int]:
         .values("account_id").annotate(count=Count("id"))
     )
     return {row["account_id"]: row["count"] for row in rows}
+
+
+def accounts_with_statements(organization) -> set[int]:
+    """The accounts any statement line was uploaded for."""
+    return set(StatementLine.objects.for_organization(organization).values_list("account_id", flat=True).distinct())

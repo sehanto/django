@@ -1,17 +1,29 @@
 {% extends "base.html" %}{% load i18n money ui %}
-{% block title %}{{ account.name }}{% endblock %}
-{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") "banking:accounts" %}{% crumb account %}{% endbreadcrumbs %}{% endblock %}
+{% block title %}{% translate "Bank reconciliation" %}{% endblock %}
+{% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
+<div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+  <h1 class="page-title mb-0">{% translate "Bank reconciliation" %}</h1>
+  {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
+</div>
+<p class="text-muted">{% translate "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)." %}</p>
+{# One tile per cash or bank account, as in QuickBooks' and Xero's banking pages; the chosen account's lines are below. #}
+<nav class="grid grid-cols-12 gap-4 mb-6" aria-label="{% translate 'Cash and bank accounts' %}">
+  {% for tile, count in accounts %}
+  <a href="{% url 'banking:reconciliation' tile.pk %}" class="card col-span-6 md:col-span-4 xl:col-span-3 flex-row items-center gap-3 p-4 text-fg no-underline hover:border-line-strong{% if tile.pk == account.pk %} border-primary ring-1 ring-primary{% endif %}"{% if tile.pk == account.pk %} aria-current="page"{% endif %}>
+    <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-xl text-primary-strong">{% icon "landmark" %}</span>
+    <span class="min-w-0"><span class="block font-semibold">{{ tile }}</span>
+      {% if count %}<span class="badge badge-warning">{% blocktranslate trimmed count count=count %}{{ count }} to reconcile{% plural %}{{ count }} to reconcile{% endblocktranslate %}</span>{% else %}<span class="text-sm text-muted">{% translate "Nothing to reconcile" %}</span>{% endif %}</span>
+  </a>
+  {% endfor %}
+</nav>
 <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-  <h1 class="page-title mb-0">{{ account }}</h1>
-  <div class="flex flex-wrap items-center gap-2">
-    <form method="get" class="flex items-center gap-2">
-      <input type="hidden" name="status" value="{{ tabset.current }}">
-      <label class="whitespace-nowrap" for="{{ as_of_form.as_of.id_for_label }}">{{ as_of_form.as_of.label }}</label>{{ as_of_form.as_of|add_class:"form-input w-auto" }}
-      <button class="btn btn-outline">{% translate "Show" %}</button>
-    </form>
-    {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
-  </div>
+  <h2 class="section-heading mb-0">{{ account }}</h2>
+  <form method="get" class="flex items-center gap-2">
+    <input type="hidden" name="status" value="{{ tabset.current }}">
+    <label class="whitespace-nowrap" for="{{ as_of_form.as_of.id_for_label }}">{{ as_of_form.as_of.label }}</label>{{ as_of_form.as_of|add_class:"form-input w-auto" }}
+    <button class="btn btn-outline">{% translate "Show" %}</button>
+  </form>
 </div>
 <div class="grid grid-cols-12 gap-4 mb-6">
   <div class="col-span-6 md:col-span-3"><div class="card h-full"><div class="card-body @container"><div class="text-sm text-muted">{% if summary.statement_date %}{% blocktranslate trimmed with date=summary.statement_date|date:"d/m/Y" %}Bank balance ({{ date }}){% endblocktranslate %}{% else %}{% translate "Bank balance" %}{% endif %}</div><div class="stat-value">{% if summary.statement is None %}—{% else %}{{ summary.statement|rupiah }}{% endif %}</div></div></div></div>

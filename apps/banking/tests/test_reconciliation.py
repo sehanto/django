@@ -132,3 +132,11 @@ def test_the_reconciliation_page(auth_client, organization, statement, bank, acc
     assert auth_client.post(reverse("banking:line_action", args=[line.pk, "explode"])).status_code == 404
     client.force_login(make_member(Role.VIEWER))
     assert client.post(reverse("banking:line_action", args=[line.pk, "undo"])).status_code == 403
+
+
+def test_bank_reconciliation_opens_on_the_account_with_lines_to_reconcile(auth_client, statement, bank):
+    statement("date,description,debit\n05/01/2026,BIAYA ADM,15000\n")
+    response = auth_client.get(reverse("banking:accounts"))
+    assert response.status_code == 302 and response.url == reverse("banking:reconciliation", args=[bank.pk])
+    page = auth_client.get(response.url).content.decode()
+    assert f'href="{reverse("banking:reconciliation", args=[bank.pk])}"' in page and 'aria-current="page"' in page

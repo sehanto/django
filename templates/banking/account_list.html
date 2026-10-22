@@ -2,16 +2,7 @@
 {% block title %}{% translate "Bank reconciliation" %}{% endblock %}
 {% block breadcrumbs %}{% breadcrumbs %}{% crumb _("Bank reconciliation") %}{% endbreadcrumbs %}{% endblock %}
 {% block content %}
-<div class="flex flex-wrap justify-between items-center gap-2 mb-2">
-  <h1 class="page-title mb-0">{% translate "Bank reconciliation" %}</h1>
-  {% if can_write %}<a href="{% url 'uploads:upload' 'bank-statement' %}" class="btn btn-primary">{% icon "upload" %} {% translate "Upload a statement" %}</a>{% endif %}
-</div>
-<p class="text-muted">{% translate "Upload the statements from internet banking, then reconcile each line with the entry in the books that recorded it, or post what the books don't have yet (bank charges, interest)." %}</p>
-<div class="card"><div class="overflow-x-auto"><table class="table table-hover mb-0 align-middle">
-  <thead><tr><th>{% translate "Account" %}</th><th class="num">{% translate "Lines to reconcile" %}</th></tr></thead>
-  <tbody>{% for account, count in accounts %}
-    <tr><td><a href="{% url 'banking:reconciliation' account.pk %}">{{ account }}</a></td><td class="num">{% if count %}<span class="badge badge-warning">{{ count }}</span>{% else %}—{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="2" class="text-center text-muted py-6">{% translate "No cash or bank accounts." %}</td></tr>
-  {% endfor %}</tbody>
-</table></div></div>
+{# Only reached without a cash or bank account: otherwise banking:accounts opens one of them (views.BankAccountListView). #}
+<h1 class="page-title mb-4">{% translate "Bank reconciliation" %}</h1>
+<div class="card">{% translate "No cash or bank accounts." as message %}{% include "partials/empty_state.html" with icon="landmark" %}</div>
 {% endblock %}

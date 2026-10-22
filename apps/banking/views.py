@@ -20,6 +20,7 @@ from .domain import StatementLineStatus
 from .forms import AsOfForm, PostLineForm
 from .models import StatementLine
 from .selectors import (
+    accounts_with_statements,
     bank_accounts,
     candidates,
     journal_lines_for,
@@ -41,13 +42,24 @@ class LineAction(StrEnum):
 LineAction.do_not_call_in_templates = True  # templates read its members (an Enum class is callable)
 
 
+def account_tiles(organization) -> list[tuple]:
+    """Each cash or bank account with how many of its statement lines wait to be reconciled."""
+    counts = unreconciled_counts(organization)
+    return [(account, counts.get(account.pk, 0)) for account in bank_accounts(organization)]
+
+
 class BankAccountListView(OrganizationMixin, TemplateView):
+    """Opens on the account with the most lines to reconcile (as banking pages in other accounting apps do)."""
+
     template_name = "banking/account_list.html"
 
-    def get_context_data(self, **kwargs):
-        counts = unreconciled_counts(self.organization)
-        accounts = [(account, counts.get(account.pk, 0)) for account in bank_accounts(self.organization)]
-        return super().get_context_data(accounts=accounts, **kwargs)
+    def get(self, request, *args, **kwargs):
+        tiles = account_tiles(self.organization)
+        if tiles:
+            uploaded = accounts_with_statements(self.organization)
+            account = max(tiles, key=lambda tile: (tile[1], tile[0].pk in uploaded))[0]
+            return redirect("banking:reconciliation", account.pk)
+        return super().get(request, *args, **kwargs)
 
 
 class ReconciliationView(OrganizationMixin, TemplateView):
@@ -66,7 +78,7 @@ class ReconciliationView(OrganizationMixin, TemplateView):
         lines = list(statement_lines(self.organization, account, status=status).order_by("-date", "-id")[: self.paginate_by])
         rows = [(line, list(candidates(line)[:SUGGESTIONS]) if line.status == StatementLineStatus.UNMATCHED else []) for line in lines]
         return super().get_context_data(
-            account=account, rows=rows, tabset=tabset, statuses=StatementLineStatus, as_of_form=form, as_of=as_of,
+            account=account, accounts=account_tiles(self.organization), rows=rows, tabset=tabset, statuses=StatementLineStatus, as_of_form=form, as_of=as_of,
             summary=reconciliation(self.organization, account, as_of), post_form=PostLineForm(organization=self.organization),
             actions=LineAction, **kwargs,
         )
